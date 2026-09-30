@@ -1,10 +1,10 @@
 # Maintainer: stshow <33067247+stshow@users.noreply.github.com>
 #
 # The Arch package of Lodi (AGENTS.md §9.3). It installs the release's own static musl
-# binary — the asset scripts/release.sh builds from a clean checkout — so the packaged file
+# binary — the asset the release build makes from a clean checkout — so the packaged file
 # is bit-for-bit the binary asset of the same release and no compiler runs here.
 #
-# scripts/release.sh reads pkgname, pkgver, pkgrel, pkgdesc and license from this file and
+# The release build reads pkgname, pkgver, pkgrel, pkgdesc and license from this file and
 # refuses to build when pkgver is not Cargo.toml's [package].version, so the built
 # lodi-<pkgver>-<pkgrel>-<arch>.pkg.tar.zst and this description cannot drift apart.
 #
@@ -13,7 +13,7 @@
 #
 # aarch64 is cross-built on the x86_64 builder and is not tested by this project (§9.3a).
 pkgname=lodi
-pkgver=1.12.1
+pkgver=1.12.2
 pkgrel=1
 pkgdesc="Environment and system manager for Ubuntu, Debian, Arch and Fedora"
 arch=('x86_64' 'aarch64')
@@ -35,7 +35,7 @@ sha256sums_aarch64=('SKIP')
 # of the common licenses Arch ships (/usr/share/licenses/common/GPL3), so the full licence text
 # is not duplicated here; the installed copyright file is the committed packaging/copyright,
 # which states the grant and carries every third-party notice the static binary owes
-# (docs/licenses/DEPENDENCIES.md). scripts/release.sh installs the same two files.
+# (docs/licenses/DEPENDENCIES.md). The release build installs the same two files.
 package() {
 	install -Dm755 "$srcdir/lodi-$pkgver-$CARCH-linux-musl" "$pkgdir/usr/bin/lodi"
 	install -Dm644 "$srcdir/copyright" "$pkgdir/usr/share/licenses/$pkgname/copyright"

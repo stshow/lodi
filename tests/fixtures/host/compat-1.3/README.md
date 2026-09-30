@@ -14,7 +14,7 @@ Recording (never a validation command), by the procedure of `compat-1.2/README.m
 1. `git worktree add --detach <scratch>/compat-1.3.0 <the 1.3.0 release commit>`, outside the
    repository;
 2. build it with the repository's toolchain:
-   `sh scripts/toolchain.sh cargo build --locked --manifest-path <scratch>/compat-1.3.0/Cargo.toml --bin lodi`
+   `cargo build --locked --manifest-path <scratch>/compat-1.3.0/Cargo.toml --bin lodi`
    with `CARGO_TARGET_DIR` in the scratch directory;
 3. `LODI_RECORD_EXPECTED=1 LODI_COMPAT_BINARY=<that build's lodi> cargo test --locked --test host_pin compat_1_3`;
 4. remove the worktree and its target.

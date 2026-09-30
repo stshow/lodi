@@ -35,17 +35,17 @@ Status: the commands are `lodi --version`, `lodi --help`, `lodi help`, `lodi imp
 ### 1. Install
 
 On x86_64 Ubuntu 24.04, Debian 12, Arch or Fedora 44, get `SHA256SUMS` and your package from the
-[1.12.1 release](https://github.com/stshow/lodi/releases/tag/v1.12.1). Check for `OK`, then install:
+[1.12.2 release](https://github.com/stshow/lodi/releases/tag/v1.12.2). Check for `OK`, then install:
 
 ```sh
 sha256sum -c --ignore-missing SHA256SUMS
-sudo dpkg -i lodi_1.12.1_amd64.deb                        # Debian, Ubuntu
-sudo pacman -U lodi-1.12.1-1-x86_64.pkg.tar.zst           # Arch
-sudo dnf install ./lodi-1.12.1-1.x86_64.rpm               # Fedora
+sudo apt install ./lodi_1.12.2_amd64.deb                  # Debian, Ubuntu
+sudo pacman -U lodi-1.12.2-1-x86_64.pkg.tar.zst           # Arch
+sudo dnf install ./lodi-1.12.2-1.x86_64.rpm               # Fedora
 ```
 
 The files are not signed, so checksums catch damage, not forgery. Run `sudo lodi host arm` once to
-let lodi manage the machine. `lodi --version` prints `lodi 1.12.1`. A `[container]` project needs
+let lodi manage the machine. `lodi --version` prints `lodi 1.12.2`. A `[container]` project needs
 rootless Podman. Other distributions: [the guide](docs/GUIDE.md#install-from-a-release).
 
 ### 2. Snapshot the machine you are on

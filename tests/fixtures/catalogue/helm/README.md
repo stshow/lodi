@@ -9,6 +9,6 @@ this document.
 The tests serve synthetic artifacts, so the sidecar they serve beside one is that artifact's own
 digest; the recorded sidecar is what `lodi lock` must pin when it is served as recorded.
 
-Re-record with `sh scripts/mrecipes-local.sh --record --only helm`. The files change when
+Re-record with the maintainers' recording probe (`--record --only helm`). The files change when
 upstream publishes a new release; that is expected, and the tests read what the files say rather
 than a version written into them.

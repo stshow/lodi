@@ -9,7 +9,7 @@
 #     §1.6 names, or any staged file name contains an address, a provider
 #     word or a `home/<login>/` component named after the committer's login
 #     (the policy's own files are exempt from all but the addresses, as they
-#     are in scripts/gate.sh), or
+#     are in the development gate), or
 #   - a staged file is a merge leftover (#338): `*.orig`, `*.rej` or a git
 #     mergetool backup (`*_BACKUP_<pid>*`, `_BASE_`, `_LOCAL_`, `_REMOTE_`), or
 #   - the staged content fails one of the gate's cheap, file-local checks
@@ -119,7 +119,7 @@ fi
 # --- 3. the gate's cheap, file-local checks on the staged content (#311) --
 # Each runs the gate's own script in its staged mode (the index, not the
 # working tree), only when a staged path is in its scope, and prints the
-# gate's own message naming the file, line and rule. scripts/gate.sh still
+# gate's own message naming the file, line and rule. The development gate still
 # runs all three as the backstop. A check that needs cargo, the network or
 # the whole tree does not belong here.
 check_fail=0
@@ -144,11 +144,13 @@ if command -v python3 >/dev/null 2>&1; then
     if printf '%s\n' "$live" | grep -qiE '\.(md|json)$'; then
         run_gate_check "changed-line style" check-style.py --staged
     fi
+    # export-public: allow the next line
     if printf '%s\n' "$live" | grep -qE '^(scripts|tests)/|^docs/milestones/.*/probes/'; then
         run_gate_check "host-scope safety scan" check-host-safety.py --staged
     fi
-    # #594: a self-test's cache key in scripts/gate.sh must list every script its test loads;
+    # #594: a self-test's cache key in the gate must list every script its test loads;
     # a script or gate change is checked here, not first in the gate (reads the working tree).
+    # export-public: allow the next line
     if printf '%s\n' "$status" | grep -qE "${tab}(scripts/|tooling/supervisor/bin/|\.githooks/)"; then
         run_gate_check "self-test cache keys" test-gate-cache-keys.py
     fi
@@ -169,7 +171,7 @@ if [ "$leftover_fail" -ne 0 ]; then
 fi
 if [ "$check_fail" -ne 0 ]; then
     echo "" >&2
-    echo "Commit blocked: fix the staged finding(s) above; scripts/gate.sh runs the same checks." >&2
+    echo "Commit blocked: fix the staged finding(s) above; the development gate runs the same checks." >&2
 fi
 if [ "$fail" -ne 0 ] || [ "$check_fail" -ne 0 ] || [ "$leftover_fail" -ne 0 ]; then
     echo "Hooks are a safety net; --no-verify is forbidden by project policy." >&2

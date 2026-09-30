@@ -16,12 +16,12 @@
 #
 # The last pair hides no host path: src/home/ is the home scope's module directory, not a home
 # directory. It is mapped only so that no source location of the binary holds '/home/' at all,
-# because scripts/release.sh rejects every '/home/' that does not begin /home/builder and
+# because the release build rejects every '/home/' that does not begin /home/builder and
 # exempts none (LD-353).
 #
 # rustc applies the last --remap-path-prefix whose prefix matches, so the home mapping comes
 # first and the more specific ones after it. A path is mapped as given and, when it differs, by
-# its physical form too. scripts/release.sh passes the output to both targets of both build
+# its physical form too. The release build passes the output to both targets of both build
 # passes; the prefixes are the same in every pass, which keeps the passes comparable byte for
 # byte. The flags travel in a whitespace-separated cargo rustflags variable, so a path holding
 # whitespace (or the '=' that separates a mapping) is refused rather than split.

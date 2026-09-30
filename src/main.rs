@@ -2978,7 +2978,7 @@ mod tests {
 
     #[test]
     fn version_text_is_name_and_crate_version() {
-        assert_eq!(version_text(), "lodi 1.12.1");
+        assert_eq!(version_text(), "lodi 1.12.2");
     }
 
     #[test]

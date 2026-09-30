@@ -29,7 +29,7 @@ fn stderr(output: &Output) -> String {
 fn version_prints_name_and_version() {
     let output = lodi(&["--version"]);
     assert!(output.status.success());
-    assert_eq!(stdout(&output), "lodi 1.12.1\n");
+    assert_eq!(stdout(&output), "lodi 1.12.2\n");
     assert!(output.stderr.is_empty());
 }
 
@@ -42,7 +42,7 @@ fn help_succeeds_and_advertises_only_working_commands() {
     assert_eq!(
         whole.lines().next(),
         Some(
-            "lodi 1.12.1 \u{2014} environment and system manager for Ubuntu, Debian, Arch and Fedora"
+            "lodi 1.12.2 \u{2014} environment and system manager for Ubuntu, Debian, Arch and Fedora"
         )
     );
     // Since LD-463 each command's usage and details are in its own help: read them all.

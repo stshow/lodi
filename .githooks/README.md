@@ -10,9 +10,8 @@ else's) from ever entering this repository's history.
   under their own identity and pushes to their own fork.
 - **Owner**: a clone with `git config lodi.enforceIdentity true` also pins the
   identity and applies the landing rules. `scripts/install-hooks.sh --owner`
-  sets it, and the supervisor's lane setup (`lane-ensure.sh`, the release
-  clone) does too; `launch-lane.sh` and `lane-ensure.sh` refuse a lane
-  without it, and `scripts/gate.sh` checks the identity only when it is set.
+  sets it, and the maintainers' lane setup does too and refuses a lane
+  without it; their gate checks the identity only when it is set.
 
 ## What is enforced
 
@@ -32,24 +31,24 @@ else's) from ever entering this repository's history.
 - **Provider words**: staged file names and added lines (outside the
   policy's own files) are also scanned for the provider words AGENTS.md
   §1.6 names. `PROVIDER_WORD_REGEX` in `lib.sh` is the one list, used by
-  `pre-commit` and `scripts/gate.sh` alike.
+  `pre-commit` and the development gate alike.
 - Enforced by `pre-commit`, `commit-msg`, and `pre-push`.
 - **The gate's cheap checks** (`pre-commit`): the changed-line
-  style guard (`scripts/check-style.py`), the host-scope safety scan
-  (`scripts/check-host-safety.py`) and the documentation check
-  (`scripts/check-docs.py`) run in their `--staged` mode on the staged
+  style guard, the host-scope safety scan and the documentation check of
+  the maintainers' gate run in their `--staged` mode on the staged
   content, each only when a staged path is in its scope, and refuse the
   commit with the gate's own message. Unstaged changes are not checked;
-  `scripts/gate.sh` still runs all three as the backstop.
+  the gate still runs all three as the backstop. In a clone without those
+  scripts the checks are skipped.
 - **Merge leftovers** (`pre-commit`): a staged `*.orig`, `*.rej` or git
   mergetool backup (`<name>_BACKUP_<pid>`, `_BASE_`, `_LOCAL_`, `_REMOTE_`)
   is refused, naming `git rm --cached` for each; a deletion commits.
-  `MERGE_LEFTOVER_REGEX` in `lib.sh` is the one list; `scripts/gate.sh`
+  `MERGE_LEFTOVER_REGEX` in `lib.sh` is the one list; the development gate
   refuses a tracked one as the backstop, and `.gitignore` ignores them.
 - **Prevention record** (`commit-msg`): a message that carries any
   of `Cause:`, `Recurs:`, `Prevention:`, `Fingerprint:` at the start of a
   line carries all four, once each and well-formed (the grammar of
-  `tooling/supervisor/bin/failure.py`, whose self-test runs this hook). A
+  maintainers' failure-record tool, whose self-test runs this hook). A
   message without them passes: whether a fix needs a record is decided at
   landing, by the issue's `kind:failure` label.
 - **Landing** (`pre-push`, owner mode only): a push to `main` is refused unless the
@@ -66,7 +65,7 @@ This sets `core.hooksPath` to `.githooks`, makes the hooks executable and
 sets `mergetool.keepBackup` to `false`, so git mergetool leaves no `.orig`.
 With `--owner` (or in a clone that already has `lodi.enforceIdentity=true`)
 it also sets the repository-level no-reply identity and
-`lodi.enforceIdentity=true`. `scripts/test-hooks.sh` tests both modes.
+`lodi.enforceIdentity=true`. The maintainers' hook test covers both modes.
 
 ## Adding an allowed pattern
 

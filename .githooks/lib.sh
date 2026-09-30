@@ -35,7 +35,7 @@ EMAIL_TOKEN_REGEX='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 BLOCKED_DOMAIN_REGEX='@(aol\.com|fastmail\.com|gmail\.com|gmx\.(com|de|net)|hotmail\.com|icloud\.com|live\.com|mac\.com|mail\.ru|me\.com|msn\.com|outlook\.com|pm\.me|proton\.me|protonmail\.(ch|com)|tutanota\.com|yahoo\.com|yandex\.(com|ru)|zoho\.com)$'
 
 # The provider words AGENTS.md §1.6 names, in the same alphabetical order:
-# the one list that pre-commit, the scans below and scripts/gate.sh use.
+# the one list that pre-commit, the scans below and the development gate use.
 # A word is left out of this list, and kept in the domain list above, when
 # it is an ordinary substring of source text (`live.com` in
 # `live.communicate`, `mail.ru` in `email.run`).
@@ -44,13 +44,13 @@ PROVIDER_WORD_REGEX='aol\.com|fastmail|gmail|gmx|hotmail|icloud|outlook|pm\.me|p
 # Merge leftovers (#338): the backups a hand merge or `patch` leaves next to
 # a file, `<file>.orig` and `<file>.rej`, and git mergetool's copies
 # `<name>_BACKUP_<pid>[.<ext>]` (and _BASE_, _LOCAL_, _REMOTE_). The one
-# list that pre-commit and scripts/gate.sh use; .gitignore ignores the same.
+# list that pre-commit and the development gate use; .gitignore ignores the same.
 MERGE_LEFTOVER_REGEX='(^|/)[^/]*\.(orig|rej)$|(^|/)[^/]*_(BACKUP|BASE|LOCAL|REMOTE)_[0-9]+(\.[^/]*)?$'
 
 # --- merge_leftovers / tracked_merge_leftovers ----------------------------
 # merge_leftovers reads path names, one per line, and prints the merge
 # leftovers among them. tracked_merge_leftovers prints the tracked ones:
-# scripts/gate.sh's backstop for a commit made without the hooks.
+# the development gate's backstop for a commit made without the hooks.
 merge_leftovers() {
     grep -E "$MERGE_LEFTOVER_REGEX" || true
 }
@@ -134,7 +134,7 @@ scan_text_for_emails() {
 # Reads text on stdin, prints (one per line) every token that AGENTS.md §1.6
 # blocks besides an email address: a home-directory path (/home/<login>/)
 # or one of the provider words, case-insensitively. This is the same
-# expression scripts/gate.sh runs over the whole tree; the hook runs it over
+# expression the development gate runs over the whole tree; the hook runs it over
 # what is being committed so that the gate is not the first thing to notice.
 PRIVATE_TOKEN_REGEX="/home/[a-z][a-z0-9_-]*/|$PROVIDER_WORD_REGEX"
 
@@ -160,9 +160,10 @@ scan_name_for_private_tokens() {
 
 # --- is_policy_file <path> -------------------------------------------------
 # The files that hold the policy's own patterns and fixtures, which
-# scripts/gate.sh excludes from its sanitization check for the same reason.
+# the development gate excludes from its sanitization check for the same reason.
 is_policy_file() {
     case "$1" in
+        # export-public: allow the next line
         AGENTS.md|.githooks/*|scripts/gate.sh|scripts/test-hooks.sh) return 0 ;;
         *) return 1 ;;
     esac
@@ -171,7 +172,7 @@ is_policy_file() {
 # --- identity_enforced -------------------------------------------------------
 # The owner's own clones pin the identity and the landing rules (#572): they
 # opt in with `git config lodi.enforceIdentity true`, which
-# `scripts/install-hooks.sh --owner` and the supervisor's lane setup set. A
+# `scripts/install-hooks.sh --owner` and the maintainers' lane setup set. A
 # clone without it (a contributor's) keeps every content check but commits
 # and pushes under its own identity.
 identity_enforced() {

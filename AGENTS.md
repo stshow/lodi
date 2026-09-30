@@ -1,7 +1,8 @@
 # AGENTS.md — instructions for every agent and person working in this repository
 
 `CLAUDE.md` points here. Section 1 is the project's privacy policy, the same text in every
-repository of the project. It is mandatory, and it overrides everything else in this file.
+repository of the project. It is mandatory, and it overrides everything else in this file. A
+file it names that this repository does not carry is kept in the maintainers' repositories.
 
 ## 1. Privacy (mandatory, overrides everything else)
 

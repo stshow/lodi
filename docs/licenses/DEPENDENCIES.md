@@ -3,7 +3,7 @@
 Lodi is **GPL-3.0-or-later** (`LICENSE`). The released binary is a static musl
 executable, so every crate in its dependency closure is *distributed inside it*: each one must
 be under a licence that a GPL-3.0-or-later work may incorporate. This file is that audit, and
-`python3 -B scripts/check-licenses.py` — a step of `scripts/gate.sh` — is the deterministic,
+The maintainers' licence check, a step of their gate, is the deterministic,
 offline check that it is still true.
 
 ## 1. How the list was produced
@@ -21,7 +21,7 @@ below are in the graph but are not compiled into the `x86_64-unknown-linux-musl`
 that only builds elsewhere is still examined instead of being silently skipped.
 
 The SPDX expression of each row is the crate's **own declared** `license` field as cargo reports
-it. `scripts/check-licenses.py` fails when a crate's expression, its resolved version, or the
+it. The licence check fails when a crate's expression, its resolved version, or the
 membership of the closure stops matching this table, and when a crate appears with an expression
 this audit has not analysed.
 
@@ -120,9 +120,9 @@ file as `docs/licenses/CDLA-PERMISSIVE-2.0.txt`. Reading it clause by clause:
 So CDLA-Permissive-2.0 is compatible: it adds nothing to the combined work beyond a notice and a
 disclaimer, and it constrains nothing about Lodi's own code. **It does create one shipping
 obligation**, and this project meets it: the agreement's text is reproduced in full in the
-committed `packaging/copyright`, which `scripts/release.sh` installs into the `.deb`
+committed `packaging/copyright`, which the release build installs into the `.deb`
 (`/usr/share/doc/lodi/copyright`) and into the Arch package
-(`/usr/share/licenses/lodi/copyright`), and `scripts/test-release.py` checks that both packages
+(`/usr/share/licenses/lodi/copyright`), and the release test checks that both packages
 carry that file byte for byte. The source tarball carries `packaging/copyright` and this file.
 
 ## 4. The closure
@@ -209,7 +209,7 @@ expression.
 
 ## 5. What the check does, and its negative control
 
-`python3 -B scripts/check-licenses.py` (a step of `scripts/gate.sh`, offline) fails when:
+The licence check (a gate step, offline) fails when:
 
 - a crate in the closure has **no row** here;
 - a row names a crate that is **no longer** in the closure;
@@ -220,7 +220,7 @@ expression.
 - `Cargo.toml` does not declare `license = "GPL-3.0-or-later"`, or `LICENSE` is not the GPL
   version 3 text.
 
-`python3 -B scripts/check-licenses.py --self-test` is the negative control: it runs the same
+Its self-test is the negative control: it runs the same
 comparison over fabricated closures and audits and fails unless each broken one is rejected for
 its own reason — an unlisted expression (rejected *even when* a row for it was added), a new
 crate with no row, a crate that changed its expression, a version bump the audit has not seen,

@@ -1,7 +1,7 @@
 # `adoptium` fixtures
 
 These are **recorded slices of the real Adoptium API**, taken once with
-`sh scripts/m04-local.sh --record` (M-0.4 T-5) and sanitized by the recorder, which keeps only
+the maintainers' recording probe (M-0.4 T-5) and sanitized by the recorder, which keeps only
 the fields the strategy reads and drops every other one rather than redacting it. No
 identifier, timestamp, download count, release note, vendor field or source link is written.
 
@@ -35,6 +35,6 @@ identifier, timestamp, download count, release note, vendor field or source link
   The shipped `catalogue/tools/jdk.toml` cannot prove that refusal, because a shipped recipe
   that was refused would fail the catalogue lint long before a test ran.
 
-Re-record with `sh scripts/m04-local.sh --record`. A recorded file changes when Adoptium
+Re-record with the maintainers' recording probe. A recorded file changes when Adoptium
 publishes a release; that is expected, and the tests read what the files say rather than a
 version written into them.

@@ -35,27 +35,29 @@ Download the file for your distribution and `SHA256SUMS` from the project's Rele
 
 ```sh
 sha256sum -c --ignore-missing SHA256SUMS
-sudo dpkg -i lodi_1.12.1_amd64.deb                        # Debian, Ubuntu
-sudo pacman -U lodi-1.12.1-1-x86_64.pkg.tar.zst           # Arch
-install -Dm755 lodi-1.12.1-x86_64-linux-musl ~/.local/bin/lodi   # any distribution, no root
+sudo apt install ./lodi_1.12.2_amd64.deb                  # Debian, Ubuntu
+sudo pacman -U lodi-1.12.2-1-x86_64.pkg.tar.zst           # Arch
+sudo dnf install ./lodi-1.12.2-1.x86_64.rpm               # Fedora
+install -Dm755 lodi-1.12.2-x86_64-linux-musl ~/.local/bin/lodi   # any distribution, no root
 ```
 
-Run one of the three install lines. The two packages put the same static binary at
+Run one of the four install lines. The three packages put the same static binary at
 `/usr/bin/lodi`. The last line puts it in your own `~/.local/bin`, which works on other
 distributions too. Installing lodi changes no other package and no setting.
 
-The aarch64 files, `lodi_1.12.1_arm64.deb`, `lodi-1.12.1-1-aarch64.pkg.tar.zst` and
-`lodi-1.12.1-aarch64-linux-musl`, are built but never run by the project. They may not work.
+The aarch64 files, `lodi_1.12.2_arm64.deb`, `lodi-1.12.2-1-aarch64.pkg.tar.zst` and
+`lodi-1.12.2-aarch64-linux-musl`, are built but never run by the project. They may not work.
 
 ### Build from source
 
 You need x86_64 Linux, `python3`, and either `rustup` or Nix with flakes. Both read the Rust
-version from the repository. Run this in a clone of the repository:
+version from the repository. With Nix, first open its shell as
+[Build lodi from source](BUILDING.md) shows. Then run this in a clone of the repository:
 
 ```sh
-sh scripts/spike-build.sh --check-static     # pinned static musl build, then ELF inspection
+cargo build --locked --release --target x86_64-unknown-linux-musl   # static build
 install -Dm755 target/x86_64-unknown-linux-musl/release/lodi ~/.local/bin/lodi
-lodi --version                               # lodi 1.12.1
+lodi --version                                                      # lodi 1.12.2
 lodi --help
 ```
 
@@ -404,7 +406,7 @@ Run `lodi search ''` to list every tool.
 
 | Platform | Architecture | What the project runs |
 |---|---|---|
-| Ubuntu 24.04, Debian 12, Arch | x86_64 | each release is installed on a fresh virtual machine and the quick start is run, before it ships |
+| Ubuntu 24.04, Debian 12, Arch, Fedora 44 | x86_64 | each release is installed on a fresh virtual machine and the quick start is run, before it ships |
 | Ubuntu 26.04 | x86_64 | the same, but a failure there does not stop the release |
 | other Linux | x86_64 | nothing. The static binary may work, but no one has tried it |
 | every distribution | aarch64 | nothing. The aarch64 files are built and never run |

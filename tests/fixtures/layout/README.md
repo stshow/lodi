@@ -13,7 +13,7 @@ looks wrong it is telling you something true. It is recorded again from a new ta
 
 1. A `git worktree` of the published tag `v0.3.0` was checked out into a scratch directory
    **outside** the repository and built with the repository's toolchain wrapper
-   (`sh scripts/toolchain.sh cargo build --locked`). No tag was created or moved.
+   (`cargo build --locked`). No tag was created or moved.
 2. A project was written with a manifest declaring one env pair and one task:
 
    ```toml

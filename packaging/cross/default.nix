@@ -1,4 +1,4 @@
-# The aarch64 cross-build environment for scripts/release.sh (LD-34; AGENTS.md §9.3a).
+# The aarch64 cross-build environment for the release build (LD-34; AGENTS.md §9.3a).
 #
 #   nix-shell packaging/cross/default.nix --run 'COMMAND'
 #

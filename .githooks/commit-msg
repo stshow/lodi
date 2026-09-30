@@ -30,7 +30,7 @@ fi
 # #336: the prevention record. A message that carries any of the four trailer keys (at the start
 # of a line, above git's scissors line) carries all four, once each and well-formed. A message
 # without them passes: whether a fix needs one is decided at landing (kind:failure), not here.
-# tooling/supervisor/bin/failure.py holds the same grammar; its --self-test runs this hook too.
+# The maintainers' failure-record tool holds the same grammar; its self-test runs this hook too.
 body=$(sed '/^# -\{1,\} >8 -\{1,\}$/,$d' "$msg_file")
 if printf '%s\n' "$body" | grep -Eq '^(Cause|Recurs|Prevention|Fingerprint):'; then
     kinds='hook|gate-step|test|reaper|timer|signal|guard|config'
@@ -69,7 +69,7 @@ if printf '%s\n' "$body" | grep -Eq '^(Cause|Recurs|Prevention|Fingerprint):'; t
         echo "ERROR: the prevention record (#336) is incomplete or malformed:$problems" >&2
         echo "" >&2
         echo "A message that carries one of Cause:, Recurs:, Prevention:, Fingerprint: carries all four," >&2
-        echo "one line each (see tooling/supervisor/TICK.md). Fix the lines and commit again." >&2
+        echo "one line each. Fix the lines and commit again." >&2
         exit 1
     fi
 fi

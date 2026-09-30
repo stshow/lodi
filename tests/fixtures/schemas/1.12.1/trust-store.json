@@ -1,0 +1,10 @@
+{
+  "entries": {
+    "/tmp/work1121/project/lodi.toml": {
+      "hash": "sha256:344f561fd0a19dfa46b99a34393e5cfe091b5f1b9ce42268707a41ebf5b195b1",
+      "trusted": "2026-09-30T15:42:44Z"
+    }
+  },
+  "lodiVersion": "1.12.1",
+  "version": 1
+}

@@ -76,13 +76,13 @@ and add it here.
 
 ## 1.0.0
 
-`1.0.0/` was recorded by the release gate itself (`scripts/release-vm-gate.py --specimen-dir`,
+`1.0.0/` was recorded by the release gate itself (the maintainers' release VM gate,
 LD-313), not from a worktree: on the first guest of the passing fresh-guest pass of the 1.0.0
 release (Arch, 2026-09-22), with the **released** static binary, by the recipe above unchanged —
 the same manifest, an emptied environment and the fetch rewrite to a closed port — under
 `/tmp/work100` on the guest, so no mount namespace was needed. It holds six artifacts: the five
 above plus `store-layout.json` (the store's `.layout.json`, new in 1.0). They are committed exactly
-as the binary wrote them (`docs/milestones/m-1.0/records/t-10.md`).
+as the binary wrote them.
 
 `1.0.0/home-state.json` (M-Home c-1) was recorded later, from the tag rather than the release gate:
 a `git worktree` of `v1.0.0` outside the repository, built with the repository's toolchain, run

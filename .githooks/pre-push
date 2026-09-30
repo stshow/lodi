@@ -21,9 +21,9 @@ zero=0000000000000000000000000000000000000000
 enforce=""
 identity_enforced && enforce=1
 
-# Landing guidance (#301, LD-468): main moves only through the one landing command, which holds
-# the landing lock and says so with LODI_LANDING_LOCK_HELD. A project that copies this hook sets
-# its own command here.
+# Landing guidance (#301, LD-468): main moves only through the maintainers' landing command,
+# which holds the landing lock and says so with LODI_LANDING_LOCK_HELD. A project that copies this
+# hook sets its own command here. export-public: allow the next line
 LANDING_COMMAND='tooling/supervisor/bin/land-lane.sh --issue <N> "Models: <each seat that ran>"'
 to_main=""
 behind=""

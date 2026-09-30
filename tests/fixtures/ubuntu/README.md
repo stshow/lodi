@@ -30,4 +30,4 @@ version (`libc6` from `noble-updates`), the highest version across suites (`libs
 conflict (`ubuntu-conflicts-make`).
 
 Live discovery against `snapshot.ubuntu.com` and the image server is the evidence of
-`sh scripts/m03-local.sh --case distros`, not these fixtures'.
+the maintainers' distribution probe, not these fixtures'.

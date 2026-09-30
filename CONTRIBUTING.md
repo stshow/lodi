@@ -48,3 +48,5 @@ project's own commit identity and landing rules. It is off unless a clone sets
 Some code comments cite a decision id (the letters `LD`, a hyphen and a number) or a path to a
 milestone record. Those records are kept in lodi's private development repository. The comment
 around each one says what was decided, so you don't need the record to follow the code.
+Issue numbers in comments (a `#` followed by digits) also refer to that private development
+repository, not to this repository's issue tracker.

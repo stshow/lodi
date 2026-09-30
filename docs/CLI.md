@@ -56,7 +56,7 @@ lodi --version
 ```
 
 ```text
-lodi 1.12.1
+lodi 1.12.2
 ```
 
 It reads nothing and runs nothing.
@@ -78,7 +78,7 @@ lodi --help
 ```
 
 ```text
-lodi 1.12.1 — environment and system manager for Ubuntu, Debian, Arch and Fedora
+lodi 1.12.2 — environment and system manager for Ubuntu, Debian, Arch and Fedora
 
 Three independent scopes. Start with the one you want. None needs another:
   this machine  sudo lodi host arm      once: allow lodi to manage this machine

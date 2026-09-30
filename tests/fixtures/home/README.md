@@ -1,9 +1,10 @@
 # Home-scope fixtures (M-0.5 T-2, T-3; M-Import T-4; M-Home)
 
 Committed input for `tests/home_manifest.rs`, `tests/home_plan.rs` and — through
-`scripts/home-scratch.sh`, which seeds `several` into the scratch configuration root unless
-`--bare` is given (`LD-176`) — the by-hand walk-through of `lodi home plan|apply|status`. Nothing here is generated
-and nothing here is a mock: each directory is copied into a throwaway configuration root and the
+the maintainers' home-scratch script, which seeds `several` into the scratch configuration root
+unless `--bare` is given (`LD-176`) — the by-hand walk-through of
+`lodi home plan|apply|status`. Nothing here is generated and nothing here is a mock: each
+directory is copied into a throwaway configuration root and the
 **built binary** is run against it, so what these files describe is what a user would meet.
 
 - `several/` — a home manifest with several `[files]` entries, one of each origin (`content` and
