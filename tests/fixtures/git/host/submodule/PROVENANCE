@@ -1,0 +1,26 @@
+{
+  "commands": [
+    "git init -b main",
+    "git add -A (a symbolic link in link)",
+    "git update-index --cacheinfo 160000 (submodule only)",
+    "git commit (fixed identity and date)",
+    "git branch stable <first> (single, state second)",
+    "git clone --bare <source> <case>.git",
+    "git http-backend GET info/refs (Git-Protocol: version=2)",
+    "git http-backend POST git-upload-pack (ls-refs per state; fetch deepen 1 per commit)"
+  ],
+  "commits": [
+    "84ca28e7823963ac56c2ca5e0eccbce4a08c345a"
+  ],
+  "git": "git version 2.55.0",
+  "sha256": {
+    "advertisement.bin": "3fca95b8bc9314a89a33dbeb8af10b2e241964e0c2fb50d8dffbfffff38b76c6",
+    "fetch-request-84ca28e7823963ac56c2ca5e0eccbce4a08c345a.bin": "936d8097a0b960ab52529d64389fa3c895568e770494c3d788bfcd5af0c42795",
+    "fetch-response-84ca28e7823963ac56c2ca5e0eccbce4a08c345a.bin": "388c0acfcd385f8e7f03378f90b7fe67372b2a0d79057fd1b920825afb4b9fee",
+    "ls-request.bin": "30f5149ff5f5a60ddababe9b0932fd61736653a3e2e310b7ae2d9f2138ebdb9d",
+    "ls-response-only.bin": "e5e1179ff48ebb14c8615532ba00f28d52013492e08ba0c472378e2910cd775b"
+  },
+  "states": [
+    "only"
+  ]
+}

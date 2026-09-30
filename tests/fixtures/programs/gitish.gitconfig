@@ -1,0 +1,17 @@
+# Managed by lodi from home.toml [programs.gitish]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+[alias]
+	lg = "log --graph\tall"
+	st = "status"
+[branch "main"]
+	remote = "origin"
+[branch "we\"ird\\"]
+	remote = "up"
+[core]
+	editor = "vi -c \"set tw=72\" \\ end"
+[user]
+	name = "  A. Tester ; # not a comment  "
+	useConfigOnly = true
+[pull]
+	rebase = true

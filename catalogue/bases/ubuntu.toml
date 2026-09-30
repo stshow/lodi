@@ -1,0 +1,27 @@
+# Ubuntu container bases: noble only. Ubuntu publishes no per-commit OCI layout for noble the
+# way debuerreotype does for Debian (measured 2026-09-20), so the rootfs is pinned by URL and SHA-256 taken from the checksum file
+# published beside it in a dated directory. Repositories are snapshot.ubuntu.com at the lock's
+# snapshot timestamp; Ubuntu carries security updates in the same archive as the release, so
+# there is one repository with three suites and not two archives.
+[base]
+distro = "ubuntu"
+
+[release.noble]
+aliases      = ["24.04"]
+snapshot_min = "2024-04-25T00:00:00Z"
+repositories = ["ubuntu"]
+# The per-package interface a host pin by version is resolved through: Launchpad lists every
+# publication of a package with its instant, and each file's SHA-256 (measured 2026-09-24).
+versions_url = "https://api.launchpad.net/devel/ubuntu/+archive/primary?ws.op=getPublishedBinaries&exact_match=true&binary_name=${name}&distro_arch_series=https%3A%2F%2Fapi.launchpad.net%2Fdevel%2Fubuntu%2F${release}%2F${deb_arch}&ws.size=300"
+
+[release.noble.rootfs.x86_64]
+strategy     = "dated_checksum_dir"
+index_url    = "https://partner-images.canonical.com/oci/${release}/"
+checksums    = "SHA256SUMS"
+layer        = "ubuntu-${release}-oci-${deb_arch}-root.tar.gz"
+package_list = "ubuntu-${release}-oci-${deb_arch}-root.manifest"
+
+[repository.ubuntu]
+snapshot_url = "https://snapshot.ubuntu.com/ubuntu/${snapshot_id}/"
+suites       = ["${release}", "${release}-updates", "${release}-security"]
+components   = ["main", "universe"]

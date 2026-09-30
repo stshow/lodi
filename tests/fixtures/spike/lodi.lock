@@ -1,0 +1,1834 @@
+{
+  "base": {
+    "arch": "x86_64",
+    "closure": {
+      "hash": "sha256:d34f6b48641757baf8bcb12bc6df46d57a19aaa5fe656af491e60b6a4c0bc3fe",
+      "packages": [
+        {
+          "arch": "all",
+          "filename": "pool/main/a/adduser/adduser_3.134_all.deb",
+          "name": "adduser",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:c24fe4eb8e60d8632d72ed104cce7c92cff200847c897dc8ba764b6c47b519e0",
+          "size": 183272,
+          "suite": "bookworm",
+          "version": "3.134"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/a/apt/apt_2.6.1_amd64.deb",
+          "name": "apt",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6ea03cbbc7a7bfcee601c9fb08d4e026fd522ede5350561f06867ad9c0a0fa6b",
+          "size": 1372852,
+          "suite": "bookworm",
+          "version": "2.6.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/base-files/base-files_12.4+deb12u15_amd64.deb",
+          "name": "base-files",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:3eb1ea6d85488f488cc2a163b98ad640ef88cee4c79287cf14e361aaf6206f47",
+          "size": 70936,
+          "suite": "bookworm",
+          "version": "12.4+deb12u15"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/base-passwd/base-passwd_3.6.1_amd64.deb",
+          "name": "base-passwd",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:908ca1b35125f49125ae56945a72bc11ce0fcec85a8d980d10d83bb3a610f518",
+          "size": 59972,
+          "suite": "bookworm",
+          "version": "3.6.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/bash/bash_5.2.15-2+b13_amd64.deb",
+          "name": "bash",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:82130bb6a560cd2a7234d8018baf73f188f5dd56413d5aa0accc987b2197a6a1",
+          "size": 1490652,
+          "suite": "bookworm",
+          "version": "5.2.15-2+b13"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/binutils_2.40-2_amd64.deb",
+          "name": "binutils",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:83c3e20b53e1fbd84d764c3ba27d26a0376e361ae5d7fb37120196934dd87424",
+          "size": 64980,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/binutils-common_2.40-2_amd64.deb",
+          "name": "binutils-common",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:ab314134f43a0891a48f69a9bc33d825da748fa5e0ba2bebb7a5c491b026f1a0",
+          "size": 2486664,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/binutils-x86-64-linux-gnu_2.40-2_amd64.deb",
+          "name": "binutils-x86-64-linux-gnu",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:2d7ea8a570d768224d7f2424abbe6f373d2154865a1fa7f56c80d43ecf492521",
+          "size": 2245848,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/bsdutils_2.38.1-5+deb12u3_amd64.deb",
+          "name": "bsdutils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6cae172b006a4603e710e046c3acba8d98d36748894cbe3eeda31d415fec331e",
+          "size": 94412,
+          "suite": "bookworm",
+          "version": "1:2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/build-essential/build-essential_12.9_amd64.deb",
+          "name": "build-essential",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:bbfd38de41898a06326f2a6ce4cc43e8e399f5566381231065b01d70499d5ba5",
+          "size": 7704,
+          "suite": "bookworm",
+          "version": "12.9"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/bzip2/bzip2_1.0.8-5+b1_amd64.deb",
+          "name": "bzip2",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:438871b3f5c5c7a357a9840951dab9dab8db7eb1ff760a563226fafa111b99e5",
+          "size": 49804,
+          "suite": "bookworm",
+          "version": "1.0.8-5+b1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/c/coreutils/coreutils_9.1-1_amd64.deb",
+          "name": "coreutils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:61038f857e346e8500adf53a2a0a20859f4d3a3b51570cc876b153a2d51a3091",
+          "size": 2896560,
+          "suite": "bookworm",
+          "version": "9.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-defaults/cpp_12.2.0-3_amd64.deb",
+          "name": "cpp",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:a63db920f7aa1857a57beab185423deffb6111fa09437a99bbb4ef724fb7ba78",
+          "size": 6836,
+          "suite": "bookworm",
+          "version": "4:12.2.0-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/cpp-12_12.2.0-14+deb12u1_amd64.deb",
+          "name": "cpp-12",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:fedbb98e877adde83c983c6071537ea25ac52b277ac6e4637d85025949ca1454",
+          "size": 9767788,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/d/dash/dash_0.5.12-2_amd64.deb",
+          "name": "dash",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:33ea40061da2f1a861ec46212b2b6a34f0776a049b1a3f0abce2fb8cb994258f",
+          "size": 91848,
+          "suite": "bookworm",
+          "version": "0.5.12-2"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/d/debconf/debconf_1.5.82_all.deb",
+          "name": "debconf",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:74ab14194a3762b2fc717917dcfda42929ab98e3c59295a063344dc551cd7cc8",
+          "size": 121212,
+          "suite": "bookworm",
+          "version": "1.5.82"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/d/debian-archive-keyring/debian-archive-keyring_2023.3+deb12u2_all.deb",
+          "name": "debian-archive-keyring",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:f699e2f88dca05212f2a452b58475f2993cb6993dfbafb1d0205a3291eb8b4b8",
+          "size": 178572,
+          "suite": "bookworm",
+          "version": "2023.3+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/d/debianutils/debianutils_5.7-0.5~deb12u1_amd64.deb",
+          "name": "debianutils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:55f951359670eb3236c9e2ccd5fac9ccb3db734f5a22aff21589e7a30aee48c9",
+          "size": 102588,
+          "suite": "bookworm",
+          "version": "5.7-0.5~deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/d/diffutils/diffutils_3.8-4_amd64.deb",
+          "name": "diffutils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:8bdfedc14c1035e3750e9f055ac9c1ecd9b5d05d9e6dc6466c4e9237eef407dd",
+          "size": 351740,
+          "suite": "bookworm",
+          "version": "1:3.8-4"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/d/dpkg/dpkg_1.21.23_amd64.deb",
+          "name": "dpkg",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:f89e9f8d1a4a50ade44be3ed59a6ec55460fce205d2f8520c5c492137c5b609b",
+          "size": 1567804,
+          "suite": "bookworm",
+          "version": "1.21.23"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/d/dpkg/dpkg-dev_1.21.23_all.deb",
+          "name": "dpkg-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:43547075395dbe9290e6a5f34e9ba93aa5dcf7dfc5698c3d30cc3c85e5f7e3de",
+          "size": 1354256,
+          "suite": "bookworm",
+          "version": "1.21.23"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/e/e2fsprogs/e2fsprogs_1.47.0-2+b2_amd64.deb",
+          "name": "e2fsprogs",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:fedd424691c08ef0739729026be298e7be8236337bf8e031b3c7ec66794e6fc2",
+          "size": 571920,
+          "suite": "bookworm",
+          "version": "1.47.0-2+b2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/f/findutils/findutils_4.9.0-4_amd64.deb",
+          "name": "findutils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:5dd86bd0af4aa73f067dfd6b8339dd868f2dd84056aa79db29d1206d4fbc5e04",
+          "size": 635500,
+          "suite": "bookworm",
+          "version": "4.9.0-4"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-defaults/g++_12.2.0-3_amd64.deb",
+          "name": "g++",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:26c451a660728cf7c15548a281e17eef2f36fab28499371e83fc2d3accb499d7",
+          "size": 1356,
+          "suite": "bookworm",
+          "version": "4:12.2.0-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/g++-12_12.2.0-14+deb12u1_amd64.deb",
+          "name": "g++-12",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:68b182badae4ace7d472f1393c559d3532a95a2d70817498b10bb481d2627251",
+          "size": 10694076,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-defaults/gcc_12.2.0-3_amd64.deb",
+          "name": "gcc",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:bb63b0fb2797e2a3a294dab8a02614930c557ec1f4ea96637c244b8b5f87e630",
+          "size": 5216,
+          "suite": "bookworm",
+          "version": "4:12.2.0-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/gcc-12_12.2.0-14+deb12u1_amd64.deb",
+          "name": "gcc-12",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:b46f33cc2ec245e435e043807038cecf4b201ef004800e9dfc1455240360e49d",
+          "size": 19268852,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/gcc-12-base_12.2.0-14+deb12u1_amd64.deb",
+          "name": "gcc-12-base",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:1896a2aacf4ad681ff5eacc24a5b0ca4d5d9c9b9c9e4b6de5197bc1e116ea619",
+          "size": 37596,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gnupg2/gpgv_2.2.40-1.1+deb12u2_amd64.deb",
+          "name": "gpgv",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:2966dc0a0b89caa65c3b4a386fa4ed0b6ca2239cd51ec40e6920507aedcdb14a",
+          "size": 648768,
+          "suite": "bookworm",
+          "version": "2.2.40-1.1+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/grep/grep_3.8-5_amd64.deb",
+          "name": "grep",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:3264acea728df3c48a54f20e9291b965130e306b9d00adac76647049da7196df",
+          "size": 421444,
+          "suite": "bookworm",
+          "version": "3.8-5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gzip/gzip_1.12-1_amd64.deb",
+          "name": "gzip",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:eabec1dde2834f72540d7b93fc5df2625f52611c06d93d61f5cdb12480e0e6a3",
+          "size": 140364,
+          "suite": "bookworm",
+          "version": "1.12-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/h/hostname/hostname_3.23+nmu1_amd64.deb",
+          "name": "hostname",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:17d9a2f3c05004499d80e180d2440fd716f84c32b65f09d96c9a024af4d1d0e7",
+          "size": 10500,
+          "suite": "bookworm",
+          "version": "3.23+nmu1"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/i/init-system-helpers/init-system-helpers_1.65.2+deb12u1_all.deb",
+          "name": "init-system-helpers",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:afab482524c64e4e256eb5cab43c1a96dc493ec476d94f19f1a5ec3de5fa0fef",
+          "size": 39020,
+          "suite": "bookworm",
+          "version": "1.65.2+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/a/acl/libacl1_2.3.1-3_amd64.deb",
+          "name": "libacl1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:8be9df5795114bfe90e2be3d208ef47a5edd3fc7b3e20d387a597486d444e5e2",
+          "size": 31488,
+          "suite": "bookworm",
+          "version": "2.3.1-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/a/apt/libapt-pkg6.0_2.6.1_amd64.deb",
+          "name": "libapt-pkg6.0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:ccab743f6784b4cc7bd69e1810630edaf726cd69c1e735e39a16266d470bfdc0",
+          "size": 907236,
+          "suite": "bookworm",
+          "version": "2.6.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libasan8_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libasan8",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:e7ac5d797d7d438a130674a8e463530f06aa02ecf919ca054d75eaa2f7849ec7",
+          "size": 2192652,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libatomic1_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libatomic1",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d",
+          "size": 9376,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/a/attr/libattr1_2.5.1-4_amd64.deb",
+          "name": "libattr1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:c4945123d66d0503ba42e2fc0585abc76d0838978c6d277b9cc37a4da25d1a34",
+          "size": 22164,
+          "suite": "bookworm",
+          "version": "1:2.5.1-4"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/a/audit/libaudit-common_3.0.9-1_all.deb",
+          "name": "libaudit-common",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:17d0341ca6ce604ce59c296780ac2c2a24141a769823c50669af942c025e6591",
+          "size": 10448,
+          "suite": "bookworm",
+          "version": "1:3.0.9-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/a/audit/libaudit1_3.0.9-1_amd64.deb",
+          "name": "libaudit1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:30954df4b5a7c505661ba8ae5e6ea94f5805e408899fb400783bb166eb5ff306",
+          "size": 46764,
+          "suite": "bookworm",
+          "version": "1:3.0.9-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/libbinutils_2.40-2_amd64.deb",
+          "name": "libbinutils",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:fcf55b99e5f8a78f3c8ce9b6957f1024f394cf20c196b100d308a57e43547710",
+          "size": 572104,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/libblkid1_2.38.1-5+deb12u3_amd64.deb",
+          "name": "libblkid1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:5a083377f29191cafcdf0f91ec124349b4a7895b531556633a136e43c6d53943",
+          "size": 147380,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/bzip2/libbz2-1.0_1.0.8-5+b1_amd64.deb",
+          "name": "libbz2-1.0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:54149da3f44b22d523b26b692033b84503d822cc5122fed606ea69cc83ca5aeb",
+          "size": 47348,
+          "suite": "bookworm",
+          "version": "1.0.8-5+b1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/glibc/libc-bin_2.36-9+deb12u14_amd64.deb",
+          "name": "libc-bin",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:e667401af91fad95f15b3ebd25d1abd8373fd18b00dc32219678413170544e84",
+          "size": 609144,
+          "suite": "bookworm",
+          "version": "2.36-9+deb12u14"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/glibc/libc-dev-bin_2.36-9+deb12u14_amd64.deb",
+          "name": "libc-dev-bin",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:f61d923b703401023bec2ac3d9d1c9ad7341930fbe11736f7f5ef64b489d03c4",
+          "size": 48056,
+          "suite": "bookworm",
+          "version": "2.36-9+deb12u14"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/glibc/libc6_2.36-9+deb12u14_amd64.deb",
+          "name": "libc6",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:ba4f88f73dbc3ae9055f3c20f4523bfdbaf1ad13ff95e258924f77d20b4fbedf",
+          "size": 2759320,
+          "suite": "bookworm",
+          "version": "2.36-9+deb12u14"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/glibc/libc6-dev_2.36-9+deb12u14_amd64.deb",
+          "name": "libc6-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:0218fc2befcd784c1b0c6292c0a137ce89fad054efaa579ad083bee0f2c01aae",
+          "size": 1903668,
+          "suite": "bookworm",
+          "version": "2.36-9+deb12u14"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libc/libcap-ng/libcap-ng0_0.8.3-1+b3_amd64.deb",
+          "name": "libcap-ng0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:b4b54769c77e4a71c8b33aee4d600ba28a9994a1c6f60d55d4ebe7fc44882e07",
+          "size": 17068,
+          "suite": "bookworm",
+          "version": "0.8.3-1+b3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libc/libcap2/libcap2_2.66-4+deb12u3+b1_amd64.deb",
+          "name": "libcap2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:8d684c673e7483802a5c447834b0df6fce006eb3a7109e1be412f5ad425bb24f",
+          "size": 27708,
+          "suite": "bookworm",
+          "version": "1:2.66-4+deb12u3+b1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libcc1-0_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libcc1-0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:4ee6009633003f47de98333ea7f7d8835ec563ae2ac4f30251dbfee04d75d46b",
+          "size": 41736,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/e/e2fsprogs/libcom-err2_1.47.0-2+b2_amd64.deb",
+          "name": "libcom-err2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:a2bac7015e78fbc0c504df3e441f3a22292f1d2d77f9ccda760057f3690e22f2",
+          "size": 20044,
+          "suite": "bookworm",
+          "version": "1.47.0-2+b2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libx/libxcrypt/libcrypt-dev_4.4.33-2_amd64.deb",
+          "name": "libcrypt-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:81ccd29130f75a9e3adabc80e61921abff42f76761e1f792fa2d1bb69af7f52f",
+          "size": 118144,
+          "suite": "bookworm",
+          "version": "1:4.4.33-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libx/libxcrypt/libcrypt1_4.4.33-2_amd64.deb",
+          "name": "libcrypt1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:f5f60a5cdfd4e4eaa9438ade5078a57741a7a78d659fcb0c701204f523e8bd29",
+          "size": 89464,
+          "suite": "bookworm",
+          "version": "1:4.4.33-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/libctf-nobfd0_2.40-2_amd64.deb",
+          "name": "libctf-nobfd0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:ef1dfcf22de41ea90ebd3d505447ccccd999e96b85aa777a1d7d981dc3b347aa",
+          "size": 153384,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/libctf0_2.40-2_amd64.deb",
+          "name": "libctf0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3fb7b6f326be3fae4a87a3d33b9269bd06c1e4346a24bd737f265067e3b7427f",
+          "size": 89796,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/d/db5.3/libdb5.3_5.3.28+dfsg2-1_amd64.deb",
+          "name": "libdb5.3",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:7dc5127b8dd0da80e992ba594954c005ae4359d839a24eb65d0d8129b5235c84",
+          "size": 697412,
+          "suite": "bookworm",
+          "version": "5.3.28+dfsg2-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/c/cdebconf/libdebconfclient0_0.270_amd64.deb",
+          "name": "libdebconfclient0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:7d2b2b700bae0ba67a13655fabba6a98da3f6ce7dee43d1ee0ac433b7ca1d947",
+          "size": 9900,
+          "suite": "bookworm",
+          "version": "0.270"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/d/dpkg/libdpkg-perl_1.21.23_all.deb",
+          "name": "libdpkg-perl",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3f817fd9266ce2638c64b5df77da11f98f5df4f3301e1c04140be16790f72112",
+          "size": 603796,
+          "suite": "bookworm",
+          "version": "1.21.23"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/e/e2fsprogs/libext2fs2_1.47.0-2+b2_amd64.deb",
+          "name": "libext2fs2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:dff731f2318df99da4b8bf5f330f415f95b94c609bac29e7b2edba0a38f22a98",
+          "size": 204900,
+          "suite": "bookworm",
+          "version": "1.47.0-2+b2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libf/libffi/libffi8_3.4.4-1_amd64.deb",
+          "name": "libffi8",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6d9f6c25c30efccce6d4bceaa48ea86c329a3432abb360a141f76ac223a4c34a",
+          "size": 22856,
+          "suite": "bookworm",
+          "version": "3.4.4-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libgcc-12-dev_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libgcc-12-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:d720259380a84f2ffc6fe516eff5cbe9c8a005138e8d6a5748747ba4b3404a82",
+          "size": 2437204,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libgcc-s1_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libgcc-s1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:3016e62cb4b7cd8038822870601f5ed131befe942774d0f745622cc77d8a88f7",
+          "size": 49856,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/libg/libgcrypt20/libgcrypt20_1.10.1-3+deb12u1_amd64.deb",
+          "name": "libgcrypt20",
+          "origin": "base",
+          "repository": "debian-security",
+          "sha256": "sha256:e7a56552139c693904a6f9712234c05fe918353273a7cbdb5e62f423ad71bb97",
+          "size": 696204,
+          "suite": "bookworm-security",
+          "version": "1.10.1-3+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gdbm/libgdbm-compat4_1.23-3_amd64.deb",
+          "name": "libgdbm-compat4",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:4af36a590b68d415a78d9238b932b6a4579f515ec8a8016597498acff5b515a4",
+          "size": 48156,
+          "suite": "bookworm",
+          "version": "1.23-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gdbm/libgdbm6_1.23-3_amd64.deb",
+          "name": "libgdbm6",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:95fe4a1336532450e67bd067892f46eaa484139919ea8d067a9ffcbf5a4bf883",
+          "size": 72248,
+          "suite": "bookworm",
+          "version": "1.23-3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gmp/libgmp10_6.2.1+dfsg1-1.1_amd64.deb",
+          "name": "libgmp10",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:187aedef2ed763f425c1e523753b9719677633c7eede660401739e9c893482bd",
+          "size": 562588,
+          "suite": "bookworm",
+          "version": "2:6.2.1+dfsg1-1.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/g/gnutls28/libgnutls30_3.7.9-2+deb12u7_amd64.deb",
+          "name": "libgnutls30",
+          "origin": "base",
+          "repository": "debian-security",
+          "sha256": "sha256:30abec8c824feb1d2d7e9000a34083cccd19d139625e1b21547e3ac53b922f8e",
+          "size": 1409084,
+          "suite": "bookworm-security",
+          "version": "3.7.9-2+deb12u7"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libgomp1_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libgomp1",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:48fec46bda7f5b1638b9e959889bfbc20491247d402d120bb152687eb48143d7",
+          "size": 115772,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libg/libgpg-error/libgpg-error0_1.46-1_amd64.deb",
+          "name": "libgpg-error0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:89944ee11d7370ce6ef46fc52f094c4a6512eff8943ec4c6ebefeae6360ceada",
+          "size": 76888,
+          "suite": "bookworm",
+          "version": "1.46-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/b/binutils/libgprofng0_2.40-2_amd64.deb",
+          "name": "libgprofng0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:a3c4092d84f19d13caf90f3c96eec53db8819f0e3a5247434944d71ed75fa53d",
+          "size": 812120,
+          "suite": "bookworm",
+          "version": "2.40-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/k/krb5/libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb",
+          "name": "libgssapi-krb5-2",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:d8b87aea91b956b416c01a28c44ff6228315ae3b73de40acddac3dc5043607d2",
+          "size": 135168,
+          "suite": "bookworm-security",
+          "version": "1.20.1-2+deb12u5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/n/nettle/libhogweed6_3.8.1-2_amd64.deb",
+          "name": "libhogweed6",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:ed8185c28b2cb519744a5a462dcd720d3b332c9b88a1d0002eac06dc8550cb94",
+          "size": 327524,
+          "suite": "bookworm",
+          "version": "3.8.1-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libi/libidn2/libidn2-0_2.3.3-1+b1_amd64.deb",
+          "name": "libidn2-0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:d50716d5824083d667427817d506b45d3f59dc77e1ca52de000f3f62d4918afa",
+          "size": 123636,
+          "suite": "bookworm",
+          "version": "2.3.3-1+b1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/i/isl/libisl23_0.25-1.1_amd64.deb",
+          "name": "libisl23",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:ebff0b2f8b220c74224197523019366e97ee4770d464bebc48e4865114e4da0e",
+          "size": 683060,
+          "suite": "bookworm",
+          "version": "0.25-1.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libitm1_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libitm1",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:0ed5b35dfd1346cccbf065408ec789db6c44c1d0a16ae84533411dea09632979",
+          "size": 26140,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/j/jansson/libjansson4_2.14-2_amd64.deb",
+          "name": "libjansson4",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3fc9742f9f1a37bcb9931df6074b4d1483419ef832ad5349f47323e75fc27864",
+          "size": 40788,
+          "suite": "bookworm",
+          "version": "2.14-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/k/krb5/libk5crypto3_1.20.1-2+deb12u5_amd64.deb",
+          "name": "libk5crypto3",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:7b6e47d15c5c9cdcd456137533d8308aeba608a54cec73b28bd59bfc4b54cf06",
+          "size": 79712,
+          "suite": "bookworm-security",
+          "version": "1.20.1-2+deb12u5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/k/keyutils/libkeyutils1_1.6.3-2_amd64.deb",
+          "name": "libkeyutils1",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:cfac89e6a7a54ff3c6a4f843310e25efeddaa771baeae470bd98bd588c373563",
+          "size": 8808,
+          "suite": "bookworm",
+          "version": "1.6.3-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/k/krb5/libkrb5-3_1.20.1-2+deb12u5_amd64.deb",
+          "name": "libkrb5-3",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:c90801be09701af221b54dd502a59cb378b7284ff31e480738baca317d2f7653",
+          "size": 332280,
+          "suite": "bookworm-security",
+          "version": "1.20.1-2+deb12u5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/k/krb5/libkrb5support0_1.20.1-2+deb12u5_amd64.deb",
+          "name": "libkrb5support0",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:8b9c05f2d8d461a10d657b118f572af5bf8fd6c8f93dcef81e852c5ab0f428ab",
+          "size": 33212,
+          "suite": "bookworm-security",
+          "version": "1.20.1-2+deb12u5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/liblsan0_12.2.0-14+deb12u1_amd64.deb",
+          "name": "liblsan0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:d234ab339c0ba31a4fb44e2334cf5a8d15b87f2c2f9e74fadfaa877f92dcf22a",
+          "size": 969300,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/l/lz4/liblz4-1_1.9.4-1_amd64.deb",
+          "name": "liblz4-1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:64cde86cef1deaf828bd60297839b59710b5cd8dc50efd4f12643caaee9389d3",
+          "size": 62884,
+          "suite": "bookworm",
+          "version": "1.9.4-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/x/xz-utils/liblzma5_5.4.1-1+deb12u2_amd64.deb",
+          "name": "liblzma5",
+          "origin": "base",
+          "repository": "debian-security",
+          "sha256": "sha256:3d8c29c8c21ec6007635e1b2591edf98b771c9572a085968f47452b33040f384",
+          "size": 205796,
+          "suite": "bookworm-security",
+          "version": "5.4.1-1+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libm/libmd/libmd0_1.0.4-2_amd64.deb",
+          "name": "libmd0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:03539fd30c509e27101d13a56e52eda9062bdf1aefe337c07ab56def25a13eab",
+          "size": 29456,
+          "suite": "bookworm",
+          "version": "1.0.4-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/libmount1_2.38.1-5+deb12u3_amd64.deb",
+          "name": "libmount1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:f46e2d6b006951825adde9757790b6609d7c66c7700f9b68f3db913eaac323c3",
+          "size": 165732,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/m/mpclib3/libmpc3_1.3.1-1_amd64.deb",
+          "name": "libmpc3",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:d7f79544790e44f9b0c8cb9034a18c58d37f8702a15f32539050718679e52f80",
+          "size": 51480,
+          "suite": "bookworm",
+          "version": "1.3.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/m/mpfr4/libmpfr6_4.2.0-1_amd64.deb",
+          "name": "libmpfr6",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:37b7a2b4e78890b6a074777f27b96c84f58e81558ba08410c2b6c0ca4a4ad77b",
+          "size": 700900,
+          "suite": "bookworm",
+          "version": "4.2.0-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/n/nettle/libnettle8_3.8.1-2_amd64.deb",
+          "name": "libnettle8",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:45922e6e289ffd92f0f92d2bb9159e84236ff202d552a461bf10e5335b3f0261",
+          "size": 287764,
+          "suite": "bookworm",
+          "version": "3.8.1-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libn/libnsl/libnsl-dev_1.3.0-2_amd64.deb",
+          "name": "libnsl-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:bb81a188c119cd7fdebae723cbc95887b6c549b2fe4fb7e268a9c8846444da99",
+          "size": 66436,
+          "suite": "bookworm",
+          "version": "1.3.0-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libn/libnsl/libnsl2_1.3.0-2_amd64.deb",
+          "name": "libnsl2",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:c0d83437fdb016cb289436f49f28a36be44b3e8f1f2498c7e3a095f709c0d6f8",
+          "size": 39480,
+          "suite": "bookworm",
+          "version": "1.3.0-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/p11-kit/libp11-kit0_0.24.1-2_amd64.deb",
+          "name": "libp11-kit0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:251330faddbf013f060fcdb41f4b0c037c8a6e89ba7c09b04bfcc4e3f0807b22",
+          "size": 345080,
+          "suite": "bookworm",
+          "version": "0.24.1-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pam/libpam-modules_1.5.2-6+deb12u2_amd64.deb",
+          "name": "libpam-modules",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:19fb4838168e68bc15a5606070f14b1162bb34a3899686913f5d661f1707f483",
+          "size": 291056,
+          "suite": "bookworm",
+          "version": "1.5.2-6+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pam/libpam-modules-bin_1.5.2-6+deb12u2_amd64.deb",
+          "name": "libpam-modules-bin",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:e7b1f6c60a51398920c5da792016161a65bf1c7caaa64140dd2099176ed51280",
+          "size": 75676,
+          "suite": "bookworm",
+          "version": "1.5.2-6+deb12u2"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/p/pam/libpam-runtime_1.5.2-6+deb12u2_all.deb",
+          "name": "libpam-runtime",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:7a4f26d54c1e3ee8c68095f9d9013d13dd89a33ff78ef87330d21f21235fc278",
+          "size": 160936,
+          "suite": "bookworm",
+          "version": "1.5.2-6+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pam/libpam0g_1.5.2-6+deb12u2_amd64.deb",
+          "name": "libpam0g",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:a06f889caf9e97ccf04dedec0905573916bc6ec3366ade2c6ef8900047fd5cc1",
+          "size": 92060,
+          "suite": "bookworm",
+          "version": "1.5.2-6+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/p/pcre2/libpcre2-8-0_10.42-1+deb12u1_amd64.deb",
+          "name": "libpcre2-8-0",
+          "origin": "base",
+          "repository": "debian-security",
+          "sha256": "sha256:81c5502941118a24d47af69a17b8b0b9548d75cc6d72b3eb3fe01047b46fa10e",
+          "size": 261352,
+          "suite": "bookworm-security",
+          "version": "10.42-1+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/perl/libperl5.36_5.36.0-7+deb12u3_amd64.deb",
+          "name": "libperl5.36",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:591903643119c7e1735011369287976eccab1d79b1d2f210760e2138d0a3aa46",
+          "size": 4195924,
+          "suite": "bookworm",
+          "version": "5.36.0-7+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pkgconf/libpkgconf3_1.8.1-1_amd64.deb",
+          "name": "libpkgconf3",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:da01fb901123ae498c36387a32240e09e1f2866810146c5a574273f7eaf31093",
+          "size": 36084,
+          "suite": "bookworm",
+          "version": "1.8.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libquadmath0_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libquadmath0",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3f0c9a4c730da2fdab001cae596625438598fd2996d29d888feeb4c1cdc9011f",
+          "size": 144616,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libs/libseccomp/libseccomp2_2.5.4-1+deb12u1_amd64.deb",
+          "name": "libseccomp2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:108fe67957ca7cf9ba51d801118a1b37d404bea7b6e365025cd00779e9eca38d",
+          "size": 46808,
+          "suite": "bookworm",
+          "version": "2.5.4-1+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libs/libselinux/libselinux1_3.4-1+b6_amd64.deb",
+          "name": "libselinux1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:2b07f5287b9105f40158b56e4d70cc1652dac56a408f3507b4ab3d061eed425f",
+          "size": 73720,
+          "suite": "bookworm",
+          "version": "3.4-1+b6"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/libs/libsemanage/libsemanage-common_3.4-1_all.deb",
+          "name": "libsemanage-common",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:835f806c21ae25e39053bd3057051640341b0cf08e1db9746fd82e370d82fa30",
+          "size": 21632,
+          "suite": "bookworm",
+          "version": "3.4-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libs/libsemanage/libsemanage2_3.4-1+b5_amd64.deb",
+          "name": "libsemanage2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:fd36d0972866adde5a52269a309fcecd76a8e45e557dd0ecd33aa221cabc2a8c",
+          "size": 89884,
+          "suite": "bookworm",
+          "version": "3.4-1+b5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libs/libsepol/libsepol2_3.4-2.1_amd64.deb",
+          "name": "libsepol2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:b998946bb9818a97b387a962826caae33bc7fdcb6d706b2782c0470510be6b48",
+          "size": 275900,
+          "suite": "bookworm",
+          "version": "3.4-2.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/libsmartcols1_2.38.1-5+deb12u3_amd64.deb",
+          "name": "libsmartcols1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:84088c6895fc07538fc51624899f3f71835188e0d38ebc3812097ac13da523b0",
+          "size": 106776,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/e/e2fsprogs/libss2_1.47.0-2+b2_amd64.deb",
+          "name": "libss2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:24115749c09b4e259acff1f799faccd1748ff322bd638b09d820729cb3b24579",
+          "size": 24800,
+          "suite": "bookworm",
+          "version": "1.47.0-2+b2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/o/openssl/libssl-dev_3.0.20-1~deb12u2_amd64.deb",
+          "name": "libssl-dev",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:43ef5c109056b1507a0972631ee8292e727029aeda1516b4672cb041730ae3af",
+          "size": 2443308,
+          "suite": "bookworm-security",
+          "version": "3.0.20-1~deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/o/openssl/libssl3_3.0.20-1~deb12u2_amd64.deb",
+          "name": "libssl3",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:89be24b41bff568ee6e7caf5680a3d808e80315ed92e407056ce0fa7a5bda025",
+          "size": 2036016,
+          "suite": "bookworm-security",
+          "version": "3.0.20-1~deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libstdc++-12-dev_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libstdc++-12-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:d28def6c23630432b57cb38a4c2fd67a79d4e0484027386ca6e8d6005c3d7a73",
+          "size": 2047292,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libstdc++6_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libstdc++6",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:5cd3171216d4ab0fc911cfe9c35509bf2dd8f47761c43b7f6a4296701551a24d",
+          "size": 612604,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/systemd/libsystemd0_252.39-1~deb12u2_amd64.deb",
+          "name": "libsystemd0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:013c07514a9e4933b2d5c098018695a6aa42d085dbc483ce2c094a954c8a1b0a",
+          "size": 332372,
+          "suite": "bookworm",
+          "version": "252.39-1~deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/libt/libtasn1-6/libtasn1-6_4.19.0-2+deb12u1_amd64.deb",
+          "name": "libtasn1-6",
+          "origin": "base",
+          "repository": "debian-security",
+          "sha256": "sha256:2c27c613b69be248d09432839ea3d3382f6ee27fabaa65987aa2d884cd00afda",
+          "size": 48596,
+          "suite": "bookworm-security",
+          "version": "4.19.0-2+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/n/ncurses/libtinfo6_6.4-4_amd64.deb",
+          "name": "libtinfo6",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:072d908f38f51090ca28ca5afa3b46b2957dc61fe35094c0b851426859a49a51",
+          "size": 331352,
+          "suite": "bookworm",
+          "version": "6.4-4"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/libt/libtirpc/libtirpc-common_1.3.3+ds-1_all.deb",
+          "name": "libtirpc-common",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3e3ef129b4bf61513144236e15e1b4ec57fa5ae3dc8a72137abdbefb7a63af85",
+          "size": 14048,
+          "suite": "bookworm",
+          "version": "1.3.3+ds-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libt/libtirpc/libtirpc-dev_1.3.3+ds-1_amd64.deb",
+          "name": "libtirpc-dev",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:03326473eed54ffa27efae19aa5d6aeb402930968f869f318445513093691d55",
+          "size": 191428,
+          "suite": "bookworm",
+          "version": "1.3.3+ds-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libt/libtirpc/libtirpc3_1.3.3+ds-1_amd64.deb",
+          "name": "libtirpc3",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:2a46d5a5e9486da11ffeff5740931740d6deae4f92cd6098df060dc5dff1e1c7",
+          "size": 85192,
+          "suite": "bookworm",
+          "version": "1.3.3+ds-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libtsan2_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libtsan2",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:06906663d644a75a1a836382ecd80b61461129c06f02935ce408b25809f6c958",
+          "size": 2196972,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/g/gcc-12/libubsan1_12.2.0-14+deb12u1_amd64.deb",
+          "name": "libubsan1",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:744f52adf00ffd45d44806b1c7e802a36bd27e479c9bc8457128fde357faa530",
+          "size": 883056,
+          "suite": "bookworm",
+          "version": "12.2.0-14+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/systemd/libudev1_252.39-1~deb12u2_amd64.deb",
+          "name": "libudev1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6f7e08f11c4809d2e5998c775f7b423ab5ec2ce0309494b4a2615037052245e2",
+          "size": 108880,
+          "suite": "bookworm",
+          "version": "252.39-1~deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libu/libunistring/libunistring2_1.0-2_amd64.deb",
+          "name": "libunistring2",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:d466bbfe011d764d793c1d9d777cad9c7cf65b938e11598f27408171ad95a951",
+          "size": 436708,
+          "suite": "bookworm",
+          "version": "1.0-2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/libuuid1_2.38.1-5+deb12u3_amd64.deb",
+          "name": "libuuid1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:5fff398321da62d28a842bcbabd193d72ae21724962c029dc32b1dc6b2deaeaf",
+          "size": 28784,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/x/xxhash/libxxhash0_0.8.1-1_amd64.deb",
+          "name": "libxxhash0",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6c19a5d18c8350744581fbd25d5d29e2b7101053e25aafa4e1ffcc2b505b2f1c",
+          "size": 27584,
+          "suite": "bookworm",
+          "version": "0.8.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/libz/libzstd/libzstd1_1.5.4+dfsg2-5_amd64.deb",
+          "name": "libzstd1",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:6315b5ac38b724a710fb96bf1042019398cb656718b1522279a5185ed39318fa",
+          "size": 290036,
+          "suite": "bookworm",
+          "version": "1.5.4+dfsg2-5"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/l/linux/linux-libc-dev_6.1.187-1_amd64.deb",
+          "name": "linux-libc-dev",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:ebcd139c31438e19f161bcf277a38708402ddd0e3acbe208cbbb27bff1c52bb9",
+          "size": 2356824,
+          "suite": "bookworm-security",
+          "version": "6.1.187-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/shadow/login_4.13+dfsg1-1+deb12u2_amd64.deb",
+          "name": "login",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:f1cc45bf505a8457340dc3c36f3a01a1835aaf564d73d9d394afb8ccfb6595a0",
+          "size": 616084,
+          "suite": "bookworm",
+          "version": "1:4.13+dfsg1-1+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/e/e2fsprogs/logsave_1.47.0-2+b2_amd64.deb",
+          "name": "logsave",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:12e051fb0d931c510d464ba93e87b937aa41a08f286735e0538d9f9e73efa3d0",
+          "size": 19876,
+          "suite": "bookworm",
+          "version": "1.47.0-2+b2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/m/make-dfsg/make_4.3-4.1_amd64.deb",
+          "name": "make",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:a1a83af8cbd854af887b72ad196b1f4af58387815e21ced1000253a116a46e2a",
+          "size": 395632,
+          "suite": "bookworm",
+          "version": "4.3-4.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/m/mawk/mawk_1.3.4.20200120-3.1_amd64.deb",
+          "name": "mawk",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:bcbc83f391854ea9d50ce2a4101aacf330de3b8b71d81a798faadba14a157f78",
+          "size": 119144,
+          "suite": "bookworm",
+          "version": "1.3.4.20200120-3.1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/mount_2.38.1-5+deb12u3_amd64.deb",
+          "name": "mount",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:456ed2c62f884bc1133b6969d4d1eb2e6d8581076b00b4c8d700151155270a7a",
+          "size": 134044,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/n/ncurses/ncurses-base_6.4-4_all.deb",
+          "name": "ncurses-base",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:bfd1d89f833c09a28b062ee916495cf69649ca2bf529532476c7b69d75d24909",
+          "size": 261308,
+          "suite": "bookworm",
+          "version": "6.4-4"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/n/ncurses/ncurses-bin_6.4-4_amd64.deb",
+          "name": "ncurses-bin",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:396d6e453aee6d71b7141f0bfb333a6c08a44c64f77632bdf52894ccd123db46",
+          "size": 421400,
+          "suite": "bookworm",
+          "version": "6.4-4"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/shadow/passwd_4.13+dfsg1-1+deb12u2_amd64.deb",
+          "name": "passwd",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:fb787363372903e03627e53fd483e51dfb6861047a1e02c7d5a5f27d66546d08",
+          "size": 972180,
+          "suite": "bookworm",
+          "version": "1:4.13+dfsg1-1+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/patch/patch_2.7.6-7_amd64.deb",
+          "name": "patch",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:8c6d49b771530dbe26d7bd060582dc7d2b4eeb603a20789debc1ef4bbbc4ef67",
+          "size": 127848,
+          "suite": "bookworm",
+          "version": "2.7.6-7"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/perl/perl_5.36.0-7+deb12u3_amd64.deb",
+          "name": "perl",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:afa50ec7d9b1a407cd0187dae033644ef13578d4f3792435e0c41b962ffec0c4",
+          "size": 238900,
+          "suite": "bookworm",
+          "version": "5.36.0-7+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/perl/perl-base_5.36.0-7+deb12u3_amd64.deb",
+          "name": "perl-base",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:8ec874926e211807cde71e1b0a2311d2534ab3539dffcb2c8553633f542efc1a",
+          "size": 1607712,
+          "suite": "bookworm",
+          "version": "5.36.0-7+deb12u3"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/p/perl/perl-modules-5.36_5.36.0-7+deb12u3_all.deb",
+          "name": "perl-modules-5.36",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:3d237ccb1ea32727b6573d43c67d78337aa928a81148d36cef54b369a07c240a",
+          "size": 2815332,
+          "suite": "bookworm",
+          "version": "5.36.0-7+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pkgconf/pkg-config_1.8.1-1_amd64.deb",
+          "name": "pkg-config",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:312b2bdeff4671f8e0d589c124554890e944dd083061e9ad6f129bc76a970765",
+          "size": 13688,
+          "suite": "bookworm",
+          "version": "1.8.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pkgconf/pkgconf_1.8.1-1_amd64.deb",
+          "name": "pkgconf",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:4e3ce982b5fedc6c6119268435504a64f5ffcc6d93aaecaea902d816eba1215f",
+          "size": 25892,
+          "suite": "bookworm",
+          "version": "1.8.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/p/pkgconf/pkgconf-bin_1.8.1-1_amd64.deb",
+          "name": "pkgconf-bin",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:8fb5a8f83e46ad04b4cf02651ceec56c0611a335cf0d30780d859a95d0400174",
+          "size": 29472,
+          "suite": "bookworm",
+          "version": "1.8.1-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/r/rpcsvc-proto/rpcsvc-proto_1.4.3-1_amd64.deb",
+          "name": "rpcsvc-proto",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:32ac0692694f8a34cc90c895f4fc739680fb2ef0e2d4870a68833682bf1c81a3",
+          "size": 63268,
+          "suite": "bookworm",
+          "version": "1.4.3-1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/sed/sed_4.9-1+deb12u1_amd64.deb",
+          "name": "sed",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:fd557efeee8aae4619c2cb7f68aadccb804322ad4a99ab048aaae5901d253885",
+          "size": 329092,
+          "suite": "bookworm",
+          "version": "4.9-1+deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/s/sysvinit/sysvinit-utils_3.06-4_amd64.deb",
+          "name": "sysvinit-utils",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:11790842108768ec52432ea22e7b4f057232813b7c27ef6dfe1aba776a5cb90e",
+          "size": 30996,
+          "suite": "bookworm",
+          "version": "3.06-4"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/t/tar/tar_1.34+dfsg-1.2+deb12u1_amd64.deb",
+          "name": "tar",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:24fb92e98c2969171f81a8b589263d705f6b1670f95d121cd74c810d4605acc3",
+          "size": 836288,
+          "suite": "bookworm",
+          "version": "1.34+dfsg-1.2+deb12u1"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/t/tzdata/tzdata_2026b-0+deb12u1_all.deb",
+          "name": "tzdata",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:0edb49f4dffe0d5608069f7e4ba4d69544d3b9e86fc314dd8b75e9958d8e5e98",
+          "size": 304148,
+          "suite": "bookworm",
+          "version": "2026b-0+deb12u1"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/u/usrmerge/usr-is-merged_37~deb12u1_all.deb",
+          "name": "usr-is-merged",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:908b80730d99afe6f59ed7f449827b7047ceeeaa7637c368c03e4912e0a6de99",
+          "size": 5616,
+          "suite": "bookworm",
+          "version": "37~deb12u1"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/util-linux_2.38.1-5+deb12u3_amd64.deb",
+          "name": "util-linux",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:8eb241ff24b2e1ee9c0373f4fc9bc728b85bf5966c1496154df7da01c0e42f34",
+          "size": 1177276,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/u/util-linux/util-linux-extra_2.38.1-5+deb12u3_amd64.deb",
+          "name": "util-linux-extra",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:b097a68c68e5c47a18e82678729dd9986782cf1d439f53beafad6f6dd3e6d688",
+          "size": 110728,
+          "suite": "bookworm",
+          "version": "2.38.1-5+deb12u3"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/updates/main/x/xz-utils/xz-utils_5.4.1-1+deb12u2_amd64.deb",
+          "name": "xz-utils",
+          "origin": "install",
+          "repository": "debian-security",
+          "sha256": "sha256:f99fc3fe4b4e5baecf5fd8b53853a82e1e71cb5ec187b36b0ddcf227a8961c8f",
+          "size": 471448,
+          "suite": "bookworm-security",
+          "version": "5.4.1-1+deb12u2"
+        },
+        {
+          "arch": "amd64",
+          "filename": "pool/main/z/zlib/zlib1g_1.2.13.dfsg-1_amd64.deb",
+          "name": "zlib1g",
+          "origin": "base",
+          "repository": "debian",
+          "sha256": "sha256:d7dd1d1411fedf27f5e27650a6eff20ef294077b568f4c8c5e51466dc7c08ce4",
+          "size": 86684,
+          "suite": "bookworm",
+          "version": "1:1.2.13.dfsg-1"
+        }
+      ]
+    },
+    "debArch": "amd64",
+    "distro": "debian",
+    "options": {
+      "installRecommends": false,
+      "locale": "C.UTF-8"
+    },
+    "pinned": true,
+    "release": "bookworm",
+    "repositories": [
+      {
+        "components": [
+          "main"
+        ],
+        "indexes": [
+          {
+            "component": "main",
+            "packages": {
+              "path": "dists/bookworm/main/binary-amd64/Packages.xz",
+              "sha256": "sha256:9e0b5aabb2465b3d2e7a7fe27f9913846277833f7a2826e7767acccff5b588c5",
+              "size": 8790396
+            },
+            "release": {
+              "path": "dists/bookworm/Release",
+              "sha256": "sha256:abcf5882746e0f68171f41adbb4ac01b74b49d62d203379befb9265804311a4f"
+            },
+            "suite": "bookworm"
+          },
+          {
+            "component": "main",
+            "packages": {
+              "path": "dists/bookworm-updates/main/binary-amd64/Packages.xz",
+              "sha256": "sha256:87e7e94047fb7fb6f4ceecc7022d4bee55b66031cc2a7666d3196f3e0aabb846",
+              "size": 6924
+            },
+            "release": {
+              "path": "dists/bookworm-updates/Release",
+              "sha256": "sha256:7029659d9c7c3a267a66140c5bb39b4fe9139ef29c24f2fc43ec63ddc1ded989"
+            },
+            "suite": "bookworm-updates"
+          }
+        ],
+        "name": "debian",
+        "suites": [
+          "bookworm",
+          "bookworm-updates"
+        ],
+        "url": "https://snapshot.debian.org/archive/debian/20260918T000000Z/"
+      },
+      {
+        "components": [
+          "main"
+        ],
+        "indexes": [
+          {
+            "component": "main",
+            "packages": {
+              "path": "dists/bookworm-security/main/binary-amd64/Packages.xz",
+              "sha256": "sha256:e99504fa4249fdf10e73fc6352c3a42d47b1a70b29a94190190242e249a6a911",
+              "size": 339172
+            },
+            "release": {
+              "path": "dists/bookworm-security/Release",
+              "sha256": "sha256:af7e47fb110236c26b5ae8f3a43961e883308f2b5713906fec36fada1f8a5aef"
+            },
+            "suite": "bookworm-security"
+          }
+        ],
+        "name": "debian-security",
+        "suites": [
+          "bookworm-security"
+        ],
+        "url": "https://snapshot.debian.org/archive/debian-security/20260918T000000Z/"
+      }
+    ],
+    "requested": {
+      "default": [
+        "build-essential",
+        "libssl-dev",
+        "pkg-config"
+      ]
+    },
+    "rootfs": {
+      "commit": "8f962b15d7884a90e17876a9303cbac909d119aa",
+      "epoch": "2026-09-18T00:00:00Z",
+      "format": "tar.gz",
+      "ociManifest": "sha256:704583dbf243593da87cf949fc0543ffeca24a28d36c2760dc9545410cb8ed02",
+      "packageList": {
+        "path": "https://raw.githubusercontent.com/debuerreotype/docker-debian-artifacts/8f962b15d7884a90e17876a9303cbac909d119aa/bookworm/rootfs.manifest",
+        "sha256": "sha256:1f59e814caffc1cc2285166ae270decf370d8a1a00f8af371a3c0503311bffb8"
+      },
+      "repo": "debuerreotype/docker-debian-artifacts",
+      "sha256": "sha256:eaac70c68abdf6ffacf6de10d31ed9de4813505d1a794eb7393cb27fceb624a6",
+      "size": 48503440,
+      "source": "builtin:debian.toml",
+      "sourceSha256": "sha256:1a42279ae2200bdc60a798ef8fc743cae0c5708401b51379cd9dfc5b44dbf126",
+      "url": "https://raw.githubusercontent.com/debuerreotype/docker-debian-artifacts/8f962b15d7884a90e17876a9303cbac909d119aa/bookworm/oci/blobs/rootfs.tar.gz"
+    },
+    "snapshot": "2026-09-18T00:00:00Z"
+  },
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi 0.1.0",
+  "manifestHash": "sha256:355ffbec3aff73348aba53c4be33cf28f5177e4e37847069da1ce986e01854e2",
+  "packages": {
+    "nodejs": {
+      "artifacts": [
+        {
+          "format": "tar.xz",
+          "sha256": "sha256:d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307",
+          "size": null,
+          "stripComponents": 1,
+          "subdir": "",
+          "url": "https://nodejs.org/dist/v22.23.2/node-v22.23.2-linux-x64.tar.xz"
+        }
+      ],
+      "provider": "binary",
+      "recipe": {
+        "input": "builtin",
+        "path": "nodejs.toml",
+        "sha256": "sha256:f4815ff93263b3980f6d5742c9db8b68a5d1fc846ea9334d8fd5cc39e416c0b2"
+      },
+      "request": {
+        "constraint": "22",
+        "name": "nodejs",
+        "provider": "binary"
+      },
+      "spec": {
+        "arch": "x86_64",
+        "bin": [
+          "bin/node",
+          "bin/npm",
+          "bin/npx"
+        ],
+        "env": {},
+        "path": [
+          "bin"
+        ]
+      },
+      "tag": null,
+      "version": "22.23.2"
+    },
+    "python": {
+      "artifacts": [
+        {
+          "format": "tar.gz",
+          "sha256": "sha256:936c246dfdbbfa7cb22dd01814a21f582a892689fae96b06071a5e433baffa22",
+          "size": 111368545,
+          "stripComponents": 1,
+          "subdir": "",
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.12.14%2B20260901-x86_64-unknown-linux-gnu-install_only.tar.gz"
+        }
+      ],
+      "provider": "binary",
+      "recipe": {
+        "input": "builtin",
+        "path": "python.toml",
+        "sha256": "sha256:0603a21f73abb3b6564edd7242d4884ff6fb615976d3daf006481a5666d5b233"
+      },
+      "request": {
+        "constraint": "3.12",
+        "name": "python",
+        "provider": "binary"
+      },
+      "spec": {
+        "arch": "x86_64",
+        "bin": [
+          "bin/python3",
+          "bin/pip3"
+        ],
+        "env": {},
+        "path": [
+          "bin"
+        ]
+      },
+      "tag": "20260901",
+      "version": "3.12.14"
+    }
+  },
+  "profiles": {
+    "default": {
+      "packages": [
+        "nodejs",
+        "python"
+      ]
+    }
+  },
+  "version": 1
+}

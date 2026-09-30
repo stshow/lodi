@@ -1,0 +1,18 @@
+[home]
+version = "1"
+
+[programs.git]
+user.name = "Example User"
+user.email = "someone@example"
+init.defaultBranch = "main"
+core.editor = "nvim"
+core.pager = "less -FRX"
+pull.rebase = true
+push.autoSetupRemote = true
+merge.conflictStyle = "zdiff3"
+alias = { st = "status --short", lg = "log --graph --oneline", "co" = "checkout" }
+ignores = [".lodi/", "*.swp"]
+extra = """
+[diff "lockb"]
+	textconv = cat
+"""

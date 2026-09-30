@@ -1,0 +1,24 @@
+[home]
+version = "1"
+
+[programs.alacritty]
+scrolling = { history = 20000 }
+extra = '''
+[colors.primary]
+foreground = "#c5c8c6"
+background = "#1d1f21"
+
+[[keyboard.bindings]]
+action = "CreateNewWindow"
+mods = "Control|Shift"
+key = "N"
+'''
+
+[programs.alacritty.window]
+decorations = "None"
+padding = { y = 4, x = 6 }
+opacity = 0.95
+
+[programs.alacritty.font]
+normal.family = "JetBrains Mono"
+size = 11.5

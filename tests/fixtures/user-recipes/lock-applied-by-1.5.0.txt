@@ -1,0 +1,10 @@
+exit: Some(0)
+stdout:
+nothing to do
+add this line to your shell rc file (lodi never edits it):
+  . "$HOME/.local/share/lodi/home-scope/profile.sh"
+stderr:
+requests:
+https://dl.k8s.io/release/v9.8.7/bin/linux/amd64/kubectl-convert
+lock kept: true
+kubectl-convert: kubectl-convert 9.8.7 from the recipe of my own

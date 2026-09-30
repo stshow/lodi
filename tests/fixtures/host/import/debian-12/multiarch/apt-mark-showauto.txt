@@ -1,0 +1,14 @@
+libc6
+libcurl4
+libgcc-s1
+libidn2-0
+libnghttp2-14
+libp11-kit0
+libssl3
+libstdc++6
+libsystemd0
+libtasn1-6
+libunistring2
+libzstd1
+linux-image-6.1.0-26-amd64
+zlib1g

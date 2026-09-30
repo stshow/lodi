@@ -1,0 +1,98 @@
+{
+  "base": {
+    "arch": "x86_64",
+    "closure": {
+      "hash": "sha256:1bb79c193fae1d6fdd89862ad32a9164209acd31e6529de30f167ccf50adfefa",
+      "packages": [
+        {
+          "arch": "amd64",
+          "filename": null,
+          "name": "base-files",
+          "origin": "base",
+          "repository": null,
+          "sha256": null,
+          "size": null,
+          "suite": null,
+          "version": "12.4+deb12u12"
+        },
+        {
+          "arch": "all",
+          "filename": "pool/main/c/cowsay/cowsay_3.03+dfsg2-8_all.deb",
+          "name": "cowsay",
+          "origin": "install",
+          "repository": "debian",
+          "sha256": "sha256:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+          "size": 20680,
+          "suite": "bookworm",
+          "version": "3.03+dfsg2-8"
+        }
+      ]
+    },
+    "debArch": "amd64",
+    "distro": "debian",
+    "options": {
+      "installRecommends": false,
+      "locale": "C.UTF-8"
+    },
+    "pinned": true,
+    "release": "bookworm",
+    "repositories": [
+      {
+        "components": [
+          "main"
+        ],
+        "indexes": [
+          {
+            "component": "main",
+            "packages": {
+              "path": "dists/bookworm/main/binary-amd64/Packages.xz",
+              "sha256": "__PACKAGES_SHA256__",
+              "size": __PACKAGES_SIZE__
+            },
+            "release": {
+              "path": "dists/bookworm/Release",
+              "sha256": "sha256:0606060606060606060606060606060606060606060606060606060606060606"
+            },
+            "suite": "bookworm"
+          }
+        ],
+        "name": "debian",
+        "suites": [
+          "bookworm"
+        ],
+        "url": "https://snapshot.debian.org/archive/debian/20260918T000000Z/"
+      }
+    ],
+    "requested": {
+      "default": [
+        "cowsay"
+      ]
+    },
+    "rootfs": {
+      "commit": "dddddddddddddddddddddddddddddddddddddddd",
+      "epoch": "2026-09-18T00:00:00Z",
+      "format": "tar.xz",
+      "ociManifest": "sha256:e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4",
+      "packageList": {
+        "path": "rootfs.manifest",
+        "sha256": "sha256:f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5"
+      },
+      "repo": "debuerreotype/docker-debian-artifacts",
+      "sha256": "sha256:b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+      "source": "https://github.com/debuerreotype/docker-debian-artifacts",
+      "sourceSha256": "sha256:c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+      "url": "https://github.com/debuerreotype/docker-debian-artifacts/raw/deadbeef/rootfs.tar.xz"
+    },
+    "snapshot": "2026-09-18T00:00:00Z"
+  },
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi test fixture (M-0.4 T-6)",
+  "manifestHash": "sha256:79a3370aaa3292ba7c00bbe63b904297b6b65f808953334e866b9102131590e9",
+  "packages": {},
+  "profiles": {
+    "default": {
+      "packages": []
+    }
+  },
+  "version": 1
+}

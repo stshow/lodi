@@ -1,0 +1,5 @@
+[project]
+name = "before-python"
+
+[tools]
+python = "3.12"

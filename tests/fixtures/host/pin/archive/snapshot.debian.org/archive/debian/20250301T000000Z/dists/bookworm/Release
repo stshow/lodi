@@ -1,0 +1,15 @@
+Origin: Debian
+Label: Debian
+Suite: stable
+Version: 12.9
+Codename: bookworm
+Changelogs: https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
+Date: Sat, 11 Jan 2025 10:25:55 UTC
+Acquire-By-Hash: yes
+No-Support-for-Architecture-all: Packages
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Components: main contrib non-free-firmware non-free
+Description: Debian 12.9 Released 11 January 2025
+SHA256:
+ ed5684d2c7775cb2833e9673a881ab2661741af247ccb3d835b45ee883d1c05a 520 main/binary-amd64/Packages.xz
+ 2082ca56a0362c93d3db86cb08255da167dd05b5d278066f832d4f3221ed30db 829 main/binary-amd64/Packages

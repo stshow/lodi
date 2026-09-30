@@ -1,0 +1,18 @@
+[home]
+version = "1"
+
+[tools]
+jq = "latest"
+
+[programs.bash]
+env = { EDITOR = "nvim", PAGER = "less", GOPATH = "~/go", QUOTED = "it's $literal" }
+path = ["~/.local/bin", "~/go/bin", "/opt/example/bin"]
+aliases = { ll = "ls -l", gs = "git status", la = "ls -la" }
+histsize = 10000
+histfilesize = 20000
+histcontrol = ["ignorespace", "erasedups"]
+shopt = ["histappend", "globstar"]
+snippets = ["snippets/prompt.sh", "snippets/nonl.sh"]
+extra = """
+bind '"\\e[A": history-search-backward'
+"""

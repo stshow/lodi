@@ -1,0 +1,13 @@
+
+[kernel]
+parameters = ["lodi_hp1=on"]
+modules = ["dummy"]
+blacklist = ["pcspkr"]
+
+[sysctl]
+"vm.swappiness" = "17"
+
+[boot]
+loader = "grub"
+default = "0"
+timeout = 3

@@ -1,0 +1,21 @@
+Name            : pacman
+Version         : 7.0.0-3
+Backup Files    : /etc/pacman.conf [unmodified]
+                  /etc/makepkg.conf [modified]
+Extended Data   : pkgtype=pkg
+
+Name            : openssh
+Version         : 9.9p1-1
+Backup Files    : /etc/ssh/sshd_config [modified]
+                  /etc/ssh/ssh_config [unmodified]
+Extended Data   : pkgtype=pkg
+
+Name            : filesystem
+Version         : 2024.11.21-1
+Backup Files    : /etc/shadow [modified]
+                  /etc/fstab [modified]
+Extended Data   : pkgtype=pkg
+
+Name            : glibc
+Version         : 2.40-5
+Backup Files    : None

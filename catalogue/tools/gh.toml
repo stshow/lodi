@@ -1,0 +1,19 @@
+# gh for [tools] gh. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+[recipe]
+name        = "gh"
+description = "GitHub's official command-line tool"
+homepage    = "https://cli.github.com"
+
+[versions]
+strategy = "github_releases"
+repo     = "cli/cli"
+asset    = "gh_${version}_linux_${arch_alt}.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 1
+
+[spec]
+bin  = ["bin/gh"]
+path = ["bin"]

@@ -1,0 +1,40 @@
+{
+  "directories": [
+    ".config/git"
+  ],
+  "files": {
+    ".config/git/ignore": {
+      "mode": "0644",
+      "onRemove": "restore",
+      "origin": {
+        "kind": "content",
+        "sha256": "f3f8a3c15c1f768e2ee4ada6a9aac686e5fcbb926b616de481e11908f04cb167"
+      },
+      "path": ".config/git/ignore",
+      "sha256": "f3f8a3c15c1f768e2ee4ada6a9aac686e5fcbb926b616de481e11908f04cb167"
+    },
+    ".gitconfig": {
+      "mode": "0644",
+      "onRemove": "restore",
+      "origin": {
+        "kind": "content",
+        "sha256": "50b5a3d8dd67f5c04d325760b0101ff5c2a85e0e630160294d7f7fbb39eecd54"
+      },
+      "path": ".gitconfig",
+      "sha256": "50b5a3d8dd67f5c04d325760b0101ff5c2a85e0e630160294d7f7fbb39eecd54"
+    },
+    ".inputrc": {
+      "mode": "0600",
+      "onRemove": "restore",
+      "origin": {
+        "kind": "source",
+        "sha256": "6148f023f95309538bdd2a4239af85f825e068d0ccde2bcaff8c8158e6bc6a3f",
+        "source": "dotfiles/inputrc"
+      },
+      "path": ".inputrc",
+      "sha256": "6148f023f95309538bdd2a4239af85f825e068d0ccde2bcaff8c8158e6bc6a3f"
+    }
+  },
+  "lodiVersion": "1.0.0",
+  "version": 1
+}

@@ -1,0 +1,7 @@
+# Trimmed from a measured fetch by scripts/mpin-local.sh --fixtures on 2026-09-24.
+# instant 2026-09-01T00:00:00Z; kept packages: bc, tree, tzdata; kept fields: Package, Version, Architecture, Essential, Priority, Section, Pre-Depends, Depends, Recommends, Provides, Conflicts, Breaks, Filename, Size, SHA256.
+# Each line: the public URL, then the sha256 of its untrimmed bytes.
+https://snapshot.debian.org/archive/debian/20260901T000000Z/dists/bookworm/Release abcf5882746e0f68171f41adbb4ac01b74b49d62d203379befb9265804311a4f
+https://snapshot.debian.org/archive/debian/20260901T000000Z/dists/bookworm/main/binary-amd64/Packages.xz 9e0b5aabb2465b3d2e7a7fe27f9913846277833f7a2826e7767acccff5b588c5
+https://snapshot.debian.org/archive/debian/20260901T000000Z/dists/bookworm-updates/Release 3191dc59d1c3364e9e88966133aebc277c083698e71b0980e4180c08c5d2f839
+https://snapshot.debian.org/archive/debian/20260901T000000Z/dists/bookworm-updates/main/binary-amd64/Packages.xz 87e7e94047fb7fb6f4ceecc7022d4bee55b66031cc2a7666d3196f3e0aabb846

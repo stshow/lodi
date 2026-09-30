@@ -1,0 +1,16 @@
+Package files:
+ 100 /var/lib/dpkg/status
+     release a=now
+ 500 http://deb.debian.org/debian oldstable/main amd64 Packages
+     release v=12.12,o=Debian,a=oldstable,n=bookworm,l=Debian,c=main,b=amd64
+     origin deb.debian.org
+ 500 http://deb.debian.org/debian oldstable-updates/main amd64 Packages
+     release v=12-updates,o=Debian,a=oldstable-updates,n=bookworm-updates,l=Debian,c=main,b=amd64
+     origin deb.debian.org
+ 500 http://deb.debian.org/debian oldstable-backports/main amd64 Packages
+     release v=12-backports,o=Debian Backports,a=oldstable-backports,n=bookworm-backports,l=Debian Backports,c=main,b=amd64
+     origin deb.debian.org
+ 500 http://deb.debian.org/debian-security oldstable-security/main amd64 Packages
+     release v=12,o=Debian,a=oldstable-security,n=bookworm-security,l=Debian-Security,c=main,b=amd64
+     origin deb.debian.org
+Pinned packages:

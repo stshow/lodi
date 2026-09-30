@@ -1,0 +1,58 @@
+== plan: exit Some(0)
+-- stdout
++ package linux-firmware
+1 action(s)
+-- stderr
+== apply: exit Some(0)
+-- stdout
+journal <journal>
++ package linux-firmware
+1 action(s) applied
+-- stderr
+== host.lock
+{
+  "version": 2,
+  "format": "lodi-host-lock/2",
+  "generatedBy": "lodi 1.2.0",
+  "appliedAt": "<time>",
+  "distro": "arch",
+  "distroVersion": "",
+  "packages": {
+    "base": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "linux": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "linux-firmware": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    }
+  },
+  "files": {},
+  "baseline": {
+    "explicit": [
+      "base",
+      "linux",
+      "linux-firmware"
+    ],
+    "holds": {},
+    "files": {}
+  },
+  "source": "/etc/lodi"
+}
+
+== journal
+{"record":"header","version":1,"journalId":"<journal>","startedAt":"<time>","lodiVersion":"1.2.0","root":"<root>","manifestDigest":"sha256:9874779f0da54b8b0c29801c3be80b270b8a13386424886bfdc6bef65b349259","distro":"arch","programs":[["pacman","<fake>/bin/pacman"]],"euid":<id>,"actions":[{"id":"p1","kind":"packages.transaction","summary":"+ package linux-firmware","pre":[],"post":[],"packagesPre":{"linux-firmware":{"installed":false}},"packagesPost":{"linux-firmware":{"installed":true,"version":"1.0-1"}},"commands":[["pacman","-Syu","--root","<root>","--dbpath","<root>/var/lib/pacman","--noconfirm","--","linux-firmware"]],"programs":["<fake>/bin/pacman"]}]}
+{"record":"begin","action":"p1","at":"<time>"}
+{"record":"end","action":"p1","at":"<time>"}
+{"record":"finished","at":"<time>"}
+== plan after: exit Some(0)
+-- stdout
+nothing to do
+-- stderr

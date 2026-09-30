@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" role="img" aria-labelledby="t d">
+  <title id="t">How Lodi works</title>
+  <desc id="d">Three TOML manifests on the left (lodi.toml with lodi.lock for a project, home.toml for the home directory, host.toml for the machine) feed the lodi binary in the middle, which locks and runs a project and plans and applies the home and host scopes. On the right are the three scopes it manages: project tools from the recipe catalogue with an optional rootless Podman container, your dotfiles and user-wide tools, and root-owned files and distribution packages installed through apt-get, pacman or dnf. A dashed arrow runs back from the machine to the manifests: lodi home import and lodi host import write a starting manifest from what is already there. Lodi runs on Ubuntu, Debian, Arch and Fedora.</desc>
+  <style>
+    .bg{fill:#ffffff;stroke:#d0d7de}
+    .card{fill:#f6f8fa;stroke:#d0d7de}
+    .core{fill:#ffffff;stroke:#0969da;stroke-width:2}
+    .pill{fill:#ddf4ff;stroke:#0969da}
+    .scope{fill:#f6f8fa;stroke:#57606a}
+    .t{fill:#1f2328}
+    .m{fill:#59636e}
+    .a{fill:#0969da}
+    .i{fill:#8250df}
+    .ln{stroke:#57606a;stroke-width:2;fill:none}
+    .ah{fill:#57606a}
+    .imp{stroke:#8250df;stroke-width:2;fill:none;stroke-dasharray:6 5}
+    .iah{fill:#8250df}
+    text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;font-size:13px}
+    .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+    .h{font-size:14px;font-weight:600}
+    .s{font-size:12px}
+    .big{font-size:22px;font-weight:700}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#0d1117;stroke:#3d444d}
+      .card{fill:#151b23;stroke:#3d444d}
+      .core{fill:#0d1117;stroke:#4493f8}
+      .pill{fill:#0c2d6b;stroke:#4493f8}
+      .scope{fill:#151b23;stroke:#9198a1}
+      .t{fill:#f0f6fc}
+      .m{fill:#9198a1}
+      .a{fill:#4493f8}
+      .i{fill:#ab7df8}
+      .ln{stroke:#9198a1}
+      .ah{fill:#9198a1}
+      .imp{stroke:#ab7df8}
+      .iah{fill:#ab7df8}
+    }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="iarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="iah" d="M0 0L10 5L0 10z"/></marker>
+  </defs>
+
+  <rect class="bg" x="0.5" y="0.5" width="899" height="419" rx="12"/>
+
+  <!-- column headings -->
+  <text class="t h" x="135" y="34" text-anchor="middle">You declare (TOML)</text>
+  <text class="a big" x="450" y="36" text-anchor="middle">lodi</text>
+  <text class="m s" x="450" y="54" text-anchor="middle">one static binary, no daemon</text>
+  <text class="t h" x="762" y="34" text-anchor="middle">It manages</text>
+
+  <!-- manifests -->
+  <rect class="card" x="20" y="66" width="230" height="78" rx="8"/>
+  <text class="t mono" x="135" y="98" text-anchor="middle">lodi.toml + lodi.lock</text>
+  <text class="m s" x="135" y="120" text-anchor="middle">in the project directory</text>
+
+  <rect class="card" x="20" y="156" width="230" height="78" rx="8"/>
+  <text class="t mono" x="135" y="188" text-anchor="middle">home.toml</text>
+  <text class="m s" x="135" y="210" text-anchor="middle">in ~/.config/lodi/</text>
+
+  <rect class="card" x="20" y="246" width="230" height="78" rx="8"/>
+  <text class="t mono" x="135" y="278" text-anchor="middle">host.toml</text>
+  <text class="m s" x="135" y="300" text-anchor="middle">in /etc/lodi/</text>
+
+  <!-- lodi -->
+  <rect class="core" x="330" y="66" width="240" height="258" rx="10"/>
+  <rect class="pill" x="350" y="88" width="200" height="34" rx="17"/>
+  <text class="t mono" x="450" y="110" text-anchor="middle">lock → develop / run</text>
+  <rect class="pill" x="350" y="178" width="200" height="34" rx="17"/>
+  <text class="t mono" x="450" y="200" text-anchor="middle">plan → apply</text>
+  <rect class="pill" x="350" y="268" width="200" height="34" rx="17"/>
+  <text class="t mono" x="450" y="290" text-anchor="middle">plan → sudo apply</text>
+  <text class="m s" x="450" y="148" text-anchor="middle">exact versions and hashes</text>
+  <text class="m s" x="450" y="238" text-anchor="middle">plan lists each change,</text>
+  <text class="m s" x="450" y="254" text-anchor="middle">writes nothing</text>
+
+  <!-- arrows in -->
+  <path class="ln" d="M252 105H326" marker-end="url(#arr)"/>
+  <path class="ln" d="M252 195H326" marker-end="url(#arr)"/>
+  <path class="ln" d="M252 285H326" marker-end="url(#arr)"/>
+  <!-- arrows out -->
+  <path class="ln" d="M572 105H636" marker-end="url(#arr)"/>
+  <path class="ln" d="M572 195H636" marker-end="url(#arr)"/>
+  <path class="ln" d="M572 285H636" marker-end="url(#arr)"/>
+
+  <!-- scopes -->
+  <rect class="scope" x="640" y="66" width="245" height="78" rx="8"/>
+  <text class="t h" x="656" y="88">Project</text>
+  <text class="m s" x="656" y="108">tools from the recipe catalogue</text>
+  <text class="m s" x="656" y="126">optional rootless Podman container</text>
+
+  <rect class="scope" x="640" y="156" width="245" height="78" rx="8"/>
+  <text class="t h" x="656" y="178">Home</text>
+  <text class="m s" x="656" y="198">your dotfiles and config files</text>
+  <text class="m s" x="656" y="216">user-wide tools in one bin directory</text>
+
+  <rect class="scope" x="640" y="246" width="245" height="78" rx="8"/>
+  <text class="t h" x="656" y="268">Host</text>
+  <text class="m s" x="656" y="288">root-owned files, distro packages</text>
+  <text class="m s" x="656" y="306">via apt-get, pacman or dnf</text>
+
+  <!-- import: back from the machine to a manifest -->
+  <path class="imp" d="M762 326V352H135V330" marker-end="url(#iarr)"/>
+  <text class="i s" x="450" y="372" text-anchor="middle">import: lodi home import and lodi host import write a starting manifest from what is there</text>
+
+  <text class="m s" x="450" y="404" text-anchor="middle">Ubuntu · Debian · Arch · Fedora</text>
+</svg>

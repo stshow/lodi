@@ -1,0 +1,6 @@
+# An enabled repository nothing installed came from.
+Types: deb
+URIs: https://packages.example.invalid/idle
+Suites: bookworm
+Components: main
+Signed-By: /etc/apt/keyrings/idle.gpg

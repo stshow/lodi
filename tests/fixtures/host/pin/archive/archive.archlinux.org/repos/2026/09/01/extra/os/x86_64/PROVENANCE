@@ -1,0 +1,11 @@
+{
+  "instant": "2026-09-01T00:00:00Z",
+  "kept": [
+    "bc",
+    "tree"
+  ],
+  "public_url": "https://archive.archlinux.org/repos/2026/09/01/extra/os/x86_64/extra.db",
+  "trimmed_sha256": "4ff03411d5247faa33a13b9937487e20406dbdd5602d5f384f790ae6b3cc3154",
+  "untrimmed_bytes": 8874378,
+  "untrimmed_sha256": "29b49f26b1bc44211097e02191bda0d9b57f3bfa185d9f53c73a1f29faa3599b"
+}

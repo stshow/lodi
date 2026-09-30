@@ -1,0 +1,15 @@
+Origin: Debian
+Label: Debian
+Suite: stable-updates
+Version: 12-updates
+Codename: bookworm-updates
+Date: Fri, 28 Feb 2025 20:24:23 UTC
+Valid-Until: Fri, 07 Mar 2025 20:24:23 UTC
+Acquire-By-Hash: yes
+No-Support-for-Architecture-all: Packages
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Components: main contrib non-free-firmware non-free
+Description: Debian 12 - Updates
+SHA256:
+ db116e5a350a7d70dc71b96d9ad1a7df318c2de2d0225866315998b64e3fa5eb 304 main/binary-amd64/Packages.xz
+ b03448a3760a0d7e2ce7dd77a79aa383c2f38bfdd562fa6bd451a5a1e713f984 312 main/binary-amd64/Packages

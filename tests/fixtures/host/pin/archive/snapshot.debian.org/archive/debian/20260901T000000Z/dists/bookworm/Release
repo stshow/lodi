@@ -1,0 +1,15 @@
+Origin: Debian
+Label: Debian
+Suite: oldstable
+Version: 12.15
+Codename: bookworm
+Changelogs: https://metadata.ftp-master.debian.org/changelogs/@CHANGEPATH@_changelog
+Date: Sat, 11 Jul 2026 10:16:37 UTC
+Acquire-By-Hash: yes
+No-Support-for-Architecture-all: Packages
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Components: main contrib non-free-firmware non-free
+Description: Debian 12.15 Released 11 July 2026
+SHA256:
+ 3c0c86e42d7f49c8a940e5cda2ee05798623d04ac42ed593c8373c783dc12db2 520 main/binary-amd64/Packages.xz
+ e1528befdd4cbbdd5cd85ff54603e45267231d20a0bba73c514008804348b564 829 main/binary-amd64/Packages

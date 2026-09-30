@@ -1,0 +1,139 @@
+Name            : acl
+Version         : 2.3.2-1
+Depends On      : attr
+
+Name            : attr
+Version         : 2.5.2-1
+Depends On      : glibc
+
+Name            : base
+Version         : 3-2
+Depends On      : bash coreutils filesystem glibc pacman systemd util-linux
+
+Name            : bash
+Version         : 5.2.037-1
+Depends On      : readline libreadline.so=8-64 glibc
+
+Name            : bzip2
+Version         : 1.0.8-6
+Depends On      : glibc
+
+Name            : ca-certificates
+Version         : 20240618-1
+Depends On      : None
+
+Name            : coreutils
+Version         : 9.6-1
+Depends On      : glibc acl attr gmp libcap openssl
+
+Name            : curl
+Version         : 8.12.1-1
+Depends On      : ca-certificates
+
+Name            : db5.3
+Version         : 5.3.28-5
+Depends On      : glibc
+
+Name            : expat
+Version         : 2.6.4-1
+Depends On      : glibc
+
+Name            : filesystem
+Version         : 2025.01.08-1
+Depends On      : iana-etc
+
+Name            : gcc-libs
+Version         : 14.2.1-3
+Depends On      : glibc
+
+Name            : gdbm
+Version         : 1.24-1
+Depends On      : glibc
+
+Name            : glibc
+Version         : 2.41-1
+Depends On      : linux-api-headers>=4.10 tzdata filesystem
+
+Name            : gmp
+Version         : 6.3.0-2
+Depends On      : gcc-libs sh
+
+Name            : iana-etc
+Version         : 20250123-1
+Depends On      : None
+
+Name            : initramfs
+Version         : 0.0.1-1
+Depends On      : None
+
+Name            : kmod
+Version         : 34-1
+Depends On      : glibc zlib
+
+Name            : libarchive
+Version         : 3.7.7-2
+Depends On      : acl bzip2 expat
+
+Name            : libcap
+Version         : 2.73-1
+Depends On      : glibc attr
+
+Name            : linux
+Version         : 6.13.4.arch1-1
+Depends On      : coreutils kmod initramfs
+
+Name            : linux-api-headers
+Version         : 6.13-1
+Depends On      : None
+
+Name            : linux-firmware
+Version         : 20250211.27ba3ab6-1
+Depends On      : linux-firmware-whence
+
+Name            : linux-firmware-whence
+Version         : 20250211.27ba3ab6-1
+Depends On      : None
+
+Name            : ncurses
+Version         : 6.5-3
+Depends On      : glibc
+
+Name            : openssl
+Version         : 3.4.1-1
+Depends On      : perl
+
+Name            : pacman
+Version         : 7.0.0.r6.gc685ae6-1
+Depends On      : bash curl libarchive
+
+Name            : perl
+Version         : 5.40.1-1
+Depends On      : glibc gdbm db5.3
+
+Name            : readline
+Version         : 8.2.013-1
+Depends On      : glibc ncurses
+
+Name            : sh
+Version         : 5.2.037-1
+Depends On      : bash
+
+Name            : systemd
+Version         : 257.3-1
+Depends On      : libcap kmod
+
+Name            : tzdata
+Version         : 2025a-1
+Depends On      : None
+
+Name            : util-linux
+Version         : 2.40.4-1
+Depends On      : util-linux-libs
+
+Name            : util-linux-libs
+Version         : 2.40.4-1
+Depends On      : glibc
+
+Name            : zlib
+Version         : 1.3.1-2
+Depends On      : glibc

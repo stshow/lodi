@@ -1,0 +1,620 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/completions-0.23.5.tar.gz",
+    "digest": "sha256:8ca5a250d28c3c7ebd0077aca203701a17d1ea7c92621d9e274b93965e3c9291",
+    "name": "completions-0.23.5.tar.gz",
+    "size": 7566
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:bbef561f5cfc8e778649b65e69c9c6e4c836c0fbe83ee3d0a5128091d797ed8a",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1491722
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:c830638c844a5b89d39ba662b5549903a71fa539018e813880f5b8afa77bac2e",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1491797
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:40b87ae8628aa2ff0f0d2dc24ab52f689631366385c3da630bae745671fd71ec",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1137855
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:0f00cb699085984bb6af43f9e14c8e003255aeb1a996d071a347c02c80a90b6f",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 1137910
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:1c01b578b5bd3f23b7de5a4b41936cde20fb16ff16a03e63266317ac1eb821e0",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 782129
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:24533a2d324dcf8ec890ad15f2afccc45e60ef475cd42e48862ae2af6c84ec1d",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 782146
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:f98be1760955d5246d50507a6e3f53b65a1bd660aea9bb32fdfbd35a84e30cd2",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1218179
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:115b3a3d3f0c7c8921a69e221d2256e5cf96393a18dde328ab5c1d97d2458326",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1218191
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:098a57da720fa674894468605df91cf8429ed73a66e7caa7c320ba02b20d475e",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 872318
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:34fc5fbacad70b76292fc08a2b1ad0d4d642336f954e886287d3e3669e24f7de",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 872306
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:35c70c5c43c29108075e58b893234c67ef585f0b53a7eaf8e9e7d4eec9f339b4",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1243074
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:f3bfd758743699e6c8ac38c6c65cf4aadc8f02d046a0af5a4c4b28e59e305a5a",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1242682
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:e06eebab74b73d6b7d51a796a353824b001bea82df077706382e100815d28904",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1412332
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:9482656bceefda4c029fba34515752ec91de622f3c4fa2d0cf6a3a317daa81c6",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1412319
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.5/man-0.23.5.tar.gz",
+    "digest": "sha256:cbdae2ad79ae0ef1fd6a06f4644c90cef79a56353bc3bb7cf4663bb2831420f9",
+    "name": "man-0.23.5.tar.gz",
+    "size": 10548
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.5"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/completions-0.23.4.tar.gz",
+    "digest": "sha256:960c6564e5662880b49919525a6e357e9325807733467e65a95aefcee0910b07",
+    "name": "completions-0.23.4.tar.gz",
+    "size": 7257
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:4d4f87f6bc8e6ee176789c28bee698234ce0275da013709eb16b0f14819c1688",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1300489
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:05677fd7c2d1b69ce71df53db74c29f6331ea0b2be5aa3a0fce6976200ee06fc",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1300597
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:366e8430225f9955c3dc659b452150c169894833ccfef455e01765e265a3edda",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 964411
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:33887c9d9df887671e9fabfa93de671aae19b67a77494d64aab1cd2e26425d8f",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 964456
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:dcb0fb3a073e03a8a52c0f43bfcd9ce2d7a8df5556a08dfda33265f679f346c2",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 614658
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:c2ace6c5a14e4e3c57ae57bc2dffb6ebaa87ea5edb6c08ce62b0917c6ffd4102",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 614652
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:645b41b853c774d94a72ae2846cd71e94583d94603ff60b9936dbeb40b55aea1",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1030323
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:7dd51246f39bb3670aa47ed930a16d0016e38856e1cb8c0bd5a6940c90ea25e8",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1030357
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:243b88e63ecbe67ae21cc963ce7760d1762bfec5fb28db9310848aaa3800cd81",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 689463
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:478544768d77aa54851dfd0da7d9762679bd3125f74d684cb93df287310c977c",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 689489
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:0c38665440226cd8bef5d1d4f3bc6ff77c927fb0d68b752739105db7ab5b358d",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1050865
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:0a1c72faefcb511b08b1b8470aedf4a6a3a94c4d56f8f65da3cb7d8c5de051f1",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1050793
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d231bb3ee33b08c76279b5888845dceb7034d055c42bb9be46dbe0dae39394df",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1221082
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:d978ecb56fd7acc37148818122bae2b2402f9d0bf706dcacb28831ea618b5488",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1221839
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.4/man-0.23.4.tar.gz",
+    "digest": "sha256:afcf804979ba03df7545e8b02d41576ab5e15bd090dfc51a052f41df3a65b264",
+    "name": "man-0.23.4.tar.gz",
+    "size": 9865
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.4"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/completions-0.23.3.tar.gz",
+    "digest": "sha256:1639c6da6a900bacc7eb9f43fba2871df5ae0569e1351f11a46d154bfc47341c",
+    "name": "completions-0.23.3.tar.gz",
+    "size": 7273
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:0a2df426dd8bf7b9697c631ae96af2d52641ee4daa8fb07863c82e77be5480a2",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1301124
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:032963c3d47134d7976f8e17b0201efcff09fdcc7742d8a0db2135b38c8ce1f8",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1301058
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:333246365f1a3325df1068ff8bc994ea3a3e04abe4e118fa11015d589c5cc41d",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 964832
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:468aeb80d3ee79f61b1c6a1b3b21fe09ad493159ce65d1b7e06400f98a2276ae",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 964907
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:9d0f4f726fb91ab57c31c0a9fbc7fcb35c198dacc6790968b024cb2359be2256",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 616043
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:debc67a2d831fe22e4184df47f4fda3a0bf6dd1108d870725c9c187355f968be",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 616076
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:acc4e11b3f71dfc228c248624066204d5f158c83b66ef4e8dd73dea9c80fe454",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1031597
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:3a6ffc650524a5cde29800de163d015865319c64b1b240c5186d03639e8116ca",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1031594
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:6794a9b8348a8a68a6809bf571d2a51bb95f442d5615358947ffc6f8afcd9df2",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 690481
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:59407cbf276ea62222cb044d8f14af2f3c69fe5c6683f1855e82bb431d90fcb9",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 690529
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:02e818f7b06f2c637b25761731104f1e9d6ea8f6e5924ab05eae69db4ed072a5",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1051574
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:e1ee24d09ab912483054709dd6dabe6b6cb05d9f4c9f4f703ca2d0f22b25cdbb",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1051583
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:9394077c94ced5a39b895092a4e59b21c3949b414a1affb08c47be6a3af17eca",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1222090
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:85804a3599ba834d5f111543235fc2f133b4b16b42c472767d3ca2c34e64f49d",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1222089
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.3/man-0.23.3.tar.gz",
+    "digest": "sha256:57cb47c94be849087af973c63d82f0b4f7dcecde5c5991ec2f18f2bf59aaa8c4",
+    "name": "man-0.23.3.tar.gz",
+    "size": 9888
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.3"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/completions-0.23.2.tar.gz",
+    "digest": "sha256:4ef36c6b5996d3f7996c3252b8c700ffe90cf73966a419bfc3632500f65cce7a",
+    "name": "completions-0.23.2.tar.gz",
+    "size": 7218
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:6bc05dc2c8f455ac14199672c48ee38d63cfa1b4c049593c6a751bdb71c08298",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1301260
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:fa265f6857d7c91a9f412fd8eb2dc13b9036170e4e3d5746220957cdbcac22a4",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1301311
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:e4e4a99f329e974987bc45c1b0b5fd127e8311ed7439afa2cc102ddab53af801",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 965251
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:fd1a871929218e0096dcf170b588c2077262dedacfdb95efe902e24b5d1b1704",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 965322
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:8f6b7462d25f821663c017237cfe9b4f310454fcfdfe1067077a1c6910bb80d3",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 616468
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:51087254444bd7943dc6a8f1d2bcf010fbadd82d1e550b4057d366dc0c067fe0",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 616534
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:6c50f86376e580131f19b6fdd2b4807bf44a1cfd971a96bb27e31393af246d09",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1031630
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:34daae41dbee8e23d44feb2ffdbdd38fbd271658ea3a7a47e1cfb10c20f6549b",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1031680
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:033754e1cf6071db7237ec870c86c51d0e35a9717bf00fa2166b1c45a47b841e",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 690674
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:865e42c55b9833303c866b05a1772b763e66be16e4255961323de09410cbde6a",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 690817
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:d2386f48465d1eec29c485aafc20529b7b44f04bb74eb0a726cad8b098396af6",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1051502
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:f14418dd16024b781f3967d6171591c83be39c0da9a6d868923fec3cf420906a",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1051483
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2fac6b41b9a5c5a75265e18077fb55aeb8cd1ddd5c02e5519ca2eff0bdc673b8",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1222446
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:ea40ee611f812655eb7298e7ad3435fdeadb9df7071242b200470494039cf2e7",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1222464
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.2/man-0.23.2.tar.gz",
+    "digest": "sha256:c4077272282baf214dd39e780d09eef72a80a116fad7917af02c829ca2e109e6",
+    "name": "man-0.23.2.tar.gz",
+    "size": 9817
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.2"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/completions-0.23.1.tar.gz",
+    "digest": "sha256:9d77e87430304c679fea6ea95d144e7474f2d525cd931a55081b0c44fbb26e79",
+    "name": "completions-0.23.1.tar.gz",
+    "size": 7284
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:6ee0fd4c179b5f38855a279d5522b8a4a1dfff2e3d3824587c58f920c2c7a02a",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1300474
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:b58d42b911ddb2d923bcbc986dedef8ad47f2192fb884a9230d4223e8d75622f",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1300509
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6ab5eafcd3242f3709dcc237d72c045cb19f1a7ac8e08b3dc793e8bb31415cf0",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 965545
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:6c6f5aeeabc5be8e8f1b9985333c906d219a7b0117ded02b40a6f6b4b7e12bd7",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 965620
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:fb7704b364b30c5b52a4d19673945175b8c089e071fc6258f502ffe6147d1060",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 616482
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:d1ea78fbd29d75354969f7d4384d7ab590d6607a9a0d17e7b570eb8eb96a6649",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 616320
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:682916edc70cfdcc9c4a41fb60b44d38a613f3c8ef6815e3657ebad1a04de40f",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1030332
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:b1120ee275ce82a108a6d33b4b3b13356a3215c40ae149d4d2688e274b5ff38d",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1030363
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:1f5f99d73bf0a2588206677359563f4cc2f6e0fec46ed7ef7e69c3d620eabdc3",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 689439
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:e476329ad22a20a1c38a6e18df942f561de5867cb4672eb631f19375dcb32f00",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 689341
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:5dbe06a1976a32e6c2d49cc3a17838b0f83ef0a8fa87e6437f44da2230022bbe",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1050639
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:586b4ab8db36181767e433df793546fd90c619e76441df2d0db090ead55dff95",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1050549
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:89dce316bf1d87e75f5c5711a68274e13009a73d43382698aff085a8bbffdc06",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1221490
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:2ee80e9129aab9ed33b6e37561152cbc31f2ff9ed7a198d9b43c744570149bf6",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1221427
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.1/man-0.23.1.tar.gz",
+    "digest": "sha256:6f878b8629d4434dc81b3307093342d50cceade9a7d77d31e8a68546b3360f87",
+    "name": "man-0.23.1.tar.gz",
+    "size": 9842
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/completions-0.23.0.tar.gz",
+    "digest": "sha256:a12e52801627ab132140a11db272917b8c63b632899653d018d124ab4483bc5c",
+    "name": "completions-0.23.0.tar.gz",
+    "size": 4806
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "digest": "sha256:a2aa1d87b86b26183ebd8da1ca0822f0398daecc8446edb6ee674a626212fcf7",
+    "name": "eza.exe_x86_64-pc-windows-gnu.tar.gz",
+    "size": 1299509
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza.exe_x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:f713c1a8ecbab8d3359e93df27e1fa952a64b989230e651627c2a684571acc95",
+    "name": "eza.exe_x86_64-pc-windows-gnu.zip",
+    "size": 1299539
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:da8e5cf3b8ff79eccad910b3d88a44e484a2e1f781f48d8e35fbc5705079cf0e",
+    "name": "eza_aarch64-unknown-linux-gnu.tar.gz",
+    "size": 963848
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_aarch64-unknown-linux-gnu.zip",
+    "digest": "sha256:2ab17e1dc6b2472413a403cc536ec7d8cd9276aab56a04de183089c57a998708",
+    "name": "eza_aarch64-unknown-linux-gnu.zip",
+    "size": 963873
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "digest": "sha256:4862e9c2e2ffbc80dc405bfa0564194dd8fde9bda523313122afbca929f4a977",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.tar.gz",
+    "size": 616069
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "digest": "sha256:0fe464ea35175f0784a5dd1cf71bf3562e5edcaae9b684dec9baf4a0b2e215af",
+    "name": "eza_aarch64-unknown-linux-gnu_no_libgit.zip",
+    "size": 616135
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:9fc3fe57fff8b9a8722682d7cc5d0d3c2b281b76316efae453dd62f2a313f3a9",
+    "name": "eza_arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1029196
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_arm-unknown-linux-gnueabihf.zip",
+    "digest": "sha256:85c7bfbbbe0d425c20f9e4b9a171d6478161a3a3265fc16456b97fa8049427ab",
+    "name": "eza_arm-unknown-linux-gnueabihf.zip",
+    "size": 1029247
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "digest": "sha256:f8ac69371ecbc3cc1ace7caf6ec18fe2cf5b1c49d79d6f57213c2fc0d27b4b07",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.tar.gz",
+    "size": 688650
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "digest": "sha256:567f931861e9dcc818073cd2126d1c3bd234a13ad302854e31b8b5b36feb8336",
+    "name": "eza_arm-unknown-linux-gnueabihf_no_libgit.zip",
+    "size": 688661
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:cec0a92c919f1b93ae5e8ffa51ad5db91f0227246594444ab99b4a94771b0e69",
+    "name": "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1049643
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-gnu.zip",
+    "digest": "sha256:389e50e77c5b33bc80ae0733272b40c0e6c196843359528c62407e545707ed3c",
+    "name": "eza_x86_64-unknown-linux-gnu.zip",
+    "size": 1049709
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:54573ed7216a130b01fdd07d3942243d9fd588e3147ee5b58fed92a5e1cc0484",
+    "name": "eza_x86_64-unknown-linux-musl.tar.gz",
+    "size": 1220770
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-musl.zip",
+    "digest": "sha256:1f53e47806bef3d0bc75dc2417fb477d34b40a19aa4db746fb738b6ff5f97596",
+    "name": "eza_x86_64-unknown-linux-musl.zip",
+    "size": 1220771
+   },
+   {
+    "browser_download_url": "https://github.com/eza-community/eza/releases/download/v0.23.0/man-0.23.0.tar.gz",
+    "digest": "sha256:4afa957a9f3c5e96cd340c50a89494f9014651704f06d860e7f6a1a98d0c3115",
+    "name": "man-0.23.0.tar.gz",
+    "size": 9876
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.23.0"
+ }
+]

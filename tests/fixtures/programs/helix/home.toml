@@ -1,0 +1,21 @@
+[home]
+version = "1"
+
+[programs.helix]
+theme = "onedark"
+editor.line-number = "relative"
+editor.mouse = false
+editor.cursorline = true
+editor.auto-format = true
+editor.true-color = true
+editor.rulers = [80, 100]
+editor.cursor-shape.insert = "bar"
+editor.cursor-shape.normal = "block"
+editor.cursor-shape.select = "underline"
+extra = '''
+[editor.statusline]
+left = ["mode", "spinner"]
+
+[keys.normal]
+C-s = ":write"
+'''

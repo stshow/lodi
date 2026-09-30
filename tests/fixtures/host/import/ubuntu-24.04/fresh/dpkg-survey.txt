@@ -1,0 +1,24 @@
+adduser	ii 	important	admin	passwd	
+apt	ii 	important	admin	libc6 (>= 2.38)	
+base-files	ii 	required	admin		
+bash	ii 	required	shells	base-files (>= 2.1.12)	
+bash-completion	ii 	standard	shells	bash (>= 4.3)	
+cloud-init	ii 	optional	admin	python3, netplan.io	
+coreutils	ii 	required	utils	libc6 (>= 2.38)	
+dpkg	ii 	required	admin	libc6 (>= 2.38), tar (>= 1.28-1)	
+file	ii 	standard	utils	libmagic1 (>= 5.45)	
+libc6	ii 	required	libs		
+libmagic1	ii 	optional	libs		
+linux-generic	ii 	optional	kernel	linux-image-generic (= 6.8.0-51.52)	
+linux-image-generic	ii 	optional	kernel	linux-modules-extra-6.8.0-51-generic	
+linux-modules-extra-6.8.0-51-generic	ii 	optional	kernel		
+netplan.io	ii 	optional	net		
+openssh-client	ii 	optional	net	libc6 (>= 2.38)	
+openssh-server	ii 	optional	net	openssh-client	
+passwd	ii 	required	admin	libc6 (>= 2.38)	
+python3	ii 	optional	python		
+systemd	ii 	important	admin	libc6 (>= 2.38)	
+tar	ii 	required	utils	libc6 (>= 2.38)	
+ubuntu-minimal	ii 	optional	metapackages	adduser, apt, systemd	
+ubuntu-server-minimal	ii 	optional	metapackages	cloud-init, openssh-server	
+ubuntu-standard	ii 	optional	metapackages	bash-completion, file	

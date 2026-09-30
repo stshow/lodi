@@ -1,0 +1,21 @@
+[home]
+version = "1"
+
+[programs.nvim]
+extra = """
+vim.keymap.set('n', '<leader>w', '<cmd>write<cr>')
+"""
+colorscheme = "habamax"
+leader = " "
+
+[programs.nvim.opt]
+termguicolors = true
+clipboard = "unnamedplus"
+mouse = "a"
+tabstop = 4
+shiftwidth = 4
+smartcase = true
+ignorecase = true
+expandtab = true
+relativenumber = true
+number = true

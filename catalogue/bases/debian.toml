@@ -1,0 +1,27 @@
+# Debian container bases. The rootfs is the debuerreotype build that
+# Docker's official `debian` image uses, pinned to a git commit and to the layer digest its OCI
+# layout publishes. Repositories are snapshot.debian.org at the lock's snapshot timestamp.
+[base]
+distro = "debian"
+
+[release.bookworm]
+aliases      = ["12"]
+snapshot_min = "2023-06-10T00:00:00Z"
+repositories = ["debian", "debian-security"]
+
+[release.bookworm.rootfs.x86_64]
+strategy = "github_oci_layout"
+repo     = "debuerreotype/docker-debian-artifacts"
+branch   = "dist-amd64"
+dir      = "bookworm"
+layer    = "oci/blobs/rootfs.tar.gz"
+
+[repository.debian]
+snapshot_url = "https://snapshot.debian.org/archive/debian/${snapshot_id}/"
+suites       = ["${release}", "${release}-updates"]
+components   = ["main"]
+
+[repository.debian-security]
+snapshot_url = "https://snapshot.debian.org/archive/debian-security/${snapshot_id}/"
+suites       = ["${release}-security"]
+components   = ["main"]

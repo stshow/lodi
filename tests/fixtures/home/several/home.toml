@@ -1,0 +1,21 @@
+# A home manifest with several files, for the plan's lexicographic order and mode column.
+[home]
+version = "1"
+min_lodi_version = ""
+
+[files.".config/git/ignore"]
+content = """
+.lodi/
+"""
+
+[files.".gitconfig"]
+content = "[core]\n\tautocrlf = input\n"
+
+[files.".inputrc"]
+source = "./dotfiles/inputrc"
+mode = "0600"
+
+[files.".netrc-that-must-go"]
+state = "absent"
+backup = true
+on_remove = "keep"

@@ -1,0 +1,28 @@
+tree:
+  Installed: 2.1.1-2ubuntu3.24.04.2
+  Candidate: 2.1.1-2ubuntu3.24.04.2
+  Version table:
+ *** 2.1.1-2ubuntu3.24.04.2 500
+        500 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages
+        100 /var/lib/dpkg/status
+     2.1.1-2ubuntu3 500
+        500 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages
+sqlite3:
+  Installed: 3.45.1-1ubuntu2.8
+  Candidate: 3.45.1-1ubuntu2.8
+  Version table:
+ *** 3.45.1-1ubuntu2.8 500
+        500 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+        500 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages
+        100 /var/lib/dpkg/status
+     3.45.1-1ubuntu2 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+zip:
+  Installed: 3.0-13ubuntu0.2
+  Candidate: 3.0-13ubuntu0.2
+  Version table:
+ *** 3.0-13ubuntu0.2 500
+        500 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+        100 /var/lib/dpkg/status
+     3.0-13build1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages

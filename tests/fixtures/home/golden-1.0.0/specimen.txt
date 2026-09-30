@@ -1,0 +1,32 @@
+$ lodi home apply
+exit 0
+--- stdout
+created   .config/git/ignore        0644
+created   .gitconfig                0644
+created   .inputrc                  0600
+unchanged .netrc-that-must-go       0644
+4 files: 3 create, 1 unchanged
+--- stderr
+$ lodi home plan
+exit 0
+--- stdout
+unchanged .config/git/ignore        0644
+unchanged .gitconfig                0644
+unchanged .inputrc                  0600
+unchanged .netrc-that-must-go       0644
+4 files: 4 unchanged
+--- stderr
+$ lodi home status
+exit 0
+--- stdout
+ok           .config/git/ignore        0644
+ok           .gitconfig                0644
+ok           .inputrc                  0600
+ok           .netrc-that-must-go       0644    (declared absent, and it is)
+4 paths: 4 ok
+--- stderr
+$ lodi home apply
+exit 0
+--- stdout
+nothing to do
+--- stderr

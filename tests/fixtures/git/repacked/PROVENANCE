@@ -1,0 +1,18 @@
+Synthetic local repository, git 2.55.0. No external data.
+Create an empty repository with five dated commits (2001-01-01 through 2001-01-05),
+each changing one line of data.txt. Start with 3000 deterministic 80-character
+alphanumeric lines from Python random.Random(1234); for revision i in 0..5,
+replace line 60 + 71*i with `revision 0 marker %02d\n` where %02d is i.
+Use git add data.txt and git commit -m "revision i" with the corresponding fixed
+UTC author and committer date and the repository's no-reply identity.
+Run `git repack -a -d --depth=50 --window=50` and retain only the .pack as offset.pack.
+Run `git pack-objects --all --no-delta-base-offset --no-reuse-delta --window=50 --depth=50 PREFIX`
+and retain only the .pack as reference.pack. No .git directory or index is committed.
+`git verify-pack -v` confirms four delta blobs in each pack (depths 1 through 4).
+SHA-256 offset.pack: d57e2faa7db9dac25b1f8fc607053510e07d7b4c7d1cdade73463e7b87164c9e
+SHA-256 reference.pack: 3635fa716401e5b35a360c3cbd0f50ad87c637534515d7f35edb0bcd442a46dd
+Blob IDs: 40e15bf57d0cfcf86fee096bac643686683502e3,
+406e5d936028aff9417fdc2ccae52c5f63ed22da,
+1fe93c3c4437a47ff19be156979296e0ee7e7207,
+6c81c0c57e64aa1b7a3e1acf70df4fca6dd90a05,
+a078abc1c9a7720f71b6cc995d72f2e6527531e5.

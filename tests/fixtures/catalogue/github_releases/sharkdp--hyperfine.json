@@ -1,0 +1,577 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-musl_1.20.0_amd64.deb",
+    "digest": "sha256:1350f7094e30e6494c011a19753de100c4cb08c149e94b3c4921386f71bdca38",
+    "name": "hyperfine-musl_1.20.0_amd64.deb",
+    "size": 614632
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-musl_1.20.0_armhf.deb",
+    "digest": "sha256:b274c91e90a8657e0b7ade5880bd5b5f92ec06c7d5e608f166352c9ffe079fb2",
+    "name": "hyperfine-musl_1.20.0_armhf.deb",
+    "size": 584748
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-musl_1.20.0_i686.deb",
+    "digest": "sha256:5f7edd4334bfcacfef834eb68beb21288a158158e5a51ca11de83ee8d35978c6",
+    "name": "hyperfine-musl_1.20.0_i686.deb",
+    "size": 630526
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:8ee7067016620447c9d2d6234ec9a4680f958b7ad983549b56334668f63075b5",
+    "name": "hyperfine-v1.20.0-aarch64-apple-darwin.tar.gz",
+    "size": 582508
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:90875cb1db7a1d797c311174d061728361e58fc70e3b62262a00635ac3b1997c",
+    "name": "hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 607895
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:f13c6ae21380d90b03310bd74a672db579a6a45d1b5df91bf2e06baf8f1cf4fd",
+    "name": "hyperfine-v1.20.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 638463
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:0b55cb68a28488ccf81f933069254cdcbf62965f2232e81e6b15fc797556b238",
+    "name": "hyperfine-v1.20.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 670324
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:6e051e1c843c52110a1d0efba76a51ff506a5333f5d5cfd8d11674f0ad9200e2",
+    "name": "hyperfine-v1.20.0-i686-pc-windows-msvc.zip",
+    "size": 551328
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a5209e023c9396a94251614218ece32c0c0ae219fb159245d53c8cee5f9d9eeb",
+    "name": "hyperfine-v1.20.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 685294
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:41a0311fe24e8d8cdc67ddafcbfc08fb5d03ca662359fd8cc9432192d1ede6f7",
+    "name": "hyperfine-v1.20.0-i686-unknown-linux-musl.tar.gz",
+    "size": 715845
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:f58d0b90993fadfa122a351428c469ce24afef3865f027f0e6e86f0830d088f1",
+    "name": "hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz",
+    "size": 621721
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:2508c549b049b1d4342d08edc1cb42bfac169082b6e3069431b5bab9822dbb32",
+    "name": "hyperfine-v1.20.0-x86_64-pc-windows-msvc.zip",
+    "size": 589310
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:63ad53934062118f5b0be11785e0bb1603d4b91667d1921f2fd8df9a8712040a",
+    "name": "hyperfine-v1.20.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 657952
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:3285ec7959285288137043dd81dce0dde056227018a8277532d9a364b4f03c2b",
+    "name": "hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 710161
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine_1.20.0_amd64.deb",
+    "digest": "sha256:e0391897ffb490af8a6b64e0e4281ac2c8e10cbcbb875bd22a376f44cdb263ab",
+    "name": "hyperfine_1.20.0_amd64.deb",
+    "size": 568436
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine_1.20.0_arm64.deb",
+    "digest": "sha256:a469c7173d646b216405e29c18ba348b180ce214e4a580d63c6b81034fe2ca27",
+    "name": "hyperfine_1.20.0_arm64.deb",
+    "size": 525168
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine_1.20.0_armhf.deb",
+    "digest": "sha256:33264b53b43a06f5afe5bfdcf1969fbfcd8b3ad9a8698dd8889a42131ba96022",
+    "name": "hyperfine_1.20.0_armhf.deb",
+    "size": 557178
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine_1.20.0_i686.deb",
+    "digest": "sha256:c056d0c859314254d734a35748532d1e8c02448b9a2f6f16fbdf630e6e67b6bd",
+    "name": "hyperfine_1.20.0_i686.deb",
+    "size": 604274
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.20.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-musl_1.19.0_amd64.deb",
+    "name": "hyperfine-musl_1.19.0_amd64.deb",
+    "size": 563596
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-musl_1.19.0_armhf.deb",
+    "name": "hyperfine-musl_1.19.0_armhf.deb",
+    "size": 500588
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-musl_1.19.0_i686.deb",
+    "name": "hyperfine-musl_1.19.0_i686.deb",
+    "size": 578472
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-aarch64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.19.0-aarch64-apple-darwin.tar.gz",
+    "size": 582918
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.19.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 605877
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "hyperfine-v1.19.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 636392
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "hyperfine-v1.19.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 668955
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-i686-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.19.0-i686-pc-windows-msvc.zip",
+    "size": 553401
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.19.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 675952
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-i686-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.19.0-i686-unknown-linux-musl.tar.gz",
+    "size": 708790
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-x86_64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.19.0-x86_64-apple-darwin.tar.gz",
+    "size": 618281
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-x86_64-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.19.0-x86_64-pc-windows-msvc.zip",
+    "size": 588834
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.19.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 651491
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine-v1.19.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.19.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 705846
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_amd64.deb",
+    "name": "hyperfine_1.19.0_amd64.deb",
+    "size": 518712
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_arm64.deb",
+    "name": "hyperfine_1.19.0_arm64.deb",
+    "size": 450256
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_armhf.deb",
+    "name": "hyperfine_1.19.0_armhf.deb",
+    "size": 472528
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.19.0/hyperfine_1.19.0_i686.deb",
+    "name": "hyperfine_1.19.0_i686.deb",
+    "size": 549884
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.19.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-musl_1.18.0_amd64.deb",
+    "name": "hyperfine-musl_1.18.0_amd64.deb",
+    "size": 554468
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-musl_1.18.0_i686.deb",
+    "name": "hyperfine-musl_1.18.0_i686.deb",
+    "size": 570024
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.18.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 598999
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "hyperfine-v1.18.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 626661
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "hyperfine-v1.18.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 655748
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-i686-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.18.0-i686-pc-windows-msvc.zip",
+    "size": 544129
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.18.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 659952
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-i686-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.18.0-i686-unknown-linux-musl.tar.gz",
+    "size": 692610
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.18.0-x86_64-apple-darwin.tar.gz",
+    "size": 592580
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.18.0-x86_64-pc-windows-msvc.zip",
+    "size": 582727
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.18.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 641859
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 694152
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine_1.18.0_amd64.deb",
+    "name": "hyperfine_1.18.0_amd64.deb",
+    "size": 511336
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine_1.18.0_arm64.deb",
+    "name": "hyperfine_1.18.0_arm64.deb",
+    "size": 448112
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine_1.18.0_armhf.deb",
+    "name": "hyperfine_1.18.0_armhf.deb",
+    "size": 493324
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine_1.18.0_i686.deb",
+    "name": "hyperfine_1.18.0_i686.deb",
+    "size": 536760
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.18.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-musl_1.17.0_amd64.deb",
+    "name": "hyperfine-musl_1.17.0_amd64.deb",
+    "size": 518408
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-musl_1.17.0_i686.deb",
+    "name": "hyperfine-musl_1.17.0_i686.deb",
+    "size": 536840
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.17.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 560600
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "hyperfine-v1.17.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 576106
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "hyperfine-v1.17.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 603672
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-i686-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.17.0-i686-pc-windows-msvc.zip",
+    "size": 535115
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.17.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 624246
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-i686-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.17.0-i686-unknown-linux-musl.tar.gz",
+    "size": 651389
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-x86_64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.17.0-x86_64-apple-darwin.tar.gz",
+    "size": 562794
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-x86_64-pc-windows-gnu.zip",
+    "name": "hyperfine-v1.17.0-x86_64-pc-windows-gnu.zip",
+    "size": 588090
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-x86_64-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.17.0-x86_64-pc-windows-msvc.zip",
+    "size": 561605
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.17.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 599525
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine-v1.17.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.17.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 646293
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine_1.17.0_amd64.deb",
+    "name": "hyperfine_1.17.0_amd64.deb",
+    "size": 479204
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine_1.17.0_arm64.deb",
+    "name": "hyperfine_1.17.0_arm64.deb",
+    "size": 422332
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine_1.17.0_armhf.deb",
+    "name": "hyperfine_1.17.0_armhf.deb",
+    "size": 455792
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.17.0/hyperfine_1.17.0_i686.deb",
+    "name": "hyperfine_1.17.0_i686.deb",
+    "size": 509000
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.17.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-musl_1.16.1_amd64.deb",
+    "name": "hyperfine-musl_1.16.1_amd64.deb",
+    "size": 513012
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-musl_1.16.1_i686.deb",
+    "name": "hyperfine-musl_1.16.1_i686.deb",
+    "size": 529116
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.1-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 546000
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "hyperfine-v1.16.1-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 564755
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "hyperfine-v1.16.1-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 592239
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-i686-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.16.1-i686-pc-windows-msvc.zip",
+    "size": 533553
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-i686-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.1-i686-unknown-linux-gnu.tar.gz",
+    "size": 613768
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-i686-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.16.1-i686-unknown-linux-musl.tar.gz",
+    "size": 646597
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-x86_64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.16.1-x86_64-apple-darwin.tar.gz",
+    "size": 561918
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-x86_64-pc-windows-gnu.zip",
+    "name": "hyperfine-v1.16.1-x86_64-pc-windows-gnu.zip",
+    "size": 582011
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-x86_64-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.16.1-x86_64-pc-windows-msvc.zip",
+    "size": 561603
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.1-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 593693
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine-v1.16.1-x86_64-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.16.1-x86_64-unknown-linux-musl.tar.gz",
+    "size": 642104
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine_1.16.1_amd64.deb",
+    "name": "hyperfine_1.16.1_amd64.deb",
+    "size": 472520
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine_1.16.1_arm64.deb",
+    "name": "hyperfine_1.16.1_arm64.deb",
+    "size": 407480
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine_1.16.1_armhf.deb",
+    "name": "hyperfine_1.16.1_armhf.deb",
+    "size": 444676
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.1/hyperfine_1.16.1_i686.deb",
+    "name": "hyperfine_1.16.1_i686.deb",
+    "size": 498124
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.16.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-musl_1.16.0_amd64.deb",
+    "name": "hyperfine-musl_1.16.0_amd64.deb",
+    "size": 513052
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-musl_1.16.0_i686.deb",
+    "name": "hyperfine-musl_1.16.0_i686.deb",
+    "size": 529220
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 545898
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "hyperfine-v1.16.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 564757
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "hyperfine-v1.16.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 592115
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-i686-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.16.0-i686-pc-windows-msvc.zip",
+    "size": 533909
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 613992
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-i686-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.16.0-i686-unknown-linux-musl.tar.gz",
+    "size": 646778
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-x86_64-apple-darwin.tar.gz",
+    "name": "hyperfine-v1.16.0-x86_64-apple-darwin.tar.gz",
+    "size": 562084
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-x86_64-pc-windows-gnu.zip",
+    "name": "hyperfine-v1.16.0-x86_64-pc-windows-gnu.zip",
+    "size": 582140
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-x86_64-pc-windows-msvc.zip",
+    "name": "hyperfine-v1.16.0-x86_64-pc-windows-msvc.zip",
+    "size": 561584
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "hyperfine-v1.16.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 593666
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine-v1.16.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "hyperfine-v1.16.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 642137
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine_1.16.0_amd64.deb",
+    "name": "hyperfine_1.16.0_amd64.deb",
+    "size": 472416
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine_1.16.0_arm64.deb",
+    "name": "hyperfine_1.16.0_arm64.deb",
+    "size": 407672
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine_1.16.0_armhf.deb",
+    "name": "hyperfine_1.16.0_armhf.deb",
+    "size": 444852
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/hyperfine/releases/download/v1.16.0/hyperfine_1.16.0_i686.deb",
+    "name": "hyperfine_1.16.0_i686.deb",
+    "size": 498424
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.16.0"
+ }
+]

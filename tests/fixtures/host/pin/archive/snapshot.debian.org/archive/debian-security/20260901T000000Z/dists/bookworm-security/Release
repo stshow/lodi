@@ -1,0 +1,14 @@
+Origin: Debian
+Label: Debian-Security
+Suite: oldstable-security
+Version: 12
+Codename: bookworm-security
+Date: Mon, 31 Aug 2026 21:13:04 UTC
+Valid-Until: Mon, 07 Sep 2026 21:13:04 UTC
+Acquire-By-Hash: yes
+Architectures: amd64 arm64 armhf i386 ppc64el
+Components: updates/main updates/contrib updates/non-free-firmware updates/non-free
+Description: Debian 12 - Security Updates
+SHA256:
+ 0040f94d11d0039505328a90b2ff48968db873e9e7967307631bf40ef5679275 32 main/binary-amd64/Packages.xz
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-amd64/Packages

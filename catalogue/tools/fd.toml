@@ -1,0 +1,18 @@
+# fd for [tools] fd. This recipe says where to look; it lists no version.
+[recipe]
+name        = "fd"
+description = "A simple, fast and user-friendly alternative to find"
+homepage    = "https://github.com/sharkdp/fd"
+
+[versions]
+strategy = "github_releases"
+repo     = "sharkdp/fd"
+asset    = "fd-${tag}-${arch}-unknown-linux-musl.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 1
+
+[spec]
+bin  = ["fd"]
+path = ["."]

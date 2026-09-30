@@ -1,0 +1,37 @@
+# Upstream Rust for [tools] rust. This recipe says where to look; it lists no
+# version. `lodi lock` discovers the stable channel's version from the channel manifest, and
+# each component tarball is verified against its own .sha256 sidecar. No install script is run.
+[recipe]
+name        = "rust"
+description = "The Rust toolchain: rustc, cargo and the standard library"
+homepage    = "https://www.rust-lang.org"
+
+[versions]
+strategy = "text_index"
+url      = "https://static.rust-lang.org/dist/channel-rust-stable.toml"
+line     = '/rust-${version}-${arch_rust}.tar.gz"'
+
+[[asset]]
+url              = "https://static.rust-lang.org/dist/rustc-${version}-${arch_rust}.tar.gz"
+format           = "tar.gz"
+strip_components = 2
+exclude          = ["manifest.in"]
+checksum_sidecar = ".sha256"
+
+[[asset]]
+url              = "https://static.rust-lang.org/dist/cargo-${version}-${arch_rust}.tar.gz"
+format           = "tar.gz"
+strip_components = 2
+exclude          = ["manifest.in"]
+checksum_sidecar = ".sha256"
+
+[[asset]]
+url              = "https://static.rust-lang.org/dist/rust-std-${version}-${arch_rust}.tar.gz"
+format           = "tar.gz"
+strip_components = 2
+exclude          = ["manifest.in"]
+checksum_sidecar = ".sha256"
+
+[spec]
+bin  = ["bin/rustc", "bin/cargo", "bin/rustdoc"]
+path = ["bin"]

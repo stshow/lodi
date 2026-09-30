@@ -1,0 +1,7 @@
+base 3-2
+linux 6.13.4.arch1-1
+linux-firmware 20250211.27ba3ab6-1
+neovim 0.10.4-4
+ripgrep 14.1.1-1
+yay 12.4.2-1
+zsh 5.9-7

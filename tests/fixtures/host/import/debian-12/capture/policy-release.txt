@@ -1,0 +1,7 @@
+Package files:
+ 100 /var/lib/dpkg/status
+     release a=now
+ 500 http://deb.debian.org/debian bookworm/main amd64 Packages
+     release v=12.11,o=Debian,a=stable,n=bookworm,l=Debian,c=main,b=amd64
+     origin deb.debian.org
+Pinned packages:

@@ -1,0 +1,66 @@
+== plan: exit Some(0)
+-- stdout
++ package libfuse2
++ package ripgrep
+~ package libfuse2 (hold)
+2 action(s)
+-- stderr
+== apply: exit Some(0)
+-- stdout
+journal <journal>
++ package libfuse2
++ package ripgrep
+~ package libfuse2 (hold)
+2 action(s) applied
+-- stderr
+== host.lock
+{
+  "version": 2,
+  "format": "lodi-host-lock/2",
+  "generatedBy": "lodi 1.2.0",
+  "appliedAt": "<time>",
+  "distro": "debian",
+  "distroVersion": "12",
+  "packages": {
+    "libfuse2": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": true
+    },
+    "linux-image-amd64": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ripgrep": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    }
+  },
+  "files": {},
+  "baseline": {
+    "explicit": [
+      "libfuse2",
+      "linux-image-amd64",
+      "ripgrep"
+    ],
+    "holds": {
+      "libfuse2": "1.0-1"
+    },
+    "files": {}
+  },
+  "source": "/etc/lodi"
+}
+
+== journal
+{"record":"header","version":1,"journalId":"<journal>","startedAt":"<time>","lodiVersion":"1.2.0","root":"<root>","manifestDigest":"sha256:d9552c18177ec43658d328ea525087cbea2eba33d12addcfa68db7fa7202d172","distro":"debian","programs":[["apt-get","<fake>/bin/apt-get"],["dpkg-query","<fake>/bin/dpkg-query"]],"euid":<id>,"actions":[{"id":"p1","kind":"packages.transaction","summary":"+ package libfuse2; + package ripgrep","pre":[],"post":[],"packagesPre":{"libfuse2":{"installed":false},"ripgrep":{"installed":false}},"packagesPost":{"libfuse2":{"installed":true,"version":"1.0-1"},"ripgrep":{"installed":true,"version":"1.0-1"}},"commands":[["apt-get","install","-o","RootDir=<root>","-y","-o","Dpkg::Options::=--force-confdef","-o","Dpkg::Options::=--force-confold","--","libfuse2","ripgrep"]],"programs":["<fake>/bin/apt-get"]},{"id":"m1","kind":"packages.marks","summary":"~ package libfuse2 (hold)","pre":[],"post":[],"packagesPre":{"libfuse2":{"installed":true,"held":false}},"packagesPost":{"libfuse2":{"installed":true,"held":true}},"commands":[["apt-mark","hold","-o","RootDir=<root>","--","libfuse2"]],"programs":["<fake>/bin/apt-mark"]}]}
+{"record":"begin","action":"p1","at":"<time>"}
+{"record":"end","action":"p1","at":"<time>"}
+{"record":"begin","action":"m1","at":"<time>"}
+{"record":"end","action":"m1","at":"<time>"}
+{"record":"finished","at":"<time>"}
+== plan after: exit Some(0)
+-- stdout
+nothing to do
+-- stderr

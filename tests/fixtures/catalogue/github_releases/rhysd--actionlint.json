@@ -1,0 +1,464 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt",
+    "digest": "sha256:433028cf0ba3c42163ea1a668dedce30fcdbe84fe912b1a5e288c006eab8a4f5",
+    "name": "actionlint_1.7.12_checksums.txt",
+    "size": 1130
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_darwin_amd64.tar.gz",
+    "digest": "sha256:5b44c3bc2255115c9b69e30efc0fecdf498fdb63c5d58e17084fd5f16324c644",
+    "name": "actionlint_1.7.12_darwin_amd64.tar.gz",
+    "size": 2355828
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_darwin_arm64.tar.gz",
+    "digest": "sha256:aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f",
+    "name": "actionlint_1.7.12_darwin_arm64.tar.gz",
+    "size": 2164202
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_freebsd_386.tar.gz",
+    "digest": "sha256:7170cc3db006f83154583dc385c84bea3f6ee767a167bb9ca41de6593ebbb186",
+    "name": "actionlint_1.7.12_freebsd_386.tar.gz",
+    "size": 2137392
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_freebsd_amd64.tar.gz",
+    "digest": "sha256:3de1b027d0b749e81d6d972cbf5d14dc708a275248da1ba4eed4a9af707d1339",
+    "name": "actionlint_1.7.12_freebsd_amd64.tar.gz",
+    "size": 2317442
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_386.tar.gz",
+    "digest": "sha256:72a44b32c2d032700e6d0c23ca2f540b67519ec68db098ddfcfa96059e61f723",
+    "name": "actionlint_1.7.12_linux_386.tar.gz",
+    "size": 2176736
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz",
+    "digest": "sha256:8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+    "name": "actionlint_1.7.12_linux_amd64.tar.gz",
+    "size": 2353908
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_arm64.tar.gz",
+    "digest": "sha256:325e971b6ba9bfa504672e29be93c24981eeb1c07576d730e9f7c8805afff0c6",
+    "name": "actionlint_1.7.12_linux_arm64.tar.gz",
+    "size": 2111482
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_armv6.tar.gz",
+    "digest": "sha256:ae4a0a5227578e66f5d00ee02788d5c64fdae1fa6484ab88ceaeee9359c28fa4",
+    "name": "actionlint_1.7.12_linux_armv6.tar.gz",
+    "size": 2206296
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_windows_386.zip",
+    "digest": "sha256:cdc8643b2c8dc890c76ad16095da97e75f86572805cc3573cc13f31ea0f19127",
+    "name": "actionlint_1.7.12_windows_386.zip",
+    "size": 2350848
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_windows_amd64.zip",
+    "digest": "sha256:6e7241b51e6817ea6a047693d8e6fed13b31819c9a0dd6c5a726e1592d22f6e9",
+    "name": "actionlint_1.7.12_windows_amd64.zip",
+    "size": 2479065
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_windows_arm64.zip",
+    "digest": "sha256:cadcf7ea4efe3a68728893813643cebe1185e5b1d4be5b96245f65c9a4d5ea41",
+    "name": "actionlint_1.7.12_windows_arm64.zip",
+    "size": 2200159
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.12"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_checksums.txt",
+    "digest": "sha256:7d588eeb1ceb1e926b5618162a082453e1618b7772597e4ef8270e08777a8114",
+    "name": "actionlint_1.7.11_checksums.txt",
+    "size": 1130
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_darwin_amd64.tar.gz",
+    "digest": "sha256:17ffc17fed8f0258ef6ad4aed932d3272464c7ef7d64e1cb0d65aa97c9752107",
+    "name": "actionlint_1.7.11_darwin_amd64.tar.gz",
+    "size": 2267217
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_darwin_arm64.tar.gz",
+    "digest": "sha256:a21ba7366d8329e7223faee0ed69eb13da27fe8acabb356bb7eb0b7f1e1cb6d8",
+    "name": "actionlint_1.7.11_darwin_arm64.tar.gz",
+    "size": 2094625
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_freebsd_386.tar.gz",
+    "digest": "sha256:5d0ac97d340590d0e82a7cf7bc74034628db6afbcc967f85bb75686ff05165c4",
+    "name": "actionlint_1.7.11_freebsd_386.tar.gz",
+    "size": 2071168
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_freebsd_amd64.tar.gz",
+    "digest": "sha256:9dbf5364eb5085ff14c08bfcc99b974b760b4894f1ad83c9d9defa3c09bc69c3",
+    "name": "actionlint_1.7.11_freebsd_amd64.tar.gz",
+    "size": 2229380
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_linux_386.tar.gz",
+    "digest": "sha256:ccf820b1dbcbff6d28fe06f8fa33dde8f86a081a60338eaa819bf325fab5409c",
+    "name": "actionlint_1.7.11_linux_386.tar.gz",
+    "size": 2108591
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_linux_amd64.tar.gz",
+    "digest": "sha256:900919a84f2229bac68ca9cd4103ea297abc35e9689ebb842c6e34a3d1b01b0a",
+    "name": "actionlint_1.7.11_linux_amd64.tar.gz",
+    "size": 2265519
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_linux_arm64.tar.gz",
+    "digest": "sha256:21bc0dfb57a913fe175298c2a9e906ee630f747cb66d0a934d0d4b69f4ee1235",
+    "name": "actionlint_1.7.11_linux_arm64.tar.gz",
+    "size": 2043156
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_linux_armv6.tar.gz",
+    "digest": "sha256:74c2db01e3a94082e392bcd81c5715ca26f4af210ded3fd85a8c1bcc2bc94abd",
+    "name": "actionlint_1.7.11_linux_armv6.tar.gz",
+    "size": 2131938
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_windows_386.zip",
+    "digest": "sha256:a0ee4afc6534d8d03dce3af3af5cdb5c0b640d3fc40d9da275add47d4d560465",
+    "name": "actionlint_1.7.11_windows_386.zip",
+    "size": 2269738
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_windows_amd64.zip",
+    "digest": "sha256:5414b7124a91f4b5abee62e5c9d84802237734f8d15b9b7032732a32c3ebffa3",
+    "name": "actionlint_1.7.11_windows_amd64.zip",
+    "size": 2380568
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.11/actionlint_1.7.11_windows_arm64.zip",
+    "digest": "sha256:4900eb60e084604850935705306305f0bb0ca532e07c2b4ae642917142aba75d",
+    "name": "actionlint_1.7.11_windows_arm64.zip",
+    "size": 2124833
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.11"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_checksums.txt",
+    "digest": "sha256:8e279d4af49d68fbbdf6b56b9eb9737c1340673d662dc992937095c96a6010f7",
+    "name": "actionlint_1.7.10_checksums.txt",
+    "size": 1130
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_darwin_amd64.tar.gz",
+    "digest": "sha256:16782c41f2af264db80f855ee5d09164ca98fc78edf3bcd0f46eecff279682ba",
+    "name": "actionlint_1.7.10_darwin_amd64.tar.gz",
+    "size": 2260881
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_darwin_arm64.tar.gz",
+    "digest": "sha256:004ca87b367b37f4d75c55ab6cf80f9b8c043adbfbd440f31c604d417939c442",
+    "name": "actionlint_1.7.10_darwin_arm64.tar.gz",
+    "size": 2090488
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_freebsd_386.tar.gz",
+    "digest": "sha256:31ec5ee4deef04edf3b9eb3bac5243d785b5dccf70688e02a022b0723bfae80a",
+    "name": "actionlint_1.7.10_freebsd_386.tar.gz",
+    "size": 2069224
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_freebsd_amd64.tar.gz",
+    "digest": "sha256:418461873e1f8eb7acc7524d70d4c33e99f9aab53da8625f4a3c50273612c930",
+    "name": "actionlint_1.7.10_freebsd_amd64.tar.gz",
+    "size": 2226005
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_386.tar.gz",
+    "digest": "sha256:b728a3c31f7bd37d3026a7cd87148da9ddf845b5d56213fcc410bb222523c7d0",
+    "name": "actionlint_1.7.10_linux_386.tar.gz",
+    "size": 2105225
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_amd64.tar.gz",
+    "digest": "sha256:f4c76b71db5755a713e6055cbb0857ed07e103e028bda117817660ebadb4386f",
+    "name": "actionlint_1.7.10_linux_amd64.tar.gz",
+    "size": 2261662
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_arm64.tar.gz",
+    "digest": "sha256:cd3dfe5f66887ec6b987752d8d9614e59fd22f39415c5ad9f28374623f41773a",
+    "name": "actionlint_1.7.10_linux_arm64.tar.gz",
+    "size": 2040812
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_armv6.tar.gz",
+    "digest": "sha256:7624bae3f6e41985f498de7b246a2334cd734b9f1a8f04a9748429cbcf99b750",
+    "name": "actionlint_1.7.10_linux_armv6.tar.gz",
+    "size": 2126365
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_windows_386.zip",
+    "digest": "sha256:1783f8a1dd59a67dae373e753a88592351e00128195bc9ddd2b836a0c31df71b",
+    "name": "actionlint_1.7.10_windows_386.zip",
+    "size": 2265797
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_windows_amd64.zip",
+    "digest": "sha256:283467f9d6202a8cb8c00ad8dd0ee4e685b71fb86a6a56c68fcbb9ae8ed91237",
+    "name": "actionlint_1.7.10_windows_amd64.zip",
+    "size": 2377080
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_windows_arm64.zip",
+    "digest": "sha256:0c7242bca2f0ee4672a00ce7fa3c7185311fb94cb9e1e0f6bb57d5456e421d80",
+    "name": "actionlint_1.7.10_windows_arm64.zip",
+    "size": 2122080
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.10"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_checksums.txt",
+    "digest": "sha256:c0722602c622050fec2fdfbdc5fc4eb17a3b3fb62ea82dc38ea3d3c8cb48d769",
+    "name": "actionlint_1.7.9_checksums.txt",
+    "size": 1119
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_darwin_amd64.tar.gz",
+    "digest": "sha256:f89a910e90e536f60df7c504160247db01dd67cab6f08c064c1c397b76c91a79",
+    "name": "actionlint_1.7.9_darwin_amd64.tar.gz",
+    "size": 2237924
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_darwin_arm64.tar.gz",
+    "digest": "sha256:855e49e823fc68c6371fd6967e359cde11912d8d44fed343283c8e6e943bd789",
+    "name": "actionlint_1.7.9_darwin_arm64.tar.gz",
+    "size": 2068001
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_freebsd_386.tar.gz",
+    "digest": "sha256:6b1d36a749ea131efb3e8630066e862e803b026db03d43df38cdea055af78376",
+    "name": "actionlint_1.7.9_freebsd_386.tar.gz",
+    "size": 2050584
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_freebsd_amd64.tar.gz",
+    "digest": "sha256:82284524dca6d8db3e039ec8eb96c86079a9ae9533820f2875e4dbf246aee2b4",
+    "name": "actionlint_1.7.9_freebsd_amd64.tar.gz",
+    "size": 2199885
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_386.tar.gz",
+    "digest": "sha256:942229bc28c67c1032345f6dc43a2c6c74aadb12539d7b0d7f6f0c9069c58fd7",
+    "name": "actionlint_1.7.9_linux_386.tar.gz",
+    "size": 2086322
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_amd64.tar.gz",
+    "digest": "sha256:233b280d05e100837f4af1433c7b40a5dcb306e3aa68fb4f17f8a7f45a7df7b4",
+    "name": "actionlint_1.7.9_linux_amd64.tar.gz",
+    "size": 2237057
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_arm64.tar.gz",
+    "digest": "sha256:6b82a3b8c808bf1bcd39a95aced22fc1a026eef08ede410f81e274af8deadbbc",
+    "name": "actionlint_1.7.9_linux_arm64.tar.gz",
+    "size": 2019962
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_armv6.tar.gz",
+    "digest": "sha256:e6c73236f671d39a21f70c7c91a878a62fc47ddc24f420582ea9f318225c607e",
+    "name": "actionlint_1.7.9_linux_armv6.tar.gz",
+    "size": 2107674
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_windows_386.zip",
+    "digest": "sha256:ce24091626ce8f931d7dab6970a9d33dfbcb76d969e3666b2be6d65cbfcd2d60",
+    "name": "actionlint_1.7.9_windows_386.zip",
+    "size": 2247274
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_windows_amd64.zip",
+    "digest": "sha256:7c8b10a93723838bc3533f6e1886d868fdbb109b81606ebe6d1a533d11d8e978",
+    "name": "actionlint_1.7.9_windows_amd64.zip",
+    "size": 2351002
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_windows_arm64.zip",
+    "digest": "sha256:7aca9bf09eedf0a743e08c7cb9f1712467a7324a9342a029ae4536fb4be95c25",
+    "name": "actionlint_1.7.9_windows_arm64.zip",
+    "size": 2103954
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.9"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_checksums.txt",
+    "digest": "sha256:a0c1adea516d078e091fe37e259a1d9a6a7d31b316f584bd64836aba1029bc0b",
+    "name": "actionlint_1.7.8_checksums.txt",
+    "size": 1119
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_darwin_amd64.tar.gz",
+    "digest": "sha256:16b85caf792b34bcc40f7437736c4347680da0a1b034353a85012debbd71a461",
+    "name": "actionlint_1.7.8_darwin_amd64.tar.gz",
+    "size": 2221064
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_darwin_arm64.tar.gz",
+    "digest": "sha256:ffb1f6c429a51dc9f37af9d11f96c16bd52f54b713bf7f8bd92f7fce9fd4284a",
+    "name": "actionlint_1.7.8_darwin_arm64.tar.gz",
+    "size": 2056182
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_freebsd_386.tar.gz",
+    "digest": "sha256:c3221c05dd86953a89eb67d86ba7079f0fa0c746284d4d92815c8cf7b4027159",
+    "name": "actionlint_1.7.8_freebsd_386.tar.gz",
+    "size": 2037900
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_freebsd_amd64.tar.gz",
+    "digest": "sha256:88466ef163e3f48f2fe597d78f9059c334591037baa590f5484509ffe1ec9927",
+    "name": "actionlint_1.7.8_freebsd_amd64.tar.gz",
+    "size": 2185657
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_linux_386.tar.gz",
+    "digest": "sha256:5114b327d69c91c76a738ad0c3f80e8c92d78d7e42d9eb472bae152fdd9828a9",
+    "name": "actionlint_1.7.8_linux_386.tar.gz",
+    "size": 2071535
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_linux_amd64.tar.gz",
+    "digest": "sha256:be92c2652ab7b6d08425428797ceabeb16e31a781c07bc388456b4e592f3e36a",
+    "name": "actionlint_1.7.8_linux_amd64.tar.gz",
+    "size": 2219735
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_linux_arm64.tar.gz",
+    "digest": "sha256:4c65dbb2d59b409cdd75d47ffa8fa32af8f0eee573ac510468dc2275c48bf07c",
+    "name": "actionlint_1.7.8_linux_arm64.tar.gz",
+    "size": 2009863
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_linux_armv6.tar.gz",
+    "digest": "sha256:52fc7e1943da3d4f8496bece570085c75c3b6a89c1bc543a435df45f97bc9260",
+    "name": "actionlint_1.7.8_linux_armv6.tar.gz",
+    "size": 2087483
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_windows_386.zip",
+    "digest": "sha256:862785fc031587764d3d15801c53e775c0031b3be1f00e3b6df61296c37f86b9",
+    "name": "actionlint_1.7.8_windows_386.zip",
+    "size": 2229939
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_windows_amd64.zip",
+    "digest": "sha256:8cae2385eb69b93084ea2e6a4bce57233feb56ab16b3087bea25cbc0abadb0cc",
+    "name": "actionlint_1.7.8_windows_amd64.zip",
+    "size": 2336512
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.8/actionlint_1.7.8_windows_arm64.zip",
+    "digest": "sha256:76cbb407e2de15df97969aae51d6fb46aaae9e73a48da06b1c3157cb9f2ee766",
+    "name": "actionlint_1.7.8_windows_arm64.zip",
+    "size": 2090792
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.8"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_checksums.txt",
+    "name": "actionlint_1.7.7_checksums.txt",
+    "size": 1119
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_darwin_amd64.tar.gz",
+    "name": "actionlint_1.7.7_darwin_amd64.tar.gz",
+    "size": 2092389
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_darwin_arm64.tar.gz",
+    "name": "actionlint_1.7.7_darwin_arm64.tar.gz",
+    "size": 1962532
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_freebsd_386.tar.gz",
+    "name": "actionlint_1.7.7_freebsd_386.tar.gz",
+    "size": 1925435
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_freebsd_amd64.tar.gz",
+    "name": "actionlint_1.7.7_freebsd_amd64.tar.gz",
+    "size": 2056364
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_386.tar.gz",
+    "name": "actionlint_1.7.7_linux_386.tar.gz",
+    "size": 1952438
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz",
+    "name": "actionlint_1.7.7_linux_amd64.tar.gz",
+    "size": 2080472
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_arm64.tar.gz",
+    "name": "actionlint_1.7.7_linux_arm64.tar.gz",
+    "size": 1911516
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_armv6.tar.gz",
+    "name": "actionlint_1.7.7_linux_armv6.tar.gz",
+    "size": 1966510
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_windows_386.zip",
+    "name": "actionlint_1.7.7_windows_386.zip",
+    "size": 2130312
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_windows_amd64.zip",
+    "name": "actionlint_1.7.7_windows_amd64.zip",
+    "size": 2229473
+   },
+   {
+    "browser_download_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_windows_arm64.zip",
+    "name": "actionlint_1.7.7_windows_arm64.zip",
+    "size": 2020826
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.7.7"
+ }
+]

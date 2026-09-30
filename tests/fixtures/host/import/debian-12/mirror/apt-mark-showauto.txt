@@ -1,0 +1,10 @@
+aspell
+aspell-en
+containerd.io
+git-man
+kmod
+libcurl4
+libgcc-s1
+linux-base
+linux-image-6.1.0-26-amd64
+openssh-client

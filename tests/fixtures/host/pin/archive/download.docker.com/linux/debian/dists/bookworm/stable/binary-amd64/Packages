@@ -1,0 +1,539 @@
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.15.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.15.1-1~debian.12~bookworm_amd64.deb
+Size: 9663988
+SHA256: 3805dd811f0f367c925f577e4bc5e1324a91771582cfb45b6c834b8480e2d59b
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.16.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.16.0-1~debian.12~bookworm_amd64.deb
+Size: 10165282
+SHA256: 83f303052f3d53b97018941f7657fa4ef1013bff70c6070c7de527ce264d0457
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.17.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.17.2-1~debian.12~bookworm_amd64.deb
+Size: 10860774
+SHA256: 7c3b914920e62cd248a2abc950945e9119234df5197c6ff881ef893d9ce9138e
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.17.3-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.17.3-1~debian.12~bookworm_amd64.deb
+Size: 10866634
+SHA256: 06c539f1afff76842cb30d3c67e91c81e5ab07ef0aacedbb3e6e637c61fb9c47
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.18.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.18.1-1~debian.12~bookworm_amd64.deb
+Size: 10939830
+SHA256: f61386c383aaa8bf911a433702a6288a23efeeef667c5bd3d5abae4cbc2b1edd
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.19.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.19.1-1~debian.12~bookworm_amd64.deb
+Size: 11887270
+SHA256: 764e9db6188c79fd0a0c9d9bfbeca24ebf899f788ecc24a41a7c57d978bc6a97
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.20.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.20.2-1~debian.12~bookworm_amd64.deb
+Size: 11886022
+SHA256: b58a287dc34b524f511cef3e71cb7592525e3b6f3dfded56587849442d4aeb49
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.21.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.21.0-1~debian.12~bookworm_amd64.deb
+Size: 11941890
+SHA256: 1fa725ad0bc08078d949c5bc48f282e63b6131fcf4fd0cf96ff464e4cb73d265
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.24.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.24.1-1~debian.12~bookworm_amd64.deb
+Size: 12102024
+SHA256: b9bf8d08cb851fbac935e0f286df18113f06be2cd7b9446e908bf5c57dd75edc
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.24.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.24.2-1~debian.12~bookworm_amd64.deb
+Size: 12104312
+SHA256: a373f2d65d4712ceb3b3f205790ed6ef5b8bd275d7ced5dc342c51778a312697
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.24.5-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.24.5-1~debian.12~bookworm_amd64.deb
+Size: 12112484
+SHA256: c8a654542a32c873f3263628903e6968aabf00d33efa9f08b0e5407474f3c985
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.24.6-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.24.6-1~debian.12~bookworm_amd64.deb
+Size: 12118588
+SHA256: 5f25d18f816bf819500458995feb8ed00fbd2542a0ccf4d8053861ebaaa5ec07
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.24.7-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.24.7-1~debian.12~bookworm_amd64.deb
+Size: 12130704
+SHA256: 4dbd7d475597f3ded00c23db233144cc7c390d4b56e5d86f965a4ab01d4044d2
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.25.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.25.0-1~debian.12~bookworm_amd64.deb
+Size: 12128028
+SHA256: 72f0f8dc36227efa3be9cd6e3df6319d5b6cf9bb1b85695231c358cb570740db
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.26.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.26.1-1~debian.12~bookworm_amd64.deb
+Size: 12410712
+SHA256: 686cc9049fbb3daebf575327411e71ee19988c5ea60642cf10f77ab74c1638d9
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.27.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.27.0-1~debian.12~bookworm_amd64.deb
+Size: 12478728
+SHA256: 8e3bbb76ae68306f3f22fd16efb204c4c87e5413d1a0cc4ddb6878f4ecfa1049
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.27.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.27.1-1~debian.12~bookworm_amd64.deb
+Size: 12494496
+SHA256: 22a105bbc6ff429526a69ec7defc9c79783eb89cb81f575b2b55645943592168
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.28.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.28.1-1~debian.12~bookworm_amd64.deb
+Size: 12510076
+SHA256: 3148abd3285a2260ace90d76ee9f19bc38d449adb055a49c435a9ae91efac3fa
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.29.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.29.0-1~debian.12~bookworm_amd64.deb
+Size: 12516864
+SHA256: 138c0c7eed1d4f18286f09a4a08b12dfc1cc161e063d268f9a8807d92688efe4
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.29.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.29.1-1~debian.12~bookworm_amd64.deb
+Size: 12516388
+SHA256: df05a14838d1832b6f1ac2ea3d1bcc749d4233ea26b68ac8b64635285eb37bae
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.29.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.29.2-1~debian.12~bookworm_amd64.deb
+Size: 12521860
+SHA256: 35dddc4fa186d4f9bb4a6a8e69a0c51388776650d74218c30a134c0d7399cbd8
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.29.6-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.29.6-1~debian.12~bookworm_amd64.deb
+Size: 12650596
+SHA256: 276c4f7ff7452084cd4b0ca288c3816ef8fc84594e51800c43d4fc1cc2d2f2f4
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.29.7-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.29.7-1~debian.12~bookworm_amd64.deb
+Size: 12655304
+SHA256: 91eec4b85345c612b03da3d46f7f0643481233284caf672f76de6ba0914bc0cc
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.31.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.31.0-1~debian.12~bookworm_amd64.deb
+Size: 12756060
+SHA256: 6dbc4351c7f9333afadad86dda0d04094a513d3e75e24a3b1dcd27ba279b4466
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.32.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.32.1-1~debian.12~bookworm_amd64.deb
+Size: 12822160
+SHA256: bbc3a4e96ab2a73ab64eac65435695ce7bd56e95fc01f9af94811aafee37845e
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.32.3-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.32.3-1~debian.12~bookworm_amd64.deb
+Size: 12839768
+SHA256: c97b142cbaaea6b431377212ca7b41f08d7c4855f64a38184f98ae346eba3106
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.32.4-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.32.4-1~debian.12~bookworm_amd64.deb
+Size: 12839704
+SHA256: 8646277c8f1dd79923e809b55671066840f9b0fc1b7fbeccc175b5f654489d58
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.33.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.33.0-1~debian.12~bookworm_amd64.deb
+Size: 13921604
+SHA256: 44c91745775ad2490cfdfd8327df87ef00f482dca2aeb4b5102660023780c540
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.33.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.33.1-1~debian.12~bookworm_amd64.deb
+Size: 13945088
+SHA256: b7e69f1cc924c413e5dccc08f9e5b9596151c77780ea2c2360b3ca1a8abd411c
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.34.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.34.0-1~debian.12~bookworm_amd64.deb
+Size: 14113340
+SHA256: 5e8a560dce6cfba878d3d6b111260210c675f67ec0567d57b184d5e0716e9496
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.35.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.35.0-1~debian.12~bookworm_amd64.deb
+Size: 13824524
+SHA256: 5a4339438f64e9e81e2416dbebd7dc4331a8273feda468c43019a4b181786102
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.35.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.35.1-1~debian.12~bookworm_amd64.deb
+Size: 13829572
+SHA256: 90df0798884e75e96554eb1a0adc2edd2ee1c49fd663e1d8d3b2b13899501b12
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.36.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.36.2-1~debian.12~bookworm_amd64.deb
+Size: 14034856
+SHA256: 8876e7b763760da7fa4f14b3e5a72edcc1b94115d9f54eeab8adb683eb314ee6
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.37.3-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.37.3-1~debian.12~bookworm_amd64.deb
+Size: 14168180
+SHA256: 8f90b20f50f6ffb8b0ce2a20758a38b9cfbc617762b92e1b3a4f87a9bf6086cc
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.38.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.38.1-1~debian.12~bookworm_amd64.deb
+Size: 14190496
+SHA256: 47fdd453f6d6f9e07b46e798e154870d03f07fb15d6c2247e3e02d7d165126f4
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.38.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.38.2-1~debian.12~bookworm_amd64.deb
+Size: 14187908
+SHA256: 0edf1155ad6fc0c4d70385c8584b3a08643154bae99875deaf12dbc13204296e
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.39.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.39.1-1~debian.12~bookworm_amd64.deb
+Size: 14245872
+SHA256: e41fe6f9fcbf1fecdef8ecab16cfaecf5e3d910cc51825791c4484722d038603
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.39.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.39.2-1~debian.12~bookworm_amd64.deb
+Size: 14247516
+SHA256: 69c7026c514791621bd75716fa3bd7ca26b70ea0c291b776a531957d274e3325
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.39.4-0~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.39.4-0~debian.12~bookworm_amd64.deb
+Size: 14204852
+SHA256: cb697f181f99abfe9caa91e2e3f9872d018f7e24033833bf0d69878818ae7c0a
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.40.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.40.0-1~debian.12~bookworm_amd64.deb
+Size: 14171304
+SHA256: 0270c80bd4e3e88f8e6eb118f00da3c967e40c25fc6322b3a4605914e51ac080
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.40.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.40.1-1~debian.12~bookworm_amd64.deb
+Size: 14268344
+SHA256: ecc16da26f989a5b680283c49c9565fdef8b2e6dc730d05e299684d351959842
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.40.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.40.2-1~debian.12~bookworm_amd64.deb
+Size: 14263748
+SHA256: 82cc34f45c4831005ca28e9681606e9dad2806f62efffd12d22c4bed16ff8e35
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 2.40.3-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_2.40.3-1~debian.12~bookworm_amd64.deb
+Size: 14262532
+SHA256: 8e631e31b602ee93eed88d7df477781e43bb8d78a8ad3429531f594029034c2c
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.0.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.0.0-1~debian.12~bookworm_amd64.deb
+Size: 7710928
+SHA256: 42ac34a1f66c9cbe38255111029327a84bd2e1f8a7fbe811d2fd61ac9759d135
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.0.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.0.1-1~debian.12~bookworm_amd64.deb
+Size: 7712832
+SHA256: 8f8912ffeb05a450cc2e623aa907776fe57bfc27c1f5cc3add8308009216214e
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.0.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.0.2-1~debian.12~bookworm_amd64.deb
+Size: 7723524
+SHA256: f1381a75d75ba6382e79aaa72318094d099bedcdd8501a179f303636f9122dc0
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.1.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.1.0-1~debian.12~bookworm_amd64.deb
+Size: 7846876
+SHA256: 41ad7285337b701a0a79fefe7be38519e75e512c446497c68a3c353141af66ed
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.1.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.1.1-1~debian.12~bookworm_amd64.deb
+Size: 7847060
+SHA256: aa5ffeadb7d02060267df00d12cd50971c91d1c896df221cc95c5d003dc0f0fd
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.1.2-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.1.2-1~debian.12~bookworm_amd64.deb
+Size: 8017884
+SHA256: 58c5c5766244fec6d9a8ae8567c9c017b7ce08ef52afa59010ebf9c9f85e2927
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.1.3-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.1.3-1~debian.12~bookworm_amd64.deb
+Size: 8023244
+SHA256: c6d631450b211ba387a113703e9534396d72a219ac8018000e08d8ac26d23bbc
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.1.4-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.1.4-1~debian.12~bookworm_amd64.deb
+Size: 8126688
+SHA256: 38e7044dbe63600727722deca9344408b9622481e956d2fe239595ec22127fd3
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.2.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.2.0-1~debian.12~bookworm_amd64.deb
+Size: 8076272
+SHA256: a9358fabdd5e4692299d37dc12220ece1ef0bc878ffdfce49213a4dee5575104
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.3.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.3.0-1~debian.12~bookworm_amd64.deb
+Size: 8082640
+SHA256: 10ac4adb0a46457c6f11bfde6f5e40286e7d7a9246a6d873e3f8b84a855d94f4
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.3.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.3.1-1~debian.12~bookworm_amd64.deb
+Size: 8100472
+SHA256: bbcd0b50652374a979972dc707bfca169ff55c208095d54ba39d4f62d68d4d4c
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.4.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.4.0-1~debian.12~bookworm_amd64.deb
+Size: 11056608
+SHA256: 4139aa686d3ab57ccb93f54f8a8e51ae739681287b36b80a64182ee512556851
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.5.0-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.5.0-1~debian.12~bookworm_amd64.deb
+Size: 11071456
+SHA256: e54ead5156cce87b4f920c4dd3045834056bd6f94734b05e794d0e418a909143
+
+Package: docker-compose-plugin
+Architecture: amd64
+Version: 5.5.1-1~debian.12~bookworm
+Priority: optional
+Section: admin
+Recommends: docker-buildx-plugin (>= 0.17.0)
+Filename: dists/bookworm/pool/stable/amd64/docker-compose-plugin_5.5.1-1~debian.12~bookworm_amd64.deb
+Size: 8013252
+SHA256: 0455e6a54bcc07b1bcb5d92d9e6e77dedc485433c87c1b75572e6d837a96e459

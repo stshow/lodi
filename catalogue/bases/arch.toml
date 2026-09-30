@@ -1,0 +1,28 @@
+# Arch Linux rolling container base. The archive measurement on 2026-09-21 found the first
+# x86_64 bootstrap pin at 2024.05.01 and confirmed that repository databases are retained by day.
+[base]
+distro = "arch"
+family = "pacman"
+
+[release.rolling]
+aliases      = []
+snapshot_min = "2024-05-01T00:00:00Z"
+repositories = ["core", "extra"]
+
+[release.rolling.rootfs.x86_64]
+strategy     = "dated_checksum_dir"
+index_url    = "https://archive.archlinux.org/iso/"
+date_format  = "YYYY.MM.DD"
+checksums    = "sha256sums.txt"
+layer        = "archlinux-bootstrap-YYYY.MM.DD-x86_64.tar.zst"
+subdir       = "root.x86_64"
+
+[repository.core]
+snapshot_url = "https://archive.archlinux.org/repos/${snapshot_day}/core/os/${deb_arch}/"
+suites       = []
+components   = []
+
+[repository.extra]
+snapshot_url = "https://archive.archlinux.org/repos/${snapshot_day}/extra/os/${deb_arch}/"
+suites       = []
+components   = []

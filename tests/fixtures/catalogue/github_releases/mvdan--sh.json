@@ -1,0 +1,335 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_darwin_amd64",
+    "digest": "sha256:d33eee0da0f92835b3562e9767a05cee7e4eaeef47daa03bfd09da17b4b590a6",
+    "name": "shfmt_v3.14.1_darwin_amd64",
+    "size": 3578256
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_darwin_arm64",
+    "digest": "sha256:b7c872db63553ccffc7253aba3ed7d4885a27d83f1ba567b1138c6315a5847e5",
+    "name": "shfmt_v3.14.1_darwin_arm64",
+    "size": 3391698
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_386",
+    "digest": "sha256:aad6f0bd6285910c152091ba58b5509aa88eb8a2a81a2d72cf2048a8a78c27f4",
+    "name": "shfmt_v3.14.1_linux_386",
+    "size": 3362976
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64",
+    "digest": "sha256:76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf",
+    "name": "shfmt_v3.14.1_linux_amd64",
+    "size": 3571872
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_arm",
+    "digest": "sha256:ede6c4adefeda196d963906daa7c1f20094e6def7a98bcb9f4c74079babf1eca",
+    "name": "shfmt_v3.14.1_linux_arm",
+    "size": 3539104
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_arm64",
+    "digest": "sha256:5f2db09dae91fca848f7adbdd014632e921a383863a2ad7e0450ad3aba0c6489",
+    "name": "shfmt_v3.14.1_linux_arm64",
+    "size": 3342496
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_windows_386.exe",
+    "digest": "sha256:b6f171113e7359f44d5ffdc93a90b93a7d405aa8847129a6982e10fe4d356f1e",
+    "name": "shfmt_v3.14.1_windows_386.exe",
+    "size": 3588608
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_windows_amd64.exe",
+    "digest": "sha256:13629ce28442ca80b6b5a819f7574ab39e1c28c6e26734ca816c9714e04851df",
+    "name": "shfmt_v3.14.1_windows_amd64.exe",
+    "size": 3801600
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.14.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_darwin_amd64",
+    "digest": "sha256:74255a8087d74a79f5c1307db807e7efa8f062c429e3a05c075550392e0dcfa1",
+    "name": "shfmt_v3.14.0_darwin_amd64",
+    "size": 3578208
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_darwin_arm64",
+    "digest": "sha256:4710ba8074a74334069719d5b82f8cb97532e5623bfe43ef7cdb3442101b9cb2",
+    "name": "shfmt_v3.14.0_darwin_arm64",
+    "size": 3391650
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_386",
+    "digest": "sha256:f5e72baae391a5351be9b1d9ee398ab3a2ab66cb99bf4d0a54aea77610fbb9ea",
+    "name": "shfmt_v3.14.0_linux_386",
+    "size": 3362976
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_amd64",
+    "digest": "sha256:fe42021c7272ef2d67ea36cbc3031683c625d0badec733ef3a57b567246a0b66",
+    "name": "shfmt_v3.14.0_linux_amd64",
+    "size": 3567776
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_arm",
+    "digest": "sha256:951f136dae5f11cfb23b7a0140a16739f53289f7d933690eed3ccf73d011b175",
+    "name": "shfmt_v3.14.0_linux_arm",
+    "size": 3539104
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_arm64",
+    "digest": "sha256:8029959a945b5c6f2bc92ce53fca5cf0384c811cc0884b25b196a093a005657a",
+    "name": "shfmt_v3.14.0_linux_arm64",
+    "size": 3342496
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_windows_386.exe",
+    "digest": "sha256:899d0944bb7d81564a72c0ad77acc2a1d56d5292f0535317e98b2361eba6aab3",
+    "name": "shfmt_v3.14.0_windows_386.exe",
+    "size": 3587072
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_windows_amd64.exe",
+    "digest": "sha256:6738a3e155fbfec3bedc70962f9cd1610197587a43b5d7100f405239d8e11375",
+    "name": "shfmt_v3.14.0_windows_amd64.exe",
+    "size": 3800576
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.14.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_darwin_amd64",
+    "digest": "sha256:6feedafc72915794163114f512348e2437d080d0047ef8b8fa2ec63b575f12af",
+    "name": "shfmt_v3.13.1_darwin_amd64",
+    "size": 3124544
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_darwin_arm64",
+    "digest": "sha256:9680526be4a66ea1ffe988ed08af58e1400fe1e4f4aef5bd88b20bb9b3da33f8",
+    "name": "shfmt_v3.13.1_darwin_arm64",
+    "size": 2975650
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_386",
+    "digest": "sha256:5f9a2c46249dab66d7767df676083ea6a3313831ca9f4bc29e4c21af87bd4f5e",
+    "name": "shfmt_v3.13.1_linux_386",
+    "size": 2912418
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_amd64",
+    "digest": "sha256:fb096c5d1ac6beabbdbaa2874d025badb03ee07929f0c9ff67563ce8c75398b1",
+    "name": "shfmt_v3.13.1_linux_amd64",
+    "size": 3117218
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_arm",
+    "digest": "sha256:f6c23b95971bcc5ebf86411bccefb79f1e99f8efe7c722d980a3f244838b1398",
+    "name": "shfmt_v3.13.1_linux_arm",
+    "size": 3080354
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_arm64",
+    "digest": "sha256:32d92acaa5cd8abb29fc49dac123dc412442d5713967819d8af2c29f1b3857c7",
+    "name": "shfmt_v3.13.1_linux_arm64",
+    "size": 3014818
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_windows_386.exe",
+    "digest": "sha256:9b4f368b837feb883a3b2bf38a46a94dcab4bca4b7c3e19f6710e0e09a56ce7c",
+    "name": "shfmt_v3.13.1_windows_386.exe",
+    "size": 3100672
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_windows_amd64.exe",
+    "digest": "sha256:60cd368533d0ad73fa86d93d5bbf95ef40587245ce684ed138c1b31557b5fe97",
+    "name": "shfmt_v3.13.1_windows_amd64.exe",
+    "size": 3323904
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_darwin_amd64",
+    "digest": "sha256:b6890a0009abf71d36d7c536ad56e3132c547ceb77cd5d5ee62b3469ab4e9417",
+    "name": "shfmt_v3.13.0_darwin_amd64",
+    "size": 3124544
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_darwin_arm64",
+    "digest": "sha256:650970603b5946dc6041836ddcfa7a19d99b5da885e4687f64575508e99cf718",
+    "name": "shfmt_v3.13.0_darwin_arm64",
+    "size": 2975650
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_linux_386",
+    "digest": "sha256:e645b59e34928442853fb5610dc485985f8acbe112a129679cede1dc320e54ff",
+    "name": "shfmt_v3.13.0_linux_386",
+    "size": 2912418
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_linux_amd64",
+    "digest": "sha256:70aa99784703a8d6569bbf0b1e43e1a91906a4166bf1a79de42050a6d0de7551",
+    "name": "shfmt_v3.13.0_linux_amd64",
+    "size": 3117218
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_linux_arm",
+    "digest": "sha256:774b9a86cff4844179328cfbab2f602e75dcb68132e918e5271d015b3295c9c7",
+    "name": "shfmt_v3.13.0_linux_arm",
+    "size": 3080354
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_linux_arm64",
+    "digest": "sha256:2091a31afd47742051a77bf7cfd175533ab07e924c20ef3151cd108fa1cab5b0",
+    "name": "shfmt_v3.13.0_linux_arm64",
+    "size": 3014818
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_windows_386.exe",
+    "digest": "sha256:f3e32b2a320a3053837add32803d7fb3b730d3f10b84a867d327a549ef068fa0",
+    "name": "shfmt_v3.13.0_windows_386.exe",
+    "size": 3100160
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.13.0/shfmt_v3.13.0_windows_amd64.exe",
+    "digest": "sha256:62241aaf6b0ca236f8625d8892784b73fa67ad40bc677a1ad1a64ae395f6a7d5",
+    "name": "shfmt_v3.13.0_windows_amd64.exe",
+    "size": 3322880
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/sha256sums.txt",
+    "digest": "sha256:e73748c967174992d396585b31ef7cd2e0f38b7b091b511b7dc8f1f1a8b96c70",
+    "name": "sha256sums.txt",
+    "size": 744
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_darwin_amd64",
+    "digest": "sha256:c31548693de6584e6164b7ed5fbb7b4a083f2d937ca94b4e0ddf59aa461a85e4",
+    "name": "shfmt_v3.12.0_darwin_amd64",
+    "size": 2950992
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_darwin_arm64",
+    "digest": "sha256:d903802e0ce3ecbc82b98512f55ba370b0d37a93f3f78de394f5b657052b33dd",
+    "name": "shfmt_v3.12.0_darwin_arm64",
+    "size": 2891858
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_386",
+    "digest": "sha256:6b67da16834a215cc8c565bfbcfaa0303809456d8cafad28cb2eeea35a88904d",
+    "name": "shfmt_v3.12.0_linux_386",
+    "size": 2740408
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_amd64",
+    "digest": "sha256:d9fbb2a9c33d13f47e7618cf362a914d029d02a6df124064fff04fd688a745ea",
+    "name": "shfmt_v3.12.0_linux_amd64",
+    "size": 2916536
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_arm",
+    "digest": "sha256:a93c1ed5be25ce9dd0fd62c4cf0af7453740d234725877b973e6c6a8c7598500",
+    "name": "shfmt_v3.12.0_linux_arm",
+    "size": 2949304
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_arm64",
+    "digest": "sha256:5f3fe3fa6a9f766e6a182ba79a94bef8afedafc57db0b1ad32b0f67fae971ba4",
+    "name": "shfmt_v3.12.0_linux_arm64",
+    "size": 2883768
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_windows_386.exe",
+    "digest": "sha256:92c1ef0af344a10f2cefe3ce4bc6793ae8b3719ac08fc01802bbd8eae105e534",
+    "name": "shfmt_v3.12.0_windows_386.exe",
+    "size": 2957312
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_windows_amd64.exe",
+    "digest": "sha256:c8bda517ba1c640ce4a715c0fa665439ddbe4357ba5e9b77b0e51e70e2b9c94b",
+    "name": "shfmt_v3.12.0_windows_amd64.exe",
+    "size": 3169792
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.12.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/sha256sums.txt",
+    "name": "sha256sums.txt",
+    "size": 744
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_darwin_amd64",
+    "name": "shfmt_v3.11.0_darwin_amd64",
+    "size": 2946896
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_darwin_arm64",
+    "name": "shfmt_v3.11.0_darwin_arm64",
+    "size": 2891842
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_linux_386",
+    "name": "shfmt_v3.11.0_linux_386",
+    "size": 2736312
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_linux_amd64",
+    "name": "shfmt_v3.11.0_linux_amd64",
+    "size": 2916536
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_linux_arm",
+    "name": "shfmt_v3.11.0_linux_arm",
+    "size": 2949304
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_linux_arm64",
+    "name": "shfmt_v3.11.0_linux_arm64",
+    "size": 2883768
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_windows_386.exe",
+    "name": "shfmt_v3.11.0_windows_386.exe",
+    "size": 2955264
+   },
+   {
+    "browser_download_url": "https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_windows_amd64.exe",
+    "name": "shfmt_v3.11.0_windows_amd64.exe",
+    "size": 3166720
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.11.0"
+ }
+]

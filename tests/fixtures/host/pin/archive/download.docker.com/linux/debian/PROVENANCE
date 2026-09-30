@@ -1,0 +1,5 @@
+# Trimmed from a measured fetch by scripts/mpin-local.sh --fixtures on 2026-09-24.
+# the current index of a third-party repository; kept packages: docker-compose-plugin; kept fields: Package, Version, Architecture, Essential, Priority, Section, Pre-Depends, Depends, Recommends, Provides, Conflicts, Breaks, Filename, Size, SHA256.
+# Each line: the public URL, then the sha256 of its untrimmed bytes.
+https://download.docker.com/linux/debian/dists/bookworm/Release aaa75ad48fe5a1ae6d5b72ae4ec493cadee4a2a9b3111f6e34ad8af145a35ed4
+https://download.docker.com/linux/debian/dists/bookworm/stable/binary-amd64/Packages c8f7139c41471bab0894238b84a8c2cc94a4bbac43d379286b08ec44671c4feb

@@ -1,0 +1,60 @@
+{
+  "commands": {
+    "apt-mark-showauto.txt": "apt-mark showauto",
+    "apt-mark-showhold.txt": "apt-mark showhold",
+    "dpkg-audit.txt": "dpkg --audit",
+    "dpkg-query.txt": "dpkg-query -W -f='${binary:Package}\\t${Version}\\t${db:Status-Abbrev}\\n'",
+    "pkgnames.txt": "apt-cache pkgnames <the first two characters of the unknown name>",
+    "policy.txt": "apt-cache policy <the declared names>"
+  },
+  "kind": "lodi-apt-fixture-provenance",
+  "notes": [
+    "The stock Ubuntu 24.04 cloud image already carries bc, ed, patch, jq and time, so the declared names are tree, sqlite3 and a per-distro zip, with whois as the hand-installed control; all of those are absent from both stock images.",
+    "The interrupted scenario was recorded on Debian 12 only: both of its names are absent from that stock image, and one real kill produces all three classifications.",
+    "The dpkg-query command above is the one that really produced these bytes on those guests in 2026-09, and is not edited: M-Import R-1 (LD-312) later changed the product's format string from ${binary:Package} to ${Package}, so a recording taken today would carry plain names where these carry architecture-qualified ones. Nothing this suite concludes depends on which spelling the recording uses -- the apply compares declared names against the recording it is given -- and re-recording would need a guest, which R-1 did not create."
+  ],
+  "runs": {
+    "debian-12": {
+      "binary": "sha256:d3266e122e4caad1fe1b62f28da1a8c782d76738db4a70f46e66ce34e413b301",
+      "case": "packages",
+      "distro": "debian-12",
+      "driver": "sha256:059d7af80aa1402044917b32d39f29a9acec1ffade53b5a7dd74ff3e917c4e7e",
+      "evidence": "docs/milestones/m-0.6/evidence/packages-debian-12.json",
+      "guestImage": "debian-12-generic-amd64-20260909-2596.qcow2",
+      "guestImageChecksum": "sha512:84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
+      "recordedAt": "2026-09-21T14:19:55Z",
+      "vmTool": "sha256:5034b38bbeb4b8c438675b519dd0f7dff35a404a26c4fa928d63e54171336db3"
+    },
+    "debian-12/interrupted": {
+      "binary": "sha256:d3266e122e4caad1fe1b62f28da1a8c782d76738db4a70f46e66ce34e413b301",
+      "case": "kill-transaction",
+      "distro": "debian-12",
+      "driver": "sha256:059d7af80aa1402044917b32d39f29a9acec1ffade53b5a7dd74ff3e917c4e7e",
+      "evidence": "docs/milestones/m-0.6/evidence/kill-transaction-debian-12.json",
+      "guestImage": "debian-12-generic-amd64-20260909-2596.qcow2",
+      "guestImageChecksum": "sha512:84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
+      "recordedAt": "2026-09-21T14:21:06Z",
+      "vmTool": "sha256:5034b38bbeb4b8c438675b519dd0f7dff35a404a26c4fa928d63e54171336db3"
+    },
+    "ubuntu-24.04": {
+      "binary": "sha256:d3266e122e4caad1fe1b62f28da1a8c782d76738db4a70f46e66ce34e413b301",
+      "case": "packages",
+      "distro": "ubuntu-24.04",
+      "driver": "sha256:059d7af80aa1402044917b32d39f29a9acec1ffade53b5a7dd74ff3e917c4e7e",
+      "evidence": "docs/milestones/m-0.6/evidence/packages-ubuntu-24.04.json",
+      "guestImage": "ubuntu-24.04-server-cloudimg-amd64.img",
+      "guestImageChecksum": "sha256:612b2c0cc1bc413a6cb8c38fd611794caf0f2b436c50013d8b3794db12ad7354",
+      "recordedAt": "2026-09-21T14:22:15Z",
+      "vmTool": "sha256:5034b38bbeb4b8c438675b519dd0f7dff35a404a26c4fa928d63e54171336db3"
+    }
+  },
+  "schema": 1,
+  "states": {
+    "after": "the machine the apply left",
+    "before": "the machine before the apply under test",
+    "dirty": "a package unpacked and not configured, which is what dpkg --audit really prints",
+    "partial": "one of the interrupted transaction's two packages installed and the other not, which is neither bracket"
+  },
+  "task": "M-0.6 T-4",
+  "what": "Every file under this directory is the verbatim standard output of one command on one fresh disposable guest of this task, fetched off that guest by docs/milestones/m-0.6/probes/hostvm.py --record-fixtures. Nothing here is written by hand or invented: tests/host_apt.rs replays these bytes through shims it owns, so an assertion about what lodi concludes is an assertion about what apt really said."
+}

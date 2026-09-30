@@ -1,0 +1,15 @@
+Origin: Ubuntu
+Label: Ubuntu
+Suite: noble-security
+Version: 24.04
+Codename: noble
+Date: Wed, 05 Feb 2025 17:22:13 UTC
+Architectures: amd64 arm64 armhf i386 ppc64el riscv64 s390x
+Components: main restricted universe multiverse
+Description: Ubuntu Noble Security
+Acquire-By-Hash: yes
+SHA256:
+ db25c06978694c215f422c74ec91635dee4efea061e075a3681dee43ea79d0c5 332 main/binary-amd64/Packages.xz
+ f1c32695c7c912de945a287550d2414c8a3c8429c524bd2487e53fdd7a453ef1 354 main/binary-amd64/Packages
+ 0040f94d11d0039505328a90b2ff48968db873e9e7967307631bf40ef5679275 32 universe/binary-amd64/Packages.xz
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 universe/binary-amd64/Packages

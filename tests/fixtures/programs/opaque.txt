@@ -1,0 +1,5 @@
+# Managed by lodi from home.toml [programs.opaque]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+line one
+	tabbed   no final newline

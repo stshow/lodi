@@ -1,0 +1,27 @@
+# Upstream Node.js for [tools] nodejs. This recipe says where to look;
+# it lists no version. `lodi lock` discovers versions from the nodejs.org release index.
+[recipe]
+name        = "nodejs"
+description = "Node.js JavaScript runtime, official Linux binaries"
+homepage    = "https://nodejs.org"
+
+[arch_names]
+x86_64 = "x64"
+
+[versions]
+strategy     = "json_index"
+url          = "https://nodejs.org/dist/index.json"
+version_key  = "version"
+strip_prefix = "v"
+files_key    = "files"
+file         = "linux-${arch_name}"
+
+[asset]
+url              = "https://nodejs.org/dist/v${version}/node-v${version}-linux-${arch_name}.tar.xz"
+format           = "tar.xz"
+strip_components = 1
+checksum_file    = "https://nodejs.org/dist/v${version}/SHASUMS256.txt"
+
+[spec]
+bin  = ["bin/node", "bin/npm", "bin/npx"]
+path = ["bin"]

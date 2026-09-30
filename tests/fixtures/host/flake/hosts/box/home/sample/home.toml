@@ -1,0 +1,11 @@
+[home]
+version = "1"
+
+[home.file."note"]
+text = "home\n"
+
+[home.xdg_config."demo/app"]
+text = "owned\n"
+
+[home.xdg_config."nvim"]
+source = "inputs/nvim"

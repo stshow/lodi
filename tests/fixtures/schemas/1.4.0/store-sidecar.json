@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "created": "2026-09-26T07:22:33Z",
+  "identity": "sha256:5a0c047285a3d4a97b7eb59185d170f84b7c3236161a5afc074ada74330d4a9a",
+  "lodiVersion": "1.4.0",
+  "name": "env-5a0c047285a3d4a97b7eb59185d170f8",
+  "references": [],
+  "treeHash": "sha256:49067cf08286c16a7ea4aaf53cc5dca7ea0fbac4ee0dfe223174e1fb40a5482c",
+  "type": "env",
+  "version": 1
+}

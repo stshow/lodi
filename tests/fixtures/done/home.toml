@@ -1,0 +1,28 @@
+[home]
+version = "1"
+
+[home.file."note"]
+text = "declared\n"
+
+[programs.git]
+user.name = "gate"
+
+[tools."proof-tool"]
+version = "1.0.0"
+url = "https://fixtures.test/proof-tool"
+sha256 = "@SHA@"
+format = "binary"
+path = ["bin"]
+
+[services."proof.service"]
+enable = true
+unit = """
+[Unit]
+Description=Lodi final proof
+
+[Service]
+ExecStart=/bin/sleep infinity
+
+[Install]
+WantedBy=default.target
+"""

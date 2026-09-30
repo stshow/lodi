@@ -1,0 +1,17 @@
+[home]
+version = "1"
+
+[tools]
+jq = "latest"
+
+[programs.zsh]
+env = { EDITOR = "nvim", GOPATH = "~/go" }
+path = ["~/.local/bin"]
+aliases = { ll = "ls -l" }
+histsize = 10000
+savehist = 10000
+setopt = ["HIST_IGNORE_DUPS", "share_history"]
+snippets = ["snippets/prompt.zsh"]
+extra = """
+bindkey -e
+"""

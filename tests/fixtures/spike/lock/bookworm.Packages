@@ -1,0 +1,371 @@
+Package: base-files
+Essential: yes
+Priority: required
+Section: admin
+Architecture: amd64
+Version: 12.4+deb12u11
+Filename: pool/main/b/base-files/base-files_12.4+deb12u11_amd64.deb
+Size: 10017
+SHA256: 346d3393db1b9302443abae2966440db76900c220a72262711d1eda84da34c97
+Description: synthetic fixture entry for base-files
+
+Package: libc6
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 2.36-9+deb12u9
+Depends: libgcc-s1
+Filename: pool/main/l/libc6/libc6_2.36-9+deb12u9_amd64.deb
+Size: 5017
+SHA256: c36e64e7cf296c1e4fbd920f0fa2f6f84708ff9b627ba593858bf13bbe8499d3
+Description: synthetic fixture entry for libc6
+
+Package: libgcc-s1
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 12.2.0-14
+Depends: gcc-12-base (= 12.2.0-14), libc6 (>= 2.35)
+Filename: pool/main/l/libgcc-s1/libgcc-s1_12.2.0-14_amd64.deb
+Size: 9017
+SHA256: 8a6bd8ba1f1432557841e8792d4c441dfd614e53042fecde2b01fbf0c05bd8da
+Description: synthetic fixture entry for libgcc-s1
+
+Package: gcc-12-base
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 12.2.0-14
+Filename: pool/main/g/gcc-12-base/gcc-12-base_12.2.0-14_amd64.deb
+Size: 11017
+SHA256: e149585334bb72e68b600bd3b541cf1139a5781c4fa68cc0767e65f985da26d5
+Description: synthetic fixture entry for gcc-12-base
+
+Package: dpkg
+Essential: yes
+Priority: required
+Section: admin
+Architecture: amd64
+Version: 1.21.22
+Pre-Depends: libc6 (>= 2.34)
+Filename: pool/main/d/dpkg/dpkg_1.21.22_amd64.deb
+Size: 4017
+SHA256: 3acca36326ba1eb114db7e2a189478d0136f3cf24a9c499adba35df82f057ca0
+Description: synthetic fixture entry for dpkg
+
+Package: mawk
+Priority: required
+Section: interpreters
+Architecture: amd64
+Version: 1.3.4.20200120-3.1
+Provides: awk
+Pre-Depends: libc6 (>= 2.29)
+Filename: pool/main/m/mawk/mawk_1.3.4.20200120-3.1_amd64.deb
+Size: 4017
+SHA256: cdb35f8432cb06882ccb1ad841286c32514a63ebb4d1e8667e7a15118f6060e6
+Description: synthetic fixture entry for mawk
+
+Package: perl-base
+Essential: yes
+Priority: required
+Section: perl
+Architecture: amd64
+Version: 5.36.0-7+deb12u2
+Provides: perlapi-5.36.0
+Pre-Depends: libc6 (>= 2.35)
+Filename: pool/main/p/perl-base/perl-base_5.36.0-7+deb12u2_amd64.deb
+Size: 9017
+SHA256: f81ab1f674156667a10f2147ef14520cc388a97262cbff841eb57f7a9efb6d8a
+Description: synthetic fixture entry for perl-base
+
+Package: build-essential
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 12.9
+Depends: libc6-dev | libc-dev, gcc (>= 4:12.2), g++ (>= 4:12.2), make, dpkg-dev (>= 1.17.11)
+Filename: pool/main/b/build-essential/build-essential_12.9_amd64.deb
+Size: 15017
+SHA256: b64526aca54ed6d7ca449b0e8f2a899078708c1c071e72b6c56965835f82331e
+Description: synthetic fixture entry for build-essential
+
+Package: libc6-dev
+Priority: optional
+Section: libdevel
+Architecture: amd64
+Version: 2.36-9+deb12u9
+Provides: libc-dev
+Depends: libc6 (= 2.36-9+deb12u9), libc-dev-bin (= 2.36-9+deb12u9), linux-libc-dev
+Filename: pool/main/l/libc6-dev/libc6-dev_2.36-9+deb12u9_amd64.deb
+Size: 9017
+SHA256: 28493008406bb3e701f9095a048569759fbbbb9965b8766055e3d6d4306e4a63
+Description: synthetic fixture entry for libc6-dev
+
+Package: libc-dev-bin
+Priority: optional
+Section: libdevel
+Architecture: amd64
+Version: 2.36-9+deb12u9
+Depends: libc6 (>> 2.36), libc6 (<< 2.37)
+Filename: pool/main/l/libc-dev-bin/libc-dev-bin_2.36-9+deb12u9_amd64.deb
+Size: 12017
+SHA256: fd71a3edb4c09a4ee4304df9f056fc5aef8357301886def064c89f73c8fa11a2
+Description: synthetic fixture entry for libc-dev-bin
+
+Package: linux-libc-dev
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 6.1.140-1
+Filename: pool/main/l/linux-libc-dev/linux-libc-dev_6.1.140-1_amd64.deb
+Size: 14017
+SHA256: f70c75532476f6a415606c447bc423562303e41281b8f3c50ace2b4dc8d21338
+Description: synthetic fixture entry for linux-libc-dev
+
+Package: gcc
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4:12.2.0-3
+Provides: c-compiler
+Depends: cpp (= 4:12.2.0-3), gcc-12 (>= 12.2.0-1~)
+Filename: pool/main/g/gcc/gcc_12.2.0-3_amd64.deb
+Size: 3017
+SHA256: 17eda0d7d94d15b13f2b9fb2f6c9c9e77e870ea25665dff8f9a6417b82111460
+Description: synthetic fixture entry for gcc
+
+Package: gcc-12
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 12.2.0-14
+Provides: c-compiler
+Depends: cpp-12 (= 12.2.0-14), gcc-12-base (= 12.2.0-14), binutils (>= 2.40), libc6 (>= 2.36)
+Filename: pool/main/g/gcc-12/gcc-12_12.2.0-14_amd64.deb
+Size: 6017
+SHA256: 855b79df25e7589e641fa6c0e72fa267e9a9f73e21a614fa337210e36f4d3e2b
+Description: synthetic fixture entry for gcc-12
+
+Package: cpp
+Priority: optional
+Section: interpreters
+Architecture: amd64
+Version: 4:12.2.0-3
+Depends: cpp-12 (>= 12.2.0-1~)
+Filename: pool/main/c/cpp/cpp_12.2.0-3_amd64.deb
+Size: 3017
+SHA256: 3ef3b83a9b68c6aedce452b85ac92a9b922f26997e584588381eb30f29930739
+Description: synthetic fixture entry for cpp
+
+Package: cpp-12
+Priority: optional
+Section: interpreters
+Architecture: amd64
+Version: 12.2.0-14
+Depends: gcc-12-base (= 12.2.0-14), libc6 (>= 2.36)
+Filename: pool/main/c/cpp-12/cpp-12_12.2.0-14_amd64.deb
+Size: 6017
+SHA256: 62ce1da23f3fc12b9ba5847b35d04921abe2f44833ec8207ec6fe4e52080e7f1
+Description: synthetic fixture entry for cpp-12
+
+Package: g++
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4:12.2.0-3
+Provides: c++-compiler
+Depends: cpp (= 4:12.2.0-3), gcc (= 4:12.2.0-3), g++-12 (>= 12.2.0-1~)
+Filename: pool/main/g/g++/g++_12.2.0-3_amd64.deb
+Size: 3017
+SHA256: 202d638faf2d38c23f3b6103c03eed8df67ba4e8dad3e8e526d211561fc7151a
+Description: synthetic fixture entry for g++
+
+Package: g++-12
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 12.2.0-14
+Provides: c++-compiler
+Depends: gcc-12-base (= 12.2.0-14), gcc-12 (= 12.2.0-14), libc6 (>= 2.36)
+Filename: pool/main/g/g++-12/g++-12_12.2.0-14_amd64.deb
+Size: 6017
+SHA256: 9d6f234816b3e6bfd91201b4ba45f06ab4780e86434ae8408f31ae3254f29821
+Description: synthetic fixture entry for g++-12
+
+Package: binutils
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 2.40-2
+Depends: binutils-common (= 2.40-2), libc6 (>= 2.34)
+Filename: pool/main/b/binutils/binutils_2.40-2_amd64.deb
+Size: 8017
+SHA256: d16d89e50aaf1ebe9d36ca54c87c3dc1c87fedafbf45bed5536f5ace1a7a18e3
+Description: synthetic fixture entry for binutils
+
+Package: binutils-common
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 2.40-2
+Filename: pool/main/b/binutils-common/binutils-common_2.40-2_amd64.deb
+Size: 15017
+SHA256: 570ea9ad89444350940a388b86f0a2612a3750dd18ab384ae033f62609b64cc8
+Description: synthetic fixture entry for binutils-common
+
+Package: make
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4.3-4.1
+Depends: libc6 (>= 2.34)
+Filename: pool/main/m/make/make_4.3-4.1_amd64.deb
+Size: 4017
+SHA256: 95f16d050a0e70b97ae950c295950db948c025fa39c1d4b37847525b533cbdc5
+Description: synthetic fixture entry for make
+
+Package: dpkg-dev
+Priority: optional
+Section: utils
+Architecture: all
+Version: 1.21.22
+Depends: perl:any, libdpkg-perl (= 1.21.22), binutils, make
+Filename: pool/main/d/dpkg-dev/dpkg-dev_1.21.22_all.deb
+Size: 8017
+SHA256: 761878ec3eaf3599780bb5f002ec71f092ecea5d4f5ab9482ffafb9c383864fd
+Description: synthetic fixture entry for dpkg-dev
+
+Package: libdpkg-perl
+Priority: optional
+Section: perl
+Architecture: all
+Version: 1.21.22
+Depends: perl:any, dpkg (>= 1.21.14)
+Filename: pool/main/l/libdpkg-perl/libdpkg-perl_1.21.22_all.deb
+Size: 12017
+SHA256: eab8f670668a8cb8c91219e87af95ba463759cf1107145180145f69b7a71c89a
+Description: synthetic fixture entry for libdpkg-perl
+
+Package: perl
+Priority: standard
+Section: perl
+Architecture: amd64
+Version: 5.36.0-7+deb12u2
+Depends: perl-base (= 5.36.0-7+deb12u2)
+Filename: pool/main/p/perl/perl_5.36.0-7+deb12u2_amd64.deb
+Size: 4017
+SHA256: 6787f4ba3ac3b981a03ce65fff3641a2acc2193f790b2539ae0b03f888c72fa0
+Description: synthetic fixture entry for perl
+
+Package: clang-14
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 1:14.0.6-12
+Provides: c-compiler, c++-compiler
+Depends: libc6 (>= 2.34)
+Filename: pool/main/c/clang-14/clang-14_14.0.6-12_amd64.deb
+Size: 8017
+SHA256: d15dd3ac6682d5c1ba47cfa740e8e82ae07ee0f8c0bc8d769d8431be87974146
+Description: synthetic fixture entry for clang-14
+
+Package: libssl3
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 3.0.16-1~deb12u1
+Depends: libc6 (>= 2.34)
+Filename: pool/main/l/libssl3/libssl3_3.0.16-1~deb12u1_amd64.deb
+Size: 7017
+SHA256: d92e01faee8a2a2e1818dc0bdb3900169b271f36c0071135a13dde08bde6de0a
+Description: synthetic fixture entry for libssl3
+
+Package: libssl-dev
+Priority: optional
+Section: libdevel
+Architecture: amd64
+Version: 3.0.16-1~deb12u1
+Depends: libssl3 (= 3.0.16-1~deb12u1)
+Filename: pool/main/l/libssl-dev/libssl-dev_3.0.16-1~deb12u1_amd64.deb
+Size: 10017
+SHA256: 570c10e8f995e3ea0395a199a29a7965b000e123b26d5b8a9e654cf7bf3ad63f
+Description: synthetic fixture entry for libssl-dev
+
+Package: pkg-config
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 1.8.1-1
+Depends: pkgconf (>= 1.8.1-1)
+Filename: pool/main/p/pkg-config/pkg-config_1.8.1-1_amd64.deb
+Size: 10017
+SHA256: ecd076dd649cb31d0a4aefcc69bfbd4c639fc74a83e476a13c5ce75891a28e57
+Description: synthetic fixture entry for pkg-config
+
+Package: pkgconf
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 1.8.1-1
+Provides: pkg-config
+Depends: libpkgconf3 (>= 1.8.1), pkgconf-bin (>= 1.8.1-1)
+Breaks: pkg-config (<< 1.8.1-1~)
+Filename: pool/main/p/pkgconf/pkgconf_1.8.1-1_amd64.deb
+Size: 7017
+SHA256: dbcede2c07e44e8bdcbce87d907dcb695eb48d9c9cee768d75db38c7cdf04350
+Description: synthetic fixture entry for pkgconf
+
+Package: pkgconf-bin
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 1.8.1-1
+Depends: libpkgconf3 (>= 1.8.1), libc6 (>= 2.34)
+Filename: pool/main/p/pkgconf-bin/pkgconf-bin_1.8.1-1_amd64.deb
+Size: 11017
+SHA256: c5cc04827c70b8d16fbdd89043238e672963b56e3321feebfcca099dfc6ecfa4
+Description: synthetic fixture entry for pkgconf-bin
+
+Package: libpkgconf3
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 1.8.1-1
+Depends: libc6 (>= 2.34)
+Filename: pool/main/l/libpkgconf3/libpkgconf3_1.8.1-1_amd64.deb
+Size: 11017
+SHA256: 7387954fa524b88b9ea5437424206c9459f996905134177ce63297cfdecbbb07
+Description: synthetic fixture entry for libpkgconf3
+
+Package: spike-needs-future-ssl
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Depends: libssl3 (>= 4.0)
+Filename: pool/main/s/spike-needs-future-ssl/spike-needs-future-ssl_1.0-1_amd64.deb
+Size: 22017
+SHA256: bf4f194371142d0f373ad763a91185bdbce75e59da4703d6087700fdb547a4da
+Description: synthetic fixture entry for spike-needs-future-ssl
+
+Package: spike-needs-i386
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Depends: libc6:i386
+Filename: pool/main/s/spike-needs-i386/spike-needs-i386_1.0-1_amd64.deb
+Size: 16017
+SHA256: f34516ad1e9ddb363eeaa565130215642454cdca945d74b31c786e552e04b8b2
+Description: synthetic fixture entry for spike-needs-i386
+
+Package: spike-conflicts-make
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Conflicts: make
+Filename: pool/main/s/spike-conflicts-make/spike-conflicts-make_1.0-1_amd64.deb
+Size: 20017
+SHA256: 0bc296bf19e8e4017b6ae6dc2bfd1e867c71f462723b8103e7b042c3b22b4ac0
+Description: synthetic fixture entry for spike-conflicts-make

@@ -1,0 +1,13 @@
+# The container project `tests/search.rs` searches in. It pins the same snapshot as
+# `lodi.lock` beside it, so `lodi info` reports the lock as fresh until a test edits it.
+[project]
+version = "1"
+name = "search-fixture"
+
+[container]
+distro   = "debian"
+release  = "bookworm"
+snapshot = "2026-09-18T00:00:00Z"
+
+[packages]
+common = ["cowsay"]

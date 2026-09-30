@@ -1,0 +1,4 @@
+{
+ "https://api.launchpad.net/devel/ubuntu/+archive/primary/+binarypub/220595145?ws.op=binaryFileUrls&include_meta=true": "files.json",
+ "https://api.launchpad.net/devel/ubuntu/+archive/primary?ws.op=getPublishedBinaries&exact_match=true&binary_name=tzdata&distro_arch_series=https%3A%2F%2Fapi.launchpad.net%2Fdevel%2Fubuntu%2Fnoble%2Famd64&ws.size=300": "listing.json"
+}

@@ -1,0 +1,30 @@
+[package]
+name = "lodi"
+repository = "https://github.com/stshow/lodi"
+version = "1.12.1"
+edition = "2024"
+rust-version = "1.85"
+description = "Environment and system manager for Ubuntu, Debian, Arch and Fedora"
+license = "GPL-3.0-or-later"
+build = "build.rs"
+publish = false
+
+[dependencies]
+# TOML 1.0.0 parser with source spans (LD-14). Exact pin: later releases parse TOML 1.1.
+toml_edit = { version = "=0.22.27", default-features = false, features = ["parse", "display"] }
+# Lock resolution (LD-16): HTTPS metadata fetches with rustls/ring and bundled Mozilla roots,
+# pure-Rust xz for Debian Packages.xz, SHA-256, and canonical JSON for lodi.lock.
+# `~`: the fetcher's stall rule wraps ureq's `unversioned` transport API (LD-385), which ureq
+# changes only in minor releases.
+ureq = { version = "~3.4.2", default-features = false, features = ["rustls"] }
+lzma-rs = "0.3.0"
+sha2 = "0.10.9"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Realization (LD-19): tar reading for bounded, checked extraction (no unpack helpers used),
+# gzip through the pure-Rust miniz_oxide backend, and libc for flock, signals and utimensat.
+tar = { version = "0.4", default-features = false }
+flate2 = "1.1"
+# Git object SHA-1 with git's collision detection (LD-400).
+sha1collisiondetection = { version = "=0.3.4", default-features = false, features = ["std"] }
+libc = "0.2"

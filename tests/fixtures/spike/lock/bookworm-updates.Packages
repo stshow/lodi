@@ -1,0 +1,9 @@
+Package: linux-libc-dev
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 6.1.153-1
+Filename: pool/main/l/linux-libc-dev/linux-libc-dev_6.1.153-1_amd64.deb
+Size: 14017
+SHA256: 85fbe55a1b3843646579cdea963c76d2eed2b551a225a4bbc5e6f9bff7d3add6
+Description: synthetic fixture entry for linux-libc-dev

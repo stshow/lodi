@@ -1,0 +1,7 @@
+base-files	12.4+deb12u5	ii 
+docker-ce	5:27.3.1-1~deb12	ii 
+golang-1.22	1.22.10-1~bpo12+1	ii 
+libc6	2.36-9+deb12u7	ii 
+lodi-agent	2.4.1-1~ppa1	ii 
+lodi-hand-built	0-1	ii 
+ripgrep	13.0.0-4+b2	ii 

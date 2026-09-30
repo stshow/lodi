@@ -1,0 +1,14 @@
+Origin: Debian
+Label: Debian-Security
+Suite: stable-security
+Version: 12
+Codename: bookworm-security
+Date: Fri, 28 Feb 2025 23:25:48 UTC
+Valid-Until: Fri, 07 Mar 2025 23:25:48 UTC
+Acquire-By-Hash: yes
+Architectures: amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Components: updates/main updates/contrib updates/non-free-firmware updates/non-free
+Description: Debian 12 - Security Updates
+SHA256:
+ 0040f94d11d0039505328a90b2ff48968db873e9e7967307631bf40ef5679275 32 main/binary-amd64/Packages.xz
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-amd64/Packages

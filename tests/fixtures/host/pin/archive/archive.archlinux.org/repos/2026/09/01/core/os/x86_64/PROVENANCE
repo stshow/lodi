@@ -1,0 +1,10 @@
+{
+  "instant": "2026-09-01T00:00:00Z",
+  "kept": [
+    "pacman"
+  ],
+  "public_url": "https://archive.archlinux.org/repos/2026/09/01/core/os/x86_64/core.db",
+  "trimmed_sha256": "c45db7f5c8bdc298e28105dcdd5366739afc159442518f19e5fb6e8a63dab9e4",
+  "untrimmed_bytes": 130072,
+  "untrimmed_sha256": "a965a2b7f1ed3227ae53a23a844627ba140add5129d7d2c9695c012d223e3f1f"
+}

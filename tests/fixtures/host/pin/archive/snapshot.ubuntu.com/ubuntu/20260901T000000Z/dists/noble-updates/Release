@@ -1,0 +1,15 @@
+Origin: Ubuntu
+Label: Ubuntu
+Suite: noble-updates
+Version: 24.04
+Codename: noble
+Date: Mon, 31 Aug 2026 16:40:54 UTC
+Architectures: amd64 arm64 armhf i386 ppc64el riscv64 s390x
+Components: main restricted universe multiverse
+Description: Ubuntu Noble Updates
+Acquire-By-Hash: yes
+SHA256:
+ b1f7ba744a09ac9dd4efdd9c149701e6b932f4d34b2f681d5c863624d5b23d60 336 main/binary-amd64/Packages.xz
+ 524a245b2e176d6cd52138ec2b58bde5077b6f1aa520e3c8bbcb66cd1ab2e68e 358 main/binary-amd64/Packages
+ 3da51c23f56e581a577726c9ef438f1164d7b78eb4a0e906e9f5496782de8baa 292 universe/binary-amd64/Packages.xz
+ 358b34dc686f253c22cd48735ccbfedcf02d4fdea32e9a8b77c8b7f7f6004393 288 universe/binary-amd64/Packages

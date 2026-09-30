@@ -1,0 +1,33 @@
+# lodi.toml: this project's environment, written by `lodi init`. `lodi lock` pins
+# what it asks for in ./lodi.lock, and `lodi develop -- COMMAND` runs a command in it.
+
+# The project's name. `version` is the format of this file, and "1" is the only one.
+[project]
+version = "1"
+name = "hello"
+
+# A container environment: `lodi develop` runs the command inside a rootless Podman
+# image built from this distribution's own packages. It needs `podman` on PATH. Lodi
+# never installs it and changes no setting on this machine.
+[container]
+distro = "debian"
+release = "bookworm"
+
+# Distribution packages to install in that image. `lodi lock` pins each one and all
+# it depends on, and the image is rebuilt when this list changes.
+[packages]
+common = []
+
+# Upstream tools, such as python and nodejs, that lodi downloads and unpacks. A version
+# is a prefix ("3.12"), "latest", or a range such as ">=3.11, <3.13".
+[tools]
+python = "3.12"
+
+# Tasks run with /bin/sh -c in that environment, and only after `lodi trust`:
+#   lodi run versions
+# [tasks.versions]
+# run = "python3 --version"
+
+# Variables set for the commands you run. A value may use ${var}, with no expressions.
+# [env]
+# PYTHONDONTWRITEBYTECODE = "1"

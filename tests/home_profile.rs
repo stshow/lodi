@@ -1,0 +1,365 @@
+//! M-0.5 T-5: the user-wide tool profile, one PATH directory and one printed source line.
+//!
+//! Every product invocation uses `support::home_env`, with the data root moved below its scratch
+//! home so the stable instruction contains literal `$HOME`. Only the tests create a login-shell
+//! startup file, and only the tests start a login shell.
+
+mod support;
+
+use std::collections::BTreeMap;
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+
+use lodi::home::profile::{PROFILE_BIN, PROFILE_SH};
+use lodi::lock::{self, parse_lock};
+use lodi::store::art_name;
+use lodi::util::sha256_hex;
+use support::{HomeEnv, Server, home_env, home_gate};
+
+fn data(env: &HomeEnv) -> PathBuf {
+    env.home().join(".local/share/lodi")
+}
+
+fn config(env: &HomeEnv) -> PathBuf {
+    env.config().join("lodi")
+}
+
+fn write_manifest(env: &HomeEnv, text: &str) {
+    fs::create_dir_all(config(env)).unwrap();
+    fs::write(config(env).join("home.toml"), text).unwrap();
+}
+
+fn command(env: &HomeEnv, server: &Server) -> Command {
+    let mut command = env.command();
+    command
+        .env_remove("LODI_HOME")
+        .env("XDG_DATA_HOME", env.home().join(".local/share"))
+        .env("LODI_FETCH_REWRITE", server.rewrite());
+    command
+}
+
+fn run(env: &HomeEnv, server: &Server, args: &[&str]) -> Output {
+    command(env, server).args(args).output().unwrap()
+}
+
+fn stdout(out: &Output) -> String {
+    String::from_utf8(out.stdout.clone()).unwrap()
+}
+
+fn stderr(out: &Output) -> String {
+    String::from_utf8(out.stderr.clone()).unwrap()
+}
+
+fn declaration(label: &str, name: Option<&str>, url: &str, bytes: &[u8], env: &str) -> String {
+    let name = name.map_or(String::new(), |name| format!("name = \"{name}\"\n"));
+    let env = if env.is_empty() {
+        String::new()
+    } else {
+        format!("env = {{ {env} }}\n")
+    };
+    format!(
+        "[tools.{label}]\nversion = \"1.0.0\"\n{name}url = \"{url}\"\nsha256 = \"{}\"\n\
+         format = \"binary\"\npath = [\"bin\"]\n{env}",
+        sha256_hex(bytes)
+    )
+}
+
+fn manifest(blocks: &[String]) -> String {
+    format!("[home]\nversion = \"1\"\n\n{}", blocks.join("\n"))
+}
+
+fn server(files: &[(&str, &[u8])]) -> Server {
+    Server::start(
+        files
+            .iter()
+            .map(|(url, bytes)| ((*url).to_string(), bytes.to_vec()))
+            .collect::<BTreeMap<_, _>>(),
+    )
+}
+
+fn profile(env: &HomeEnv) -> PathBuf {
+    data(env).join(PROFILE_SH)
+}
+
+fn bin(env: &HomeEnv) -> PathBuf {
+    data(env).join(PROFILE_BIN)
+}
+
+fn assert_link(path: &Path) {
+    assert!(
+        fs::symlink_metadata(path).unwrap().file_type().is_symlink(),
+        "{} is not a symbolic link",
+        path.display()
+    );
+}
+
+#[test]
+fn two_tools_reach_one_idempotent_path_and_a_new_login_shell() {
+    let env = home_env("profile-two-tools");
+    let alpha_url = "https://fixtures.test/alpha";
+    let beta_url = "https://fixtures.test/beta";
+    let alpha = b"#!/bin/sh\necho alpha\n";
+    let beta = b"#!/bin/sh\necho beta\n";
+    let server = server(&[(alpha_url, alpha), (beta_url, beta)]);
+    let alpha_decl = declaration(
+        "alpha",
+        None,
+        alpha_url,
+        alpha,
+        "ALPHA_HOME = \"${self.path}\", ALPHA_VERSION = \"${self.version}\"",
+    );
+    let beta_decl = declaration("beta", None, beta_url, beta, "");
+    write_manifest(&env, &manifest(&[alpha_decl.clone(), beta_decl]));
+
+    let out = run(&env, &server, &["home", "apply"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    let shown = stdout(&out);
+    assert!(shown.ends_with(
+        "add this line to your shell rc file (lodi never edits it):\n  . \
+         \"$HOME/.local/share/lodi/home-scope/profile.sh\"\n"
+    ));
+    assert!(
+        !shown.contains(&env.root().display().to_string()),
+        "the stable line exposed the scratch root: {shown}"
+    );
+
+    let bin = bin(&env);
+    assert_link(&bin.join("alpha"));
+    assert_link(&bin.join("beta"));
+    let mode = fs::metadata(profile(&env)).unwrap().permissions().mode() & 0o7777;
+    assert_eq!(mode, 0o644);
+
+    let path = format!("{}:/usr/bin:{}", bin.display(), bin.display());
+    let sourced = Command::new("/bin/sh")
+        .args([
+            "-c",
+            ". \"$1\"; . \"$1\"; command -v alpha; printf '%s\\n%s\\n%s\\n' \"$PATH\" \
+             \"$ALPHA_VERSION\" \"$ALPHA_HOME\"",
+            "sh",
+        ])
+        .arg(profile(&env))
+        .env_clear()
+        .env("PATH", path)
+        .output()
+        .unwrap();
+    assert_eq!(sourced.status.code(), Some(0), "{:?}", sourced.status);
+    let sourced = String::from_utf8(sourced.stdout).unwrap();
+    let lines: Vec<&str> = sourced.lines().collect();
+    assert_eq!(lines[0], bin.join("alpha").display().to_string());
+    assert_eq!(
+        lines[1]
+            .split(':')
+            .filter(|part| *part == bin.to_str().unwrap())
+            .count(),
+        1,
+        "sourcing twice duplicated the bin directory: {}",
+        lines[1]
+    );
+    assert_eq!(lines[2], "1.0.0");
+    let lock = parse_lock(&fs::read(config(&env).join(lock::HOME_LOCK_FILE)).unwrap()).unwrap();
+    assert_eq!(
+        lines[3],
+        data(&env)
+            .join("store")
+            .join(art_name(&lock.packages["alpha"]).unwrap())
+            .display()
+            .to_string()
+    );
+
+    // The test, never Lodi, adds the printed line and starts a new login shell in the scratch
+    // home. With an otherwise empty environment the tool is available there.
+    fs::write(
+        env.home().join(".profile"),
+        ". \"$HOME/.local/share/lodi/home-scope/profile.sh\"\n",
+    )
+    .unwrap();
+    let login = Command::new("/bin/sh")
+        .args(["-lc", "command -v alpha"])
+        .env_clear()
+        .env("HOME", env.home())
+        .env("SHELL", "/bin/sh")
+        .output()
+        .unwrap();
+    assert_eq!(login.status.code(), Some(0), "{}", stderr(&login));
+    assert_eq!(
+        String::from_utf8(login.stdout).unwrap().trim(),
+        bin.join("alpha").display().to_string()
+    );
+
+    // A foreign regular file in Lodi's own bin directory is removed with a note on the next
+    // rebuild. Dropping beta from the manifest removes beta's old link and leaves alpha's.
+    fs::write(bin.join("foreign"), b"not a link\n").unwrap();
+    write_manifest(&env, &manifest(&[alpha_decl]));
+    let out = run(&env, &server, &["home", "apply"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stdout(&out).contains("removed non-link `foreign`"));
+    assert_link(&bin.join("alpha"));
+    assert!(!bin.join("beta").exists());
+    assert!(!bin.join("foreign").exists());
+}
+
+#[test]
+fn a_conflict_is_first_tool_wins_and_is_stable_across_applies() {
+    let env = home_env("profile-conflict");
+    let alpha_url = "https://fixtures.test/shared-alpha";
+    let beta_url = "https://fixtures.test/shared-beta";
+    let alpha = b"#!/bin/sh\necho alpha owns this\n";
+    let beta = b"#!/bin/sh\necho beta loses this\n";
+    let server = server(&[(alpha_url, alpha), (beta_url, beta)]);
+    write_manifest(
+        &env,
+        &manifest(&[
+            declaration("alpha", Some("shared"), alpha_url, alpha, ""),
+            declaration("beta", Some("shared"), beta_url, beta, ""),
+        ]),
+    );
+
+    let first = run(&env, &server, &["home", "apply"]);
+    assert_eq!(first.status.code(), Some(0), "{}", stderr(&first));
+    let warning = "W_BIN_CONFLICT: `shared` is provided by alpha and beta; alpha wins";
+    assert!(stderr(&first).contains(warning), "{}", stderr(&first));
+    assert!(!stderr(&first).contains("beta wins"), "{}", stderr(&first));
+
+    let lock = parse_lock(&fs::read(config(&env).join(lock::HOME_LOCK_FILE)).unwrap()).unwrap();
+    let alpha_art = art_name(&lock.packages["alpha"]).unwrap();
+    let link = bin(&env).join("shared");
+    assert_eq!(
+        fs::read_link(&link).unwrap(),
+        PathBuf::from("../../../store")
+            .join(alpha_art)
+            .join("bin/shared")
+    );
+    let first_target = fs::read_link(&link).unwrap();
+
+    let second = run(&env, &server, &["home", "apply"]);
+    assert_eq!(second.status.code(), Some(0), "{}", stderr(&second));
+    assert!(stderr(&second).contains(warning), "{}", stderr(&second));
+    assert_eq!(fs::read_link(&link).unwrap(), first_target);
+}
+
+#[test]
+fn fish_gets_only_its_warning_and_status_reports_path_without_writing() {
+    let env = home_env("profile-fish-status");
+    let url = "https://fixtures.test/alpha-fish";
+    let body = b"#!/bin/sh\necho alpha\n";
+    let server = server(&[(url, body)]);
+    write_manifest(
+        &env,
+        &manifest(&[declaration("alpha", None, url, body, "")]),
+    );
+
+    let mut apply = command(&env, &server);
+    let out = apply
+        .env("SHELL", "/usr/bin/fish")
+        .args(["home", "apply"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stderr(&out).contains("W_FISH_HOOKS"), "{}", stderr(&out));
+    assert!(stderr(&out).contains("$HOME/.local/share/lodi/home-scope/profile/bin"));
+    assert!(!stdout(&out).contains("add this line"), "{}", stdout(&out));
+    assert!(!stdout(&out).contains("profile.sh"), "{}", stdout(&out));
+
+    let before = home_gate().ledger_lines().len();
+    let mut status = command(&env, &server);
+    let out = status
+        .env("PATH", format!("{}:/usr/bin", bin(&env).display()))
+        .args(["home", "status"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stdout(&out).contains(" is on PATH"), "{}", stdout(&out));
+    assert!(stdout(&out).contains("$HOME/.local/share/lodi/home-scope/profile.sh"));
+    let appended: Vec<_> = home_gate()
+        .ledger_lines()
+        .into_iter()
+        .skip(before)
+        .filter(|(_, path)| path.starts_with(env.root()))
+        .collect();
+    assert!(appended.is_empty(), "status wrote: {appended:?}");
+}
+
+#[test]
+fn locked_apply_refuses_a_changed_tool_set_before_writing() {
+    let env = home_env("profile-locked-stale");
+    let url = "https://fixtures.test/locked";
+    let body = b"#!/bin/sh\necho locked\n";
+    let server = server(&[(url, body)]);
+    let first = declaration("locked", None, url, body, "");
+    write_manifest(&env, &manifest(std::slice::from_ref(&first)));
+
+    let before = home_gate().ledger_lines().len();
+    let out = run(&env, &server, &["home", "apply", "--locked"]);
+    assert_eq!(out.status.code(), Some(10), "{}", stderr(&out));
+    assert!(stderr(&out).contains("E_LOCK_STALE"), "{}", stderr(&out));
+    assert!(
+        !data(&env).exists(),
+        "a missing-lock refusal created the data root"
+    );
+    let appended: Vec<_> = home_gate()
+        .ledger_lines()
+        .into_iter()
+        .skip(before)
+        .filter(|(_, path)| path.starts_with(env.root()))
+        .collect();
+    assert!(
+        appended.is_empty(),
+        "locked missing apply wrote: {appended:?}"
+    );
+
+    let out = run(&env, &server, &["home", "apply"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    let target = fs::read_link(bin(&env).join("locked")).unwrap();
+
+    write_manifest(&env, &manifest(&[first.replace("1.0.0", "2.0.0")]));
+    let before = home_gate().ledger_lines().len();
+    let out = run(&env, &server, &["home", "apply", "--locked"]);
+    assert_eq!(out.status.code(), Some(10), "{}", stderr(&out));
+    assert!(stderr(&out).contains("E_LOCK_STALE"), "{}", stderr(&out));
+    assert_eq!(fs::read_link(bin(&env).join("locked")).unwrap(), target);
+    let appended: Vec<_> = home_gate()
+        .ledger_lines()
+        .into_iter()
+        .skip(before)
+        .filter(|(_, path)| path.starts_with(env.root()))
+        .collect();
+    assert!(
+        appended.is_empty(),
+        "locked stale apply wrote: {appended:?}"
+    );
+}
+
+/// Real-network package evidence: the public `home apply` path resolves and realizes jq, builds
+/// the profile, then a new login shell in the scratch home finds it. The package probe selects
+/// this ignored test; ordinary `cargo test` stays offline.
+#[test]
+#[ignore = "selected only by scripts/m05-local.sh --case home-tools"]
+fn live_home_apply_puts_a_real_tool_on_a_new_login_path() {
+    assert_eq!(std::env::var("LODI_M05_LIVE").as_deref(), Ok("1"));
+    let env = home_env("profile-live");
+    write_manifest(
+        &env,
+        "[home]\nversion = \"1\"\n\n[tools]\njq = \"latest\"\n",
+    );
+    let server = Server::start(BTreeMap::new());
+    let mut apply = command(&env, &server);
+    apply.env_remove("LODI_FETCH_REWRITE");
+    let out = apply.args(["home", "apply"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_link(&bin(&env).join("jq"));
+    fs::write(
+        env.home().join(".profile"),
+        ". \"$HOME/.local/share/lodi/home-scope/profile.sh\"\n",
+    )
+    .unwrap();
+    let login = Command::new("/bin/sh")
+        .args(["-lc", "command -v jq"])
+        .env_clear()
+        .env("HOME", env.home())
+        .env("SHELL", "/bin/sh")
+        .output()
+        .unwrap();
+    assert_eq!(login.status.code(), Some(0));
+}

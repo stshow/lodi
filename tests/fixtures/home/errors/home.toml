@@ -1,0 +1,73 @@
+# Every load error of M-0.5 T-2 in one file: the test proves they are all reported in one run,
+# sorted by position, each with its code, its file:line:column and a hint.
+[home]
+version = "2"
+min_lodi_version = "99.0.0"
+registries = ["nowhere"]
+frobnicate = 1
+
+[vars]
+a = "b"
+
+[inputs]
+a = "b"
+
+[modules]
+a = "b"
+
+[tools]
+python = "3.12"
+
+[files."/etc/passwd"]
+content = "absolute"
+
+[files."../escape"]
+content = "outside the home"
+
+[files."~/tilde"]
+content = "a tilde component"
+
+[files.".both"]
+content = "one"
+source = "./dotfiles/inputrc"
+
+[files.".neither"]
+mode = "0644"
+
+[files.".setuid"]
+content = "x"
+mode = "4755"
+
+[files.".notoctal"]
+content = "x"
+mode = "rw-"
+
+[files.".absent-with-content"]
+state = "absent"
+content = "x"
+
+[files.".badstate"]
+content = "x"
+state = "perhaps"
+
+[files.".missing-source"]
+source = "./nope"
+
+[files.".substitution"]
+content = "${host.arch}"
+
+[files.".malformed"]
+content = "${not a name}"
+
+[files.".unknown-key"]
+content = "x"
+onremove = "keep"
+
+[files.".dup"]
+content = "x"
+
+[files.".dup/"]
+content = "y"
+
+[frobnicate]
+a = "b"

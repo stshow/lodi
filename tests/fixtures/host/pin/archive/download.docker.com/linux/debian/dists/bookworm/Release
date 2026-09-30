@@ -1,0 +1,9 @@
+Architectures: amd64 arm64 armhf s390x ppc64el
+Components: stable edge test nightly
+Date: Mon, 21 Sep 2026 11:48:01 +0000
+Label: Docker CE
+Origin: Docker
+Suite: bookworm
+SHA256:
+ 801a59ccc714f069c0e47e9073edae16ffb62df5a6993051360ac19b9d0a135a 3268 stable/binary-amd64/Packages.gz
+ d4ad7093c10d60c5910c1c5d4d4bf4aec935c3f8f4b3266eaace4c42073e316e 18939 stable/binary-amd64/Packages

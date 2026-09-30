@@ -1,0 +1,25 @@
+# jq for [tools] jq. This recipe says where to look; it lists no version.
+# `lodi lock` discovers versions from the tags of the newest GitHub releases.
+#
+# jqlang publishes the Linux build as a **bare executable**, not an archive, so this is the
+# catalogue's first `format = "binary"` recipe: the downloaded file is the program and is
+# installed as `bin/jq`. Nothing is unpacked, so there is no `strip_components` to declare.
+# The tags carry the project's own prefix (`jq-1.8.2`), and the asset the upstream's own
+# architecture name (`amd64`), which is what `${arch_alt}` renders.
+[recipe]
+name        = "jq"
+description = "A lightweight and flexible command-line JSON processor"
+homepage    = "https://jqlang.org"
+
+[versions]
+strategy = "github_releases"
+repo     = "jqlang/jq"
+tag      = "jq-${version}"
+asset    = "jq-linux-${arch_alt}"
+
+[asset]
+format = "binary"
+
+[spec]
+bin  = ["bin/jq"]
+path = ["bin"]

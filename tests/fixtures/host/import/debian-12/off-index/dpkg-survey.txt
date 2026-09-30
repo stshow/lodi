@@ -1,0 +1,7 @@
+base-files	ii 	required	admin		
+docker-ce	ii 	optional	admin	libc6 (>= 2.34)	
+golang-1.22	ii 	optional	devel	libc6 (>= 2.34)	
+libc6	ii 	required	libs		
+lodi-agent	ii 	optional	misc	libc6 (>= 2.34)	
+lodi-hand-built	ii 	optional	misc	libc6 (>= 2.34)	
+ripgrep	ii 	optional	utils	libc6 (>= 2.34)	

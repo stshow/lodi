@@ -1,0 +1,38 @@
+Repository      : extra
+Name            : unzip
+Version         : 6.0-23
+Description     : For extracting and viewing files in .zip archives
+Architecture    : x86_64
+URL             : http://infozip.sourceforge.net/UnZip.html
+Licenses        : custom
+Groups          : None
+Provides        : None
+Depends On      : bzip2  bash
+Optional Deps   : None
+Conflicts With  : None
+Replaces        : None
+Download Size   : 141.28 KiB
+Installed Size  : 308.07 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Fri Jul 25 13:41:31 2025
+Validated By    : SHA-256 Sum  Signature
+
+Repository      : core
+Name            : patch
+Version         : 2.8-1
+Description     : A utility to apply patch files to original sources
+Architecture    : x86_64
+URL             : https://www.gnu.org/software/patch/
+Licenses        : GPL
+Groups          : None
+Provides        : None
+Depends On      : glibc  attr
+Optional Deps   : ed: for patch -e functionality
+Conflicts With  : None
+Replaces        : None
+Download Size   : 85.24 KiB
+Installed Size  : 169.71 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Tue Apr 15 15:22:47 2025
+Validated By    : SHA-256 Sum  Signature
+

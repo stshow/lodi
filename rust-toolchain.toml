@@ -1,0 +1,7 @@
+# The pinned Rust toolchain (LD-13). rustup reads this file directly; the Nix
+# development shell in flake.nix builds the same toolchain from it.
+[toolchain]
+channel = "1.98.1"
+profile = "minimal"
+components = ["rustfmt", "clippy"]
+targets = ["x86_64-unknown-linux-musl"]

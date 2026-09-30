@@ -1,0 +1,157 @@
+{
+  "base": {
+    "arch": "x86_64",
+    "closure": {
+      "hash": "sha256:bcb6b0b4114abc8422f70d6af56e0ddefc1a89e73713838c6ccb9ac11a26192c",
+      "packages": [
+        {
+          "arch": "x86_64",
+          "filename": null,
+          "name": "bash",
+          "origin": "base",
+          "repository": null,
+          "sha256": null,
+          "size": null,
+          "suite": null,
+          "version": "5.2.037-2"
+        },
+        {
+          "arch": "x86_64",
+          "filename": null,
+          "name": "filesystem",
+          "origin": "base",
+          "repository": null,
+          "sha256": null,
+          "size": null,
+          "suite": null,
+          "version": "2026.09.01-1"
+        },
+        {
+          "arch": "x86_64",
+          "filename": null,
+          "name": "glibc",
+          "origin": "base",
+          "repository": null,
+          "sha256": null,
+          "size": null,
+          "suite": null,
+          "version": "2.42-3"
+        },
+        {
+          "arch": "x86_64",
+          "filename": "jq-1.8.1-1-x86_64.pkg.tar.zst",
+          "name": "jq",
+          "origin": "install",
+          "repository": "extra",
+          "sha256": "sha256:3fb5a19fdd03062b32afa3af0944ae6c690b6169e2fca077424d7e2612080fef",
+          "size": 402131,
+          "suite": null,
+          "version": "1.8.1-1"
+        },
+        {
+          "arch": "any",
+          "filename": null,
+          "name": "licenses",
+          "origin": "base",
+          "repository": null,
+          "sha256": null,
+          "size": null,
+          "suite": null,
+          "version": "20240728-1"
+        },
+        {
+          "arch": "x86_64",
+          "filename": "oniguruma-6.9.10-1-x86_64.pkg.tar.zst",
+          "name": "oniguruma",
+          "origin": "install",
+          "repository": "extra",
+          "sha256": "sha256:a0c57610748de5c5fb5a099924e3ffd6f34b08e679bb531da0a44f3886d88959",
+          "size": 236714,
+          "suite": null,
+          "version": "6.9.10-1"
+        }
+      ]
+    },
+    "debArch": "x86_64",
+    "distro": "arch",
+    "options": {
+      "installRecommends": false,
+      "locale": "C.UTF-8"
+    },
+    "pinned": true,
+    "release": "rolling",
+    "repositories": [
+      {
+        "components": [],
+        "indexes": [
+          {
+            "component": "",
+            "packages": {
+              "path": "core.db",
+              "sha256": "sha256:a9097d654bfc4729eb21905ea8e345e13810f439a37fd95b4b5446dfe22ae7bc",
+              "size": 130072
+            },
+            "release": {
+              "path": "core.db",
+              "sha256": "sha256:a9097d654bfc4729eb21905ea8e345e13810f439a37fd95b4b5446dfe22ae7bc"
+            },
+            "suite": ""
+          }
+        ],
+        "name": "core",
+        "suites": [],
+        "url": "https://archive.archlinux.org/repos/2026/09/01/core/os/x86_64/"
+      },
+      {
+        "components": [],
+        "indexes": [
+          {
+            "component": "",
+            "packages": {
+              "path": "extra.db",
+              "sha256": "sha256:6f853c786c488cc365abdd09095027e6ae633d16743cfab8a729ed412e40e7af",
+              "size": 8874378
+            },
+            "release": {
+              "path": "extra.db",
+              "sha256": "sha256:6f853c786c488cc365abdd09095027e6ae633d16743cfab8a729ed412e40e7af"
+            },
+            "suite": ""
+          }
+        ],
+        "name": "extra",
+        "suites": [],
+        "url": "https://archive.archlinux.org/repos/2026/09/01/extra/os/x86_64/"
+      }
+    ],
+    "requested": {
+      "default": [
+        "jq"
+      ]
+    },
+    "rootfs": {
+      "checksums": {
+        "path": "https://archive.archlinux.org/iso/2026.09.01/sha256sums.txt",
+        "sha256": "sha256:b9890fed962583d343a3121019697d06e5b0917c1250e91c1e63f4746cd2160c"
+      },
+      "epoch": "2026-09-01T00:00:00Z",
+      "format": "tar.zst",
+      "sha256": "sha256:601674b349b0b704cfd7a900f1c5adb5d8956dadc5230dfea5e8f11c7165534d",
+      "source": "builtin:arch.toml",
+      "sourceSha256": "sha256:7a6180fcec6d19e2e4a9f879447426cebe479b102cc24b07499858dae700695c",
+      "subdir": "root.x86_64",
+      "url": "https://archive.archlinux.org/iso/2026.09.01/archlinux-bootstrap-2026.09.01-x86_64.tar.zst"
+    },
+    "snapshot": "2026-09-01T00:00:00Z"
+  },
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi fixture (M-Arch-Base T-5)",
+  "manifestHash": "sha256:9aa92b4e2dadffc2705a298eace8d278f5cd3ad091fbc8b16d4715170bd1254c",
+  "packages": {},
+  "profiles": {
+    "default": {
+      "packages": []
+    }
+  },
+  "version": 1
+}

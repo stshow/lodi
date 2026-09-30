@@ -1,0 +1,21 @@
+Package: libssl3t64
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 3.0.13-0ubuntu3.5
+Depends: libc6 (>= 2.38)
+Filename: pool/main/l/libssl3t64/libssl3t64_3.0.13-0ubuntu3.5_amd64.deb
+Size: 4170
+SHA256: b0b3bbf5dea0a79fb28f11f98271fe70e4f2b596686cbd51c36adc12743313f8
+Description: synthetic fixture entry for libssl3t64
+
+Package: openssl
+Priority: optional
+Section: utils
+Architecture: amd64
+Version: 3.0.13-0ubuntu3.5
+Depends: libssl3t64 (= 3.0.13-0ubuntu3.5), libc6 (>= 2.38)
+Filename: pool/main/o/openssl/openssl_3.0.13-0ubuntu3.5_amd64.deb
+Size: 4119
+SHA256: 444f2679c87b57cd7a7d9e64ae0228a3b299a661b47e0b9b42bd8313bb8fa321
+Description: synthetic fixture entry for openssl

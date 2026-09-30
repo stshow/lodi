@@ -1,0 +1,664 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-musl_10.5.0_amd64.deb",
+    "digest": "sha256:39c8136e643131692992fbf8288fe2b7d00ce4f5f03d79cf87015e1c845ce0b6",
+    "name": "fd-musl_10.5.0_amd64.deb",
+    "size": 1288170
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-musl_10.5.0_arm64.deb",
+    "digest": "sha256:09dc957348eb15fe6e493cd0e5951e94925a1db92e39a772094578eb694e651c",
+    "name": "fd-musl_10.5.0_arm64.deb",
+    "size": 1165488
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-musl_10.5.0_armhf.deb",
+    "digest": "sha256:ed1a785f8831f4c6b807111b1d21a1b2a4edb7499deb53928cb2dc99d0d0cf48",
+    "name": "fd-musl_10.5.0_armhf.deb",
+    "size": 1211906
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-musl_10.5.0_i686.deb",
+    "digest": "sha256:1c60137aa59e69b1857f11474f808bd2bc6081dd6197535dbea680730dbc1438",
+    "name": "fd-musl_10.5.0_i686.deb",
+    "size": 1257504
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:b67e1836c468e42e411984b56e52fa7abec08c2bd22c867398e7cc134aac5e12",
+    "name": "fd-v10.5.0-aarch64-apple-darwin.tar.gz",
+    "size": 1334374
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:a2bcddcfd259b05357a77bbc6cd671fdb30f63fd266a0e748305890a8c5ceaa6",
+    "name": "fd-v10.5.0-aarch64-pc-windows-msvc.zip",
+    "size": 1370512
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:c0ee43802e3313a317c5af2f4eabd6ba13eeedd595af9775f05e18a13ac4f52c",
+    "name": "fd-v10.5.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1392634
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d76c4317f7d5dba69f8a2a15856c90c777e7f0dd4e85f0de8c76de6992c374d4",
+    "name": "fd-v10.5.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1429078
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:80581dc97f25ae091de3b9eb2803c10cf8b90536c685cd2b631a207b06ea123a",
+    "name": "fd-v10.5.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1429471
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:f27978c177dffb6e5bb58487494a7e09b86a8c5d447d5d7265039af6b205faff",
+    "name": "fd-v10.5.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 1458985
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:6811ce3a8de536a539aab3d58820d8491e616192e801e4958ac51236efad9769",
+    "name": "fd-v10.5.0-i686-pc-windows-msvc.zip",
+    "size": 1378468
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:36956b07f1a04f565edec811e1368ba07a295249b3d190bc8735eeb890403906",
+    "name": "fd-v10.5.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 1506226
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:39388db498f1a442c9fce45d722334ec3594fd1354b74d44c434decb20739ffa",
+    "name": "fd-v10.5.0-i686-unknown-linux-musl.tar.gz",
+    "size": 1505416
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:7e31028c62c6955877735d0406807aa484c2a5e6f86235a59e26c29c301da590",
+    "name": "fd-v10.5.0-x86_64-apple-darwin.tar.gz",
+    "size": 1426858
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:1720ed5b2f5b09870ea9580eb0653d87972e8e7039d5d2f39ea2f54fbfda9f42",
+    "name": "fd-v10.5.0-x86_64-pc-windows-gnu.zip",
+    "size": 1475808
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:a227701b8551c35a9931d9f6da75503cf86d88e182d71fb849a70864c5d57cd7",
+    "name": "fd-v10.5.0-x86_64-pc-windows-msvc.zip",
+    "size": 1535063
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a1259cd129636efbc3fef123525c1b49e88fe5088c012630983c310e52fdfa95",
+    "name": "fd-v10.5.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1513869
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:761c72dc8e120d85b22292063be8a796e2eeb20eb3e4f38b8fa2343ccf3514a7",
+    "name": "fd-v10.5.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 1573549
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd_10.5.0_amd64.deb",
+    "digest": "sha256:1fca9f8fb221f26fe37b425db4935dc8180099bdecfd8e031538bfc9396e95f8",
+    "name": "fd_10.5.0_amd64.deb",
+    "size": 1235940
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd_10.5.0_arm64.deb",
+    "digest": "sha256:a3128d8e206dd646a27f4637ca081f311df2d6f21cd87bbead7fc92cc0952192",
+    "name": "fd_10.5.0_arm64.deb",
+    "size": 1128796
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd_10.5.0_armhf.deb",
+    "digest": "sha256:2c47d127628363ba63f985d8ab84222ae6d2c04c53bdf01a18bc0cfd0525a302",
+    "name": "fd_10.5.0_armhf.deb",
+    "size": 1181998
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd_10.5.0_i686.deb",
+    "digest": "sha256:442836307a840051ffc7b6b709c9810464593ed07f965e7bf4c5cd5d6a1ad8b0",
+    "name": "fd_10.5.0_i686.deb",
+    "size": 1254656
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.5.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-musl_10.4.2_amd64.deb",
+    "digest": "sha256:a8d10259388c32f9aafd65fb65b6e3e2d2782043bed687112f50e2c4cf000c27",
+    "name": "fd-musl_10.4.2_amd64.deb",
+    "size": 1444340
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-musl_10.4.2_arm64.deb",
+    "digest": "sha256:8dceaa1186be94c3ec29e87781b1e1d48395269e8dcf318dfa1cd1c56dbfa959",
+    "name": "fd-musl_10.4.2_arm64.deb",
+    "size": 1324274
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-musl_10.4.2_armhf.deb",
+    "digest": "sha256:914c5ad4a7be40b9c3046f5deafb5f2c2b64e27d71fc49b1d9880ddf27405a0c",
+    "name": "fd-musl_10.4.2_armhf.deb",
+    "size": 1200474
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-musl_10.4.2_i686.deb",
+    "digest": "sha256:e30ba0c08e8c187927ebd92fae37237f46f68bf38d997258f7debd14ea136c1a",
+    "name": "fd-musl_10.4.2_i686.deb",
+    "size": 1264540
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:623dc0afc81b92e4d4606b380d7bc91916ba7b97814263e554d50923a39e480a",
+    "name": "fd-v10.4.2-aarch64-apple-darwin.tar.gz",
+    "size": 1328933
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:4f9110c2d5b33a7f760bfa5510f4c113d828109f7277d421b1053a9943c0fc92",
+    "name": "fd-v10.4.2-aarch64-pc-windows-msvc.zip",
+    "size": 1370473
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6c51f7c5446b3338b1e401ff15dc194c590bb2fa64fd43ff3278300f073adec5",
+    "name": "fd-v10.4.2-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1559490
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:f32d3657473fba74e2600babc8db0b93420d51169223b7e8143b2ed55d8fd9e8",
+    "name": "fd-v10.4.2-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1604562
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:e5ead7def7e46fd0d8eac5794e76732d9e17eac4e3a521174ddb3a198bba2e16",
+    "name": "fd-v10.4.2-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1594207
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:ae22c21e441e205352acf224bc5bed409aeba14dea3d8c230f49e8129f24bd1a",
+    "name": "fd-v10.4.2-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 1453576
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-i686-pc-windows-msvc.zip",
+    "digest": "sha256:5e726f454c30287f0d16a5e1ad85872dbc485e38ed3a05961ed470a51e331de2",
+    "name": "fd-v10.4.2-i686-pc-windows-msvc.zip",
+    "size": 1379740
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:35bb8e672a88ee3d2404cb318b18e54459957d05ce0758c1dea743795d874fa2",
+    "name": "fd-v10.4.2-i686-unknown-linux-gnu.tar.gz",
+    "size": 1765873
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2120e67e49ffa1d307ce67398ff88d6c89ba21925552bc6154bcd974833d2d4e",
+    "name": "fd-v10.4.2-i686-unknown-linux-musl.tar.gz",
+    "size": 1514988
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:12e5e883c697bbd410ae0e85377c2b1de2e45158cd3de1c6e8fd86ed2f4103ce",
+    "name": "fd-v10.4.2-x86_64-pc-windows-gnu.zip",
+    "size": 1469143
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:b2816e506390a89941c63c9187d58a3cc10e9a55f2ef0685f9ea0eccaf7c98c8",
+    "name": "fd-v10.4.2-x86_64-pc-windows-msvc.zip",
+    "size": 1525898
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:def59805cd14b5651b68990855f426ad087f3b96881296d963910431ba3143c8",
+    "name": "fd-v10.4.2-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1700779
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:e3257d48e29a6be965187dbd24ce9af564e0fe67b3e73c9bdcd180f4ec11bdde",
+    "name": "fd-v10.4.2-x86_64-unknown-linux-musl.tar.gz",
+    "size": 1754511
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd_10.4.2_amd64.deb",
+    "digest": "sha256:0e44eb5fca93f09bc6f5430b90acdf44c8e069d0a903700aeb4820629337b67b",
+    "name": "fd_10.4.2_amd64.deb",
+    "size": 1399120
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd_10.4.2_arm64.deb",
+    "digest": "sha256:caa91b8c0fad7ba1964a78e4932a82e3a5deb747fa40d0922a8c692b6d5e0ce1",
+    "name": "fd_10.4.2_arm64.deb",
+    "size": 1277486
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd_10.4.2_armhf.deb",
+    "digest": "sha256:91f53586e22959fb6e39a523566142d11840007ab7f0c35da10a675385ad0586",
+    "name": "fd_10.4.2_armhf.deb",
+    "size": 1325632
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd_10.4.2_i686.deb",
+    "digest": "sha256:9b52bb0031840592e8275efbae36d9d963f9f9e130a6f8ec897911b45c5956b3",
+    "name": "fd_10.4.2_i686.deb",
+    "size": 1474036
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.4.2"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-musl_10.4.1_amd64.deb",
+    "digest": "sha256:c33be6b320b64c0f3d4b55542a63471ed13ebee7f1bfb87beeef17c478e6cf72",
+    "name": "fd-musl_10.4.1_amd64.deb",
+    "size": 1445068
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-musl_10.4.1_arm64.deb",
+    "digest": "sha256:d97e7a7d5da8b26b8a254b53338d3e095c9ef524f0261d90e21af60a0aee743e",
+    "name": "fd-musl_10.4.1_arm64.deb",
+    "size": 1324312
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-musl_10.4.1_armhf.deb",
+    "digest": "sha256:07dbce1270711d3de9fc1b53cd19c07d458e0ee5bb00526fb7c7c6df750f5a91",
+    "name": "fd-musl_10.4.1_armhf.deb",
+    "size": 1200506
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-musl_10.4.1_i686.deb",
+    "digest": "sha256:6da4c1476033fcc12df6fbb40b1492407e0a4757133ed7b3e5154d5a5fe424e7",
+    "name": "fd-musl_10.4.1_i686.deb",
+    "size": 1264340
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:016f0fc9dd44b9c48703d742584f2d16c1144ef6a89048ec33e44646409a38cd",
+    "name": "fd-v10.4.1-aarch64-apple-darwin.tar.gz",
+    "size": 1329025
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:4b24051a9d333d6b59d35c97512c3238f91850ac2f3f2fa8715e938665d00a0b",
+    "name": "fd-v10.4.1-aarch64-pc-windows-msvc.zip",
+    "size": 1371419
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:976a7e9c87cfa81ace3c81ef048c7fd7d378524c9abc5d78f52af050a6e03b38",
+    "name": "fd-v10.4.1-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1559457
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:95d74ce371abb47a49ce72ca536ab1052adc445a2cbf47e7c1b4bf79d446baf6",
+    "name": "fd-v10.4.1-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1604864
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:066058883262a8f678d786326727e720aa700ffbba342a73cec92c9f35007693",
+    "name": "fd-v10.4.1-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1594339
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:499a4829a61408b143455215102745706326b0eca96fab428acbe2923453b1e7",
+    "name": "fd-v10.4.1-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 1453483
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-i686-pc-windows-msvc.zip",
+    "digest": "sha256:8ddac10385d47fbdc1c66fb66501adcf9af462ae6a11c1e2941f0d5af62703ad",
+    "name": "fd-v10.4.1-i686-pc-windows-msvc.zip",
+    "size": 1379839
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:4433cd9fd6d22a0a44eb07d56d27e0a6a773317e948151bed009d092dbd2d78b",
+    "name": "fd-v10.4.1-i686-unknown-linux-gnu.tar.gz",
+    "size": 1764929
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:edb5d1622480524c1035ba4ed0bc9b3e7637564e4478c980ab9048d9e3bdcf75",
+    "name": "fd-v10.4.1-i686-unknown-linux-musl.tar.gz",
+    "size": 1514692
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:152144212a7a4a19e65fb73a0a46fdbd011c6219ccebdbd447da365d2735523f",
+    "name": "fd-v10.4.1-x86_64-pc-windows-gnu.zip",
+    "size": 1469596
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:58240c89ab3388e08343efcebb89d148b9e5b92d36334eb139524c798b3d9303",
+    "name": "fd-v10.4.1-x86_64-pc-windows-msvc.zip",
+    "size": 1526136
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:471927b7a155116fb1c063a96e98c6783a31cb3f010e72adfe1766e38339ee16",
+    "name": "fd-v10.4.1-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1700845
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd-v10.4.1-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d5b52cd765de7e7e15e6769eb21878bd48beec00a456b269766b297390da7047",
+    "name": "fd-v10.4.1-x86_64-unknown-linux-musl.tar.gz",
+    "size": 1754489
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd_10.4.1_amd64.deb",
+    "digest": "sha256:fa4dee2b27ea61bdd0f41716304d0a2668cec244c8dc8f0ef26967613d47907c",
+    "name": "fd_10.4.1_amd64.deb",
+    "size": 1397558
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd_10.4.1_arm64.deb",
+    "digest": "sha256:e548ddcb0a82247c1c1b480c1c298cd1be1a42f2447ac2b2f576613f31a92287",
+    "name": "fd_10.4.1_arm64.deb",
+    "size": 1277522
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd_10.4.1_armhf.deb",
+    "digest": "sha256:a4f7b28c0398dbf0e9d3d463b0b93ca3a9439076073373360dbd94d40b64b315",
+    "name": "fd_10.4.1_armhf.deb",
+    "size": 1325934
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.4.1/fd_10.4.1_i686.deb",
+    "digest": "sha256:1309fbf7941700b5e140495335359a57139c68a8ad4e3ca5357dd1401b7d481c",
+    "name": "fd_10.4.1_i686.deb",
+    "size": 1473774
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.4.1"
+ },
+ {
+  "assets": [],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.4.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-musl_10.3.0_amd64.deb",
+    "digest": "sha256:160ec53409e2af8faf3ef06171b777cb2c060c75bad6f2babecce7f3301bcedc",
+    "name": "fd-musl_10.3.0_amd64.deb",
+    "size": 1444530
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-musl_10.3.0_arm64.deb",
+    "digest": "sha256:d03c150facd1dac83333ab7a5ed64dcca9438d24b433cad9584ffcf07cb3c2f4",
+    "name": "fd-musl_10.3.0_arm64.deb",
+    "size": 1313888
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-musl_10.3.0_armhf.deb",
+    "digest": "sha256:486fcccc124369c239c43c8a05980acd644e0199050ecda8ab9f260dbea75300",
+    "name": "fd-musl_10.3.0_armhf.deb",
+    "size": 1203862
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-musl_10.3.0_i686.deb",
+    "digest": "sha256:7bcadc793bc6e71a22d67e1356a1041f6407de221751af3a882bde2b9c400120",
+    "name": "fd-musl_10.3.0_i686.deb",
+    "size": 1260344
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:0570263812089120bc2a5d84f9e65cd0c25e4a4d724c80075c357239c74ae904",
+    "name": "fd-v10.3.0-aarch64-apple-darwin.tar.gz",
+    "size": 1337349
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:bf9b1e31bcac71c1e95d49c56f0d872f525b95d03854e94b1d4dd6786f825cc5",
+    "name": "fd-v10.3.0-aarch64-pc-windows-msvc.zip",
+    "size": 1416342
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:66f297e404400a3358e9a0c0b2f3f4725956e7e4435427a9ae56e22adbe73a68",
+    "name": "fd-v10.3.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1575492
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:996b9b1366433b211cb3bbedba91c9dbce2431842144d925428ead0adf32020b",
+    "name": "fd-v10.3.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1608477
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:a09a7e2bc9afb993c7f67afa2c95d940ad2e5ee064f9d9bdef35f4065874238c",
+    "name": "fd-v10.3.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1610195
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:db0caa86f5ac7b1e2d9b0dc7ae4138f12f6adc9a4567d2974b29fb1d2809cb72",
+    "name": "fd-v10.3.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 1466796
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:1e1c1c677d01c1df9e54095d727f61649401ac54a5946cecb3fbe3d002615fd8",
+    "name": "fd-v10.3.0-i686-pc-windows-msvc.zip",
+    "size": 1381022
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8bb29df8b6dae820bd4aa9e0c508f458faf988f3353e9d2ceed3fc9d0628c9f7",
+    "name": "fd-v10.3.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 1773069
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:e761dfc5baff0fb91cd1428f1475fae0e9d70dfbf55c10e9db803566abf70fad",
+    "name": "fd-v10.3.0-i686-unknown-linux-musl.tar.gz",
+    "size": 1524821
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:50d30f13fe3d5914b14c4fff5abcbd4d0cdab4b855970a6956f4f006c17117a3",
+    "name": "fd-v10.3.0-x86_64-apple-darwin.tar.gz",
+    "size": 1430203
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:3546f30be3c133dcaa2b0f6d886aaae93a87585f477c8af4faa4d601589668cd",
+    "name": "fd-v10.3.0-x86_64-pc-windows-gnu.zip",
+    "size": 1479456
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:318aa2a6fa664325933e81fda60d523fff29444129e91ebf0726b5b3bcd8b059",
+    "name": "fd-v10.3.0-x86_64-pc-windows-msvc.zip",
+    "size": 1490905
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:c3c2bc79f838e780173fc8f18b337ec273e7ba17c7ff8f551be29fc3c19b7916",
+    "name": "fd-v10.3.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1710062
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd-v10.3.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2b6bfaae8c48f12050813c2ffe1884c61ea26e750d803df9c9114550a314cd14",
+    "name": "fd-v10.3.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 1759301
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd_10.3.0_amd64.deb",
+    "digest": "sha256:f4be8742f936e4ef0e10016b661e4c1cd49e482e388080aa28c05d02f0559509",
+    "name": "fd_10.3.0_amd64.deb",
+    "size": 1401534
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd_10.3.0_arm64.deb",
+    "digest": "sha256:35659891c839f9db2a6a5f082342b43961db36cfb08ea3b72a09f19543766a4f",
+    "name": "fd_10.3.0_arm64.deb",
+    "size": 1282680
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd_10.3.0_armhf.deb",
+    "digest": "sha256:06ef066f98f4636e7c4097764cec567e2df8346944a49dc4acc996a7eb4c560f",
+    "name": "fd_10.3.0_armhf.deb",
+    "size": 1330760
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.3.0/fd_10.3.0_i686.deb",
+    "digest": "sha256:c8bb65908721d30fe2e70856cc352b05eec437279c6d940df8a6759528c0d7a4",
+    "name": "fd_10.3.0_i686.deb",
+    "size": 1471806
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.3.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-musl_10.2.0_amd64.deb",
+    "name": "fd-musl_10.2.0_amd64.deb",
+    "size": 1388390
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-musl_10.2.0_arm64.deb",
+    "name": "fd-musl_10.2.0_arm64.deb",
+    "size": 1266304
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-musl_10.2.0_armhf.deb",
+    "name": "fd-musl_10.2.0_armhf.deb",
+    "size": 1092360
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-musl_10.2.0_i686.deb",
+    "name": "fd-musl_10.2.0_i686.deb",
+    "size": 1149308
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-aarch64-apple-darwin.tar.gz",
+    "name": "fd-v10.2.0-aarch64-apple-darwin.tar.gz",
+    "size": 1220905
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "fd-v10.2.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1499935
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-aarch64-unknown-linux-musl.tar.gz",
+    "name": "fd-v10.2.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1537874
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "name": "fd-v10.2.0-arm-unknown-linux-gnueabihf.tar.gz",
+    "size": 1523617
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-arm-unknown-linux-musleabihf.tar.gz",
+    "name": "fd-v10.2.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 1330484
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-i686-pc-windows-msvc.zip",
+    "name": "fd-v10.2.0-i686-pc-windows-msvc.zip",
+    "size": 1193182
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "fd-v10.2.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 1667456
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-i686-unknown-linux-musl.tar.gz",
+    "name": "fd-v10.2.0-i686-unknown-linux-musl.tar.gz",
+    "size": 1377904
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-apple-darwin.tar.gz",
+    "name": "fd-v10.2.0-x86_64-apple-darwin.tar.gz",
+    "size": 1301191
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-pc-windows-gnu.zip",
+    "name": "fd-v10.2.0-x86_64-pc-windows-gnu.zip",
+    "size": 1307369
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-pc-windows-msvc.zip",
+    "name": "fd-v10.2.0-x86_64-pc-windows-msvc.zip",
+    "size": 1315212
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz",
+    "name": "fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 1629598
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "fd-v10.2.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 1681679
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd_10.2.0_amd64.deb",
+    "name": "fd_10.2.0_amd64.deb",
+    "size": 1344980
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd_10.2.0_arm64.deb",
+    "name": "fd_10.2.0_arm64.deb",
+    "size": 1230278
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd_10.2.0_armhf.deb",
+    "name": "fd_10.2.0_armhf.deb",
+    "size": 1267194
+   },
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd_10.2.0_i686.deb",
+    "name": "fd_10.2.0_i686.deb",
+    "size": 1401322
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v10.2.0"
+ }
+]

@@ -1,0 +1,46 @@
+# scratch
+.lodi/
+*.swp
+.DS_Store
+
+# merge leftovers: patch's and git mergetool's backups (#338); pre-commit and the gate refuse them
+*.orig
+*.rej
+*_BACKUP_[0-9]*
+*_BASE_[0-9]*
+*_LOCAL_[0-9]*
+*_REMOTE_[0-9]*
+
+# assistant session transcripts, event streams and run logs — never commit (AGENTS.md §1.2)
+review/*/run/turn*.jsonl
+review/*/run/session/
+review/*/run/run.log
+review/*/run/consumed.seconds
+review/*/run/session-id
+review/*/run/launcher-*.out
+review/*/run/turn*.stderr
+*.session.jsonl
+.claude/settings.local.json
+.claude/worktrees/
+.pi/
+# every runner transcript and timeline shape; the test fixtures stay tracked
+*.jsonl
+!tests/fixtures/**/*.jsonl
+
+# credential files — never commit (AGENTS.md §1.2)
+auth.json
+.env*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.netrc
+
+# run-milestone runtime scratch
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+
+# Rust build output
+/target/

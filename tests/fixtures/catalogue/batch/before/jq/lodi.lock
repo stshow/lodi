@@ -1,0 +1,51 @@
+{
+  "base": null,
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi 1.4.1",
+  "manifestHash": "sha256:7f32efd06a1a62cf5b6cc60fca07d2d20e9ee77902631a2ef261f7ff672aa3d8",
+  "packages": {
+    "jq": {
+      "artifacts": [
+        {
+          "format": "binary",
+          "sha256": "sha256:178a55a4d55be9cc9fece4ae8856016a789991232868b7194ff1eec2b3b7a949",
+          "size": 38,
+          "stripComponents": 0,
+          "subdir": "",
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-amd64"
+        }
+      ],
+      "provider": "binary",
+      "recipe": {
+        "input": "builtin",
+        "path": "jq.toml",
+        "sha256": "sha256:19b27082b5a035c122e4e631f6e090c53e3f8925e4173fccf8778595e09b484e"
+      },
+      "request": {
+        "constraint": "latest",
+        "name": "jq",
+        "provider": "binary"
+      },
+      "spec": {
+        "arch": "x86_64",
+        "bin": [
+          "bin/jq"
+        ],
+        "env": {},
+        "path": [
+          "bin"
+        ]
+      },
+      "tag": "jq-1.8.2",
+      "version": "1.8.2"
+    }
+  },
+  "profiles": {
+    "default": {
+      "packages": [
+        "jq"
+      ]
+    }
+  },
+  "version": 1
+}

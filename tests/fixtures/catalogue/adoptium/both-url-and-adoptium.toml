@@ -1,0 +1,21 @@
+# A crafted recipe, not catalogue data: `adoptium` supplies the asset URL itself, so a recipe
+# that also declares one is `E_RECIPE_INVALID`. See this directory's README.md.
+[recipe]
+name        = "both-url-and-adoptium"
+description = "A recipe that declares both the adoptium strategy and an [asset] url"
+homepage    = "https://adoptium.net"
+
+[arch_names]
+x86_64 = "x64"
+
+[versions]
+strategy = "adoptium"
+
+[asset]
+url              = "https://example.invalid/jdk-${arch_name}.tar.gz"
+format           = "tar.gz"
+strip_components = 1
+
+[spec]
+bin  = ["bin/java"]
+path = ["bin"]

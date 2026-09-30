@@ -1,0 +1,21 @@
+[home]
+version = "1"
+
+[programs.alacritty]
+font.size = 11.5
+font.normal.family = "JetBrains Mono"
+window.opacity = 0.95
+window.padding.x = 6
+window.padding.y = 4
+window.decorations = "None"
+scrolling.history = 20000
+extra = '''
+[[keyboard.bindings]]
+key = "N"
+mods = "Control|Shift"
+action = "CreateNewWindow"
+
+[colors.primary]
+background = "#1d1f21"
+foreground = "#c5c8c6"
+'''

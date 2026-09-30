@@ -1,0 +1,11 @@
+run
+--rm
+--log-driver=none
+--network=none
+--pull=never
+--security-opt
+label=disable
+--entrypoint
+cat
+localhost/lodi-env:0123456789abcdef
+/lodi-base-packages

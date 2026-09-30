@@ -1,0 +1,21 @@
+# ruff for [tools] ruff. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+# Upstream tags carry no `v` prefix.
+[recipe]
+name        = "ruff"
+description = "An extremely fast Python linter and code formatter"
+homepage    = "https://docs.astral.sh/ruff"
+
+[versions]
+strategy = "github_releases"
+repo     = "astral-sh/ruff"
+tag      = "${version}"
+asset    = "ruff-${arch}-unknown-linux-musl.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 1
+
+[spec]
+bin  = ["ruff"]
+path = ["."]

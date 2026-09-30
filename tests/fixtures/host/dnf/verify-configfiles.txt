@@ -1,0 +1,32 @@
+..?......  c /etc/libaudit.conf
+..?......  c /etc/security/opasswd
+.M.......  c /etc/machine-id
+missing   c /etc/grub.d/00_header (Permission denied)
+missing   c /etc/grub.d/01_users (Permission denied)
+missing   c /etc/grub.d/08_fallback_counting (Permission denied)
+missing   c /etc/grub.d/10_linux (Permission denied)
+missing   c /etc/grub.d/10_reset_boot_success (Permission denied)
+missing   c /etc/grub.d/12_menu_auto_hide (Permission denied)
+missing   c /etc/grub.d/14_menu_show_once (Permission denied)
+missing   c /etc/grub.d/20_linux_xen (Permission denied)
+missing   c /etc/grub.d/20_ppc_terminfo (Permission denied)
+missing   c /etc/grub.d/25_bli (Permission denied)
+missing   c /etc/grub.d/30_os-prober (Permission denied)
+missing   c /etc/grub.d/30_uefi-firmware (Permission denied)
+missing   c /etc/grub.d/40_custom (Permission denied)
+missing   c /etc/grub.d/41_custom (Permission denied)
+missing   c /boot/grub2/grubenv (Permission denied)
+missing   c /boot/grub2/grubenv (Permission denied)
+missing   c /etc/nftables/main.nft (Permission denied)
+missing   c /etc/nftables/nat.nft (Permission denied)
+missing   c /etc/nftables/osf/pf.os (Permission denied)
+missing   c /etc/nftables/router.nft (Permission denied)
+..?......  c /etc/sysconfig/nftables.conf
+missing   c /etc/audit/audit-stop.rules (Permission denied)
+..?......  c /etc/sudo.conf
+..?......  c /etc/sudoers
+missing   c /etc/audit/auditd.conf (Permission denied)
+..?......  c /etc/ssh/sshd_config
+missing   c /etc/ssh/sshd_config.d/40-redhat-crypto-policies.conf (Permission denied)
+missing   c /etc/ssh/sshd_config.d/50-redhat.conf (Permission denied)
+..?......  c /etc/sysconfig/sshd

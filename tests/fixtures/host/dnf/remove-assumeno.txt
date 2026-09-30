@@ -1,0 +1,39 @@
+Package                            Arch   Version            Repository                            Size
+Removing:
+ cloud-init                        noarch 0:25.3-3.fc44      4e4a4f70cfdd4047b39087e8606c2591   6.7 MiB
+Removing unused dependencies:
+ checkpolicy                       x86_64 0:3.10-1.fc44      4e4a4f70cfdd4047b39087e8606c2591   1.7 MiB
+ dhcpcd                            x86_64 0:10.3.0-4.fc44    4e4a4f70cfdd4047b39087e8606c2591 512.6 KiB
+ inih                              x86_64 0:62-2.fc44        4e4a4f70cfdd4047b39087e8606c2591  22.3 KiB
+ libretls                          x86_64 0:3.8.1-7.fc44     4e4a4f70cfdd4047b39087e8606c2591  84.9 KiB
+ netcat                            x86_64 0:1.237-3.fc44     4e4a4f70cfdd4047b39087e8606c2591  58.3 KiB
+ openssl                           x86_64 1:3.5.5-1.fc44     4e4a4f70cfdd4047b39087e8606c2591   1.8 MiB
+ python3-attrs                     noarch 0:25.4.0-2.fc44    4e4a4f70cfdd4047b39087e8606c2591 436.8 KiB
+ python3-audit                     x86_64 0:4.1.4-1.fc44     4e4a4f70cfdd4047b39087e8606c2591 295.3 KiB
+ python3-charset-normalizer        noarch 0:3.4.4-2.fc44     4e4a4f70cfdd4047b39087e8606c2591 356.2 KiB
+ python3-configobj                 noarch 0:5.0.9-9.fc44     4e4a4f70cfdd4047b39087e8606c2591 399.3 KiB
+ python3-idna                      noarch 0:3.11-2.fc44      4e4a4f70cfdd4047b39087e8606c2591 738.4 KiB
+ python3-jinja2                    noarch 0:3.1.6-7.fc44     4e4a4f70cfdd4047b39087e8606c2591   3.1 MiB
+ python3-jsonpatch                 noarch 0:1.33-12.fc44     4e4a4f70cfdd4047b39087e8606c2591  74.5 KiB
+ python3-jsonpointer               noarch 0:2.4-9.fc44       4e4a4f70cfdd4047b39087e8606c2591  45.8 KiB
+ python3-jsonschema                noarch 0:4.23.0-7.fc44    4e4a4f70cfdd4047b39087e8606c2591 906.6 KiB
+ python3-jsonschema-specifications noarch 0:2024.10.1-7.fc44 4e4a4f70cfdd4047b39087e8606c2591  46.2 KiB
+ python3-libselinux                x86_64 0:3.10-1.fc44      4e4a4f70cfdd4047b39087e8606c2591 632.9 KiB
+ python3-libsemanage               x86_64 0:3.10-1.fc44      4e4a4f70cfdd4047b39087e8606c2591 398.9 KiB
+ python3-markupsafe                x86_64 0:3.0.2-7.fc44     4e4a4f70cfdd4047b39087e8606c2591  61.4 KiB
+ python3-oauthlib                  noarch 0:3.3.1-1.fc44     4e4a4f70cfdd4047b39087e8606c2591   1.0 MiB
+ python3-policycoreutils           noarch 0:3.10-1.fc44      4e4a4f70cfdd4047b39087e8606c2591   5.8 MiB
+ python3-pysocks                   noarch 0:1.7.1-32.fc44    4e4a4f70cfdd4047b39087e8606c2591 102.0 KiB
+ python3-pyyaml                    x86_64 0:6.0.3-3.fc44     4e4a4f70cfdd4047b39087e8606c2591 789.4 KiB
+ python3-referencing               noarch 0:0.36.2-6.fc44    4e4a4f70cfdd4047b39087e8606c2591 336.5 KiB
+ python3-requests                  noarch 0:2.32.5-5.fc44    4e4a4f70cfdd4047b39087e8606c2591 476.9 KiB
+ python3-rpds-py                   x86_64 0:0.29.0-2.fc44    4e4a4f70cfdd4047b39087e8606c2591 716.0 KiB
+ python3-setools                   x86_64 0:4.6.0-5.fc44     4e4a4f70cfdd4047b39087e8606c2591   2.8 MiB
+ python3-urllib3                   noarch 0:2.6.3-2.fc44     4e4a4f70cfdd4047b39087e8606c2591   1.1 MiB
+ python3-urllib3+socks             noarch 0:2.6.3-2.fc44     4e4a4f70cfdd4047b39087e8606c2591   0.0   B
+ userspace-rcu                     x86_64 0:0.15.6-1.fc44    4e4a4f70cfdd4047b39087e8606c2591 342.7 KiB
+ xfsprogs                          x86_64 0:6.18.0-2.fc44    4e4a4f70cfdd4047b39087e8606c2591   4.2 MiB
+
+Transaction Summary:
+ Removing:          32 packages
+

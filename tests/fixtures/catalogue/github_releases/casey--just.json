@@ -1,0 +1,476 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/CHANGELOG.md",
+    "digest": "sha256:20471dc37a2248cd5c95b05a258f4b185513a829cf2c7f5e158c7ee381cd62ee",
+    "name": "CHANGELOG.md",
+    "size": 210136
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48",
+    "name": "just-1.58.0-aarch64-apple-darwin.tar.gz",
+    "size": 2146038
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:3a39ed629eb67678976c811a4da46f7985a2c22f4dbabe017b8b2eb5ceb5d01c",
+    "name": "just-1.58.0-aarch64-pc-windows-msvc.zip",
+    "size": 2053202
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df",
+    "name": "just-1.58.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2306281
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:ebb0e9d5eb2ed8b19c3563a4bdd37801ab9f910841f35b5e4ea261ecec971f39",
+    "name": "just-1.58.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2372131
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:f08a39bace6c8a4c7b5941479f9c2e313505b251653aa2dd7c9e9672b5fba2e6",
+    "name": "just-1.58.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2330659
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:793c6f8612169a1a6c19297eefaf8dc1959b507d6d0eede5f5507be6ee7c29f4",
+    "name": "just-1.58.0-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2329732
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:1cbca0ce9880d5d1050115a6e2ced510927f85d1797a204ef6bccb319d923d8d",
+    "name": "just-1.58.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2394409
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023",
+    "name": "just-1.58.0-x86_64-apple-darwin.tar.gz",
+    "size": 2330963
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:759f16fb7aa17c5c8b9594b6d4a8c1a6630dfd042cf2b3ff84841454d3d188dc",
+    "name": "just-1.58.0-x86_64-pc-windows-msvc.zip",
+    "size": 2252404
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d",
+    "name": "just-1.58.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2529009
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.58.0/SHA256SUMS",
+    "digest": "sha256:a2e7355b6882af86f46e86faf1150992d4326c131e697bdf2e7c95aebdff55cb",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.58.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/CHANGELOG.md",
+    "digest": "sha256:f904802597ddf0e88788a07882ca69b693e1e941caec508e8817bd5f22ae1f38",
+    "name": "CHANGELOG.md",
+    "size": 209131
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:0381db216c2f97ce31d838a1562c1064dfbfa73f5a8a81581338a2cd9217df47",
+    "name": "just-1.57.0-aarch64-apple-darwin.tar.gz",
+    "size": 2144834
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:14ff33bbac8d2f07deda30cd3bafe7be083213cdb1c4dae7a55567d375cc17f1",
+    "name": "just-1.57.0-aarch64-pc-windows-msvc.zip",
+    "size": 2052019
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:f225044a81adea6e0b3a8b9370aaf374e6af76c8735ae263ac993df55fd137ec",
+    "name": "just-1.57.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2303191
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a7030c47625e0ebb5e374f3b9db91f20930a064c933cad2f5ae95686cc72a520",
+    "name": "just-1.57.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2371217
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a793e5e63bce875176c426fb3d8411b1ada39391ff65d9db07e89f424818e3d0",
+    "name": "just-1.57.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2328199
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:163cab5c82ece83851050a0d5be5484666a790528373b868e6f0c5beb40f273f",
+    "name": "just-1.57.0-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2329127
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d7865917df521bee3511d311808de05b3dbc44b5cb6e3b4b933aeae0b9ad9e09",
+    "name": "just-1.57.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2393965
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:5e6ade3698095576274b2b32cc9e5d467185e8e40b04949004c04cc3d7e962dc",
+    "name": "just-1.57.0-x86_64-apple-darwin.tar.gz",
+    "size": 2329579
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:4c7391d17cb1d17b758b52004ee6411372b8a13ff37c3c9b9031625cb6026e09",
+    "name": "just-1.57.0-x86_64-pc-windows-msvc.zip",
+    "size": 2250500
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/just-1.57.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:45b548094283cb9739af8f13273b8cddeee869f5b4ef2bb631b1f311cb566155",
+    "name": "just-1.57.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2526964
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.57.0/SHA256SUMS",
+    "digest": "sha256:34f9247177f4c6e89f7471f0c5a009e31696e03ef134bcc2516e4a61014b62f9",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.57.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/CHANGELOG.md",
+    "digest": "sha256:8f7d0fc90603da73fe6feef70a20230df592cc080b528115eb0773b955ba4054",
+    "name": "CHANGELOG.md",
+    "size": 201048
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:f35798d4bcdc4db020eef7d2853ad98bbfb97a4d29ee695ba042f18e7fedcc11",
+    "name": "just-1.56.0-aarch64-apple-darwin.tar.gz",
+    "size": 2160129
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:790b7563403b938cbf93fa8807ca17ab68a3ebaa3f4bb2e0a119f4897d1960c4",
+    "name": "just-1.56.0-aarch64-pc-windows-msvc.zip",
+    "size": 2053243
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:c8c1d656e9f47569ec1ae2bf8779af2621cdeea6bbbba3b0cacd64f951d25e2b",
+    "name": "just-1.56.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2325310
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:bc17d0c0e5c23efce24702b68fb20cac341165b0a7a5b67bc3eb131ddf1edbd7",
+    "name": "just-1.56.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2381264
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:c6dd7708ef3d40aea8a1fdd7814e8be7f4ed23cd2ab098fbaa751e6b1003e2d6",
+    "name": "just-1.56.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2344338
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:7cde6b3d356f9b4b9e18f511cc700c335287b0986d06ecfa10a3d7e7ebcc0130",
+    "name": "just-1.56.0-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2332367
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:c6af0be335f12ec2d4731ffd14db6d080ae0b5a8b465877e71bb23d1f8f18c02",
+    "name": "just-1.56.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2406085
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:09b35ff6d17023ffae37ce408d1a78a976d9e001cae54b88e238f7f40db9b783",
+    "name": "just-1.56.0-x86_64-apple-darwin.tar.gz",
+    "size": 2350236
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:804f5b2fe94291d0df38fd8dfc5620afbf3496f8f11c1915b42a87323234f0ba",
+    "name": "just-1.56.0-x86_64-pc-windows-msvc.zip",
+    "size": 2249936
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/just-1.56.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:fa2a8ec1015d9df5330941ade12437488fc40d33f9c9f8cd4eb70a26de11b639",
+    "name": "just-1.56.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2545305
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.56.0/SHA256SUMS",
+    "digest": "sha256:494bebdff00ea0a41c8e175f247263538348454ad430c1060f14028ad63b87cb",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.56.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/CHANGELOG.md",
+    "digest": "sha256:98252d152d4c47806088a0c9c279d54a26304a024652012c35758dc0748ce5ee",
+    "name": "CHANGELOG.md",
+    "size": 193161
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:0225e3899b1b555bc3f4122d0402ba931a6ee697d188c68e4d971468064c78f4",
+    "name": "just-1.55.1-aarch64-apple-darwin.tar.gz",
+    "size": 2135949
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:40322a175e1a780e9e3c1a776c90676b38a530d2ebde95af151885685e4439ae",
+    "name": "just-1.55.1-aarch64-pc-windows-msvc.zip",
+    "size": 2024651
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:b0ee814c9656427408e339893541e30d9027828686839499b2a2a34dd61ad173",
+    "name": "just-1.55.1-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2297303
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:7ba76adf4261c306b3c5c705ec6b56eb70b966c22734048e8f5355c37fa67544",
+    "name": "just-1.55.1-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2348796
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:086b61f4dd0376658330492c03ee0de3f8b9c0598769a2004a48685a508702c5",
+    "name": "just-1.55.1-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2314352
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:4036ab593caef0220e1dbcca161551ee87e4d1eea50b2809db099afeffe0bd20",
+    "name": "just-1.55.1-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2304482
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:395fecc4bbd537fc7d2e09f441248cfc92342d9a8886be57d14e862f98741083",
+    "name": "just-1.55.1-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2377239
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:74d7d0afc195df14d8e34636fb9b6a9c7d3d443622478dbe86140ffe41ad9192",
+    "name": "just-1.55.1-x86_64-apple-darwin.tar.gz",
+    "size": 2319052
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:8106e6c036aea52dd1d5109bdf9357c37ba87a0e0ef1013d7327103942550c79",
+    "name": "just-1.55.1-x86_64-pc-windows-msvc.zip",
+    "size": 2219356
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/just-1.55.1-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:b0ef600f0df20d5ae91ae931627c499fc52b477ffe5f5ea7b7b3ec616b16c778",
+    "name": "just-1.55.1-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2518831
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.1/SHA256SUMS",
+    "digest": "sha256:5cb85f7d88e225a18859be12fb9b23997de0246de15556c112d683461849b3a9",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.55.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/CHANGELOG.md",
+    "digest": "sha256:9061ae084956b3650c6a9cc5dbc1ab26832c5926913ba1934e3210abb7d51d8c",
+    "name": "CHANGELOG.md",
+    "size": 192489
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:3d8453f2d56c82bcbb0aa17973ddbed9155b336c8e14c420af8815b919c3e293",
+    "name": "just-1.55.0-aarch64-apple-darwin.tar.gz",
+    "size": 2138069
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:1625d936abc7b2994292d0bd6503adacb6da919ca249cc27188fb278855e984c",
+    "name": "just-1.55.0-aarch64-pc-windows-msvc.zip",
+    "size": 2024074
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0296d0fdb9207523a66302e1dfb549eece06adfe8339e1f63535cb5ac30bab77",
+    "name": "just-1.55.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2295361
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a40eaaffe57897870d51980b72e68193bc870748653a4baf2653ccbc2fda5df8",
+    "name": "just-1.55.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2353484
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:37405c748c724b76aededac7d6711c4d337a7c8f6a27eee72d8dc5da3c6b2878",
+    "name": "just-1.55.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2310837
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:612b1acb10750a0ca1b0eda9883f82f509b9ca9ebcfa4d682c774228698352a1",
+    "name": "just-1.55.0-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2307060
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:ca1f2725630dfefd9a9c7e47019134310e0d7b7c8d6c084094754354c5098f1a",
+    "name": "just-1.55.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2377595
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:deca76d668082fa90562d92b3cd9e298401baf3b966566a4d5720070bb69120a",
+    "name": "just-1.55.0-x86_64-apple-darwin.tar.gz",
+    "size": 2320695
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:a2a53bf1b220ba6484b7910077645fce167733052c1bef015dbad567c5df43f4",
+    "name": "just-1.55.0-x86_64-pc-windows-msvc.zip",
+    "size": 2219247
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/just-1.55.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:978178d9b20d2017ae7efdd29b204afc2ba75d103b4ab9d2c4e1a6407bbd648a",
+    "name": "just-1.55.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2512069
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.55.0/SHA256SUMS",
+    "digest": "sha256:749bf51f12ce5acdc676a282fe405499ad5c16973f0c3b1bad5ab6d8b0a3596f",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.55.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/CHANGELOG.md",
+    "digest": "sha256:87cdd650b937f75c75f395578275f17ce7c5fbc762e286cc241278cbf008adb6",
+    "name": "CHANGELOG.md",
+    "size": 187910
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:a776fc5015491f84580875bc6dad3de59fa4f47a309ccac49d1287cb55f9b599",
+    "name": "just-1.54.0-aarch64-apple-darwin.tar.gz",
+    "size": 2111384
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:53037b100843ba20826506aa8857c3b209d01542643570190a51692e3e91068f",
+    "name": "just-1.54.0-aarch64-pc-windows-msvc.zip",
+    "size": 1992168
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2162accb54d087c6fbd165c1baedccb0f93b4953af7f00309b8f928016c49cae",
+    "name": "just-1.54.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 2268802
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:48ef0577bfa8083137f78e021b6d8aca588bd0354c3cbef4cf4c49e40b7e0cc9",
+    "name": "just-1.54.0-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 2320652
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:136dd02e4163c94689fd5d87dc46e482edf5b86d98e6223c554af12f13b363d9",
+    "name": "just-1.54.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 2284492
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-loongarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:4b010243231bb33570885b6bd3f26cac519051856bfb4caf62bb110b85c388b6",
+    "name": "just-1.54.0-loongarch64-unknown-linux-musl.tar.gz",
+    "size": 2275523
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:1f79e04e40b74cc5eb96163d044db49bcda96e4c25124db0a512d2915d9086d2",
+    "name": "just-1.54.0-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 2348446
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:3f1adefef12bcdf99134a44bde53b779e83726381e15de92113ce4bf2a3cf61f",
+    "name": "just-1.54.0-x86_64-apple-darwin.tar.gz",
+    "size": 2289922
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:860e21474e956eaa9879d62f68cc24530254eefe14ac108eaf707c0daf56a6d0",
+    "name": "just-1.54.0-x86_64-pc-windows-msvc.zip",
+    "size": 2191934
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/just-1.54.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:193e2b04bac8ff3568ff81cf62f8c9db08f8083e16665e28d400dd35bac47ffd",
+    "name": "just-1.54.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2489309
+   },
+   {
+    "browser_download_url": "https://github.com/casey/just/releases/download/1.54.0/SHA256SUMS",
+    "digest": "sha256:d3fc7be03f2abd2679ec7ecb7496ac819c0752e3e22ad40e9ff4319892fcc2f9",
+    "name": "SHA256SUMS",
+    "size": 1184
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "1.54.0"
+ }
+]

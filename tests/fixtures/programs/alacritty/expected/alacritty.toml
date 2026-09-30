@@ -1,0 +1,28 @@
+# Managed by lodi from home.toml [programs.alacritty]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+[colors.primary]
+background = "#1d1f21"
+foreground = "#c5c8c6"
+
+[font]
+size = 11.5
+
+[font.normal]
+family = "JetBrains Mono"
+
+[[keyboard.bindings]]
+action = "CreateNewWindow"
+key = "N"
+mods = "Control|Shift"
+
+[scrolling]
+history = 20000
+
+[window]
+decorations = "None"
+opacity = 0.95
+
+[window.padding]
+x = 6
+y = 4

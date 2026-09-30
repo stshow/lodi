@@ -1,0 +1,8 @@
+[host]
+version = "1"
+distro = "debian"
+
+[files."/etc/combined"]
+content = "host\n"
+owner = "{uid}"
+group = "{gid}"

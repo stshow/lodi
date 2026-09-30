@@ -1,0 +1,34 @@
+Package files:
+ 100 /var/lib/dpkg/status
+     release a=now
+ 500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble,n=noble,l=Ubuntu,c=main,b=amd64
+     origin archive.ubuntu.com
+ 500 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble,n=noble,l=Ubuntu,c=universe,b=amd64
+     origin archive.ubuntu.com
+ 500 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-updates,n=noble,l=Ubuntu,c=main,b=amd64
+     origin archive.ubuntu.com
+ 500 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-updates,n=noble,l=Ubuntu,c=universe,b=amd64
+     origin archive.ubuntu.com
+ 100 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-backports,n=noble,l=Ubuntu,c=main,b=amd64
+     origin archive.ubuntu.com
+ 100 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-backports,n=noble,l=Ubuntu,c=universe,b=amd64
+     origin archive.ubuntu.com
+ 100 http://archive.ubuntu.com/ubuntu noble-proposed/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-proposed,n=noble,l=Ubuntu,c=main,b=amd64
+     origin archive.ubuntu.com
+ 100 http://archive.ubuntu.com/ubuntu noble-proposed/universe amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-proposed,n=noble,l=Ubuntu,c=universe,b=amd64
+     origin archive.ubuntu.com
+ 500 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-security,n=noble,l=Ubuntu,c=main,b=amd64
+     origin security.ubuntu.com
+ 500 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble-security,n=noble,l=Ubuntu,c=universe,b=amd64
+     origin security.ubuntu.com
+Pinned packages:

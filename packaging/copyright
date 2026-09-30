@@ -1,0 +1,81 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: lodi
+Comment: The lodi binary is statically linked. Its dependency closure is audited crate by
+ crate in docs/licenses/DEPENDENCIES.md of the source tarball of this release: every crate is
+ under a permissive licence (MIT, Apache-2.0, ISC, BSD-3-Clause, Zlib, 0BSD, Unlicense,
+ Unicode-3.0, Apache-2.0 WITH LLVM-exception) that GPL-3.0-or-later may incorporate, plus the
+ Mozilla CA root data of the webpki-roots crate under CDLA-Permissive-2.0, whose only condition
+ on sharing is that the text of that agreement accompany the data. Both licence texts are
+ reproduced below, so this file carries every notice the packaged binary owes.
+
+Files: *
+Copyright: 2026 stshow <33067247+stshow@users.noreply.github.com>
+License: GPL-3.0-or-later
+
+License: GPL-3.0-or-later
+ Lodi is free software: you can redistribute it and/or modify it under the terms of the GNU
+ General Public License as published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+ .
+ Lodi is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along with this program. If
+ not, see <https://www.gnu.org/licenses/>.
+ .
+ On Debian systems the complete text of the GNU General Public License version 3 can be found
+ in /usr/share/common-licenses/GPL-3; on Arch systems in /usr/share/licenses/common/GPL3. It is
+ also the LICENSE file of the source tarball of this release.
+
+License: CDLA-Permissive-2.0
+ Community Data License Agreement - Permissive - Version 2.0
+ .
+ This is the Community Data License Agreement - Permissive, Version 2.0 (the "agreement"). Data
+ Provider(s) and Data Recipient(s) agree as follows:
+ .
+ 1. Provision of the Data
+ .
+ 1.1. A Data Recipient may use, modify, and share the Data made available by Data Provider(s)
+ under this agreement if that Data Recipient follows the terms of this agreement.
+ .
+ 1.2. This agreement does not impose any restriction on a Data Recipient's use, modification, or
+ sharing of any portions of the Data that are in the public domain or that may be used,
+ modified, or shared under any other legal exception or limitation.
+ .
+ 2. Conditions for Sharing Data
+ .
+ 2.1. A Data Recipient may share Data, with or without modifications, so long as the Data
+ Recipient makes available the text of this agreement with the shared Data.
+ .
+ 3. No Restrictions on Results
+ .
+ 3.1. This agreement does not impose any restriction or obligations with respect to the use,
+ modification, or sharing of Results.
+ .
+ 4. No Warranty; Limitation of Liability
+ .
+ 4.1. All Data Recipients receive the Data subject to the following terms:
+ .
+ THE DATA IS PROVIDED ON AN "AS IS" BASIS, WITHOUT REPRESENTATIONS, WARRANTIES OR CONDITIONS OF
+ ANY KIND, EITHER EXPRESS OR IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS
+ OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ .
+ NO DATA PROVIDER SHALL HAVE ANY LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING WITHOUT LIMITATION LOST PROFITS), HOWEVER CAUSED
+ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE DATA OR RESULTS, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGES.
+ .
+ 5. Definitions
+ .
+ 5.1. "Data" means the material received by a Data Recipient under this agreement.
+ .
+ 5.2. "Data Provider" means any person who is the source of Data provided under this agreement
+ and in reliance on a Data Recipient's agreement to its terms.
+ .
+ 5.3. "Data Recipient" means any person who receives Data directly or indirectly from a Data
+ Provider and agrees to the terms of this agreement.
+ .
+ 5.4. "Results" means any outcome obtained by computational analysis of Data, including for
+ example machine learning models and models' insights.

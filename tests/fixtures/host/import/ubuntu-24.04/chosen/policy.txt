@@ -1,0 +1,209 @@
+adduser:
+  Installed: 3.137ubuntu1
+  Candidate: 3.137ubuntu1
+  Version table:
+ *** 3.137ubuntu1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+apt:
+  Installed: 2.7.14build2
+  Candidate: 2.7.14build2
+  Version table:
+ *** 2.7.14build2 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+base-files:
+  Installed: 13ubuntu10.2
+  Candidate: 13ubuntu10.2
+  Version table:
+ *** 13ubuntu10.2 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+bash-completion:
+  Installed: 1:2.11-8
+  Candidate: 1:2.11-8
+  Version table:
+ *** 1:2.11-8 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+bash:
+  Installed: 5.2.21-2ubuntu4
+  Candidate: 5.2.21-2ubuntu4
+  Version table:
+ *** 5.2.21-2ubuntu4 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+build-essential:
+  Installed: 12.10ubuntu1
+  Candidate: 12.10ubuntu1
+  Version table:
+ *** 12.10ubuntu1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+cloud-init:
+  Installed: 24.4-0ubuntu1
+  Candidate: 24.4-0ubuntu1
+  Version table:
+ *** 24.4-0ubuntu1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+coreutils:
+  Installed: 9.4-3ubuntu6
+  Candidate: 9.4-3ubuntu6
+  Version table:
+ *** 9.4-3ubuntu6 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+dpkg:
+  Installed: 1.22.6ubuntu6.1
+  Candidate: 1.22.6ubuntu6.1
+  Version table:
+ *** 1.22.6ubuntu6.1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+file:
+  Installed: 1:5.45-3build1
+  Candidate: 1:5.45-3build1
+  Version table:
+ *** 1:5.45-3build1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+gcc:
+  Installed: 4:13.2.0-7ubuntu1
+  Candidate: 4:13.2.0-7ubuntu1
+  Version table:
+ *** 4:13.2.0-7ubuntu1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+htop:
+  Installed: 3.3.0-4build1
+  Candidate: 3.3.0-4build1
+  Version table:
+ *** 3.3.0-4build1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+libc6:
+  Installed: 2.39-0ubuntu8.3
+  Candidate: 2.39-0ubuntu8.3
+  Version table:
+ *** 2.39-0ubuntu8.3 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+libmagic1:
+  Installed: 1:5.45-3build1
+  Candidate: 1:5.45-3build1
+  Version table:
+ *** 1:5.45-3build1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-generic:
+  Installed: 6.8.0-51.52
+  Candidate: 6.8.0-51.52
+  Version table:
+ *** 6.8.0-51.52 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-image-generic:
+  Installed: 6.8.0-51.52
+  Candidate: 6.8.0-51.52
+  Version table:
+ *** 6.8.0-51.52 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-modules-extra-6.8.0-51-generic:
+  Installed: 6.8.0-51.52
+  Candidate: 6.8.0-51.52
+  Version table:
+ *** 6.8.0-51.52 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+make:
+  Installed: 4.3-4.1build2
+  Candidate: 4.3-4.1build2
+  Version table:
+ *** 4.3-4.1build2 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+netplan.io:
+  Installed: 1.1-1ubuntu0.24.04.1
+  Candidate: 1.1-1ubuntu0.24.04.1
+  Version table:
+ *** 1.1-1ubuntu0.24.04.1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+nginx:
+  Installed: 1.24.0-2ubuntu7.1
+  Candidate: 1.24.0-2ubuntu7.1
+  Version table:
+ *** 1.24.0-2ubuntu7.1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+openssh-client:
+  Installed: 1:9.6p1-3ubuntu13.5
+  Candidate: 1:9.6p1-3ubuntu13.5
+  Version table:
+ *** 1:9.6p1-3ubuntu13.5 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+openssh-server:
+  Installed: 1:9.6p1-3ubuntu13.5
+  Candidate: 1:9.6p1-3ubuntu13.5
+  Version table:
+ *** 1:9.6p1-3ubuntu13.5 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+passwd:
+  Installed: 1:4.13+dfsg1-4ubuntu3
+  Candidate: 1:4.13+dfsg1-4ubuntu3
+  Version table:
+ *** 1:4.13+dfsg1-4ubuntu3 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+python3:
+  Installed: 3.12.3-0ubuntu2
+  Candidate: 3.12.3-0ubuntu2
+  Version table:
+ *** 3.12.3-0ubuntu2 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+systemd:
+  Installed: 255.4-1ubuntu8.4
+  Candidate: 255.4-1ubuntu8.4
+  Version table:
+ *** 255.4-1ubuntu8.4 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+tar:
+  Installed: 1.35+dfsg-3build1
+  Candidate: 1.35+dfsg-3build1
+  Version table:
+ *** 1.35+dfsg-3build1 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+ubuntu-hand-built:
+  Installed: 0-1
+  Candidate: 0-1
+  Version table:
+ *** 0-1 100
+        100 /var/lib/dpkg/status
+ubuntu-minimal:
+  Installed: 1.539
+  Candidate: 1.539
+  Version table:
+ *** 1.539 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+ubuntu-server-minimal:
+  Installed: 1.539
+  Candidate: 1.539
+  Version table:
+ *** 1.539 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+ubuntu-standard:
+  Installed: 1.539
+  Candidate: 1.539
+  Version table:
+ *** 1.539 500
+        500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status

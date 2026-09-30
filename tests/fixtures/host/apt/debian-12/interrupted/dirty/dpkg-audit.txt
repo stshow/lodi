@@ -1,0 +1,5 @@
+The following packages have been unpacked but not yet configured.
+They must be configured using dpkg --configure or the configure
+menu option in dselect for them to work:
+ unzip                De-archiver for .zip files
+

@@ -1,0 +1,12 @@
+# Trimmed from a measured fetch by scripts/mpin-local.sh --fixtures on 2026-09-24.
+# instant 2025-02-05T19:00:00Z; kept packages: bc, tree, tzdata; kept fields: Package, Version, Architecture, Essential, Priority, Section, Pre-Depends, Depends, Recommends, Provides, Conflicts, Breaks, Filename, Size, SHA256.
+# Each line: the public URL, then the sha256 of its untrimmed bytes.
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble/Release 26758a13cecfaff9ff274d31ea9a4633674a999bd130c09f6ecd66a4b8071184
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble/main/binary-amd64/Packages.xz 2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble/universe/binary-amd64/Packages.xz ba9057fa1b91438cc8a1d26808d00c85389fe101d0c1496254df97236405599a
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-updates/Release bb7c526e9ab98d8c67ded3c1d2053f49ccfd82fff4ad6cd629eba6d69abb2426
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-updates/main/binary-amd64/Packages.xz 9496d211b7a302ab15608fec91f7c810bd235006b0b4e645a5072f16b4553b1c
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-updates/universe/binary-amd64/Packages.xz b1d619996a603b9c6e7f8445eb5200bb560cd783aa0c2dcd92d174eb6d6219d2
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-security/Release ad60849e77a5e539a7e11fae854f109b53e47e91d75a718786a1621ae2485063
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-security/main/binary-amd64/Packages.xz 2ebce7b210b98e7f18917cae8afe554b749078fcac69a47c0705e640ee9e7e19
+https://snapshot.ubuntu.com/ubuntu/20250205T190000Z/dists/noble-security/universe/binary-amd64/Packages.xz 905f1e560352379e0d0db330238bce6381f144a2d03dadba3ead6bc7ad381e70

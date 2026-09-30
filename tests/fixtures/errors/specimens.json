@@ -1,0 +1,598 @@
+[
+  {
+    "code": "E_APPLY",
+    "exit": 8,
+    "hint": "   = hint: use a name from the root's own /etc/passwd, or a numeric id",
+    "message": "lodi: error E_APPLY: `owner = \"nobodyatall\"` of /etc/x.conf names no user of this root",
+    "notes": []
+  },
+  {
+    "code": "E_ARCHIVE_EMPTY",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_ARCHIVE_EMPTY: the archive has no entries after strip_components = 1",
+    "notes": []
+  },
+  {
+    "code": "E_ARCHIVE_FORMAT",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_ARCHIVE_FORMAT: archive format `zip` is not supported (tar.gz, tar.xz)",
+    "notes": []
+  },
+  {
+    "code": "E_ARCHIVE_UNSAFE",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_ARCHIVE_UNSAFE: entry path `../evil` contains `..`",
+    "notes": []
+  },
+  {
+    "code": "E_ATTR_CONFLICT",
+    "exit": 3,
+    "hint": "   = hint: keep `content` for the text itself, or `source` to copy a file",
+    "message": "lodi: error E_ATTR_CONFLICT: [files.\"/etc/x.conf\"] declares both `content` and `source`",
+    "notes": [
+      "  --> host.toml:1:8"
+    ]
+  },
+  {
+    "code": "E_BIN_MISSING",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_BIN_MISSING: `bin/python3-config` of python 3.12.14 is not an executable file in its artifact",
+    "notes": []
+  },
+  {
+    "code": "E_BLOCK_NOT_ALLOWED",
+    "exit": 3,
+    "hint": "   = hint: remove `hold`: it belongs in a machine's host.toml",
+    "message": "lodi: error E_BLOCK_NOT_ALLOWED: `hold` is a host-scope package key, not allowed in a project manifest",
+    "notes": [
+      "  --> lodi.toml:6:1"
+    ]
+  },
+  {
+    "code": "E_BOOT_LOADER",
+    "exit": 7,
+    "hint": "   = hint: lodi sets kernel parameters through GRUB; nothing was changed",
+    "message": "lodi: error E_BOOT_LOADER: no /etc/default/grub to set [kernel] parameters in",
+    "notes": []
+  },
+  {
+    "code": "E_BOOT_NOT_UEFI",
+    "exit": 7,
+    "hint": "   = hint: lodi manages only a UEFI bootloader; nothing was changed",
+    "message": "lodi: error E_BOOT_NOT_UEFI: this machine did not start through UEFI",
+    "notes": []
+  },
+  {
+    "code": "E_BOOT_TRIAL",
+    "exit": 7,
+    "hint": "   = hint: an apply that changes the boot sets one; nothing was changed",
+    "message": "lodi: error E_BOOT_TRIAL: no trial boot waits for a confirmation",
+    "notes": []
+  },
+  {
+    "code": "E_BUILD_UNAVAILABLE",
+    "exit": 5,
+    "hint": "   = hint: no other build is used: run `lodi lock` again to pin one it serves",
+    "message": "lodi: error E_BUILD_UNAVAILABLE: jq-0:1.8.1-2.fc44.x86_64 is not served any more",
+    "notes": [
+      "   = locked at https://repo.test/fedora/Packages/j/jq-1.8.1-2.fc44.x86_64.rpm"
+    ]
+  },
+  {
+    "code": "E_CLOSURE_DRIFT",
+    "exit": 6,
+    "hint": "   = hint: the lock is not changed by entering; re-lock deliberately with `lodi lock`",
+    "message": "lodi: error E_CLOSURE_DRIFT: the installed packages differ from the lock's closure (1 differences); the image was discarded",
+    "notes": [
+      "   =   missing: zlib1g 1:1.2.13.dfsg-1"
+    ]
+  },
+  {
+    "code": "E_CONFIG",
+    "exit": 3,
+    "hint": "   = hint: set HOME to the directory lodi should manage",
+    "message": "lodi: error E_CONFIG: HOME is not set, and lodi never looks a home directory up in the password database",
+    "notes": []
+  },
+  {
+    "code": "E_DECLINED",
+    "exit": 11,
+    "hint": "   = hint: run the apply again with --overwrite-drift to replace it, or fold the change into the manifest",
+    "message": "lodi: error E_DECLINED: /etc/drift.conf was changed since lodi last wrote it",
+    "notes": []
+  },
+  {
+    "code": "E_DRIFT",
+    "exit": 8,
+    "hint": "   = hint: run lodi home status, then lodi home apply --overwrite-drift to take them back",
+    "message": "lodi: error E_DRIFT: 1 managed file has changed since lodi wrote it; nothing was applied",
+    "notes": [
+      "   = .inputrc"
+    ]
+  },
+  {
+    "code": "E_DUP_RESOURCE",
+    "exit": 3,
+    "hint": "   = hint: declare each file once: remove one of the two entries",
+    "message": "lodi: error E_DUP_RESOURCE: `/etc/./sub/../x.conf` and `/etc/x.conf` are the same file, /etc/x.conf",
+    "notes": [
+      "  --> host.toml:4:8"
+    ]
+  },
+  {
+    "code": "E_ENTER",
+    "exit": 7,
+    "hint": "   = hint: move the project, or set LODI_HOME, to a path without them",
+    "message": "lodi: error E_ENTER: /projects/a:b contains `:` or `,`, which Podman's bind syntax cannot express",
+    "notes": []
+  },
+  {
+    "code": "E_EXCLUDED_CONSTRUCT",
+    "exit": 3,
+    "hint": "   = hint: there are no expressions: write the value, or `$${` for a literal `${`",
+    "message": "lodi: error E_EXCLUDED_CONSTRUCT: `${a + b}` is not a substitution name",
+    "notes": [
+      "  --> lodi.toml:2:7"
+    ]
+  },
+  {
+    "code": "E_EXISTS",
+    "exit": 3,
+    "hint": "   = hint: use --force to overwrite ./lodi.toml",
+    "message": "lodi: error E_EXISTS: ./lodi.toml already exists",
+    "notes": []
+  },
+  {
+    "code": "E_FETCH",
+    "exit": 5,
+    "hint": null,
+    "message": "lodi: error E_FETCH: https://index.invalid/versions.txt: HTTP status 404",
+    "notes": []
+  },
+  {
+    "code": "E_FIREWALL_CONFLICT",
+    "exit": 7,
+    "hint": "   = hint: nothing changed; disable it, or take [firewall] out",
+    "message": "lodi: error E_FIREWALL_CONFLICT: ufw.service is active beside [firewall]",
+    "notes": []
+  },
+  {
+    "code": "E_GPGCHECK_OFF",
+    "exit": 3,
+    "hint": "   = hint: leave `gpgcheck` out, or write `gpgcheck = true`",
+    "message": "lodi: error E_GPGCHECK_OFF: [sources.v] turns the signature check `gpgcheck` off",
+    "notes": [
+      "  --> host.toml:5:12"
+    ]
+  },
+  {
+    "code": "E_HASH_MISMATCH",
+    "exit": 5,
+    "hint": null,
+    "message": "lodi: error E_HASH_MISMATCH: https://archive.invalid/core.db: expected sha256:0000000000000000000000000000000000000000000000000000000000000000, got sha256:e690c3a9a88f7e1e5421fe4e462a0f15ede0a9357e0d96a9deec9f2324f0037f",
+    "notes": []
+  },
+  {
+    "code": "E_HOST_MISMATCH",
+    "exit": 3,
+    "hint": "   = hint: apply this manifest on a ubuntu machine, or change the assertion to `debian`",
+    "message": "lodi: error E_HOST_MISMATCH: host.toml asserts `[host] distro = \"ubuntu\"`, but this root is `debian`",
+    "notes": []
+  },
+  {
+    "code": "E_HOST_NOT_ARMED",
+    "exit": 9,
+    "hint": "   = hint: arm this root once: lodi host arm --root <tmp>/host-cat-unarmed-pid (it writes <tmp>/host-cat-unarmed-pid/etc/lodi/host-allowed, an empty file)",
+    "message": "lodi: error E_HOST_NOT_ARMED: <tmp>/host-cat-unarmed-pid is not armed for the host scope: <tmp>/host-cat-unarmed-pid/etc/lodi/host-allowed does not exist",
+    "notes": []
+  },
+  {
+    "code": "E_HOST_OSTREE",
+    "exit": 3,
+    "hint": "   = hint: rpm-ostree layers its packages, not dnf; nothing was read or changed",
+    "message": "lodi: error E_HOST_OSTREE: <tmp>/host-cat-ostree-pid runs from rpm-ostree",
+    "notes": [
+      "   = found: <tmp>/host-cat-ostree-pid/run/ostree-booted",
+      "   = lodi does not manage an rpm-ostree system, such as Silverblue"
+    ]
+  },
+  {
+    "code": "E_HOST_ROOT_REQUIRED",
+    "exit": 9,
+    "hint": "   = hint: this environment never lets a host verb reach this machine: name a scratch root with --root DIR, or run it where LODI_HOST_REQUIRE_ROOT is not set",
+    "message": "lodi: error E_HOST_ROOT_REQUIRED: LODI_HOST_REQUIRE_ROOT=1 is set, so `lodi host plan` needs --root DIR and was given none; nothing was read",
+    "notes": []
+  },
+  {
+    "code": "E_IDENT",
+    "exit": 3,
+    "hint": null,
+    "message": "lodi: error E_IDENT: tool name `Bad Name` must match ^[a-z0-9][a-z0-9._+-]{0,127}$",
+    "notes": [
+      "  --> lodi.toml:1:8"
+    ]
+  },
+  {
+    "code": "E_IDENTITY_CONFLICT",
+    "exit": 3,
+    "hint": "   = hint: declare what the machine has; lodi never changes a UID, GID or home",
+    "message": "lodi: error E_IDENTITY_CONFLICT: alice has UID 1001, host.toml says 1500",
+    "notes": []
+  },
+  {
+    "code": "E_INLINE_NEEDS_EXACT",
+    "exit": 3,
+    "hint": "   = hint: write the version the URL points at, such as version = \"1.7.1\"",
+    "message": "lodi: error E_INLINE_NEEDS_EXACT: `python` declares `url`, so its version must be an exact version, not `3.12`",
+    "notes": [
+      "  --> lodi.toml:1:8"
+    ]
+  },
+  {
+    "code": "E_INSECURE_URL",
+    "exit": 5,
+    "hint": null,
+    "message": "lodi: error E_INSECURE_URL: http://dl.invalid/widget-9.8.7 is not an HTTPS URL",
+    "notes": []
+  },
+  {
+    "code": "E_JOURNAL_AMBIGUOUS",
+    "exit": 8,
+    "hint": "   = hint: drop `--resolved`: there is nothing waiting on a human",
+    "message": "lodi: error E_JOURNAL_AMBIGUOUS: --resolved 20000101T000000Z-0000 names a journal, and no journal is outstanding",
+    "notes": []
+  },
+  {
+    "code": "E_LAYER_BUILD",
+    "exit": 6,
+    "hint": "   = hint: the full log is <tmp>/errors-catalogue-layer-build/lodi-home/logs/build-img-2d50dda09cdd0db334ad17398ef3e2be.log",
+    "message": "lodi: error E_LAYER_BUILD: the container image build failed (exit status 125); nothing was recorded",
+    "notes": [
+      "   =   | the build refused the layer"
+    ]
+  },
+  {
+    "code": "E_LOCK_STALE",
+    "exit": 10,
+    "hint": "   = hint: run `lodi lock`",
+    "message": "lodi: error E_LOCK_STALE: lodi.lock is out of date with the manifest",
+    "notes": [
+      "   = python 3.12",
+      "   = base bookworm"
+    ]
+  },
+  {
+    "code": "E_LOCK_VERSION",
+    "exit": 4,
+    "hint": "   = hint: use the lodi that wrote it, or run `lodi lock` with this one",
+    "message": "lodi: error E_LOCK_VERSION: lodi.lock has lock version 9; this lodi reads version 1",
+    "notes": [
+      "   = this file does not record which lodi wrote it"
+    ]
+  },
+  {
+    "code": "E_MODE",
+    "exit": 3,
+    "hint": "   = hint: add [container] with distro and release, or move the tools to [tools]",
+    "message": "lodi: error E_MODE: distro packages need a `[container]` table",
+    "notes": [
+      "  --> lodi.toml:1:2"
+    ]
+  },
+  {
+    "code": "E_NEED_ROOT",
+    "exit": 9,
+    "hint": "   = hint: run the command as that user, as root, or declare an owner you already are",
+    "message": "lodi: error E_NEED_ROOT: /etc/x.conf declares `owner = \"root\"`, which this process cannot set",
+    "notes": []
+  },
+  {
+    "code": "E_NESTED",
+    "exit": 7,
+    "hint": "   = hint: leave the outer environment first",
+    "message": "lodi: error E_NESTED: cannot enter a host environment from inside a container environment; cross-runtime nesting is not supported",
+    "notes": []
+  },
+  {
+    "code": "E_NETWORK_ROLLED_BACK",
+    "exit": 8,
+    "hint": "   = hint: the earlier network configuration is back; fix [network], apply again",
+    "message": "lodi: error E_NETWORK_ROLLED_BACK: 192.168.77.1: no answer in 1 s; nothing kept",
+    "notes": []
+  },
+  {
+    "code": "E_NETWORK_STACK",
+    "exit": 7,
+    "hint": "   = hint: nothing changed; run one of them, or take [network] out",
+    "message": "lodi: error E_NETWORK_STACK: no netplan, NetworkManager or networkd is running",
+    "notes": []
+  },
+  {
+    "code": "E_NO_CHECKSUM",
+    "exit": 5,
+    "hint": "   = hint: the recipe verifies this artifact against the digest upstream publishes beside it; Lodi downloads nothing it cannot verify",
+    "message": "lodi: error E_NO_CHECKSUM: https://dl.invalid/widget-9.8.7.sha256 is not published (HTTP 404)",
+    "notes": []
+  },
+  {
+    "code": "E_NO_MANIFEST",
+    "exit": 3,
+    "hint": "   = hint: run `lodi init` to create one",
+    "message": "lodi: error E_NO_MANIFEST: no manifest at ./lodi.toml",
+    "notes": []
+  },
+  {
+    "code": "E_NO_MATCH",
+    "exit": 4,
+    "hint": "   = hint: available: 9.8.7",
+    "message": "lodi: error E_NO_MATCH: no widget version upstream matches `2`",
+    "notes": []
+  },
+  {
+    "code": "E_NO_RECIPE",
+    "exit": 4,
+    "hint": "   = hint: did you mean python?",
+    "message": "lodi: error E_NO_RECIPE: no recipe for tool `pyton` in the built-in catalogue",
+    "notes": [
+      "   = hint: a recipe of your own goes in recipes/pyton.toml at your lodi repository's root"
+    ]
+  },
+  {
+    "code": "E_NO_RUNTIME",
+    "exit": 7,
+    "hint": "   = hint: install it once with root privileges, for example `your distribution's podman package`; Lodi does not install it and changes no host package or security setting (docs: README, Container environments)",
+    "message": "lodi: error E_NO_RUNTIME: this manifest selects a container environment ([container]), which needs rootless Podman, and `podman` is not on PATH; nothing was downloaded or run",
+    "notes": []
+  },
+  {
+    "code": "E_PATH_ESCAPE",
+    "exit": 3,
+    "hint": "   = hint: the key of a host `[files]` entry is an absolute path, and `..` may not leave the root",
+    "message": "lodi: error E_PATH_ESCAPE: `etc/x.conf` in [files] is not an absolute path inside the root",
+    "notes": [
+      "  --> host.toml:1:8"
+    ]
+  },
+  {
+    "code": "E_PIN_UNAVAILABLE",
+    "exit": 4,
+    "hint": "   = hint: nothing was installed or removed; pin another build, or remove the pin",
+    "message": "lodi: error E_PIN_UNAVAILABLE: pv 0:1.10.4-1.fc44.x86_64 is pinned, and not served",
+    "notes": [
+      "   = neither a configured repository nor Fedora's signed Koji copy serves those exact bytes"
+    ]
+  },
+  {
+    "code": "E_PIN_UNSATISFIABLE",
+    "exit": 4,
+    "hint": "   = hint: nothing was installed or removed; 2024b-0+deb12u9 of tzdata is missing from debian at 2025-03-01T00:00:00Z: pin a version or a date its repository offers, or remove the pin",
+    "message": "lodi: error E_PIN_UNSATISFIABLE: `tzdata` is pinned to 2024b-0+deb12u9 from debian at 2025-03-01T00:00:00Z, and the source set this apply reads does not offer that version",
+    "notes": []
+  },
+  {
+    "code": "E_PIN_UNTRUSTED",
+    "exit": 5,
+    "hint": "   = hint: set `archived_keyring = true` in [packages.arch]; it may still fail",
+    "message": "lodi: error E_PIN_UNTRUSTED: a dated Arch pin is signed by a key not trusted here",
+    "notes": [
+      "   = package: `tree` 2.3.2-1 from extra at 2026-09-01T00:00:00Z",
+      "   = key: E499C79F53C96A54E572FEE1C06086337C50773E",
+      "   = lodi cannot prove this is the package Arch published",
+      "   = likely: a routine key retirement, not tampering",
+      "   = impact: installing it anyway runs unverified code as root",
+      "   = nothing was installed; the machine's keyring was not touched",
+      "   = archived_keyring verifies it with archlinux-keyring of 2026-09-01, privately"
+    ]
+  },
+  {
+    "code": "E_PROTECTED_PATH",
+    "exit": 3,
+    "hint": "   = hint: take the entry out; lodi never writes Fedora's package settings",
+    "message": "lodi: error E_PROTECTED_PATH: `/etc/pki/lodi` is a Fedora package setting",
+    "notes": [
+      "  --> host.toml:1:8"
+    ]
+  },
+  {
+    "code": "E_RECIPE_CTX",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_RECIPE_CTX: tool `widget` has no artifacts",
+    "notes": []
+  },
+  {
+    "code": "E_RECIPE_INVALID",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_RECIPE_INVALID: catalogue recipe widget.toml: `exclude` entry `/absolute` in [asset] must be an exact relative file path",
+    "notes": []
+  },
+  {
+    "code": "E_REPO_UNREACHABLE",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_REPO_UNREACHABLE: https://mirror.invalid/ubuntu/dists/noble/Release: HTTP status 404",
+    "notes": []
+  },
+  {
+    "code": "E_SHELL_NOT_FOUND",
+    "exit": 7,
+    "hint": "   = hint: set SHELL to an absolute path of an executable shell; lodi installs no shell",
+    "message": "lodi: error E_SHELL_NOT_FOUND: no usable interactive shell: $SHELL (unset) and /nonexistent/sh cannot be run",
+    "notes": []
+  },
+  {
+    "code": "E_SNAPSHOT_FUTURE",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_SNAPSHOT_FUTURE: snapshot 2026-09-22T00:00:00Z is in the future",
+    "notes": []
+  },
+  {
+    "code": "E_SNAPSHOT_TOO_OLD",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_SNAPSHOT_TOO_OLD: snapshot 2024-04-30T23:59:59Z is before 2024-05-01T00:00:00Z (rolling is not available earlier)",
+    "notes": []
+  },
+  {
+    "code": "E_SSH_KEY",
+    "exit": 3,
+    "hint": "   = hint: write each public key as the one line of its .pub file",
+    "message": "lodi: error E_SSH_KEY: an entry of `ssh_keys` in [users.alice] is a private key",
+    "notes": [
+      "  --> host.toml:2:12"
+    ]
+  },
+  {
+    "code": "E_STORE_IO",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_STORE_IO: cannot write ./.gitignore: Too many levels of symbolic links (os error 40)",
+    "notes": []
+  },
+  {
+    "code": "E_STORE_PERM",
+    "exit": 9,
+    "hint": null,
+    "message": "lodi: error E_STORE_PERM: the store location `relative/store` is not absolute",
+    "notes": []
+  },
+  {
+    "code": "E_STORE_VERSION",
+    "exit": 6,
+    "hint": "   = hint: install a newer lodi to use this store; nothing in it was read, changed or removed",
+    "message": "lodi: error E_STORE_VERSION: the store at <tmp>/errors-catalogue-store-version has layout version 99; this lodi knows layout version 1",
+    "notes": [
+      "   = written by lodi 99.0.0"
+    ]
+  },
+  {
+    "code": "E_SYNTAX",
+    "exit": 3,
+    "hint": null,
+    "message": "lodi: error E_SYNTAX: manifest is not valid UTF-8",
+    "notes": [
+      "  --> lodi.toml:2:6"
+    ]
+  },
+  {
+    "code": "E_SYSTEM_BUSY",
+    "exit": 9,
+    "hint": "   = hint: check the permissions of that path",
+    "message": "lodi: error E_SYSTEM_BUSY: cannot take <tmp>/host-cat-busy-pid/var/lib/lodi/host/.lock: Permission denied (os error 13)",
+    "notes": []
+  },
+  {
+    "code": "E_TREE_UNSUPPORTED",
+    "exit": 6,
+    "hint": null,
+    "message": "lodi: error E_TREE_UNSUPPORTED: <tmp>/errors-catalogue-tree-unsupported/store/tmp/<staging>/pipe is a special file",
+    "notes": []
+  },
+  {
+    "code": "E_TRUST_REQUIRED",
+    "exit": 11,
+    "hint": "   = hint: run `lodi trust` to review and record it, or set LODI_TRUST=1 for one invocation",
+    "message": "lodi: error E_TRUST_REQUIRED: <tmp>/errors-catalogue-trust/lodi.toml declares task text that has not been trusted; nothing was realized or run",
+    "notes": []
+  },
+  {
+    "code": "E_TYPE",
+    "exit": 3,
+    "hint": null,
+    "message": "lodi: error E_TYPE: `version` in [project] must be a string, found an integer",
+    "notes": [
+      "  --> lodi.toml:2:11"
+    ]
+  },
+  {
+    "code": "E_UNKNOWN_ATTR",
+    "exit": 3,
+    "hint": "   = hint: did you mean `name`?",
+    "message": "lodi: error E_UNKNOWN_ATTR: unknown key `nmae` in [project]",
+    "notes": [
+      "  --> lodi.toml:2:1"
+    ]
+  },
+  {
+    "code": "E_UNKNOWN_BLOCK",
+    "exit": 3,
+    "hint": "   = hint: did you mean `container`?",
+    "message": "lodi: error E_UNKNOWN_BLOCK: unknown table `contaienr` in the project manifest",
+    "notes": [
+      "  --> lodi.toml:1:2"
+    ]
+  },
+  {
+    "code": "E_UNKNOWN_PACKAGE",
+    "exit": 3,
+    "hint": "   = hint: add `curl` to [packages] common or to a per-distro `add`, or remove it from `hold`",
+    "message": "lodi: error E_UNKNOWN_PACKAGE: `curl` is in `hold` but not in the package list",
+    "notes": []
+  },
+  {
+    "code": "E_UNKNOWN_SETTING",
+    "exit": 3,
+    "hint": "   = hint: nothing changed; correct the name, or install what provides it",
+    "message": "lodi: error E_UNKNOWN_SETTING: no time zone Mars/Olympus in /usr/share/zoneinfo",
+    "notes": []
+  },
+  {
+    "code": "E_UNKNOWN_UNIT",
+    "exit": 3,
+    "hint": "   = hint: nothing changed; correct the name, or declare the package that ships it",
+    "message": "lodi: error E_UNKNOWN_UNIT: no unit x.service on this machine",
+    "notes": []
+  },
+  {
+    "code": "E_UNSUPPORTED",
+    "exit": 3,
+    "hint": "   = hint: remove `[services]`: run the service yourself, such as from a task",
+    "message": "lodi: error E_UNSUPPORTED: long-running services are deferred; `[services]` is not supported",
+    "notes": [
+      "  --> lodi.toml:1:2"
+    ]
+  },
+  {
+    "code": "E_UNSUPPORTED_ARCH",
+    "exit": 4,
+    "hint": null,
+    "message": "lodi: error E_UNSUPPORTED_ARCH: the widget recipe has no build for aarch64",
+    "notes": []
+  },
+  {
+    "code": "E_VAR_UNSET",
+    "exit": 3,
+    "hint": "   = hint: add `absent = \"…\"` to [vars], or write the value literally",
+    "message": "lodi: error E_VAR_UNSET: `${vars.absent}` names a variable that [vars] does not declare",
+    "notes": [
+      "  --> host.toml:3:9"
+    ]
+  },
+  {
+    "code": "E_VERSION",
+    "exit": 3,
+    "hint": "   = hint: install a lodi that satisfies it, or relax the constraint",
+    "message": "lodi: error E_VERSION: [host] min_lodi_version = \">=99.0.0\" is not satisfied by lodi <version>",
+    "notes": []
+  },
+  {
+    "code": "W_PROGRAM_NOT_FOUND",
+    "exit": 0,
+    "hint": null,
+    "message": "lodi: warning W_PROGRAM_NOT_FOUND: [programs.git] is declared, but `git` is not on PATH; its files are rendered all the same, and lodi installs nothing: install it with [tools], the host scope's [packages] or the distribution",
+    "notes": []
+  },
+  {
+    "code": "W_SHADOWED",
+    "exit": 0,
+    "hint": null,
+    "message": "lodi: warning W_SHADOWED: .shaderc exists, and shade reads it before or alongside .config/shade/config.toml; move its content into [programs.shade] and delete it",
+    "notes": []
+  }
+]

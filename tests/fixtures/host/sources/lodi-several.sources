@@ -1,0 +1,6 @@
+# Written by lodi from a [sources] table of the host manifest; edit that table, not this file.
+Types: deb deb-src
+URIs: https://b.example/debian https://a.example/debian
+Suites: trixie bookworm
+Components: main contrib
+Signed-By: /etc/apt/keyrings/lodi-several.gpg

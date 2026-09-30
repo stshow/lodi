@@ -1,0 +1,103 @@
+[
+ {
+  "version": "v26.9.0",
+  "date": "2026-09-16",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": false
+ },
+ {
+  "version": "v24.21.0",
+  "date": "2026-09-07",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": "Krypton"
+ },
+ {
+  "version": "v24.20.0",
+  "date": "2026-08-10",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": "Krypton"
+ },
+ {
+  "version": "v23.0.0",
+  "date": "2024-10-16",
+  "files": [
+   "headers",
+   "osx-arm64-tar",
+   "src"
+  ],
+  "lts": false
+ },
+ {
+  "version": "v22.23.2",
+  "date": "2026-07-28",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": "Jod"
+ },
+ {
+  "version": "v22.23.1",
+  "date": "2026-06-30",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": "Jod"
+ },
+ {
+  "version": "v20.19.9",
+  "date": "2026-03-01",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": "Iron"
+ },
+ {
+  "version": "v21.0.0-rc.1",
+  "date": "2023-10-01",
+  "files": [
+   "headers",
+   "linux-arm64",
+   "linux-x64",
+   "osx-arm64-tar",
+   "src",
+   "win-x64-zip"
+  ],
+  "lts": false
+ }
+]

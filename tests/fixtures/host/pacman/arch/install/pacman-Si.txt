@@ -1,0 +1,95 @@
+Repository      : extra
+Name            : tree
+Version         : 2.3.2-1
+Description     : A directory listing program displaying a depth indented list of files
+Architecture    : x86_64
+URL             : https://gitlab.com/OldManProgrammer/unix-tree
+Licenses        : GPL-2.0-or-later
+Groups          : None
+Provides        : None
+Depends On      : glibc
+Optional Deps   : None
+Conflicts With  : None
+Replaces        : None
+Download Size   : 43.52 KiB
+Installed Size  : 94.00 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Sun Mar 29 14:23:02 2026
+Validated By    : SHA-256 Sum  Signature
+
+Repository      : extra
+Name            : jq
+Version         : 1.8.2-1
+Description     : Command-line JSON processor
+Architecture    : x86_64
+URL             : https://jqlang.github.io/jq/
+Licenses        : MIT
+Groups          : None
+Provides        : None
+Depends On      : glibc  oniguruma
+Optional Deps   : None
+Conflicts With  : None
+Replaces        : None
+Download Size   : 208.09 KiB
+Installed Size  : 480.87 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Sat Jun 20 17:10:39 2026
+Validated By    : SHA-256 Sum  Signature
+
+Repository      : extra
+Name            : zip
+Version         : 3.0-14
+Description     : Compressor/archiver for creating and modifying zipfiles
+Architecture    : x86_64
+URL             : http://www.info-zip.org/Zip.html
+Licenses        : LicenseRef-Info-ZIP
+Groups          : None
+Provides        : None
+Depends On      : bzip2
+Optional Deps   : None
+Conflicts With  : None
+Replaces        : None
+Download Size   : 173.61 KiB
+Installed Size  : 567.38 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Fri Aug 14 20:12:53 2026
+Validated By    : SHA-256 Sum  Signature
+
+Repository      : core
+Name            : libsecret
+Version         : 0.21.8.2-1
+Description     : Library for storing and retrieving passwords and other secrets
+Architecture    : x86_64
+URL             : https://gnome.pages.gitlab.gnome.org/libsecret/
+Licenses        : LGPL-2.1-or-later
+Groups          : None
+Provides        : libsecret-1.so=0-64
+Depends On      : glib2  glibc  libgcrypt  tpm2-tss
+Optional Deps   : org.freedesktop.secrets: secret storage backend
+Conflicts With  : None
+Replaces        : None
+Download Size   : 176.31 KiB
+Installed Size  : 1114.07 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Sat Sep 12 23:12:36 2026
+Validated By    : SHA-256 Sum  Signature
+
+Repository      : extra
+Name            : bc
+Version         : 1.08.2-1
+Description     : An arbitrary precision calculator language
+Architecture    : x86_64
+URL             : https://www.gnu.org/software/bc/
+Licenses        : GPL-3.0-only
+Groups          : None
+Provides        : None
+Depends On      : readline
+Optional Deps   : None
+Conflicts With  : bc-readline
+Replaces        : bc-readline
+Download Size   : 92.00 KiB
+Installed Size  : 173.15 KiB
+Packager        : redacted by hostvm.py
+Build Date      : Tue May 27 00:48:45 2025
+Validated By    : SHA-256 Sum  Signature
+

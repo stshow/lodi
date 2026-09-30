@@ -1,0 +1,13 @@
+[home]
+version = "1"
+
+[programs.starship]
+shells = ["bash", "zsh", "bash"]
+extra = '''
+git_branch.symbol = "git "
+'''
+character = { error_symbol = "[>](bold red)", success_symbol = "[>](bold green)" }
+scan_timeout = 30
+command_timeout = 500
+add_newline = false
+format = "$directory$git_branch$character"

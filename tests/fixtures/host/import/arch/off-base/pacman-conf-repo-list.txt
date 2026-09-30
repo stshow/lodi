@@ -1,0 +1,4 @@
+chaotic-aur
+core
+extra
+multilib

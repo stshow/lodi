@@ -1,0 +1,836 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_checksums.txt",
+    "digest": "sha256:f8bbc37fc5568a6a162d1a67b1e9c1afa9139f7b5a46dcde4a57bdaa0db33b60",
+    "name": "gh_2.101.0_checksums.txt",
+    "size": 1971
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_386.deb",
+    "digest": "sha256:3be9558cc87fd0ad5d45d34cb902d607f08600e8a5d1c62a37e4e0295d580b1e",
+    "name": "gh_2.101.0_linux_386.deb",
+    "size": 14379800
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_386.rpm",
+    "digest": "sha256:65df48f00b08d90f0814529a46f5d2b846943b8786e47fd170804ac8a78e1c39",
+    "name": "gh_2.101.0_linux_386.rpm",
+    "size": 14879193
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_386.tar.gz",
+    "digest": "sha256:6d1fa543cf6890bdfe753549836966bd714af9af5cb4bc7c24f8d9986ca0371c",
+    "name": "gh_2.101.0_linux_386.tar.gz",
+    "size": 14323308
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.deb",
+    "digest": "sha256:f876a3b87bf67c94f773d17becca4dc7340b056dab901473a9260ee2a73e237b",
+    "name": "gh_2.101.0_linux_amd64.deb",
+    "size": 15352870
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.rpm",
+    "digest": "sha256:72ef6dcd0ee459645cda485f2e55f18eca7b9252fce85a3be4c2446ae7627f36",
+    "name": "gh_2.101.0_linux_amd64.rpm",
+    "size": 15920854
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.tar.gz",
+    "digest": "sha256:9bca2d1c16825f109907a23307628a2f0698fbf99662b73a5cf0b020293072b8",
+    "name": "gh_2.101.0_linux_amd64.tar.gz",
+    "size": 15282175
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_arm64.deb",
+    "digest": "sha256:9aec87f9a011b1521556b06cb003776e7e214144c8efd2144924a28d90c23057",
+    "name": "gh_2.101.0_linux_arm64.deb",
+    "size": 13948022
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_arm64.rpm",
+    "digest": "sha256:7f50aa3dbe2cb3f17a06349a64fb42e7412c1023824c62154bf4325105c58192",
+    "name": "gh_2.101.0_linux_arm64.rpm",
+    "size": 14408727
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_arm64.tar.gz",
+    "digest": "sha256:b57e8063f18862647c9d22727c32e9da1b963f8bf9db648fe123a6975695640f",
+    "name": "gh_2.101.0_linux_arm64.tar.gz",
+    "size": 13885041
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_armv6.deb",
+    "digest": "sha256:2010d0a4b622fe0fb96332d3b9eca3ee713100ced17608f664d8baf16e181291",
+    "name": "gh_2.101.0_linux_armv6.deb",
+    "size": 14503528
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_armv6.rpm",
+    "digest": "sha256:2149476afd6f321304b76028987d53136a51bfe79c7134fb42185b283eca6ec2",
+    "name": "gh_2.101.0_linux_armv6.rpm",
+    "size": 15013768
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_armv6.tar.gz",
+    "digest": "sha256:dfc12e3fb060c1513abe083839ae26d060487b71fde7bdad3c6e3870e84ec46c",
+    "name": "gh_2.101.0_linux_armv6.tar.gz",
+    "size": 14449974
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_macOS_amd64.zip",
+    "digest": "sha256:a6fd66c88e2f07d6e4e058173db341d07dd74d58cf8f19ae668293d2bb614ca3",
+    "name": "gh_2.101.0_macOS_amd64.zip",
+    "size": 15957303
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_macOS_arm64.zip",
+    "digest": "sha256:e4303e39d8f07141c4bad4b99b01079f05029c59b27076e8fbc825c985ecdd8b",
+    "name": "gh_2.101.0_macOS_arm64.zip",
+    "size": 14328800
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_macOS_universal.pkg",
+    "digest": "sha256:9160913ea12ad73e819f4ea3d3c97572f3509b4bd877e616fbcf2768fb1345dc",
+    "name": "gh_2.101.0_macOS_universal.pkg",
+    "size": 29358327
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_386.msi",
+    "digest": "sha256:0ea9bea4419606573a776673d0eef3b46e910b301882cff12cf158cb3afbf70c",
+    "name": "gh_2.101.0_windows_386.msi",
+    "size": 15081472
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_386.zip",
+    "digest": "sha256:582afded5ab57cd0713fecda2e680bc0a39c320181b35c8f024a95a4f695f93c",
+    "name": "gh_2.101.0_windows_386.zip",
+    "size": 14807609
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_amd64.msi",
+    "digest": "sha256:9ba92256a431d254706844ee1991f6f4a9559a3c3646ff7ae7fe23724bfaef83",
+    "name": "gh_2.101.0_windows_amd64.msi",
+    "size": 15716352
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_amd64.zip",
+    "digest": "sha256:bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794",
+    "name": "gh_2.101.0_windows_amd64.zip",
+    "size": 15473232
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_arm64.msi",
+    "digest": "sha256:02895f2f9cfc4f5be0daade8314f0f8c1bfc88bf0ed16add284b95fa06461dff",
+    "name": "gh_2.101.0_windows_arm64.msi",
+    "size": 14069760
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_arm64.zip",
+    "digest": "sha256:e6cbb2d4afdad3e70f3d38b8d1ebaa3a0870a897cfc0e4cf569826710b96b4fd",
+    "name": "gh_2.101.0_windows_arm64.zip",
+    "size": 13875012
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.101.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_checksums.txt",
+    "digest": "sha256:6b5916dffcfa6f593b1db7890f2ddc485318e99fa263acf73aa28ebb877b53cd",
+    "name": "gh_2.100.0_checksums.txt",
+    "size": 1971
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_386.deb",
+    "digest": "sha256:60384e105072e5f95117a6e0aa50db9c08ee67918730b8bc14a07056b64cede4",
+    "name": "gh_2.100.0_linux_386.deb",
+    "size": 14247594
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_386.rpm",
+    "digest": "sha256:2d6abbc96d97433efd6e574c03de45201507c876a4b1b3534a35dede2bac1216",
+    "name": "gh_2.100.0_linux_386.rpm",
+    "size": 14771359
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_386.tar.gz",
+    "digest": "sha256:edb64d4fd732d9dad0558dd997679e49de8d90cb10473f5bccf828537fd932d2",
+    "name": "gh_2.100.0_linux_386.tar.gz",
+    "size": 14188807
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_amd64.deb",
+    "digest": "sha256:698c8d88cc19cc92bfe96bad58d10b2a5b274c52433d6dc57799c81f6139d5fc",
+    "name": "gh_2.100.0_linux_amd64.deb",
+    "size": 15227466
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_amd64.rpm",
+    "digest": "sha256:d5ba4be326de149dfd72c052e982c4cb7b86c1b2c1e4aa704e586e63327d32b5",
+    "name": "gh_2.100.0_linux_amd64.rpm",
+    "size": 15831375
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_amd64.tar.gz",
+    "digest": "sha256:e4d4bb4498e8d007abe545b6568926793ace1b6447da598294a610018cb164be",
+    "name": "gh_2.100.0_linux_amd64.tar.gz",
+    "size": 15152253
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_arm64.deb",
+    "digest": "sha256:33ccd2ad7ce639c927e1cb209e36555b0e1fbb89f7a38239c0568040ec758612",
+    "name": "gh_2.100.0_linux_arm64.deb",
+    "size": 13854760
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_arm64.rpm",
+    "digest": "sha256:3d085211727fbb0a770c46d1804f27bc530973ae4fc99db32fe78f909987d0bc",
+    "name": "gh_2.100.0_linux_arm64.rpm",
+    "size": 14303374
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_arm64.tar.gz",
+    "digest": "sha256:ea4e7a581a32ccad6cc7923cb1576ac5859ba4b9a16ab22eb8f8a96e78e2e961",
+    "name": "gh_2.100.0_linux_arm64.tar.gz",
+    "size": 13783869
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_armv6.deb",
+    "digest": "sha256:b3f9455dab2a849a7e8bff444d95794674fdc6336ebf09bc030e78a65522e3ea",
+    "name": "gh_2.100.0_linux_armv6.deb",
+    "size": 14339334
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_armv6.rpm",
+    "digest": "sha256:ae0c1c463ea02b93bc36f476d81ee1754457553993b1beede91a35c47ab040b4",
+    "name": "gh_2.100.0_linux_armv6.rpm",
+    "size": 14851627
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_armv6.tar.gz",
+    "digest": "sha256:72c482d44c08dbdee6a1ef24b28332c20d1d16f2396d3a519080a3e2de3970aa",
+    "name": "gh_2.100.0_linux_armv6.tar.gz",
+    "size": 14288505
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_amd64.zip",
+    "digest": "sha256:fcd7799e85eb575f3c7d2b1679bfbfedaefa1269d4bc7d096b51e10939b4812b",
+    "name": "gh_2.100.0_macOS_amd64.zip",
+    "size": 15818005
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_arm64.zip",
+    "digest": "sha256:45f9a62da2f6e641a7fad57e2ce39656dfd7ef331372d80a2a2aed65abb01642",
+    "name": "gh_2.100.0_macOS_arm64.zip",
+    "size": 14212224
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_universal.pkg",
+    "digest": "sha256:6dea3e61041e1761d015d1337be938df294c7b91858ee985763e9985f26cb8a1",
+    "name": "gh_2.100.0_macOS_universal.pkg",
+    "size": 29106364
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_386.msi",
+    "digest": "sha256:ea2e3d9ae392b79da610b0a12bfd1eabd7b1ae8dce09a328c7687d8d22607a8b",
+    "name": "gh_2.100.0_windows_386.msi",
+    "size": 14897152
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_386.zip",
+    "digest": "sha256:539e39a2b80db55e008926ffc1f2890776caff7bf78b1ee01f6c67daad67535b",
+    "name": "gh_2.100.0_windows_386.zip",
+    "size": 14617862
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_amd64.msi",
+    "digest": "sha256:989cdda347f142cfa33c4457be5fec6c2e283a9a65525ade49a36d2a6cddb276",
+    "name": "gh_2.100.0_windows_amd64.msi",
+    "size": 15564800
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_amd64.zip",
+    "digest": "sha256:227e35230b25db3fa1b997bab7cf4d67df0470a3b75b99e4ee66bce1a7cd4e72",
+    "name": "gh_2.100.0_windows_amd64.zip",
+    "size": 15326700
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_arm64.msi",
+    "digest": "sha256:3d893b3225278e809f8939a0d26badecac41ba521f91f4e5afc6bae06c683469",
+    "name": "gh_2.100.0_windows_arm64.msi",
+    "size": 13950976
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_arm64.zip",
+    "digest": "sha256:7beaeb4743cf255809a8e574a2724c685b566545e04eabea284fe38a56c15b02",
+    "name": "gh_2.100.0_windows_arm64.zip",
+    "size": 13746870
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.100.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_checksums.txt",
+    "digest": "sha256:d30e75e171c5c61fa50c80b567dfe2acd3fe461d724fda1fd162642cfe8086a7",
+    "name": "gh_2.99.0_checksums.txt",
+    "size": 1950
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_386.deb",
+    "digest": "sha256:482500d9cfc3d31998e870b5490b3c081594c617a150dfb2f621d90deb1e3186",
+    "name": "gh_2.99.0_linux_386.deb",
+    "size": 14037716
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_386.rpm",
+    "digest": "sha256:7b64eda40c7756f0b4c5c76fcdf63df3c33a229654dbb7ad6838fa82d12a2693",
+    "name": "gh_2.99.0_linux_386.rpm",
+    "size": 14594965
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_386.tar.gz",
+    "digest": "sha256:e3bd2b242fd472995d9de795d36cba860c66bea6fc51e57ce2d04198037eac9e",
+    "name": "gh_2.99.0_linux_386.tar.gz",
+    "size": 13978105
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_amd64.deb",
+    "digest": "sha256:471feb449cc98d527fc9a67601b9ea04296c100b666d970a784a07dc17a59a8f",
+    "name": "gh_2.99.0_linux_amd64.deb",
+    "size": 15005414
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_amd64.rpm",
+    "digest": "sha256:ebb00a0d501730ca6f6487f7c2dfc43c9694dabd2b44fff39032cd68f8378066",
+    "name": "gh_2.99.0_linux_amd64.rpm",
+    "size": 15562471
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_amd64.tar.gz",
+    "digest": "sha256:ed4960225d2833e04a61590d9fa2b5773d147f3aa375459e5466a40c102f3832",
+    "name": "gh_2.99.0_linux_amd64.tar.gz",
+    "size": 14930607
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_arm64.deb",
+    "digest": "sha256:20ccc660b06aef27e2164ae0de5085108e1a3d1e7ba4440e7be10bd9b4b5d0ab",
+    "name": "gh_2.99.0_linux_arm64.deb",
+    "size": 13648746
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_arm64.rpm",
+    "digest": "sha256:6377dd4ca07c4142ef1da4af20a37340fc98970fccd8b3d744edf0afec4827c0",
+    "name": "gh_2.99.0_linux_arm64.rpm",
+    "size": 14138984
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_arm64.tar.gz",
+    "digest": "sha256:564eff56a61e8caf193efde16937fba879eb62a3a479c9dd6be2001e7647680b",
+    "name": "gh_2.99.0_linux_arm64.tar.gz",
+    "size": 13580770
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_armv6.deb",
+    "digest": "sha256:b10c8842f554efb4ba58e58cc2f061a37872216bbad3e0c24e0cfc375fd39044",
+    "name": "gh_2.99.0_linux_armv6.deb",
+    "size": 14137612
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_armv6.rpm",
+    "digest": "sha256:49217e7e29891b9d7a89970c6d18a7a73c3754c4ab0ac0c52a239758dc51cd35",
+    "name": "gh_2.99.0_linux_armv6.rpm",
+    "size": 14654975
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_linux_armv6.tar.gz",
+    "digest": "sha256:86cb25a9ac368fcd66a1d90b2a8bd5dae2d779fe706ba4062622d2f5be3b80df",
+    "name": "gh_2.99.0_linux_armv6.tar.gz",
+    "size": 14081838
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_macOS_amd64.zip",
+    "digest": "sha256:70c05750c75df9465bc73b994e8bc379243bb494271f1b51f54ead2e19e45471",
+    "name": "gh_2.99.0_macOS_amd64.zip",
+    "size": 15586528
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_macOS_arm64.zip",
+    "digest": "sha256:94d4bd7e88563a9cb414e651e88acc4f1728a87476752460906d824230748d37",
+    "name": "gh_2.99.0_macOS_arm64.zip",
+    "size": 14001348
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_macOS_universal.pkg",
+    "digest": "sha256:182ec4b415b4ea56c62206dd0a4590e3d7f82cfb43cb254f2ec62b4f87c6a709",
+    "name": "gh_2.99.0_macOS_universal.pkg",
+    "size": 28678089
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_386.msi",
+    "digest": "sha256:3101209df0b1acd42df0d33afe3e659c3ce4b64decacfba8da183070e330262a",
+    "name": "gh_2.99.0_windows_386.msi",
+    "size": 14684160
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_386.zip",
+    "digest": "sha256:b7689636a55684bef6a0dca81b125a67f8cf177fcd77a57e97a0ddbd38477fea",
+    "name": "gh_2.99.0_windows_386.zip",
+    "size": 14404336
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_amd64.msi",
+    "digest": "sha256:43c2035cb8ee77cfb44462c42ecb9e409a112ff6e53af96c19cf12be62a4d7b1",
+    "name": "gh_2.99.0_windows_amd64.msi",
+    "size": 15347712
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_amd64.zip",
+    "digest": "sha256:ea040d0ba03176440d13481caf67f742236c3b38ce1d4442a9da37e9bb98d8f2",
+    "name": "gh_2.99.0_windows_amd64.zip",
+    "size": 15101526
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_arm64.msi",
+    "digest": "sha256:4f5f63068eb1c1f85a9f1094e2f52b3dd3bdde8f4e15859c60e7a337355e3dce",
+    "name": "gh_2.99.0_windows_arm64.msi",
+    "size": 13746176
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.99.0/gh_2.99.0_windows_arm64.zip",
+    "digest": "sha256:59878454cbcb67efb6d2cff0652d14fc6938c459fcfae23aafcfa01ee5af7068",
+    "name": "gh_2.99.0_windows_arm64.zip",
+    "size": 13544875
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.99.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_checksums.txt",
+    "digest": "sha256:275b90ae8a642fb8bdf4f21d7673e34643a445f7993f1821ac917ff8a2cc4db9",
+    "name": "gh_2.98.0_checksums.txt",
+    "size": 1950
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_386.deb",
+    "digest": "sha256:2f4fadc1013cf11aabc788b67731e8af1415e7a43c84d59fdf811781c51d424b",
+    "name": "gh_2.98.0_linux_386.deb",
+    "size": 13978662
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_386.rpm",
+    "digest": "sha256:410a83207e60e53f2e304688105fabd94e95021176b82e89dbb3deb01d669b08",
+    "name": "gh_2.98.0_linux_386.rpm",
+    "size": 14509956
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_386.tar.gz",
+    "digest": "sha256:11e9594b2c9eb501a064dcb66e7befebe3e8c2d79b606dabaa6935c5c8cd802f",
+    "name": "gh_2.98.0_linux_386.tar.gz",
+    "size": 13918568
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.deb",
+    "digest": "sha256:f65a3fa2fa0eb2e97c445ee3f5e087a40aae03b64847f45a8f13805e504535d6",
+    "name": "gh_2.98.0_linux_amd64.deb",
+    "size": 14935072
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.rpm",
+    "digest": "sha256:4df7c0d6d4a72bfdfc5deef51eff43312cbfe4dc9d26eb3a5ccb0e1a088bf9e5",
+    "name": "gh_2.98.0_linux_amd64.rpm",
+    "size": 15499377
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.tar.gz",
+    "digest": "sha256:3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de",
+    "name": "gh_2.98.0_linux_amd64.tar.gz",
+    "size": 14863663
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_arm64.deb",
+    "digest": "sha256:bbc4ac7964c2a091fd555cd1758d10a7cfcfdc472e405f0b0fb958f05d535cb6",
+    "name": "gh_2.98.0_linux_arm64.deb",
+    "size": 13588892
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_arm64.rpm",
+    "digest": "sha256:1fac9332753de2b1a0bff2a56b7d537b06f0d4deada9a310a0eb55312d618f96",
+    "name": "gh_2.98.0_linux_arm64.rpm",
+    "size": 14059582
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_arm64.tar.gz",
+    "digest": "sha256:cf689084f3a3618f7eae4a2420d335d74626d65f5e594b9828d125d69f800d86",
+    "name": "gh_2.98.0_linux_arm64.tar.gz",
+    "size": 13523338
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_armv6.deb",
+    "digest": "sha256:748b91b17833cf568b99d16f836492363c2d6b4f26ecd7dfc49ebb08b06ad93d",
+    "name": "gh_2.98.0_linux_armv6.deb",
+    "size": 14072156
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_armv6.rpm",
+    "digest": "sha256:2551a926878f1853ce612b1caf246102b00dbe1e73e86b87af8098390c085bd0",
+    "name": "gh_2.98.0_linux_armv6.rpm",
+    "size": 14549240
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_armv6.tar.gz",
+    "digest": "sha256:2c1706b6ff1f10bf93a0b370bc61e45f5e1fd78379361f414c5ac05bc5bf75d3",
+    "name": "gh_2.98.0_linux_armv6.tar.gz",
+    "size": 14018595
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_macOS_amd64.zip",
+    "digest": "sha256:734c7bbd0bc56a3974500ee9aea74d60f0e5b89be09e92b9d9148939a3a1e0e6",
+    "name": "gh_2.98.0_macOS_amd64.zip",
+    "size": 15521035
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_macOS_arm64.zip",
+    "digest": "sha256:8cfb027cc5310675f2b830eac8f9865c1155a45ffcf9757f699fdd5a22046ca4",
+    "name": "gh_2.98.0_macOS_arm64.zip",
+    "size": 13938611
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_macOS_universal.pkg",
+    "digest": "sha256:9e9274bab0aeb3800cd43fca1459d6bc06cee183f41550b9a55cc459f51e8687",
+    "name": "gh_2.98.0_macOS_universal.pkg",
+    "size": 28554328
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_386.msi",
+    "digest": "sha256:9003d7d2db6034fd40ed587516f4240539899a353935e59d9c23779c1df7fec5",
+    "name": "gh_2.98.0_windows_386.msi",
+    "size": 14626816
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_386.zip",
+    "digest": "sha256:41b400eb1e395387d58e78f1a881469e71eed6e6f6eaacc83d25e2fc83fa83a5",
+    "name": "gh_2.98.0_windows_386.zip",
+    "size": 14341489
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_amd64.msi",
+    "digest": "sha256:1793a0dd0064b3f03fe8ceb16b18da751d60e0c7efcfe7bbb4715fca3b675392",
+    "name": "gh_2.98.0_windows_amd64.msi",
+    "size": 15286272
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_amd64.zip",
+    "digest": "sha256:c28c7b3b584967a05b74d9eaf7481bff24ddc34930bf2d6e442c148236561eb1",
+    "name": "gh_2.98.0_windows_amd64.zip",
+    "size": 15035669
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_arm64.msi",
+    "digest": "sha256:4b83f94aca18fd201a9dc3b8e86134579a5c7c50c9aca1d14737fe5b88054def",
+    "name": "gh_2.98.0_windows_arm64.msi",
+    "size": 13692928
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_windows_arm64.zip",
+    "digest": "sha256:79e53db4e50b5c9594890a1c4d9dc941f6d19f7c3ca6d1f50982eda624607b9b",
+    "name": "gh_2.98.0_windows_arm64.zip",
+    "size": 13480281
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.98.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_checksums.txt",
+    "digest": "sha256:61905c69ec8660f310814ec98395cdd0c2d07aabf024c597ec45813984a02334",
+    "name": "gh_2.97.0_checksums.txt",
+    "size": 1950
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_386.deb",
+    "digest": "sha256:6c11ad74a82e210b14f01a2fb5a1e7e13f28e01053dc2527fc683754914282ee",
+    "name": "gh_2.97.0_linux_386.deb",
+    "size": 13878730
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_386.rpm",
+    "digest": "sha256:0a770fd000d21147856f373a79b845f4fef3121526c0541bbde209dffa2e6b61",
+    "name": "gh_2.97.0_linux_386.rpm",
+    "size": 14424726
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_386.tar.gz",
+    "digest": "sha256:ba556b1061cfc89fee62d1e59dfacd2ea646d8c3bb41cbef909ec6ed27071512",
+    "name": "gh_2.97.0_linux_386.tar.gz",
+    "size": 13818702
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_amd64.deb",
+    "digest": "sha256:7c7fa3bb890db0934baf65910d97b8c0fa437b2e590f7f7daf6bdf82c5c486d7",
+    "name": "gh_2.97.0_linux_amd64.deb",
+    "size": 14841130
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_amd64.rpm",
+    "digest": "sha256:d5e8706ba3f2caa752c766651c6c1f0a332042a4db5ce8809bcc1391adc94d07",
+    "name": "gh_2.97.0_linux_amd64.rpm",
+    "size": 15424894
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_amd64.tar.gz",
+    "digest": "sha256:a2c9b8497e1f85b1ad0dfcb78b5a622e098801b8e461e459e88e1ee12f018112",
+    "name": "gh_2.97.0_linux_amd64.tar.gz",
+    "size": 14770812
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_arm64.deb",
+    "digest": "sha256:0ba7a76739c865d82ebde24667d875d9b8caa55db47c7597c24accdd4defd2bb",
+    "name": "gh_2.97.0_linux_arm64.deb",
+    "size": 13494906
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_arm64.rpm",
+    "digest": "sha256:7152dce33173bc34665bf22afbce4afed5c6ffcb2cef7001fb994044ed919f50",
+    "name": "gh_2.97.0_linux_arm64.rpm",
+    "size": 13990125
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_arm64.tar.gz",
+    "digest": "sha256:73ea440ecad9c9e284429997ee6f93577bc6f7bc6fba357ef62c53ad8fb641a5",
+    "name": "gh_2.97.0_linux_arm64.tar.gz",
+    "size": 13428558
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_armv6.deb",
+    "digest": "sha256:90abc205f422631492784455a40c52fd62a2744e3441cb7507406a9307445cb7",
+    "name": "gh_2.97.0_linux_armv6.deb",
+    "size": 13974434
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_armv6.rpm",
+    "digest": "sha256:8a2c4b833efe6d5f9580748651291bd2ce9f4f6b48a746baf5060af3537222a9",
+    "name": "gh_2.97.0_linux_armv6.rpm",
+    "size": 14460688
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_armv6.tar.gz",
+    "digest": "sha256:83698de1d91d201cc3b9d9b0beb346c221cadb53a68fb82f741ef0a0efc4502c",
+    "name": "gh_2.97.0_linux_armv6.tar.gz",
+    "size": 13921827
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_macOS_amd64.zip",
+    "digest": "sha256:63298c998cc2a924c9e254c6af6a1caad6ece281122687a91f079bc0a462700e",
+    "name": "gh_2.97.0_macOS_amd64.zip",
+    "size": 15418698
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_macOS_arm64.zip",
+    "digest": "sha256:a58b8fd77b417a38f47a0b54d1370c59b0fcdb324ccc9ca002b0998f7c4c999e",
+    "name": "gh_2.97.0_macOS_arm64.zip",
+    "size": 13845290
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_macOS_universal.pkg",
+    "digest": "sha256:78eaaf7f72cb130f225bcf3f17e686e0e21ce2c9f84b393d83eb0439e484d15f",
+    "name": "gh_2.97.0_macOS_universal.pkg",
+    "size": 28357672
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_386.msi",
+    "digest": "sha256:88edfc9e93786dde4cb26ca469645aec6a037691ef33e58e0c9dd186fb79a26b",
+    "name": "gh_2.97.0_windows_386.msi",
+    "size": 14528512
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_386.zip",
+    "digest": "sha256:de683ab803043eb614b57cadc202c722b19bcb1bc3de78cc424350278d6b04e0",
+    "name": "gh_2.97.0_windows_386.zip",
+    "size": 14242577
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_amd64.msi",
+    "digest": "sha256:942865de5f19c42fdae32b77988f8d68e72ff78deef26b93d970b494bc2c7e87",
+    "name": "gh_2.97.0_windows_amd64.msi",
+    "size": 15183872
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_amd64.zip",
+    "digest": "sha256:35d7fe05c4dd1411ffda1e73dfc7c6f44b75c936ca51fa6595c657fdc0350cec",
+    "name": "gh_2.97.0_windows_amd64.zip",
+    "size": 14938517
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_arm64.msi",
+    "digest": "sha256:5389e1baf84383470f3b1a5e61377fbb2e529483a38261ce0e4d83fe70c36ca0",
+    "name": "gh_2.97.0_windows_arm64.msi",
+    "size": 13602816
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_arm64.zip",
+    "digest": "sha256:3e2d4a166da4ee5020c592737b65eec0e724946d5d5b962f5fe59d99116dc4bf",
+    "name": "gh_2.97.0_windows_arm64.zip",
+    "size": 13391688
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.97.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_checksums.txt",
+    "digest": "sha256:fc046371efa250e2875208341a786a35a01717d5eebec6903e199a9b8a3f3565",
+    "name": "gh_2.96.0_checksums.txt",
+    "size": 1950
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_386.deb",
+    "digest": "sha256:f146e594bdba65fdc499c43c86d6d07c0e0733257152067c4f9fe2acee4f4629",
+    "name": "gh_2.96.0_linux_386.deb",
+    "size": 13766024
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_386.rpm",
+    "digest": "sha256:11b4b9a8cf504f864371e056d124cebc617e2e051859618803583b39902a6f89",
+    "name": "gh_2.96.0_linux_386.rpm",
+    "size": 14307020
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_386.tar.gz",
+    "digest": "sha256:fda636f771e43d1f19e2d42e3c578cc9d8e453d23093a6a47a7fac88825196ec",
+    "name": "gh_2.96.0_linux_386.tar.gz",
+    "size": 13708563
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.deb",
+    "digest": "sha256:11a731f4e0ca8c3db96ef6d2cc404dcab3d78247ce0e07c53e07117e7627d6a1",
+    "name": "gh_2.96.0_linux_amd64.deb",
+    "size": 14725844
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.rpm",
+    "digest": "sha256:e5ae288eb8b25d9bcda0bb8340a7b8237152445e8870c782bec2277f804a8939",
+    "name": "gh_2.96.0_linux_amd64.rpm",
+    "size": 15323014
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz",
+    "digest": "sha256:83d5c2ccad5498f58bf6368acb1ab32588cf43ab3a4b1c301bf36328b1c8bd60",
+    "name": "gh_2.96.0_linux_amd64.tar.gz",
+    "size": 14652560
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_arm64.deb",
+    "digest": "sha256:334dd9c6704fc1656a48e475c5a3a9aa32bbadb87fa1777513bc626af4a99e89",
+    "name": "gh_2.96.0_linux_arm64.deb",
+    "size": 13382568
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_arm64.rpm",
+    "digest": "sha256:646db134bd68fdc195e45f6f02682c5b47322e4bc616206581d62cd01502e6ef",
+    "name": "gh_2.96.0_linux_arm64.rpm",
+    "size": 13858392
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_arm64.tar.gz",
+    "digest": "sha256:06f86ec7103d41993b76cd78072f43595c34aaa56506d971d9860e67140bf909",
+    "name": "gh_2.96.0_linux_arm64.tar.gz",
+    "size": 13321232
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_armv6.deb",
+    "digest": "sha256:3391bd860facbe320a32d82dd52ab96a725c7e1668b16fc6f4cb2b04c85c7b2f",
+    "name": "gh_2.96.0_linux_armv6.deb",
+    "size": 13862422
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_armv6.rpm",
+    "digest": "sha256:8959ce7b8a7d8eec193656f01bc2918ca6d57bc5d189d171d26e9361b99e18e9",
+    "name": "gh_2.96.0_linux_armv6.rpm",
+    "size": 14358035
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_armv6.tar.gz",
+    "digest": "sha256:14ff25ec64823415086214fb05b3e85aef21deba6a8d723a7ef8ead1cb977826",
+    "name": "gh_2.96.0_linux_armv6.tar.gz",
+    "size": 13809937
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_macOS_amd64.zip",
+    "digest": "sha256:4bd449df9ad639391bc62b8032546f0fe9edcd8526e06682a4f88abd8c5d163c",
+    "name": "gh_2.96.0_macOS_amd64.zip",
+    "size": 15298430
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_macOS_arm64.zip",
+    "digest": "sha256:f23a0c37d963aacc3bed703ccbd59b41c5ca22101fab7f00eb2b7cad23aba463",
+    "name": "gh_2.96.0_macOS_arm64.zip",
+    "size": 13950131
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_macOS_universal.pkg",
+    "digest": "sha256:97487099563f2bf8360c6cb72ff7690dfd057ac7851884e8c392d8d9cc0018fa",
+    "name": "gh_2.96.0_macOS_universal.pkg",
+    "size": 28347568
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_386.msi",
+    "digest": "sha256:cbdd1402f07f7c164d85fe62a73b922185a107a5cdde2a37fb62be8fa0baadbd",
+    "name": "gh_2.96.0_windows_386.msi",
+    "size": 14417920
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_386.zip",
+    "digest": "sha256:575bd472f1811d7d9a7f94f27f11a2decb6ae6711b56fec337675234c336ffe6",
+    "name": "gh_2.96.0_windows_386.zip",
+    "size": 14134520
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_amd64.msi",
+    "digest": "sha256:583ee96619753844ae4af9dff29ae6d34076a4d0b74c8354f150473dd21fa5d6",
+    "name": "gh_2.96.0_windows_amd64.msi",
+    "size": 15073280
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_amd64.zip",
+    "digest": "sha256:c2d6acc935cd2f00e2144d7e036d5cd82e6b6bd5594e8c75aa75ef2a4ed6aac3",
+    "name": "gh_2.96.0_windows_amd64.zip",
+    "size": 14821821
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_arm64.msi",
+    "digest": "sha256:02a0aecec76b60a823873ab1c762918db59f669de6df2df1bcd8483858b9741c",
+    "name": "gh_2.96.0_windows_arm64.msi",
+    "size": 13500416
+   },
+   {
+    "browser_download_url": "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_arm64.zip",
+    "digest": "sha256:c517e0b32c98a4ba90ac95af8d12cc3ac55781ab4ab72f9a91ce3de0541d2b09",
+    "name": "gh_2.96.0_windows_arm64.zip",
+    "size": 13284047
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v2.96.0"
+ }
+]

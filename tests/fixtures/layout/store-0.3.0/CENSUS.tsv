@@ -1,0 +1,18 @@
+# type	mode	path
+d	755	cache
+d	755	cache/dl
+d	755	cache/shell
+d	755	gcroots
+d	755	gcroots/sessions
+d	755	logs
+d	755	store
+f	644	store/.lock
+d	755	store/.locks
+f	644	store/.locks/env-7672c4f3884f47f3522700d325defa3e.lock
+d	755	store/.meta
+f	644	store/.meta/env-7672c4f3884f47f3522700d325defa3e.json
+d	555	store/env-7672c4f3884f47f3522700d325defa3e
+f	444	store/env-7672c4f3884f47f3522700d325defa3e/env.json
+d	555	store/env-7672c4f3884f47f3522700d325defa3e/tree
+d	555	store/env-7672c4f3884f47f3522700d325defa3e/tree/bin
+d	755	store/tmp

@@ -1,0 +1,32 @@
+# M-0.4 T-2: a project manifest that uses every key of the `[tools]` table this build
+# implements (`spec/01` §3.8, §6.3) — version, name, optional, env, path, bin, url, sha256,
+# format, strip_components, subdir and both per-architecture tables.
+#
+# `@SHA_BASE@`, `@SHA_X86@` and `@SHA_AARCH64@` are replaced by `tests/tools.rs` with the
+# hashes of the archives it builds, so the fixture stays readable and never goes stale.
+[project]
+name = "every-key"
+
+[tools.jaq-cli]
+version = "1.7.1"
+name = "jaq"
+optional = false
+path = ["bin", "libexec"]
+bin = ["bin/jaq"]
+format = "tar.gz"
+strip_components = 1
+subdir = "dist"
+url = "https://artifacts.test/jaq/jaq-1.7.1-generic.tar.gz"
+sha256 = "@SHA_BASE@"
+
+[tools.jaq-cli.env]
+JAQ_HOME = "${self.path}"
+JAQ_VERSION = "${self.version}"
+
+[tools.jaq-cli.x86_64]
+url = "https://artifacts.test/jaq/jaq-1.7.1-x86_64.tar.gz"
+sha256 = "@SHA_X86@"
+
+[tools.jaq-cli.aarch64]
+url = "https://artifacts.test/jaq/jaq-1.7.1-aarch64.tar.gz"
+sha256 = "@SHA_AARCH64@"

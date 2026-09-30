@@ -1,0 +1,16 @@
+[home]
+version = "1"
+
+[tools]
+jq = "latest"
+
+[programs.fish]
+env = { EDITOR = "nvim", GOPATH = "~/go", QUOTED = "it's a \\ backslash" }
+path = ["~/.local/bin", "/opt/example/bin"]
+aliases = { ll = "ls -l" }
+abbrs = { gco = "git checkout", gs = "git status" }
+greeting = ""
+snippets = ["snippets/prompt.fish"]
+extra = """
+set -g fish_key_bindings fish_default_key_bindings
+"""

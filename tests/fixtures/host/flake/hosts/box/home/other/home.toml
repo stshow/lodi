@@ -1,0 +1,5 @@
+[home]
+version = "1"
+
+[home.file."secret"]
+text = "not selected\n"

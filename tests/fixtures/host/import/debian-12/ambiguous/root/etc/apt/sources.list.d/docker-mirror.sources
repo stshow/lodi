@@ -1,0 +1,6 @@
+# The same packages, from a second repository.
+Types: deb
+URIs: https://docker-mirror.example.invalid/linux/debian
+Suites: bookworm
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc

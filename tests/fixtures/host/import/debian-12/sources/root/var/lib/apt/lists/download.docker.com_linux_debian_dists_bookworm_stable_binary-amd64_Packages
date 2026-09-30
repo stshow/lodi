@@ -1,0 +1,19 @@
+Package: containerd.io
+Architecture: amd64
+Version: 1.7.27-1~debian.12~bookworm
+Section: devel
+
+Package: docker-buildx-plugin
+Architecture: amd64
+Version: 0.26.1-1~debian.12~bookworm
+Section: admin
+
+Package: docker-ce
+Architecture: amd64
+Version: 5:28.3.3-1~debian.12~bookworm
+Section: admin
+
+Package: docker-ce-cli
+Architecture: amd64
+Version: 5:28.3.3-1~debian.12~bookworm
+Section: admin

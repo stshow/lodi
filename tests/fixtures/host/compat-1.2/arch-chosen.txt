@@ -1,0 +1,82 @@
+== plan: exit Some(0)
+-- stdout
++ package linux-firmware
++ package neovim
++ package ripgrep
++ package zsh
+1 action(s)
+-- stderr
+== apply: exit Some(0)
+-- stdout
+journal <journal>
++ package linux-firmware
++ package neovim
++ package ripgrep
++ package zsh
+1 action(s) applied
+-- stderr
+== host.lock
+{
+  "version": 2,
+  "format": "lodi-host-lock/2",
+  "generatedBy": "lodi 1.2.0",
+  "appliedAt": "<time>",
+  "distro": "arch",
+  "distroVersion": "",
+  "packages": {
+    "base": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "linux": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "linux-firmware": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "neovim": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ripgrep": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "zsh": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    }
+  },
+  "files": {},
+  "baseline": {
+    "explicit": [
+      "base",
+      "linux",
+      "linux-firmware",
+      "neovim",
+      "ripgrep",
+      "zsh"
+    ],
+    "holds": {},
+    "files": {}
+  },
+  "source": "/etc/lodi"
+}
+
+== journal
+{"record":"header","version":1,"journalId":"<journal>","startedAt":"<time>","lodiVersion":"1.2.0","root":"<root>","manifestDigest":"sha256:cced182888e7845b9a2267ab2d41fc34596675bbd1895b58f75eb362b7fe15f6","distro":"arch","programs":[["pacman","<fake>/bin/pacman"]],"euid":<id>,"actions":[{"id":"p1","kind":"packages.transaction","summary":"+ package linux-firmware; + package neovim; + package ripgrep; + package zsh","pre":[],"post":[],"packagesPre":{"linux-firmware":{"installed":false},"neovim":{"installed":false},"ripgrep":{"installed":false},"zsh":{"installed":false}},"packagesPost":{"linux-firmware":{"installed":true,"version":"1.0-1"},"neovim":{"installed":true,"version":"1.0-1"},"ripgrep":{"installed":true,"version":"1.0-1"},"zsh":{"installed":true,"version":"1.0-1"}},"commands":[["pacman","-Syu","--root","<root>","--dbpath","<root>/var/lib/pacman","--noconfirm","--","linux-firmware","neovim","ripgrep","zsh"]],"programs":["<fake>/bin/pacman"]}]}
+{"record":"begin","action":"p1","at":"<time>"}
+{"record":"end","action":"p1","at":"<time>"}
+{"record":"finished","at":"<time>"}
+== plan after: exit Some(0)
+-- stdout
+nothing to do
+-- stderr

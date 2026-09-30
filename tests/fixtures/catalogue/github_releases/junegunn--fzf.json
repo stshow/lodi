@@ -1,0 +1,872 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-android_arm64.tar.gz",
+    "digest": "sha256:dc32053d375160bdd55c001545884ca8333edff69f25defe8a658ad42ea24858",
+    "name": "fzf-0.74.4-android_arm64.tar.gz",
+    "size": 2166509
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_amd64.tar.gz",
+    "digest": "sha256:2d392b50be66e2ab104ccd52a6072df692b1f9b9c5b449a9c098de885f32c4c5",
+    "name": "fzf-0.74.4-darwin_amd64.tar.gz",
+    "size": 2358031
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_arm64.tar.gz",
+    "digest": "sha256:4f6a113bfc0c7959e0005c78d566a51afc4fcefc956f43735c62a9deb19e92ae",
+    "name": "fzf-0.74.4-darwin_arm64.tar.gz",
+    "size": 2148967
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-freebsd_amd64.tar.gz",
+    "digest": "sha256:ecefbaa7cb0f85da5b653257a77d804e95cd9d2e203a96c03197adc1badd64b1",
+    "name": "fzf-0.74.4-freebsd_amd64.tar.gz",
+    "size": 2255433
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz",
+    "digest": "sha256:05e6813a337cc722c3ed07e54a764b75cc5d671e2e60459db0ba696ee5fa7504",
+    "name": "fzf-0.74.4-linux_amd64.tar.gz",
+    "size": 2286563
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_arm64.tar.gz",
+    "digest": "sha256:5d673b849f494f0d64ec471d8640b153ca8849e3846a31da17abdcfce8df6b46",
+    "name": "fzf-0.74.4-linux_arm64.tar.gz",
+    "size": 2074969
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_armv5.tar.gz",
+    "digest": "sha256:77129c282703503b90b942d0271200b61515a41e3fc489bdf7bbfb97f2256969",
+    "name": "fzf-0.74.4-linux_armv5.tar.gz",
+    "size": 2158908
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_armv6.tar.gz",
+    "digest": "sha256:4054cf53067a26203f8e342ff5276dd1e239f4db6a8c06c0ae16c2b5c6f1bb04",
+    "name": "fzf-0.74.4-linux_armv6.tar.gz",
+    "size": 2151356
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_armv7.tar.gz",
+    "digest": "sha256:0c6e61c89e0932e65b89e6db414c67803b5c10c374ed6a3ab1e14e805eea8486",
+    "name": "fzf-0.74.4-linux_armv7.tar.gz",
+    "size": 2145117
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_loong64.tar.gz",
+    "digest": "sha256:a8ae97cbe9c32c122c795b6f29b8da0394de412f709f226d37b9e99b76cb85c2",
+    "name": "fzf-0.74.4-linux_loong64.tar.gz",
+    "size": 2183510
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_ppc64le.tar.gz",
+    "digest": "sha256:471e15730fc639ff8e7e6fee63e375420ff652ab50837dc6d6d5076698292188",
+    "name": "fzf-0.74.4-linux_ppc64le.tar.gz",
+    "size": 2105928
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_riscv64.tar.gz",
+    "digest": "sha256:cf2ef1932cbbde52914068c2d1f000a60ff76f4a21b328bfbb576cf78add00ee",
+    "name": "fzf-0.74.4-linux_riscv64.tar.gz",
+    "size": 2144810
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_s390x.tar.gz",
+    "digest": "sha256:cc6dd54e81bb16219f6e49e2e35ced2dc8c2c8f29e1e36374a75c10066248f2c",
+    "name": "fzf-0.74.4-linux_s390x.tar.gz",
+    "size": 2196613
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-openbsd_amd64.tar.gz",
+    "digest": "sha256:9ce54b78cd0300ced4e2c793b01ed5801fb06245d32427aa9a43883e06c3b715",
+    "name": "fzf-0.74.4-openbsd_amd64.tar.gz",
+    "size": 2252100
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-windows_amd64.zip",
+    "digest": "sha256:5e63c0e798406fcb9c51a9fed4988398e25fdabf8c670e32c16caf7b4a7ed02d",
+    "name": "fzf-0.74.4-windows_amd64.zip",
+    "size": 2540684
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-windows_arm64.zip",
+    "digest": "sha256:558df4dac9c65a63c732909a06abc1891a42adcae4d6be92a9b0ccc0ef05b4ff",
+    "name": "fzf-0.74.4-windows_arm64.zip",
+    "size": 2290923
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_amd64.deb",
+    "digest": "sha256:0e8a33f32c89c4d7d2daa4975eaa15e302da8d35b846796aef2dd6461101051b",
+    "name": "fzf_0.74.4_amd64.deb",
+    "size": 2316048
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_arm64.deb",
+    "digest": "sha256:0c76a0b2dbe54a8e880b731724a52f6b09b0a5b695e0026035ed0d1e0d5732fa",
+    "name": "fzf_0.74.4_arm64.deb",
+    "size": 2103304
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_armv5.deb",
+    "digest": "sha256:9f4f7707be9e0442c2e60c9fdd572dbd1855c274f586bc2074d50301ae2f0f46",
+    "name": "fzf_0.74.4_armv5.deb",
+    "size": 2186872
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_armv6.deb",
+    "digest": "sha256:93cfdaf0b4b4ec83ac33678769aecbdf763ed360c6ee0382bdc669cf2b3514a4",
+    "name": "fzf_0.74.4_armv6.deb",
+    "size": 2178426
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_armv7.deb",
+    "digest": "sha256:bee1123d2e1e6823d0a1f5609e3c8effc9c9e9a7c9e111140d4992bd32495da6",
+    "name": "fzf_0.74.4_armv7.deb",
+    "size": 2172092
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_checksums.txt",
+    "digest": "sha256:93b9cb6e68b97601268cc7afe17d89ce9364f6277f30b4193c725aa7dc3ededf",
+    "name": "fzf_0.74.4_checksums.txt",
+    "size": 2337
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_loong64.deb",
+    "digest": "sha256:bd5ac9f9e6bace043e26070ebc5948f63802764ddcd9993af6fbf9bddd3c9bee",
+    "name": "fzf_0.74.4_loong64.deb",
+    "size": 2212566
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_ppc64le.deb",
+    "digest": "sha256:99954e94c0edc357eda0789ea06cc45e8cba7027c4994cdbacd894ee990c1855",
+    "name": "fzf_0.74.4_ppc64le.deb",
+    "size": 2134048
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_riscv64.deb",
+    "digest": "sha256:19252375aae420e09aeb2025ee1d90a3a11bb132aa12f9d9fae0f304cedd2f06",
+    "name": "fzf_0.74.4_riscv64.deb",
+    "size": 2174206
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf_0.74.4_s390x.deb",
+    "digest": "sha256:d7ba81e81a3c7adfe6047ae27773596e0762ce6b1aee96faedb0978915e031ce",
+    "name": "fzf_0.74.4_s390x.deb",
+    "size": 2224110
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.74.4"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-android_arm64.tar.gz",
+    "digest": "sha256:bc391383bd57a2ab0534522558b2b233ad718c93963a90dc9f6e863f2bab1a3b",
+    "name": "fzf-0.74.3-android_arm64.tar.gz",
+    "size": 1933706
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-darwin_amd64.tar.gz",
+    "digest": "sha256:b8a231250eedec244539ade3dc437bcd60e545a099c6cc0c8a11bdbd8574b9bc",
+    "name": "fzf-0.74.3-darwin_amd64.tar.gz",
+    "size": 2084226
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-darwin_arm64.tar.gz",
+    "digest": "sha256:1f8501cea4f9c0c2d6110d0ff75d0ec9451cd9d7524d9a26244a154ea89f3bd5",
+    "name": "fzf-0.74.3-darwin_arm64.tar.gz",
+    "size": 1911796
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-freebsd_amd64.tar.gz",
+    "digest": "sha256:7c24554cee9d10dbabb860527cabfdbcbd944fbc77fc253f7e85fc0baa977f78",
+    "name": "fzf-0.74.3-freebsd_amd64.tar.gz",
+    "size": 1990754
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_amd64.tar.gz",
+    "digest": "sha256:3501a595e4b5c40a6b047340a0e8f805c46fd4e61ef95ef8a136ba8c61cf6f22",
+    "name": "fzf-0.74.3-linux_amd64.tar.gz",
+    "size": 2025378
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_arm64.tar.gz",
+    "digest": "sha256:4a17a17b46bd0c4873e995533de508995c11572c0be0664a5dbcf13f60463046",
+    "name": "fzf-0.74.3-linux_arm64.tar.gz",
+    "size": 1853686
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_armv5.tar.gz",
+    "digest": "sha256:7a57039f9f1a777a8df73840a3a44cf57a41268697f12127abfcf14e7f46144a",
+    "name": "fzf-0.74.3-linux_armv5.tar.gz",
+    "size": 1912822
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_armv6.tar.gz",
+    "digest": "sha256:cca79f7a80a035f73b607e09e72b2933258c8ebb14912a8b54a9a8e56c1763ee",
+    "name": "fzf-0.74.3-linux_armv6.tar.gz",
+    "size": 1902524
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_armv7.tar.gz",
+    "digest": "sha256:d290204a7e901cf18067d338f53876aa0ab5d666eb626addb4dcc97f9fd2dfa5",
+    "name": "fzf-0.74.3-linux_armv7.tar.gz",
+    "size": 1898550
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_loong64.tar.gz",
+    "digest": "sha256:ec2f350ecdb8b3b1252edd4d8048fcdca195041297ac65cf104d491d00b106d2",
+    "name": "fzf-0.74.3-linux_loong64.tar.gz",
+    "size": 1946131
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_ppc64le.tar.gz",
+    "digest": "sha256:a6edbe21e7516b6100e2a6beaf08631e8e2deac2a55ba9919254f06d477e36d6",
+    "name": "fzf-0.74.3-linux_ppc64le.tar.gz",
+    "size": 1875207
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_riscv64.tar.gz",
+    "digest": "sha256:e21387b990bf1f5a27a7aca32673620241691a26e3fdf709d3f24e071b589214",
+    "name": "fzf-0.74.3-linux_riscv64.tar.gz",
+    "size": 1883300
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_s390x.tar.gz",
+    "digest": "sha256:8033200df652ed1426b573ea7d59b4f737aef33597246a5bf8bc0e0a3ac5256f",
+    "name": "fzf-0.74.3-linux_s390x.tar.gz",
+    "size": 1957423
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-openbsd_amd64.tar.gz",
+    "digest": "sha256:3c6855a33a38e7d0794994ca15095c5211a47f85e61e30842ad845e794afd777",
+    "name": "fzf-0.74.3-openbsd_amd64.tar.gz",
+    "size": 1990110
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-windows_amd64.zip",
+    "digest": "sha256:cf5c137d9b391c3988c54af8f5fc490ffbef6f70444651e7d57fdb45ad04c8bd",
+    "name": "fzf-0.74.3-windows_amd64.zip",
+    "size": 2203002
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-windows_arm64.zip",
+    "digest": "sha256:7d70c25a1229f3bbfcb56b4314f298c16ad61a258f9641b7acf08c513a40bd29",
+    "name": "fzf-0.74.3-windows_arm64.zip",
+    "size": 1995989
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_amd64.deb",
+    "digest": "sha256:b50cadad4067a5d4aa292364637762f022f06e926b057e6ed92165214c6aa4a3",
+    "name": "fzf_0.74.3_amd64.deb",
+    "size": 2053428
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_arm64.deb",
+    "digest": "sha256:5110cfe046a702cc6440fb094aba3ebd7c8709d5450fd097410c6b1e84b86959",
+    "name": "fzf_0.74.3_arm64.deb",
+    "size": 1881836
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_armv5.deb",
+    "digest": "sha256:4fc3aaebdfe2bcff49aa91d184e4e3805265284b0e71d3eb09abb05ac35b5c28",
+    "name": "fzf_0.74.3_armv5.deb",
+    "size": 1940088
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_armv6.deb",
+    "digest": "sha256:59dafe6017d6a76f2692a32ffbfb572ec609f5cfa0e6fe50021ccca2c281b218",
+    "name": "fzf_0.74.3_armv6.deb",
+    "size": 1930472
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_armv7.deb",
+    "digest": "sha256:57eaff4bc2e0949a039d9c550c800ac7ec09b2854093ec7edc83858b8fc693dc",
+    "name": "fzf_0.74.3_armv7.deb",
+    "size": 1925788
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_checksums.txt",
+    "digest": "sha256:3a7f7f10e9c32cebf6ad4d19a3b242cfd5922f8aa7fa7d5721084e8aebd25917",
+    "name": "fzf_0.74.3_checksums.txt",
+    "size": 2337
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_loong64.deb",
+    "digest": "sha256:f0652791aa60cf1ae54e58bf6c59256afa109b4464a881174e3073fc0f825aff",
+    "name": "fzf_0.74.3_loong64.deb",
+    "size": 1974074
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_ppc64le.deb",
+    "digest": "sha256:8c910bb3fc48c47e1b0375b2eddd67f021c473f206bf0e7c9f3a169f88535c12",
+    "name": "fzf_0.74.3_ppc64le.deb",
+    "size": 1903392
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_riscv64.deb",
+    "digest": "sha256:293880b35e08ca8b194655f15b4ef1f1bbe6abeba242665e9dd5774d1681e2b4",
+    "name": "fzf_0.74.3_riscv64.deb",
+    "size": 1911492
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf_0.74.3_s390x.deb",
+    "digest": "sha256:3d8e0133a34034a7da76f7640daa83c0a2ba3e5927b161b8f1d10b8048c648e1",
+    "name": "fzf_0.74.3_s390x.deb",
+    "size": 1985250
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.74.3"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-android_arm64.tar.gz",
+    "digest": "sha256:8d96402970ab982f148ad82725c172b4c35b04045e3d5a8541cb200d9eee5ef6",
+    "name": "fzf-0.74.2-android_arm64.tar.gz",
+    "size": 1922267
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-darwin_amd64.tar.gz",
+    "digest": "sha256:b019ae8bcca33945a2ffbbbf8369705405cd1406fc4d74267e712797010e3676",
+    "name": "fzf-0.74.2-darwin_amd64.tar.gz",
+    "size": 2069781
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-darwin_arm64.tar.gz",
+    "digest": "sha256:d60ddb36356566ac69bae7c3504e888916cf747c9ad2132141c09229b1e28dee",
+    "name": "fzf-0.74.2-darwin_arm64.tar.gz",
+    "size": 1905304
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-freebsd_amd64.tar.gz",
+    "digest": "sha256:d63982797b67623adaa48b4766635456d011d54e55e6adef7bb3e36b5292b2cd",
+    "name": "fzf-0.74.2-freebsd_amd64.tar.gz",
+    "size": 1982770
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_amd64.tar.gz",
+    "digest": "sha256:b3648f48675612b69ee35371cf6dc99ca96d767e89b912d079080916ac8ba8bd",
+    "name": "fzf-0.74.2-linux_amd64.tar.gz",
+    "size": 2013806
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_arm64.tar.gz",
+    "digest": "sha256:1373e3f5ed3c468179d4529942ddd96c234bcad1bcacaf238916e26a5234b5b2",
+    "name": "fzf-0.74.2-linux_arm64.tar.gz",
+    "size": 1845580
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_armv5.tar.gz",
+    "digest": "sha256:7e4c02d33f4fba51287d05b6bc59fe435a57df5e7475b7cef7b265139099058e",
+    "name": "fzf-0.74.2-linux_armv5.tar.gz",
+    "size": 1902971
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_armv6.tar.gz",
+    "digest": "sha256:689ad87664a3e16566ae1dea56d9f39dbc56125a2de1669d7a86ad1334a0eaeb",
+    "name": "fzf-0.74.2-linux_armv6.tar.gz",
+    "size": 1895237
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_armv7.tar.gz",
+    "digest": "sha256:be111252281a867a64906a750d6b9aabb7a6653a6bf9d618d97679d03835ffa4",
+    "name": "fzf-0.74.2-linux_armv7.tar.gz",
+    "size": 1891755
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_loong64.tar.gz",
+    "digest": "sha256:7bbc1624cf78c9c52a72cfbd71cdbcd6c6db038f6f84ca0f3a1b666ba8de6127",
+    "name": "fzf-0.74.2-linux_loong64.tar.gz",
+    "size": 1934507
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_ppc64le.tar.gz",
+    "digest": "sha256:14d70f5cffb79924f2118294f86f31046bbffa04df37cd20db727d498f431736",
+    "name": "fzf-0.74.2-linux_ppc64le.tar.gz",
+    "size": 1863260
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_riscv64.tar.gz",
+    "digest": "sha256:5ef6ec3c6e53bad7b13c648a9ded15354ca71e166ac1be15196dced5f08f86b9",
+    "name": "fzf-0.74.2-linux_riscv64.tar.gz",
+    "size": 1873651
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_s390x.tar.gz",
+    "digest": "sha256:74a13cec14445102d92c6e9b488ee3ac6b17ebeb8c7becbf3d781a8a14cc70ba",
+    "name": "fzf-0.74.2-linux_s390x.tar.gz",
+    "size": 1945651
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-openbsd_amd64.tar.gz",
+    "digest": "sha256:78acf9aaadd6153b92e8e01747769f124432fb28a98ee987e13f518daf589ff4",
+    "name": "fzf-0.74.2-openbsd_amd64.tar.gz",
+    "size": 1979269
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-windows_amd64.zip",
+    "digest": "sha256:a5a3b27dd203469139d10669721952335b9b46f19346e3d1abc102a67ea60804",
+    "name": "fzf-0.74.2-windows_amd64.zip",
+    "size": 2195038
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-windows_arm64.zip",
+    "digest": "sha256:287075f98e5d0a4dff5bd4e800846cb3b5986b89b2e558b75d21a643a90d13ec",
+    "name": "fzf-0.74.2-windows_arm64.zip",
+    "size": 1992662
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_amd64.deb",
+    "digest": "sha256:a220553bd9d847bd62ac09a6834d529ebe3898344cd5d730dc0ec1929e9bc5ae",
+    "name": "fzf_0.74.2_amd64.deb",
+    "size": 2041612
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_arm64.deb",
+    "digest": "sha256:1d81f5587a96a975d7d74f5def79ccd114d34e461f4f010a08d41b43dca16265",
+    "name": "fzf_0.74.2_arm64.deb",
+    "size": 1873268
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_armv5.deb",
+    "digest": "sha256:25b2f38291498d54a4cc1eb5fa4c9a8c438dd0cafc17d5bb3473b099c17e2e8b",
+    "name": "fzf_0.74.2_armv5.deb",
+    "size": 1930844
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_armv6.deb",
+    "digest": "sha256:027f9906f6f356105229216f3ca9640782f39c762c17ab95baae645907c24384",
+    "name": "fzf_0.74.2_armv6.deb",
+    "size": 1922412
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_armv7.deb",
+    "digest": "sha256:ecb48d058caa9b8ac3dead2e2243d2d9259050c25f56e2275c297320442396dd",
+    "name": "fzf_0.74.2_armv7.deb",
+    "size": 1919104
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_checksums.txt",
+    "digest": "sha256:4be377bc7ea4b03500674e7c86be71b963bd5e1b718cc76cbf23cb53998f8444",
+    "name": "fzf_0.74.2_checksums.txt",
+    "size": 2337
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_loong64.deb",
+    "digest": "sha256:7ca40ecc05cfab159f67d0fb0bcfd0b6bcc74b9333e3492eb9f45abdf07c206f",
+    "name": "fzf_0.74.2_loong64.deb",
+    "size": 1962492
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_ppc64le.deb",
+    "digest": "sha256:6e5d5ee07f1014edc373388ec746aafdfbbdec995c932695a582a9fbe63e4c42",
+    "name": "fzf_0.74.2_ppc64le.deb",
+    "size": 1891058
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_riscv64.deb",
+    "digest": "sha256:6a1ba981559d5a646475de27b49f7bacf95405b8d3830d7ac76d2113be2d71e0",
+    "name": "fzf_0.74.2_riscv64.deb",
+    "size": 1901132
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf_0.74.2_s390x.deb",
+    "digest": "sha256:a197e6e6031d622e23571f5a53a14e279408e2b22ebf45975b6d3bb65bb07e81",
+    "name": "fzf_0.74.2_s390x.deb",
+    "size": 1973654
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.74.2"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-android_arm64.tar.gz",
+    "digest": "sha256:af59808649c1f71c84a2fa3382e5511f3d4e108c4a44b258e2bcae1ad436636f",
+    "name": "fzf-0.74.1-android_arm64.tar.gz",
+    "size": 1914107
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-darwin_amd64.tar.gz",
+    "digest": "sha256:642f29fb2800690385efb176a209b14d9f593795f0f70ee12c919ee15472e439",
+    "name": "fzf-0.74.1-darwin_amd64.tar.gz",
+    "size": 2060930
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-darwin_arm64.tar.gz",
+    "digest": "sha256:849d1d33b050f04dd6b765665e417da151b0e4654dbed8f55c60fd8e23f3ba20",
+    "name": "fzf-0.74.1-darwin_arm64.tar.gz",
+    "size": 1890852
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-freebsd_amd64.tar.gz",
+    "digest": "sha256:f94250681cbba69239453a08326b1a7546308eae13ed31e86b2112c3e6f4ee97",
+    "name": "fzf-0.74.1-freebsd_amd64.tar.gz",
+    "size": 1971619
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_amd64.tar.gz",
+    "digest": "sha256:df53438be5f51e151bb4044d78fda72bdfe209e3ecd2baecae48e8dea370c81b",
+    "name": "fzf-0.74.1-linux_amd64.tar.gz",
+    "size": 2003429
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_arm64.tar.gz",
+    "digest": "sha256:f22204dd1a091d43e102268d062fd53b47133c8d8581671ee5eb225b75e31183",
+    "name": "fzf-0.74.1-linux_arm64.tar.gz",
+    "size": 1835004
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_armv5.tar.gz",
+    "digest": "sha256:e6f8e5d962376ab0c131d0394640ed585286922eaf6ef8e57a7f1ce0706de9cb",
+    "name": "fzf-0.74.1-linux_armv5.tar.gz",
+    "size": 1892963
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_armv6.tar.gz",
+    "digest": "sha256:674f8ab152481cb7fb99479bd3bb041f93e9a5fdd508d825855daeea3478e151",
+    "name": "fzf-0.74.1-linux_armv6.tar.gz",
+    "size": 1885668
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_armv7.tar.gz",
+    "digest": "sha256:f4c8150f4f681a55f32aafc5038601d47c242e722be69859c2d1a310baea6172",
+    "name": "fzf-0.74.1-linux_armv7.tar.gz",
+    "size": 1881379
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_loong64.tar.gz",
+    "digest": "sha256:2c3ccbab431a35bc0479d1402b7fca76d5a30c1067686f1011d0acd840667ff6",
+    "name": "fzf-0.74.1-linux_loong64.tar.gz",
+    "size": 1927320
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_ppc64le.tar.gz",
+    "digest": "sha256:62536669f83b9f7dfdca9d4ecc8d27af2ffe3ebc251693151ff32267f022af1e",
+    "name": "fzf-0.74.1-linux_ppc64le.tar.gz",
+    "size": 1856645
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_riscv64.tar.gz",
+    "digest": "sha256:a647e12d907c650d963b5a4b5887bcba0307578a68deb37917142903a1c217d6",
+    "name": "fzf-0.74.1-linux_riscv64.tar.gz",
+    "size": 1864318
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_s390x.tar.gz",
+    "digest": "sha256:3fcce26f1e31f5f444a8a8dddd3d332c6dd6ff8fe0edea87e26bbb9e28be11d6",
+    "name": "fzf-0.74.1-linux_s390x.tar.gz",
+    "size": 1935809
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-openbsd_amd64.tar.gz",
+    "digest": "sha256:c6cc1f2019264bcfec5a985f0cadd0434bf1a34ce5b53ab49e59cdcb9935a8b1",
+    "name": "fzf-0.74.1-openbsd_amd64.tar.gz",
+    "size": 1969202
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-windows_amd64.zip",
+    "digest": "sha256:d83a94a68a9203f6366754123c0e4d7a61e16be18a5d845f4838664b330c4f5f",
+    "name": "fzf-0.74.1-windows_amd64.zip",
+    "size": 2181266
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-windows_arm64.zip",
+    "digest": "sha256:b688ecafa2d1fdb0af3383f25d6d122866c13ad7cc996e9f735bf90e6c75f83f",
+    "name": "fzf-0.74.1-windows_arm64.zip",
+    "size": 1981965
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_amd64.deb",
+    "digest": "sha256:035e2f5b55abaeab136dfc81b7d0c023d7f2265ea5077b857fc6f7c30f74dbba",
+    "name": "fzf_0.74.1_amd64.deb",
+    "size": 2031518
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_arm64.deb",
+    "digest": "sha256:6592967ff939810fd6f4b059333ba58c74ff78d9e8823233dd4d3a69734db5fe",
+    "name": "fzf_0.74.1_arm64.deb",
+    "size": 1862996
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_armv5.deb",
+    "digest": "sha256:6bf44be9d374c7011fbbec640a1259ba7c08696997ec85b2031b3f596b002cb9",
+    "name": "fzf_0.74.1_armv5.deb",
+    "size": 1920112
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_armv6.deb",
+    "digest": "sha256:8f3baffb926945656ad111e28b50fa6bc75bb6093d33ca3edba288fd30304f74",
+    "name": "fzf_0.74.1_armv6.deb",
+    "size": 1913492
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_armv7.deb",
+    "digest": "sha256:5b2fbe94a3a54692d1bd238d5aa3bd610a4d6a97cb87e93bcdb7ee265a3c0491",
+    "name": "fzf_0.74.1_armv7.deb",
+    "size": 1908596
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_checksums.txt",
+    "digest": "sha256:b96908c833a8a07e91a080226fdb153635390501dc3f959f0cc2bce1254b369c",
+    "name": "fzf_0.74.1_checksums.txt",
+    "size": 2337
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_loong64.deb",
+    "digest": "sha256:81808494882f5d8fb7d8a2b99743370b87c18de6e3b801169fe81da6ef78c0a9",
+    "name": "fzf_0.74.1_loong64.deb",
+    "size": 1955256
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_ppc64le.deb",
+    "digest": "sha256:a694feaecb79af074e0609b0ff932b2aa14f6f1bcc301d345d1f27bcbde142a6",
+    "name": "fzf_0.74.1_ppc64le.deb",
+    "size": 1884676
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_riscv64.deb",
+    "digest": "sha256:010e0462dc7473c17867b26639b9c3306ca1c4f710bf92844c6fb187e033346e",
+    "name": "fzf_0.74.1_riscv64.deb",
+    "size": 1892474
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf_0.74.1_s390x.deb",
+    "digest": "sha256:59329b3fc78b7cb72361003debad9c49a4c1e9da81815bbde67fcfa4af8ae795",
+    "name": "fzf_0.74.1_s390x.deb",
+    "size": 1963614
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.74.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-android_arm64.tar.gz",
+    "digest": "sha256:510ec846bd77387f30d14802c8a7a8e15bf7c947ee2aa537b781b328bf7e0269",
+    "name": "fzf-0.74.0-android_arm64.tar.gz",
+    "size": 1910911
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-darwin_amd64.tar.gz",
+    "digest": "sha256:e2c470f058ac18615f54c0bebe0fd2956f2aa8e306a11621783a00aaa386eedd",
+    "name": "fzf-0.74.0-darwin_amd64.tar.gz",
+    "size": 2058382
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-darwin_arm64.tar.gz",
+    "digest": "sha256:da60e8980e4239a0fc5f1fcfe873f243dfda93a6a13b696b00e1dc8584a77a87",
+    "name": "fzf-0.74.0-darwin_arm64.tar.gz",
+    "size": 1887211
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-freebsd_amd64.tar.gz",
+    "digest": "sha256:79ed192cd7c89d408439f99f7da7988c008bc60da5c93ca381fcb88c592ad8d7",
+    "name": "fzf-0.74.0-freebsd_amd64.tar.gz",
+    "size": 1969685
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_amd64.tar.gz",
+    "digest": "sha256:cf919f05b7581b4c744d764eaa704665d61dd6d3ca785f0df2351281dff60cda",
+    "name": "fzf-0.74.0-linux_amd64.tar.gz",
+    "size": 1999541
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_arm64.tar.gz",
+    "digest": "sha256:bd9e6165ebdb702215d42368cbb95b8dd70a4e77ee97925adac8c31660e30ef7",
+    "name": "fzf-0.74.0-linux_arm64.tar.gz",
+    "size": 1832249
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_armv5.tar.gz",
+    "digest": "sha256:82e6017e98e09cf9ea31a2b793731ea2329fcf1e311b2110dc30bcb9f04f4c34",
+    "name": "fzf-0.74.0-linux_armv5.tar.gz",
+    "size": 1891550
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_armv6.tar.gz",
+    "digest": "sha256:cd6c4466ea51469601c9f6182f066128087e511d9b3d58ef2c976b6ddeeee222",
+    "name": "fzf-0.74.0-linux_armv6.tar.gz",
+    "size": 1884185
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_armv7.tar.gz",
+    "digest": "sha256:43bc4e73755c80195802f1c62674bbd52172d7392fd3e6c95a544c01a379df53",
+    "name": "fzf-0.74.0-linux_armv7.tar.gz",
+    "size": 1878824
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_loong64.tar.gz",
+    "digest": "sha256:9fd64bb23e7f54f3c2a9b92231157e0ef864bec85b73f408e18f218fc2793bdd",
+    "name": "fzf-0.74.0-linux_loong64.tar.gz",
+    "size": 1925040
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_ppc64le.tar.gz",
+    "digest": "sha256:9373504d33d157fa50f24d201f7e692b352ab741b61f3d221515b1ec331bcaf2",
+    "name": "fzf-0.74.0-linux_ppc64le.tar.gz",
+    "size": 1854573
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_riscv64.tar.gz",
+    "digest": "sha256:a08fbc9088d230153562e01500799dafa671ddee9552673a45e5761a088acd15",
+    "name": "fzf-0.74.0-linux_riscv64.tar.gz",
+    "size": 1861946
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-linux_s390x.tar.gz",
+    "digest": "sha256:a17a9c4ba70c01c71d847c5ef351a77f6a3410095c245cf60de88e6ab922b178",
+    "name": "fzf-0.74.0-linux_s390x.tar.gz",
+    "size": 1934391
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-openbsd_amd64.tar.gz",
+    "digest": "sha256:65a3e54f20e1516e9f4ee2cea5406b62d007bee09800c9804472e0bd46f189ad",
+    "name": "fzf-0.74.0-openbsd_amd64.tar.gz",
+    "size": 1966215
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-windows_amd64.zip",
+    "digest": "sha256:614efa4ea923a3d6715856b5f6fb6ce815acdb0ce549e7499202808f7a7a78e7",
+    "name": "fzf-0.74.0-windows_amd64.zip",
+    "size": 2180033
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf-0.74.0-windows_arm64.zip",
+    "digest": "sha256:2f18464bb2088889c0ee58c3b280dc264911eb70c330bc930d39a8f93488393d",
+    "name": "fzf-0.74.0-windows_arm64.zip",
+    "size": 1979388
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.74.0/fzf_0.74.0_checksums.txt",
+    "digest": "sha256:ceda993b80fe28945108e8d772f1c8e7c5c1c8a2d7d1744939b16bdda069d673",
+    "name": "fzf_0.74.0_checksums.txt",
+    "size": 1548
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.74.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-android_arm64.tar.gz",
+    "digest": "sha256:02b6dbf74ddd7e060be600ce620eab433c0bf39b1ed7f91ac2f67615f7e8dd7d",
+    "name": "fzf-0.73.1-android_arm64.tar.gz",
+    "size": 1880018
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-darwin_amd64.tar.gz",
+    "digest": "sha256:75bbf15248d1cf0a13eafc75b8a55f5075c437e2ba6d76899afc53f4f3e1b38c",
+    "name": "fzf-0.73.1-darwin_amd64.tar.gz",
+    "size": 2025742
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-darwin_arm64.tar.gz",
+    "digest": "sha256:d27fd68c04fb9b42f7c73a3f7d38069a74d308e40174f64a072c747213e97286",
+    "name": "fzf-0.73.1-darwin_arm64.tar.gz",
+    "size": 1861771
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-freebsd_amd64.tar.gz",
+    "digest": "sha256:5c432a4f03f2ff128f57ad26bbb465ff4c262da0bbe8dc5a192a71ea67a366ef",
+    "name": "fzf-0.73.1-freebsd_amd64.tar.gz",
+    "size": 1933696
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_amd64.tar.gz",
+    "digest": "sha256:f3252c2c366bc1700d3c85781ec8c9695998927ac127870eb049ceea2d540f8a",
+    "name": "fzf-0.73.1-linux_amd64.tar.gz",
+    "size": 1969160
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_arm64.tar.gz",
+    "digest": "sha256:a408b0b6c08d486307b8f1554f967b8b50ee1b3ea8b4035e3161bab31fdfc28d",
+    "name": "fzf-0.73.1-linux_arm64.tar.gz",
+    "size": 1804720
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_armv5.tar.gz",
+    "digest": "sha256:6dc3983c4cb88995789e4b2f95f47a13d9fdb04e98bf4755ee5e90a531a77ff4",
+    "name": "fzf-0.73.1-linux_armv5.tar.gz",
+    "size": 1861407
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_armv6.tar.gz",
+    "digest": "sha256:ed05d4d57e13e1fec1468807c408e099bb7647208f2d6a1be0e470bc6e55bf1e",
+    "name": "fzf-0.73.1-linux_armv6.tar.gz",
+    "size": 1852072
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_armv7.tar.gz",
+    "digest": "sha256:e76c3695d24259343ab4767423526eb8239b76b1d157808aefb9eb756d66cecb",
+    "name": "fzf-0.73.1-linux_armv7.tar.gz",
+    "size": 1848345
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_loong64.tar.gz",
+    "digest": "sha256:80d4aa382b1ea78366e01cbdac6f53ac1e271302e5a58f9e3035536c0a98445c",
+    "name": "fzf-0.73.1-linux_loong64.tar.gz",
+    "size": 1890765
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_ppc64le.tar.gz",
+    "digest": "sha256:b42e82dddb163874d4c6cf485b227ee643c13a534b92cddeae0e6cd3dd7bc783",
+    "name": "fzf-0.73.1-linux_ppc64le.tar.gz",
+    "size": 1823393
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_riscv64.tar.gz",
+    "digest": "sha256:c9db70f864fb42f783c209a547f3c1d3d4a08817a2e723f1d9a3c1da533cd2cc",
+    "name": "fzf-0.73.1-linux_riscv64.tar.gz",
+    "size": 1833645
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-linux_s390x.tar.gz",
+    "digest": "sha256:d4b0dcc9ee08712211b15f85048a1ace3d95ce1311731f721b1a863444bff8af",
+    "name": "fzf-0.73.1-linux_s390x.tar.gz",
+    "size": 1900934
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-openbsd_amd64.tar.gz",
+    "digest": "sha256:1aacd3ee22f54ed5c445060430300e2ae2e61dce7b797dc466987a898783a05a",
+    "name": "fzf-0.73.1-openbsd_amd64.tar.gz",
+    "size": 1933759
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-windows_amd64.zip",
+    "digest": "sha256:521a974dc32e93404265e55bffaf71a59e05e80abdf8ca4afb21a6030dc76f5f",
+    "name": "fzf-0.73.1-windows_amd64.zip",
+    "size": 2149253
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf-0.73.1-windows_arm64.zip",
+    "digest": "sha256:1b043fd2eea42b210679be71a15c0be9516a4369ce5920f533e6b02edb8736b9",
+    "name": "fzf-0.73.1-windows_arm64.zip",
+    "size": 1950187
+   },
+   {
+    "browser_download_url": "https://github.com/junegunn/fzf/releases/download/v0.73.1/fzf_0.73.1_checksums.txt",
+    "digest": "sha256:331ab4f113a866ba9080a9a4b3322cb1fd957c14186ac0cd409f4f0d287349a5",
+    "name": "fzf_0.73.1_checksums.txt",
+    "size": 1548
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.73.1"
+ }
+]

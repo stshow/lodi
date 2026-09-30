@@ -1,0 +1,23 @@
+# Managed by lodi from home.toml [programs.helix]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+theme = "onedark"
+
+[editor]
+auto-format = true
+cursorline = true
+line-number = "relative"
+mouse = false
+rulers = [80, 100]
+true-color = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.statusline]
+left = ["mode", "spinner"]
+
+[keys.normal]
+C-s = ":write"

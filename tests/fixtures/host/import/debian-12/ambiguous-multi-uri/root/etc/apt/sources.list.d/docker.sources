@@ -1,0 +1,6 @@
+# One stanza, two repositories: the vendor's own and a mirror of it.
+Types: deb
+URIs: https://download.docker.com/linux/debian https://docker-mirror.example.invalid/linux/debian
+Suites: bookworm
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc

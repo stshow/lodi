@@ -1,0 +1,52 @@
+{
+  "base": null,
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi 1.4.1",
+  "manifestHash": "sha256:048baa58c7648901ceb0afae668f211066e7804e900d80ccb159fb0a90bf4c14",
+  "packages": {
+    "python": {
+      "artifacts": [
+        {
+          "format": "tar.gz",
+          "sha256": "sha256:ebed0b312e449bba33e0ed74672af82a4675875a0efdfaa22d843c5bbcc9a9a2",
+          "size": 345,
+          "stripComponents": 1,
+          "subdir": "",
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.12.14+20260901-x86_64-unknown-linux-gnu-install_only.tar.gz"
+        }
+      ],
+      "provider": "binary",
+      "recipe": {
+        "input": "builtin",
+        "path": "python.toml",
+        "sha256": "sha256:0603a21f73abb3b6564edd7242d4884ff6fb615976d3daf006481a5666d5b233"
+      },
+      "request": {
+        "constraint": "3.12",
+        "name": "python",
+        "provider": "binary"
+      },
+      "spec": {
+        "arch": "x86_64",
+        "bin": [
+          "bin/python3",
+          "bin/pip3"
+        ],
+        "env": {},
+        "path": [
+          "bin"
+        ]
+      },
+      "tag": "20260901",
+      "version": "3.12.14"
+    }
+  },
+  "profiles": {
+    "default": {
+      "packages": [
+        "python"
+      ]
+    }
+  },
+  "version": 1
+}

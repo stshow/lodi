@@ -1,0 +1,7 @@
+Package files:
+ 100 /var/lib/dpkg/status
+     release a=now
+ 500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages
+     release v=24.04,o=Ubuntu,a=noble,n=noble,l=Ubuntu,c=main,b=amd64
+     origin archive.ubuntu.com
+Pinned packages:

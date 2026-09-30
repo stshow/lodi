@@ -1,0 +1,19 @@
+# Managed by lodi from home.toml [programs.demo]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+theme = "dark"
+
+[font]
+size = 12
+
+[settings]
+a = [1, 2.5, "three"]
+"key with space" = "quote \" and backslash \\ and tab \t"
+when = 1979-05-27T07:32:00Z
+z = 1
+
+[settings.nested]
+deep = true
+
+[window]
+opacity = 0.9

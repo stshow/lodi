@@ -1,0 +1,9 @@
+[home]
+version = "1"
+
+[tools.hello]
+version = "1.0.0"
+url = "https://fixtures.test/hello"
+sha256 = "bfdeaeb08cffb6a36438bcd12dda25417e3cdd36f1e7e482a2849d539225288b"
+format = "binary"
+path = ["bin"]

@@ -1,0 +1,48 @@
+base-files:
+  Installed: 12.4+deb12u5
+  Candidate: 12.4+deb12u5
+  Version table:
+ *** 12.4+deb12u5 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+docker-ce:
+  Installed: 5:27.3.1-1~deb12
+  Candidate: 5:27.3.1-1~deb12
+  Version table:
+ *** 5:27.3.1-1~deb12 500
+        500 http://download.docker.com/linux/debian bookworm/stable amd64 Packages
+        100 /var/lib/dpkg/status
+golang-1.22:
+  Installed: 1.22.10-1~bpo12+1
+  Candidate: 1.22.10-1~bpo12+1
+  Version table:
+ *** 1.22.10-1~bpo12+1 100
+        100 http://deb.debian.org/debian bookworm-backports/main amd64 Packages
+        100 /var/lib/dpkg/status
+libc6:
+  Installed: 2.36-9+deb12u7
+  Candidate: 2.36-9+deb12u7
+  Version table:
+ *** 2.36-9+deb12u7 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+lodi-agent:
+  Installed: 2.4.1-1~ppa1
+  Candidate: 2.4.1-1~ppa1
+  Version table:
+ *** 2.4.1-1~ppa1 500
+        500 http://ppa.launchpadcontent.net/lodi-testing/ppa/ubuntu noble/main amd64 Packages
+        100 /var/lib/dpkg/status
+lodi-hand-built:
+  Installed: 0-1
+  Candidate: 0-1
+  Version table:
+ *** 0-1 100
+        100 /var/lib/dpkg/status
+ripgrep:
+  Installed: 13.0.0-4+b2
+  Candidate: 13.0.0-4+b2
+  Version table:
+ *** 13.0.0-4+b2 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status

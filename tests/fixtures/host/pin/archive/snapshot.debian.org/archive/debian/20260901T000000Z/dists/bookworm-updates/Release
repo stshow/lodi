@@ -1,0 +1,15 @@
+Origin: Debian
+Label: Debian
+Suite: oldstable-updates
+Version: 12-updates
+Codename: bookworm-updates
+Date: Mon, 31 Aug 2026 20:26:53 UTC
+Valid-Until: Mon, 07 Sep 2026 20:26:53 UTC
+Acquire-By-Hash: yes
+No-Support-for-Architecture-all: Packages
+Architectures: all amd64 arm64 armel armhf i386 mips64el mipsel ppc64el s390x
+Components: main contrib non-free-firmware non-free
+Description: Debian 12 - Updates
+SHA256:
+ d051ab4d81606ff50270c9bd377d0e39ba094be8b4098b87d2c35cd1836bac9e 304 main/binary-amd64/Packages.xz
+ 3f565173e1d5f267ad8e0f58755f916920a90a78c8e61adf173f1d7b32dc18da 312 main/binary-amd64/Packages

@@ -1,0 +1,29 @@
+# M-Spike acceptance project (design ADR-018): a Debian bookworm container with the
+# OpenSSL development closure and the upstream Python 3.12 and Node 22 tools.
+# Every key here is in the supported subset (docs/milestones/m-spike/DATA_MODEL.md).
+
+[project]
+version = "1"
+name    = "spike-openssl"
+
+[container]
+distro   = "debian"
+release  = "bookworm"
+snapshot = "2026-09-18T00:00:00Z"
+
+[packages]
+common = ["build-essential", "libssl-dev", "pkg-config"]
+
+[tools]
+python = "3.12"
+nodejs = "22"
+
+[env]
+OUT_DIR         = ".lodi/build"
+PKG_CONFIG_PATH = ["/usr/lib/x86_64-linux-gnu/pkgconfig", "/usr/share/pkgconfig"]
+
+[tasks.build]
+run = "make"
+
+[tasks.versions]
+run = "python3 --version && node --version"

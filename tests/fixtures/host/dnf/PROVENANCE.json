@@ -1,0 +1,95 @@
+{
+ "environment": [
+  "sudo env -i PATH=/usr/sbin:/usr/bin LC_ALL=C LANG=C PAGER=cat",
+  "before each argv, unless run_as says otherwise"
+ ],
+ "files": {
+  "candidates.txt": {
+   "argv": [
+    "dnf5",
+    "-C",
+    "repoquery",
+    "--available",
+    "--arch=x86_64,noarch",
+    "--latest-limit=1",
+    "--qf",
+    "%{name} %{epoch}:%{version}-%{release} %{arch} %{repoid}\\n",
+    "htop",
+    "glibc",
+    "tree"
+   ],
+   "kept": "whole standard output",
+   "sha256_of_original": "9c231a111aa1ae122cc284d2d8d0d221a843d4db37d5ddfcb9029c166b8e2fb6"
+  },
+  "install-assumeno.txt": {
+   "argv": [
+    "dnf5",
+    "-C",
+    "install",
+    "--assumeno",
+    "--setopt=install_weak_deps=False",
+    "tmux"
+   ],
+   "kept": "whole standard output; exit 1, standard error ends `Operation aborted by the user.`",
+   "sha256_of_original": "f6e75b17f700d0bb4fa399d3d4fc6f67e5e800743161d163f72aeabe96db6957"
+  },
+  "installed.txt": {
+   "argv": [
+    "rpm",
+    "-qa",
+    "--qf",
+    "%{NAME} %{EPOCHNUM}:%{VERSION}-%{RELEASE} %{ARCH}\\n"
+   ],
+   "kept": "first 40 lines of 431",
+   "sha256_of_original": "36c8a30e54c12a5ccc8832c464b844f604238507cfcb74bbd51164f2e89dd48a"
+  },
+  "reasons.txt": {
+   "argv": [
+    "dnf5",
+    "-C",
+    "repoquery",
+    "--installed",
+    "--qf",
+    "%{name} %{reason} %{from_repo}\\n"
+   ],
+   "kept": "first 40 lines",
+   "sha256_of_original": "ce771360604f5339a9412c87909c035de03e97179a6ae08b3dd5019d10aa4639"
+  },
+  "remove-assumeno.txt": {
+   "argv": [
+    "dnf5",
+    "-C",
+    "remove",
+    "--assumeno",
+    "cloud-init"
+   ],
+   "kept": "whole standard output; exit 1, standard error ends `Operation aborted by the user.`",
+   "sha256_of_original": "0d216e20dd9e55f79b3351cb436dc1e6bc49b938a9b8dfd8ed2d1aa8df91b98b"
+  },
+  "verify-configfiles.txt": {
+   "argv": [
+    "env",
+    "-i",
+    "PATH=/usr/bin",
+    "LC_ALL=C",
+    "rpm",
+    "-Va",
+    "--configfiles"
+   ],
+   "kept": "whole output; exit 1",
+   "run_as": "the unprivileged login, without sudo",
+   "sha256_of_original": "8af54361adbd3dcdd91c6cfbd42d6a38eeb9d5cdbf02e68c93012aba2afc89cf"
+  }
+ },
+ "guest": [
+  "Fedora 44 Cloud Base 44-1.7 x86_64 (lodivm fedora-44)",
+  "dnf5 5.4.1.0, rpm 6.0.1",
+  "SELinux Enforcing"
+ ],
+ "note": [
+  "the guest had htop, figlet and tmux's metadata from earlier measurements;",
+  "the bytes are the layouts the dnf backend parses"
+ ],
+ "package": "fc-1-fedora-host-core (LD-432)",
+ "recorded": "2026-09-27T14:48Z"
+}

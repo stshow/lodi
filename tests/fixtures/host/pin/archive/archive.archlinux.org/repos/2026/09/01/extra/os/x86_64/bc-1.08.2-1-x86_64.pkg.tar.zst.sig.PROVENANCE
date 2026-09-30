@@ -1,0 +1,7 @@
+{
+  "instant": "2026-09-01T00:00:00Z",
+  "public_url": "https://archive.archlinux.org/repos/2026/09/01/extra/os/x86_64/",
+  "artifact": "bc-1.08.2-1-x86_64.pkg.tar.zst.sig",
+  "bytes": 119,
+  "sha256": "6c2271ba6dcf69c016d9b83fbc19944590c287ee34c5bc6c4accd0a39afbc2e7"
+}

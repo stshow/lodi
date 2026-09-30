@@ -1,0 +1,938 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:3750b2e93f37e0c692657da574d7019a101c0084da05a790c83fd335bad973e4",
+    "name": "ripgrep-15.2.0-aarch64-apple-darwin.tar.gz",
+    "size": 1764284
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:6548307715b72f409e4a2667fb1fc435822a2561a27445971b0925183313ebad",
+    "name": "ripgrep-15.2.0-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:e4abca10c3a64ebea742667dd7009449d49403db5460dd6873e389fa2945360f",
+    "name": "ripgrep-15.2.0-aarch64-pc-windows-msvc.zip",
+    "size": 1640124
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:49f07d6468add5aff10cf8595155f7c8adbca460a4be85fca23c4d89ff619a62",
+    "name": "ripgrep-15.2.0-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 179
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a740b91c82eaf9914cfedd353572f2791cbe0162c84101ee0951058f4dcbc90d",
+    "name": "ripgrep-15.2.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1854661
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7b3f20fe255204e11cdb79fbca5ef7ccff1a10cb4bef53b3a5add996e1792105",
+    "name": "ripgrep-15.2.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:800b1e7206afe799dfb5a6901f23147cfaabe0e52210538100f61e86e1740915",
+    "name": "ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz",
+    "size": 1982561
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:e66ededb816781dbb3ea585e097cd3d1b72e3fb60ee0291c650c1867ec7be73c",
+    "name": "ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 115
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:d859589734d9d802107ad9eff6a78cfd9b0080d2fecb0ad8772605b35e373199",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 1811537
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:ded53f7376d67215efbfd0fac11abc2e0f0bfd98c3154369f893172aeab8dd9e",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 118
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-musleabi.tar.gz",
+    "digest": "sha256:c9617116c02d4cf4f000e156890aed79979aa6d2f6347925aea5a61c1b0eab87",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-musleabi.tar.gz",
+    "size": 1830011
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "digest": "sha256:aa6b4085cc029744132ada9b88c58901700985d01090eff32c8202c9c58c4a7e",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "size": 117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:0332b481aa007969a54d5c19e793208e73405c48d38f226bdee56b9ed085cdde",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 1826012
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:1a30b800f54947aa654fca64d4bae69f2e44e12aa68c05dd153640c648e36e04",
+    "name": "ripgrep-15.2.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 119
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:9bf73bdb3fda9ad4b0235e1295b02c717031c986afa4d7c05dd0af8b74010a95",
+    "name": "ripgrep-15.2.0-i686-pc-windows-msvc.zip",
+    "size": 1642641
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:a039d831f19e86a7d08b188f86909406448fba98491dda5ad631c201072bd843",
+    "name": "ripgrep-15.2.0-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:b61a442344f0591321960def6adb8c828b68a448301d1ed93959656fcd3b79c2",
+    "name": "ripgrep-15.2.0-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2243230
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:8f0607f2874a87379c43452cc30941ef5bcc92ed9d7a3dce70a970ec522052a0",
+    "name": "ripgrep-15.2.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:af7825fcc69a2afc7a7aea55fc9af90e26421d8f20fe59df32e233c0b8a231c1",
+    "name": "ripgrep-15.2.0-x86_64-apple-darwin.tar.gz",
+    "size": 1878284
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:0c9d82a923b253a32a2cbae3542d8a3bc0fda74d4908d5967f834b38a3fb647f",
+    "name": "ripgrep-15.2.0-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:5dbdc225a3ce064314fc05b6de8423a08a7b681764c1a276ff8263feaf68c7d6",
+    "name": "ripgrep-15.2.0-x86_64-pc-windows-gnu.zip",
+    "size": 1878957
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-gnu.zip.sha256",
+    "digest": "sha256:6437d77c015df0ec2c430a55e84f28dc3c5dad26f9320fb056158efb8d21518a",
+    "name": "ripgrep-15.2.0-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5",
+    "name": "ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+    "size": 1789611
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:6e4996a007228048b4bca2bb81b24642d9bc091caa6d19698eab1e8120617b18",
+    "name": "ripgrep-15.2.0-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c",
+    "name": "ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2265718
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:650080eb90718156132c821d150d8b74818f66de47969e38eef5a2dce3e2a5e6",
+    "name": "ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep_15.2.0-1_amd64.deb",
+    "digest": "sha256:5af93eebe4c352474632cf1d28523b0e98bcd4e2f115a249a713b8d8c7d1d01c",
+    "name": "ripgrep_15.2.0-1_amd64.deb",
+    "size": 1703492
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep_15.2.0-1_amd64.deb.sha256",
+    "digest": "sha256:8a6eac3409a8d523f982e54cd857cf582906f6c4c076028ea8c46b50613f3972",
+    "name": "ripgrep_15.2.0-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "15.2.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:378e973289176ca0c6054054ee7f631a065874a352bf43f0fa60ef079b6ba715",
+    "name": "ripgrep-15.1.0-aarch64-apple-darwin.tar.gz",
+    "size": 1777930
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:b68a0a449224cf91b7bd0b7d6b20adbe86ca2a899607ee2daa5fd80f2e105795",
+    "name": "ripgrep-15.1.0-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:00d931fb5237c9696ca49308818edb76d8eb6fc132761cb2a1bd616b2df02f8e",
+    "name": "ripgrep-15.1.0-aarch64-pc-windows-msvc.zip",
+    "size": 1675460
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:86074c2498940cddcc07789c9205d8a0cb6848517edf9091652ca18c5c016b21",
+    "name": "ripgrep-15.1.0-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 179
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e",
+    "name": "ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1869959
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:adc090417ac10b04f0461742c08dcc25abee4a0ff567fa4692b3a7971fe089ec",
+    "name": "ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:1349e515287c06317c1f7adc894a6590ab8bea8cbe997c61060bf6395f42733c",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 1831905
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:be311c1fcfdce399b0ea4d4ae78fbd158c497888f9b99c85f4f8ffb5d361f722",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 118
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-musleabi.tar.gz",
+    "digest": "sha256:59f117dc44a08db816eb55d530ea2aa2f9239ab6939ea4b0dc5f7d355f42165c",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-musleabi.tar.gz",
+    "size": 1831202
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "digest": "sha256:4555b1a5f06fcdc046046f875bdd2e3c69ee3eccfca8e7f0e592faecce3e7ea4",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "size": 117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:89c0230b8ad3c280460e0391f2ecb92f4a7c498b10f4a912540fc0f916336b08",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 1844969
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:49137c356a8a4e729aa1ec8db26f822705a19e91b411b9c054810514abc34c81",
+    "name": "ripgrep-15.1.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 119
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:725be85a1e8f92878a548f40ee4f6df64bc93b809586462b3c6d884e1de1e83a",
+    "name": "ripgrep-15.1.0-i686-pc-windows-msvc.zip",
+    "size": 1665725
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:27489c5d6d55f25c6bcd8f970fba43aa170fd357d043f011e0ef27f81db493d4",
+    "name": "ripgrep-15.1.0-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:0300c58864b1de49da08f714d56ce10328dcbf6de37a404486fe2696e95692f1",
+    "name": "ripgrep-15.1.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 1950407
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:2d33600a9d66220c38fe0143fd444c8f286db829a168bebe57f0d0cace571ca6",
+    "name": "ripgrep-15.1.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 111
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a7b9bae0009abc2df000877a2f6e64f03bbf8fdd0c912167427e69ab45dd2fef",
+    "name": "ripgrep-15.1.0-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2441054
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6a00ef9ba51ec9d5afe5e137f7d6539937c0dbe6f2d5c46045bd35139fbc698b",
+    "name": "ripgrep-15.1.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882",
+    "name": "ripgrep-15.1.0-x86_64-apple-darwin.tar.gz",
+    "size": 1894127
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:8d000fa1d7c986db13836342d5312882f0edf4cf3110b6d357cb1f1ebf7e631d",
+    "name": "ripgrep-15.1.0-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638",
+    "name": "ripgrep-15.1.0-x86_64-pc-windows-gnu.zip",
+    "size": 1897509
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip.sha256",
+    "digest": "sha256:fdddd755f58d5b54663916231fd1315fc3f36a2d3ca414e31a9adc32879af3d2",
+    "name": "ripgrep-15.1.0-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a",
+    "name": "ripgrep-15.1.0-x86_64-pc-windows-msvc.zip",
+    "size": 1810687
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:eb6729af60025cba92e871d9db88187035b9f48193cc82794ea0b806b6b7593d",
+    "name": "ripgrep-15.1.0-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599",
+    "name": "ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2263077
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:ad13579c63f6a9c6cab5e8bf093dd4c1673554f39adf940911a52522885ec563",
+    "name": "ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep_15.1.0-1_amd64.deb",
+    "digest": "sha256:62ce186675c71edbc7c48a67dc36f986974551354d6ce63726adc2d85aad802c",
+    "name": "ripgrep_15.1.0-1_amd64.deb",
+    "size": 1704160
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep_15.1.0-1_amd64.deb.sha256",
+    "digest": "sha256:3e3b35139b55d7cac0dc2361f488262cf345c9b8afca7ce30b45a19d056a5c75",
+    "name": "ripgrep_15.1.0-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "15.1.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:98bb2e61e7277ba0ea72d2ae2592497fd8d2940934a16b122448d302a6637e3b",
+    "name": "ripgrep-15.0.0-aarch64-apple-darwin.tar.gz",
+    "size": 1775660
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:260782b063db2b037b69d6bdd8e5341e966ce5954ed4b6ecc10d873f23a1a59b",
+    "name": "ripgrep-15.0.0-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:572709c8770cb7f9385d725cb06d2bcd9537ec24d4dd17b1be1d65a876f8b591",
+    "name": "ripgrep-15.0.0-aarch64-pc-windows-msvc.zip",
+    "size": 1673744
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:9c5e0524b9a915fadf56ae8f22af1292af24b86733e52df125f8ac08cbdfb03f",
+    "name": "ripgrep-15.0.0-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 179
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:15f8cc2fab12d88491c54d49f38589922a9d6a7353c29b0a0856727bcdf80754",
+    "name": "ripgrep-15.0.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 1864542
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:c970194b9d4958bb1a586c9f4cc9451bad5f76fcd6153ff1b6dd2def42e8eec9",
+    "name": "ripgrep-15.0.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:126182ae4c85892546aaabc406f2f9271c609ec7fd6603055783456b339a8f9e",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 1843702
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:0401ea12ddb3c0c66d9a5640171485bbd6ac042509eadb720915409731413aa8",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 118
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-musleabi.tar.gz",
+    "digest": "sha256:1f49b435401e67439ea107709e7aac1dfc6b722071a76e991a12e224108797d7",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-musleabi.tar.gz",
+    "size": 1836751
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "digest": "sha256:a86947ba42d4b67f9da04ba36fa64054e200993ab6e917add45df5442d6bdede",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "size": 117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:e6fdbe890704c49d694538357f1819202163cab27e75c1ec5da8bf7c83eebaf0",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 1844101
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:02558ed992c2911a7cf67d968c14e58d6b29580720d25eed8c13fc37dce25a8a",
+    "name": "ripgrep-15.0.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 119
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-i686-pc-windows-msvc.zip",
+    "digest": "sha256:acb9918e9f3a88bd171143d663ffb12e8ab765b48bb449f8e7d8f1c7c1bd8311",
+    "name": "ripgrep-15.0.0-i686-pc-windows-msvc.zip",
+    "size": 1670048
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:a9722f3de6ab8a6acb91863ee68e9e9afebab842857a7104b69bf9eef66b6686",
+    "name": "ripgrep-15.0.0-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:9a614b1c5014a1e9aa67aa7639fc47ee39bba02714589f43411466f75def1d3b",
+    "name": "ripgrep-15.0.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 1952857
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:0deab1b619a75f599b356611e89873b17324ef3ee4ba6360eb160aa4bb3861c1",
+    "name": "ripgrep-15.0.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 111
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:95c24c733210c097557c6534dced233e8d7aaa4436cd808a1e01ab9338ac7951",
+    "name": "ripgrep-15.0.0-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2431790
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:fc90e34937e69c59522e8f13990b271c08909e54e4ef59eced3e2191e2d4bdd0",
+    "name": "ripgrep-15.0.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:44128c733d127ddbda461e01225a68b5f9997cfe7635242a797f645ca674a71a",
+    "name": "ripgrep-15.0.0-x86_64-apple-darwin.tar.gz",
+    "size": 1887368
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:6ffb1e07d190e80981024c4fd5adede448d4d37a6aeed5d245ed4d5ec62dcd4c",
+    "name": "ripgrep-15.0.0-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-pc-windows-gnu.zip",
+    "digest": "sha256:2da5362849a82c847923524cf983f134cefb07272501bff3647b4d035dd28528",
+    "name": "ripgrep-15.0.0-x86_64-pc-windows-gnu.zip",
+    "size": 1897663
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-pc-windows-gnu.zip.sha256",
+    "digest": "sha256:f13d1ed45ea74d6e750da0af4d0f5a7f58d3b00a030082aa604a0dd961b95c63",
+    "name": "ripgrep-15.0.0-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:21a98bf42c4da97ca543c010e764cc6dec8b9b7538d05f8d21874016385e0860",
+    "name": "ripgrep-15.0.0-x86_64-pc-windows-msvc.zip",
+    "size": 1805250
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:59c7ff3403cf7e4429478fbb025fa3241569a65b310862c3150e4de1a6c6a7f7",
+    "name": "ripgrep-15.0.0-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:253ad0fd5fef0d64cba56c70dccdacc1916d4ed70ad057cc525fcdb0c3bbd2a7",
+    "name": "ripgrep-15.0.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2262100
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep-15.0.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:859b5796d63d7f3037f4ca95220ca3a4670332317e1561af3deda43ef8d271ba",
+    "name": "ripgrep-15.0.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep_15.0.0-1_amd64.deb",
+    "digest": "sha256:ec08b128f8774c256f87b8f79def4f4930c769e21e980ec9a80e27f4f5f76759",
+    "name": "ripgrep_15.0.0-1_amd64.deb",
+    "size": 1702852
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.0.0/ripgrep_15.0.0-1_amd64.deb.sha256",
+    "digest": "sha256:1836c681392d54c0c712e84181d1233b6186b23d8861284553a7b76f635ab4e0",
+    "name": "ripgrep_15.0.0-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "15.0.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.1.1-aarch64-apple-darwin.tar.gz",
+    "size": 1787248
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 123
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 2047405
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-gnueabihf.tar.gz",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 2039117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 118
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-musleabi.tar.gz",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-musleabi.tar.gz",
+    "size": 1952640
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "size": 117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-musleabihf.tar.gz",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 1956387
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 119
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-i686-pc-windows-msvc.zip",
+    "name": "ripgrep-14.1.1-i686-pc-windows-msvc.zip",
+    "size": 1918749
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-i686-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.1.1-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-i686-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.1-i686-unknown-linux-gnu.tar.gz",
+    "size": 2357090
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-i686-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 111
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-powerpc64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.1-powerpc64-unknown-linux-gnu.tar.gz",
+    "size": 2397601
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 116
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-s390x-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.1-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2712819
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.1.1-x86_64-apple-darwin.tar.gz",
+    "size": 2082672
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-gnu.zip",
+    "name": "ripgrep-14.1.1-x86_64-pc-windows-gnu.zip",
+    "size": 10916507
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-gnu.zip.sha256",
+    "name": "ripgrep-14.1.1-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-msvc.zip",
+    "name": "ripgrep-14.1.1-x86_64-pc-windows-msvc.zip",
+    "size": 2058893
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.1.1-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz",
+    "name": "ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2566310
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "name": "ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep_14.1.1-1_amd64.deb",
+    "name": "ripgrep_14.1.1-1_amd64.deb",
+    "size": 1857320
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep_14.1.1-1_amd64.deb.sha256",
+    "name": "ripgrep_14.1.1-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "14.1.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-aarch64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.1.0-aarch64-apple-darwin.tar.gz",
+    "size": 1782988
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-aarch64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 123
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 2067022
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 2039690
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 118
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-musleabi.tar.gz",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-musleabi.tar.gz",
+    "size": 1948833
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-musleabi.tar.gz.sha256",
+    "size": 117
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 1955550
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 119
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-i686-pc-windows-msvc.zip",
+    "name": "ripgrep-14.1.0-i686-pc-windows-msvc.zip",
+    "size": 1918821
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-i686-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.1.0-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-i686-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.0-i686-unknown-linux-gnu.tar.gz",
+    "size": 2346060
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 111
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-powerpc64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.0-powerpc64-unknown-linux-gnu.tar.gz",
+    "size": 2530447
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 116
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-s390x-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.1.0-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2590488
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.1.0-x86_64-apple-darwin.tar.gz",
+    "size": 2072541
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-gnu.zip",
+    "name": "ripgrep-14.1.0-x86_64-pc-windows-gnu.zip",
+    "size": 10421979
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-gnu.zip.sha256",
+    "name": "ripgrep-14.1.0-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-msvc.zip",
+    "name": "ripgrep-14.1.0-x86_64-pc-windows-msvc.zip",
+    "size": 2020417
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.1.0-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz",
+    "name": "ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2527296
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "name": "ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep_14.1.0-1_amd64.deb",
+    "name": "ripgrep_14.1.0-1_amd64.deb",
+    "size": 1835112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep_14.1.0-1_amd64.deb.sha256",
+    "name": "ripgrep_14.1.0-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "14.1.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-aarch64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.0.3-aarch64-apple-darwin.tar.gz",
+    "size": 1786732
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-aarch64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 123
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-aarch64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.0.3-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 2064052
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-i686-pc-windows-msvc.zip",
+    "name": "ripgrep-14.0.3-i686-pc-windows-msvc.zip",
+    "size": 1896505
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-i686-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.0.3-i686-pc-windows-msvc.zip.sha256",
+    "size": 176
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-i686-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.0.3-i686-unknown-linux-gnu.tar.gz",
+    "size": 2322554
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-i686-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 111
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-powerpc64-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.0.3-powerpc64-unknown-linux-gnu.tar.gz",
+    "size": 2561238
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-powerpc64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 116
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-s390x-unknown-linux-gnu.tar.gz",
+    "name": "ripgrep-14.0.3-s390x-unknown-linux-gnu.tar.gz",
+    "size": 2633913
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 112
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-apple-darwin.tar.gz",
+    "name": "ripgrep-14.0.3-x86_64-apple-darwin.tar.gz",
+    "size": 2058869
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-apple-darwin.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-gnu.zip",
+    "name": "ripgrep-14.0.3-x86_64-pc-windows-gnu.zip",
+    "size": 10394661
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-gnu.zip.sha256",
+    "name": "ripgrep-14.0.3-x86_64-pc-windows-gnu.zip.sha256",
+    "size": 177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-msvc.zip",
+    "name": "ripgrep-14.0.3-x86_64-pc-windows-msvc.zip",
+    "size": 2015177
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-msvc.zip.sha256",
+    "name": "ripgrep-14.0.3-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 178
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-unknown-linux-musl.tar.gz",
+    "name": "ripgrep-14.0.3-x86_64-unknown-linux-musl.tar.gz",
+    "size": 2413752
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "name": "ripgrep-14.0.3-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 114
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep_14.0.3-1_amd64.deb",
+    "name": "ripgrep_14.0.3-1_amd64.deb",
+    "size": 1828028
+   },
+   {
+    "browser_download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep_14.0.3-1_amd64.deb.sha256",
+    "name": "ripgrep_14.0.3-1_amd64.deb.sha256",
+    "size": 93
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "14.0.3"
+ }
+]

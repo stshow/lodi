@@ -1,0 +1,812 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-3.13.3-1.aarch64.rpm",
+    "digest": "sha256:0b3a519c93abaff3edfcaf8a16b19cd3b7cc935daf604999b3b52aac96e5770e",
+    "name": "sops-3.13.3-1.aarch64.rpm",
+    "size": 15381222
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-3.13.3-1.x86_64.rpm",
+    "digest": "sha256:f362eabc5b17b84894952fc57737eccf26ef8a4321453c165f4b1205b5544123",
+    "name": "sops-3.13.3-1.x86_64.rpm",
+    "size": 17080545
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.amd64.exe",
+    "digest": "sha256:a4a9a398858fe8b2ef72d9686d930bf7c5cece9be74ad83ac3b53cfdd70e6b1c",
+    "name": "sops-v3.13.3.amd64.exe",
+    "size": 53497856
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:5b673c00bf5daf84d6e541d706e0e2a87292199722a33d74ea1403a5967c29b5",
+    "name": "sops-v3.13.3.amd64.exe.spdx.sbom.json",
+    "size": 198111
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.arm64.exe",
+    "digest": "sha256:7f936a0d08edbeba3eb8f50bad1fe71eba83a140a80dfd17051f3bdb4facb08a",
+    "name": "sops-v3.13.3.arm64.exe",
+    "size": 48963072
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:bcee23d05f4d4a6037c9a5dcbe508960c145cdf085fa292d52c37d7e00247d95",
+    "name": "sops-v3.13.3.arm64.exe.spdx.sbom.json",
+    "size": 198111
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.checksums.sigstore.json",
+    "digest": "sha256:b140370c339c465dff725b879e0caad3e7ff441fdbbef51179924f9c4b45082f",
+    "name": "sops-v3.13.3.checksums.sigstore.json",
+    "size": 10331
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.checksums.txt",
+    "digest": "sha256:91710ede6a3218e5b62286412543768a92d0c3449434951bd148d21043aad538",
+    "name": "sops-v3.13.3.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin",
+    "digest": "sha256:ada49efb072e8d02434b15cdd4746561b7b37e82813ce11efe5cb311439f288b",
+    "name": "sops-v3.13.3.darwin",
+    "size": 103874898
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin.amd64",
+    "digest": "sha256:42162d5cef10b74fcf80a045a70e658d7ce6e63d6ea1be6f347e44015714468d",
+    "name": "sops-v3.13.3.darwin.amd64",
+    "size": 53674896
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:76a083dcdf0c2eb8a8c4f556f533154095bb281c8eb3704846a44f9d2a2c90dc",
+    "name": "sops-v3.13.3.darwin.amd64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin.arm64",
+    "digest": "sha256:b97c0d434aab577dc40310e8d22ff9e45eef4c80638ab978daae9b4681c59286",
+    "name": "sops-v3.13.3.darwin.arm64",
+    "size": 50168146
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:c7e89a3b39fdf89dc6a2ae082bda75c3d7c37313b540f8c7caf9a28fde8a3385",
+    "name": "sops-v3.13.3.darwin.arm64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin.spdx.sbom.json",
+    "digest": "sha256:6df89a4a84ea2a356eff1128a1ff99dd68714129f387e19478331003312bde48",
+    "name": "sops-v3.13.3.darwin.spdx.sbom.json",
+    "size": 361390
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.intoto.jsonl",
+    "digest": "sha256:d8756a37a9b0f37e8cbe473535e97e154f899bf8202d5e46ee4610455a47ac9b",
+    "name": "sops-v3.13.3.intoto.jsonl",
+    "size": 27187
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64",
+    "digest": "sha256:e5bec3346a873ae91d871550f3e698c1aad962aff462a080e40f25fde17fef6b",
+    "name": "sops-v3.13.3.linux.amd64",
+    "size": 52121762
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:5e8c6c956d16dc7bf53aedea19feb81f7fd16f9cc00b47b0ae827e035e71a0bb",
+    "name": "sops-v3.13.3.linux.amd64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.arm64",
+    "digest": "sha256:53b0abacd38ef1b12a66d6c100956691b9cefce018d91f81e73ddf7438b94d77",
+    "name": "sops-v3.13.3.linux.arm64",
+    "size": 48300194
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:c3a8fe409a9bebd8e75987e9b044ea2f5b9f551c985302fa41c3269448d57a8a",
+    "name": "sops-v3.13.3.linux.arm64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb",
+    "digest": "sha256:927c45f2ccb5b1c9acb1e80c7befaea0672c721fd3f222697a51e0a7081e3f3b",
+    "name": "sops_3.13.3_amd64.deb",
+    "size": 16485534
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_arm64.deb",
+    "digest": "sha256:21cf1ee8860bb9c2a0b09ac97901b41ca9f95734f3402ea358e31e296e6be823",
+    "name": "sops_3.13.3_arm64.deb",
+    "size": 14887884
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.3"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-3.13.2-1.aarch64.rpm",
+    "digest": "sha256:798b31134ceb7d990d127adbbeca4f563dfcb4aac8291f340aafefa5f4e2c6a8",
+    "name": "sops-3.13.2-1.aarch64.rpm",
+    "size": 15332602
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-3.13.2-1.x86_64.rpm",
+    "digest": "sha256:7c217f6af9b2e6e264ef8a4af439c881e3ec5f0d2523fd3ba0446f49c8d742b0",
+    "name": "sops-3.13.2-1.x86_64.rpm",
+    "size": 17042146
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.amd64.exe",
+    "digest": "sha256:cb6fec76e23cb4ac56771ac38472b0fe1ba79a849bf2200aeda7c9467a045b7b",
+    "name": "sops-v3.13.2.amd64.exe",
+    "size": 53494784
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:e07b283e8725a786fbfae79886a5093f9edc3b2bfc969fd5e42e4ced62b54d60",
+    "name": "sops-v3.13.2.amd64.exe.spdx.sbom.json",
+    "size": 198111
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.arm64.exe",
+    "digest": "sha256:259d895aae68bd3ba954cfa36a6c9f9ae0b7e062602f0e387b5cd801c325bbfc",
+    "name": "sops-v3.13.2.arm64.exe",
+    "size": 48925696
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:e2ee44a419f0b6308e405e1450a2c067d002b19a40770a9a4e81b88bfab30bf9",
+    "name": "sops-v3.13.2.arm64.exe.spdx.sbom.json",
+    "size": 198111
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.checksums.sigstore.json",
+    "digest": "sha256:bddc5deda68ace08710166f45bd92b93710aef62187fa9646ee0a083958b1758",
+    "name": "sops-v3.13.2.checksums.sigstore.json",
+    "size": 9907
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.checksums.txt",
+    "digest": "sha256:dbfb547bc0f2f5b69284678ed0ba740955cbea07f4aaa9b09dc23fd900ce1675",
+    "name": "sops-v3.13.2.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin",
+    "digest": "sha256:8f7835359f3ef4f7e88a6ac5c666bad7331950db91a06db3f6f83fc905ca9ac0",
+    "name": "sops-v3.13.2.darwin",
+    "size": 103812578
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin.amd64",
+    "digest": "sha256:5a66836229ff4a73779b19644b6db28fd574a6b995c15fc333469b2f93ee2acd",
+    "name": "sops-v3.13.2.darwin.amd64",
+    "size": 53666192
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:88053cf652563c7fa4ff8de6602aeaf8a4eccc3b16c1711c37b8e8948299aabc",
+    "name": "sops-v3.13.2.darwin.amd64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin.arm64",
+    "digest": "sha256:412c475b52f167f1facd75d564422ffd1fa5302aaa7a404bdf4e30087e04b5a8",
+    "name": "sops-v3.13.2.darwin.arm64",
+    "size": 50122210
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:0f74fa1126ad415caefad1eff75755e3e8b74cebd33622d0a6a4538095cec343",
+    "name": "sops-v3.13.2.darwin.arm64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.darwin.spdx.sbom.json",
+    "digest": "sha256:f5e4a79830f0eeaef29767b2c5460b9ac96ceb5ffeef05733044f43e64f54d4c",
+    "name": "sops-v3.13.2.darwin.spdx.sbom.json",
+    "size": 361390
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.intoto.jsonl",
+    "digest": "sha256:b6116ee59037047c047736134fe839680f97e2e99349199f807df5b771763bc3",
+    "name": "sops-v3.13.2.intoto.jsonl",
+    "size": 26991
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.linux.amd64",
+    "digest": "sha256:154dfe4cd70554bdd82b98e4cd4acf191d43d01ead6f00a73477aa44c4ac42ef",
+    "name": "sops-v3.13.2.linux.amd64",
+    "size": 52129954
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:32b4fc60211f04aff6384266ba566ec050534d151dc5d775beda9284ce480d43",
+    "name": "sops-v3.13.2.linux.amd64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.linux.arm64",
+    "digest": "sha256:78abf2e15c86250a1553ae6f53aba96be6b2a8126f160b1534959add3467ad76",
+    "name": "sops-v3.13.2.linux.arm64",
+    "size": 48300194
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops-v3.13.2.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:f441a67c0406387b48afafd60774d6f6e80b743c9c8a45d3757881c1c65bfdff",
+    "name": "sops-v3.13.2.linux.arm64.spdx.sbom.json",
+    "size": 195722
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops_3.13.2_amd64.deb",
+    "digest": "sha256:979bd1665a577c9ce208e64c332d51635e852faca37cc11df853bc0dc8e8ca34",
+    "name": "sops_3.13.2_amd64.deb",
+    "size": 16422300
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.2/sops_3.13.2_arm64.deb",
+    "digest": "sha256:4e9c59d53b492f589fbe3cc558a0a91005ceacad1b1120420a55d1f528bd43f6",
+    "name": "sops_3.13.2_arm64.deb",
+    "size": 14813258
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.2"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-3.13.1-1.aarch64.rpm",
+    "digest": "sha256:bc2d83b897102a4640cf1cac708c96c39cbf232360c188124394c48f47120fba",
+    "name": "sops-3.13.1-1.aarch64.rpm",
+    "size": 15137160
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-3.13.1-1.x86_64.rpm",
+    "digest": "sha256:458851098eedc374b154aaac684ca8593154d0fb4de8a1762598e700ca89f6ad",
+    "name": "sops-3.13.1-1.x86_64.rpm",
+    "size": 16854277
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.amd64.exe",
+    "digest": "sha256:4654e53fff6d0a1842facd3a0ed5a66a8ab6164004b0ad4ca2d5e2b1c5473b65",
+    "name": "sops-v3.13.1.amd64.exe",
+    "size": 53088256
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:c77f24b8efefde8daeb36fedc6ad086895172f60475901bd323112e82eadc322",
+    "name": "sops-v3.13.1.amd64.exe.spdx.sbom.json",
+    "size": 198119
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.arm64.exe",
+    "digest": "sha256:dda6e1778f4248a2faa999735d16e97e80c9de0dae8c1da3f5fb79815bc78f26",
+    "name": "sops-v3.13.1.arm64.exe",
+    "size": 48591872
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:7e6245201315c2d84301b0d38670dec2ab6f73d084bfca5393eaf9999431c1f7",
+    "name": "sops-v3.13.1.arm64.exe.spdx.sbom.json",
+    "size": 198119
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.checksums.sigstore.json",
+    "digest": "sha256:c57e7adb2d15eb72c7b90025883b7c75187b2569f0b70abed64ea2c387591984",
+    "name": "sops-v3.13.1.checksums.sigstore.json",
+    "size": 9923
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.checksums.txt",
+    "digest": "sha256:765cf7d46abccfa8c6d1f2d8fd489b06d910c38a1e61f2855e1f0d4784679ecc",
+    "name": "sops-v3.13.1.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin",
+    "digest": "sha256:a0c2b1d4282f762c787691434537da33d2b5506c36f4c12e010f03edabcd1ee0",
+    "name": "sops-v3.13.1.darwin",
+    "size": 103039266
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.amd64",
+    "digest": "sha256:dad79d1b1dea767ca38ffaa50e10330a3e807dd13c853ef9c880567acef4f1ef",
+    "name": "sops-v3.13.1.darwin.amd64",
+    "size": 53252064
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:56fa83f6df4d5281cc5d437183dee1bcf0894df7828378c7e32f8f7aa3afaeba",
+    "name": "sops-v3.13.1.darwin.amd64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.arm64",
+    "digest": "sha256:a2c0dd37eb031068af6ef213b78cfa67b7f1afd76c2e5cc404257f42bbc8367d",
+    "name": "sops-v3.13.1.darwin.arm64",
+    "size": 49758498
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:dd2bc170c9ac97f4678377d1bb6b45dca324fff30266a0e6c9828f21ef689e8a",
+    "name": "sops-v3.13.1.darwin.arm64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.darwin.spdx.sbom.json",
+    "digest": "sha256:9885409a444d15a56640a94e115c9e00457b61a6209bd9ef28535dc5166b5a1e",
+    "name": "sops-v3.13.1.darwin.spdx.sbom.json",
+    "size": 361406
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.intoto.jsonl",
+    "digest": "sha256:b416b57dc493ed231727d3b50947a79ae83a96b22beda5daa9196ce067d8e6b7",
+    "name": "sops-v3.13.1.intoto.jsonl",
+    "size": 26635
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64",
+    "digest": "sha256:620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a",
+    "name": "sops-v3.13.1.linux.amd64",
+    "size": 51728546
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:50344081a0a7c7e7c722bc28bf962011ff185dd4d80569f226d0564cfff676f7",
+    "name": "sops-v3.13.1.linux.amd64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.arm64",
+    "digest": "sha256:19576fb1734dbf8fb77eda0cf0f3a2218f99bf4d33b814318e5e10d6babb9820",
+    "name": "sops-v3.13.1.linux.arm64",
+    "size": 47972514
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:b1a5986528905b8c0f08f983ebfb30d4510093f545c537c3d94d6235dc8daabd",
+    "name": "sops-v3.13.1.linux.arm64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops_3.13.1_amd64.deb",
+    "digest": "sha256:091361f38c374cdb11b78825ec2966da38d1ed391ab87c0e650f4d652b7d86e2",
+    "name": "sops_3.13.1_amd64.deb",
+    "size": 16241266
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.1/sops_3.13.1_arm64.deb",
+    "digest": "sha256:673443e50df3ca169dcd8bdaa3577dcffb56f3e460038856dd9db2810d272585",
+    "name": "sops_3.13.1_arm64.deb",
+    "size": 14660310
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-3.13.0-1.aarch64.rpm",
+    "digest": "sha256:ffe48a7fabb79043c97ae3778288a918e9345ab80c35f5b6d2c4264886e1db69",
+    "name": "sops-3.13.0-1.aarch64.rpm",
+    "size": 15128591
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-3.13.0-1.x86_64.rpm",
+    "digest": "sha256:227fe61004a8fe99d087979eff73f63bd52de1ce4c1b590a893190e23788c123",
+    "name": "sops-3.13.0-1.x86_64.rpm",
+    "size": 16826196
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.amd64.exe",
+    "digest": "sha256:b71e99f7701502c32d8d919ebccb89bb895a27837218402b61c7318c774bd409",
+    "name": "sops-v3.13.0.amd64.exe",
+    "size": 53071872
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:a97aa2f7b9bc47c2f3a541ba85ffa332eb163a267bf31aee6b9c3d92a8e76e62",
+    "name": "sops-v3.13.0.amd64.exe.spdx.sbom.json",
+    "size": 198119
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.arm64.exe",
+    "digest": "sha256:bc0d733108d69db607bdc3eaa19742995ea73da7c9f94ea96c73609802b08d43",
+    "name": "sops-v3.13.0.arm64.exe",
+    "size": 48576000
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:11c94cc79b0c0e1999b737421c735a5489e9951ee59317c556583d61b14941f5",
+    "name": "sops-v3.13.0.arm64.exe.spdx.sbom.json",
+    "size": 198119
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.checksums.sigstore.json",
+    "digest": "sha256:ff91af5462536ec4301c4139a12dc3fe5710af7f500ee641ec4742f035da3ae8",
+    "name": "sops-v3.13.0.checksums.sigstore.json",
+    "size": 9731
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.checksums.txt",
+    "digest": "sha256:a1ed029f202123196f126b5bcd8c6761385de286df46d406ba04d9c538c449f4",
+    "name": "sops-v3.13.0.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin",
+    "digest": "sha256:9d139f000329f6eaadc92fd344f80a113728a107ece585ac7c0a7b48afb094c3",
+    "name": "sops-v3.13.0.darwin",
+    "size": 103006306
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin.amd64",
+    "digest": "sha256:9020a2369bb348fc94cbaddc086c2e6b0b86c83beef0d5ac6e60d7db6d8c257f",
+    "name": "sops-v3.13.0.darwin.amd64",
+    "size": 53231392
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:34612d3beb73de756db9a1ded4cc688c530f0253e6fffe4f8abb9ad9d3b4ebff",
+    "name": "sops-v3.13.0.darwin.amd64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin.arm64",
+    "digest": "sha256:f2ec6a0f5f22aaef3723e5898d921751bc113834dd3d3b1af9c59ca18794069c",
+    "name": "sops-v3.13.0.darwin.arm64",
+    "size": 49758306
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:792b540f0c1e8933593730440e1f85cfdffcff445af72b21106cf9baf4df765e",
+    "name": "sops-v3.13.0.darwin.arm64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.darwin.spdx.sbom.json",
+    "digest": "sha256:f0a9caa3bc128d48864da4566079c5220a9c0e49758bbbb7d0a3a9c237fdccad",
+    "name": "sops-v3.13.0.darwin.spdx.sbom.json",
+    "size": 361406
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.intoto.jsonl",
+    "digest": "sha256:3a969653f2da682a3e077089ac1453c93690f58c8c79f87543d73b1b80fcaab9",
+    "name": "sops-v3.13.0.intoto.jsonl",
+    "size": 26731
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.linux.amd64",
+    "digest": "sha256:f2e5ed5e57376789b0e12793adc848e54c2338906e51392246dd03461b320157",
+    "name": "sops-v3.13.0.linux.amd64",
+    "size": 51716258
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:37e4209f21969bae058b53e502e6ba2cf86e5c0cb4a9b2339938223e7ac7cb4b",
+    "name": "sops-v3.13.0.linux.amd64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.linux.arm64",
+    "digest": "sha256:ca39dc61be763583c12690e4c55883449c6997274f5c24757f1fd86f7e47acd8",
+    "name": "sops-v3.13.0.linux.arm64",
+    "size": 47972514
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops-v3.13.0.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:566e600c3ca49e6bea075ccf01f33c8227623776b3a550e46f44bb55815adf43",
+    "name": "sops-v3.13.0.linux.arm64.spdx.sbom.json",
+    "size": 195730
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops_3.13.0_amd64.deb",
+    "digest": "sha256:8bc52b6da51d5ee420454e5b85a09aaca23bcab5de0827695f60e24fd13863c7",
+    "name": "sops_3.13.0_amd64.deb",
+    "size": 16233966
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.13.0/sops_3.13.0_arm64.deb",
+    "digest": "sha256:f8a8829d818cd4144bf948b40490f31a8f7ef0c524b6dc60a0549bb7329c956f",
+    "name": "sops_3.13.0_arm64.deb",
+    "size": 14655524
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.13.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-3.12.2-1.aarch64.rpm",
+    "digest": "sha256:3ddab12919679607fe851cd6970706c0444c35a11f8090c81e6fc336c6324bd8",
+    "name": "sops-3.12.2-1.aarch64.rpm",
+    "size": 14893394
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-3.12.2-1.x86_64.rpm",
+    "digest": "sha256:1d5382d11932a662a5d7e7dddf223289c2fe16f2da5b7478a64c0513d5a6733b",
+    "name": "sops-3.12.2-1.x86_64.rpm",
+    "size": 16588397
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.amd64.exe",
+    "digest": "sha256:5e777b1854ab2a6271d8f66375970e1fe3eea838251c309de151d16a2bdf13a2",
+    "name": "sops-v3.12.2.amd64.exe",
+    "size": 52244480
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:b9f2375af8043dc1c79e55b6a7453f838c4ad83bb8d146d3af6d2a651527decd",
+    "name": "sops-v3.12.2.amd64.exe.spdx.sbom.json",
+    "size": 199502
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.arm64.exe",
+    "digest": "sha256:bfc95ce0426e78a9dd13a8ef32db61b0587f45660530cb00adcdd374ba84fd9e",
+    "name": "sops-v3.12.2.arm64.exe",
+    "size": 47822336
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:b970ca25b4bc518268b7dd8ea3cd73343433e94f875c0a0c556d21bf3eb244b6",
+    "name": "sops-v3.12.2.arm64.exe.spdx.sbom.json",
+    "size": 199502
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.checksums.pem",
+    "digest": "sha256:e778e6d812e6ada1bfdf5e1a0263519c3c37474a039b72d94e3769bdce2097b9",
+    "name": "sops-v3.12.2.checksums.pem",
+    "size": 3120
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.checksums.sig",
+    "digest": "sha256:b9e532170dd769612b99926044689e9b1c93fcba5d559ae77e1750ba8b5d48da",
+    "name": "sops-v3.12.2.checksums.sig",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.checksums.txt",
+    "digest": "sha256:1c1ec25c8320666319abbe531dc2309b0575110acb74dea3a5f2a2f431eb2a42",
+    "name": "sops-v3.12.2.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin",
+    "digest": "sha256:d3e81973ea6372e22ffe4f3f8690be362559af5c0ae855430c61ebffaaef6ace",
+    "name": "sops-v3.12.2.darwin",
+    "size": 101407810
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.amd64",
+    "digest": "sha256:767c0dcb42e052fd6f2ac17d4473eca6f5fc4910e2b70127f1308d86c606c022",
+    "name": "sops-v3.12.2.darwin.amd64",
+    "size": 52400768
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:f642219e57c94a8e790569e5df3b1e241273a9f4063fe0f58d9264c38e33430f",
+    "name": "sops-v3.12.2.darwin.amd64.spdx.sbom.json",
+    "size": 197101
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.arm64",
+    "digest": "sha256:284edc64acf91ca249f227ffa2b444632656e4e1ac02baa26bed7051a7d51ce5",
+    "name": "sops-v3.12.2.darwin.arm64",
+    "size": 48979010
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:5f2660e0c2348d1254b9f61f52cd86efbef23e9bfc265717992dafaf042da093",
+    "name": "sops-v3.12.2.darwin.arm64.spdx.sbom.json",
+    "size": 197101
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.spdx.sbom.json",
+    "digest": "sha256:53192c078696f5f31c318eee914f42b5ba75a5894c06fbb69a8c381be056ccdd",
+    "name": "sops-v3.12.2.darwin.spdx.sbom.json",
+    "size": 363930
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.intoto.jsonl",
+    "digest": "sha256:dc6ff0401e1e30fbccf5199a9520ed04d99cbe42d3add4bbec9b687076db2d0d",
+    "name": "sops-v3.12.2.intoto.jsonl",
+    "size": 26680
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.amd64",
+    "digest": "sha256:14e2e1ba3bef31e74b70cf0b674f6443c80f6c5f3df15d05ffc57c34851b4998",
+    "name": "sops-v3.12.2.linux.amd64",
+    "size": 50897058
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:fa6374363169570549aa0aa5af4317d35e3784e8fac3301d1ec38ba4ff5eb9b2",
+    "name": "sops-v3.12.2.linux.amd64.spdx.sbom.json",
+    "size": 197101
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.arm64",
+    "digest": "sha256:f66de6f528dca946e910d74fa36a62a7714c11d0db16bd3c9bd8acf73b66704b",
+    "name": "sops-v3.12.2.linux.arm64",
+    "size": 47186082
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:7a99822f4e6f6e461a5325444ed6197996360bfa7cf39b7813327b00a79868d8",
+    "name": "sops-v3.12.2.linux.arm64.spdx.sbom.json",
+    "size": 197101
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops_3.12.2_amd64.deb",
+    "digest": "sha256:1554dc8857d9fcbaf93dbd643b97ae4bd497b9a1c1079e4b03322ea4e2678079",
+    "name": "sops_3.12.2_amd64.deb",
+    "size": 15934870
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.2/sops_3.12.2_arm64.deb",
+    "digest": "sha256:027a9e186efbed4bea74ee49756b41edab3ed0dd3ad46fa0d383711bf5599f48",
+    "name": "sops_3.12.2_arm64.deb",
+    "size": 14400742
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.12.2"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-3.12.1-1.aarch64.rpm",
+    "digest": "sha256:35d78d41e2efb1c88d7b552cfe6ff3e8707cfee604e0cfc353f0ac540d08464d",
+    "name": "sops-3.12.1-1.aarch64.rpm",
+    "size": 14808532
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-3.12.1-1.x86_64.rpm",
+    "digest": "sha256:dae06659eec341ec5f21c06346d2c0546c15d77acdf27b778b87bb4198b05c86",
+    "name": "sops-3.12.1-1.x86_64.rpm",
+    "size": 16491190
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.amd64.exe",
+    "digest": "sha256:161eff06643ca77cc0585099e0888d04897827162fd62bdb79cc1bcff933330f",
+    "name": "sops-v3.12.1.amd64.exe",
+    "size": 52029952
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.amd64.exe.spdx.sbom.json",
+    "digest": "sha256:d64eb478da94b9d3f56e5461e3cd5c46e76c2baacbfdd35d9f7b18b978f6de7e",
+    "name": "sops-v3.12.1.amd64.exe.spdx.sbom.json",
+    "size": 199494
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.arm64.exe",
+    "digest": "sha256:76bd5d596ddedd84925519d55f7b43e9e69eafb35d293d4fec738cf1a065f224",
+    "name": "sops-v3.12.1.arm64.exe",
+    "size": 47626240
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.arm64.exe.spdx.sbom.json",
+    "digest": "sha256:54c27849718fe5293882031ac5248b2b1069ac638de9c6924c9e4d4a63c9962f",
+    "name": "sops-v3.12.1.arm64.exe.spdx.sbom.json",
+    "size": 199494
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.checksums.pem",
+    "digest": "sha256:c77de2303496a451c4492ec0c0455a2c5e75ef503492c45cd1872703148cdfa6",
+    "name": "sops-v3.12.1.checksums.pem",
+    "size": 3112
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.checksums.sig",
+    "digest": "sha256:8bae583183d2e1de47ea33ad69d1adf732de7066316eaae6d24122474b78e87f",
+    "name": "sops-v3.12.1.checksums.sig",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.checksums.txt",
+    "digest": "sha256:564b895e01d2f577dcca2da0fd58c05984ec14e5af17b41c7ee66d32ff0ba453",
+    "name": "sops-v3.12.1.checksums.txt",
+    "size": 630
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin",
+    "digest": "sha256:f6f56cad792709ffa237370fe768ea35b6bfc46cabb2df0e2f37404dca6b4b45",
+    "name": "sops-v3.12.1.darwin",
+    "size": 100989394
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin.amd64",
+    "digest": "sha256:d6d296499e08d62325d933e4572fe8b6b9b11d0c08ee00d09b518a2731814c7b",
+    "name": "sops-v3.12.1.darwin.amd64",
+    "size": 52184656
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin.amd64.spdx.sbom.json",
+    "digest": "sha256:335fc9a498dd38945d4efb12fae40ab3f4a19daa1717acff3b38e13ce0917c3e",
+    "name": "sops-v3.12.1.darwin.amd64.spdx.sbom.json",
+    "size": 197093
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin.arm64",
+    "digest": "sha256:3a23c388e2d7b9beff306f4817d197698b1d9ddf01c10020470c94225435e901",
+    "name": "sops-v3.12.1.darwin.arm64",
+    "size": 48773586
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin.arm64.spdx.sbom.json",
+    "digest": "sha256:0ff005a9e9c6e38f4ee39ac65a91654347ab263eaf6b0a2e7cb690807d2d501a",
+    "name": "sops-v3.12.1.darwin.arm64.spdx.sbom.json",
+    "size": 197093
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.darwin.spdx.sbom.json",
+    "digest": "sha256:8f0ed18ffbb818dc1515f47ed42ee3fc408ffec6b4522e1642233ba6385203f2",
+    "name": "sops-v3.12.1.darwin.spdx.sbom.json",
+    "size": 363914
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.intoto.jsonl",
+    "digest": "sha256:7badcf2f478a3425b65cb6ac8f1b40d8d33e5bec7036bc2dd99fb85d4aeaf6cb",
+    "name": "sops-v3.12.1.intoto.jsonl",
+    "size": 26587
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.linux.amd64",
+    "digest": "sha256:cf3136d20a6004405c986a48e179c3c7a731f777fbf105a37bd5dac5c9047100",
+    "name": "sops-v3.12.1.linux.amd64",
+    "size": 50684066
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.linux.amd64.spdx.sbom.json",
+    "digest": "sha256:1387071929efee1d39388e3e795ab839bf1402aaed34226e87919b3b1134840f",
+    "name": "sops-v3.12.1.linux.amd64.spdx.sbom.json",
+    "size": 197093
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.linux.arm64",
+    "digest": "sha256:c7904d07bf1fb3ffdc329b0103ce70ff6a884aa7af7931427402bea0c09cc522",
+    "name": "sops-v3.12.1.linux.arm64",
+    "size": 46989474
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops-v3.12.1.linux.arm64.spdx.sbom.json",
+    "digest": "sha256:b676f444f2d9eb4072a6674c8de4b582f2ca26a2b6c6dc308b83d963eca2e056",
+    "name": "sops-v3.12.1.linux.arm64.spdx.sbom.json",
+    "size": 197093
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops_3.12.1_amd64.deb",
+    "digest": "sha256:d024aac13e654daa6bf5f68bd59dd8a5c8bf12280d5375711990c66caa349dd0",
+    "name": "sops_3.12.1_amd64.deb",
+    "size": 15872970
+   },
+   {
+    "browser_download_url": "https://github.com/getsops/sops/releases/download/v3.12.1/sops_3.12.1_arm64.deb",
+    "digest": "sha256:784ad4f25214b16e6a0da9a819e658541fa62b62a67798e2e744cfa1dcfffb56",
+    "name": "sops_3.12.1_arm64.deb",
+    "size": 14343320
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v3.12.1"
+ }
+]

@@ -1,0 +1,49 @@
+{
+  "commands": {
+    "pacman-Q.txt": "pacman -Q",
+    "pacman-Qd.txt": "pacman -Qd",
+    "pacman-Qe.txt": "pacman -Qe",
+    "pacman-Si.err": "the standard error of that same pacman -Si, which is where a name the repositories do not have is reported",
+    "pacman-Si.txt": "pacman -Si <the declared names>",
+    "pacman-Slq.txt": "pacman -Slq, filtered to the names beginning with the first two characters of the unknown name"
+  },
+  "kind": "lodi-pacman-fixture-provenance",
+  "notes": [
+    "The stock Arch cloud image already carries bc, patch, sqlite and python, so the declared names are tree and jq with zip added by the arch table, and whois is the hand-installed control; libsecret is the hold, chosen on the guest from what pacman -Qu actually offered an upgrade for, so that the hold is measured against a real available upgrade rather than a pin.",
+    "The interrupted scenario declares unzip and patch: one real kill inside one real pacman -Syu produces all three classifications, and pacman's own var/lib/pacman/db.lck is what makes the fourth."
+  ],
+  "runs": {
+    "arch": {
+      "binary": "sha256:bcd17b4526744e02100b0095c2285dcceb34e74a68e200138ab4356f558e2e93",
+      "case": "packages",
+      "distro": "arch",
+      "driver": "sha256:f6c11d8622728f020ceee9cc09514b9486e47ae28424e391acad81c1b38104b4",
+      "evidence": "docs/milestones/m-0.6/evidence/packages-arch.json",
+      "guestImage": "Arch-Linux-x86_64-cloudimg-20260915.594445.qcow2",
+      "guestImageChecksum": "sha256:d7cc7c86a21b32d6678c001464714f71f4ef7e0d7bbbfca65e99123ac5afc25b",
+      "recordedAt": "2026-09-21T18:11:45Z",
+      "vmTool": "sha256:5034b38bbeb4b8c438675b519dd0f7dff35a404a26c4fa928d63e54171336db3"
+    },
+    "arch/interrupted": {
+      "binary": "sha256:bcd17b4526744e02100b0095c2285dcceb34e74a68e200138ab4356f558e2e93",
+      "case": "kill-transaction",
+      "distro": "arch",
+      "driver": "sha256:f6c11d8622728f020ceee9cc09514b9486e47ae28424e391acad81c1b38104b4",
+      "evidence": "docs/milestones/m-0.6/evidence/kill-transaction-arch.json",
+      "guestImage": "Arch-Linux-x86_64-cloudimg-20260915.594445.qcow2",
+      "guestImageChecksum": "sha256:d7cc7c86a21b32d6678c001464714f71f4ef7e0d7bbbfca65e99123ac5afc25b",
+      "recordedAt": "2026-09-21T18:09:11Z",
+      "vmTool": "sha256:5034b38bbeb4b8c438675b519dd0f7dff35a404a26c4fa928d63e54171336db3"
+    }
+  },
+  "schema": 1,
+  "states": {
+    "after": "the machine the apply left",
+    "before": "the machine before the apply under test",
+    "dirty": "the machine with pacman's transaction lock still on it, which is what a pacman that did not finish really leaves",
+    "image": "the stock cloud image, before lodi touched it",
+    "partial": "one of the interrupted transaction's two packages installed and the other not, which is neither bracket"
+  },
+  "task": "M-0.6 T-5",
+  "what": "Every file under this directory is the verbatim standard output of one command on one fresh disposable guest of this task, fetched off that guest by docs/milestones/m-0.6/probes/hostvm.py --record-fixtures. Nothing here is written by hand or invented: tests/host_pacman.rs replays these bytes through shims it owns, so an assertion about what lodi concludes is an assertion about what pacman really said."
+}

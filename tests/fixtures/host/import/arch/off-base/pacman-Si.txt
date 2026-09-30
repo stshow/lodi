@@ -1,0 +1,29 @@
+Repository      : extra
+Name            : base
+Version         : 3-2
+Description     : a package
+
+Repository      : extra
+Name            : linux
+Version         : 6.13.4.arch1-1
+Description     : a package
+
+Repository      : chaotic-aur
+Name            : lodi-tool
+Version         : 1.3.0-1
+Description     : a package
+
+Repository      : extra
+Name            : lodi-tool
+Version         : 1.3.0-1
+Description     : a package
+
+Repository      : extra
+Name            : ripgrep
+Version         : 14.1.1-1
+Description     : a package
+
+Repository      : chaotic-aur
+Name            : tela-icon-theme
+Version         : 2025.01-1
+Description     : a package

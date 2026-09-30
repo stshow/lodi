@@ -1,0 +1,23 @@
+# Managed by lodi from home.toml [programs.git]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+[user]
+	name = "Example User"
+	email = "someone@example"
+[init]
+	defaultBranch = "main"
+[core]
+	editor = "nvim"
+	pager = "less -FRX"
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+[merge]
+	conflictStyle = "zdiff3"
+[alias]
+	co = "checkout"
+	lg = "log --graph --oneline"
+	st = "status --short"
+[diff "lockb"]
+	textconv = cat

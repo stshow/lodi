@@ -1,0 +1,15 @@
+{
+  "activation": {
+    "envhash": "sha256:5a0c047285a3d4a97b7eb59185d170f84b7c3236161a5afc074ada74330d4a9a",
+    "id": "sha256:f7675c1778a0aa030836a855782322ccb10e076d130981d07f13ea15d4a2630a",
+    "profile": "default",
+    "projectRoot": "/tmp/work1100/project",
+    "runtime": "host"
+  },
+  "entries": [
+    "env-5a0c047285a3d4a97b7eb59185d170f8"
+  ],
+  "lodiVersion": "1.10.0",
+  "pid": 3225565,
+  "version": 1
+}

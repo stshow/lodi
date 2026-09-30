@@ -1,0 +1,47 @@
+Name            : base
+Version         : 3-2
+Depends On      : bash glibc pacman filesystem
+
+Name            : bash
+Version         : 5.2.037-1
+Depends On      : glibc
+
+Name            : filesystem
+Version         : 2025.01.08-1
+Depends On      : None
+
+Name            : glibc
+Version         : 2.41-1
+Depends On      : filesystem
+
+Name            : initramfs
+Version         : 0.0.1-1
+Depends On      : None
+
+Name            : kmod
+Version         : 34-1
+Depends On      : glibc
+
+Name            : linux
+Version         : 6.13.4.arch1-1
+Depends On      : kmod initramfs
+
+Name            : lodi-tool
+Version         : 1.3.0-1
+Depends On      : glibc
+
+Name            : pacman
+Version         : 7.0.0.r6.gc685ae6-1
+Depends On      : bash glibc
+
+Name            : ripgrep
+Version         : 14.1.1-1
+Depends On      : glibc
+
+Name            : tela-icon-theme
+Version         : 2025.01-1
+Depends On      : None
+
+Name            : yay
+Version         : 12.4.2-1
+Depends On      : pacman

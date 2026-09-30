@@ -1,0 +1,6 @@
+# Written by lodi from a [sources] table of the host manifest; edit that table, not this file.
+Types: deb
+URIs: https://c.example/repo
+Suites: ./
+Architectures: arm64 amd64
+Signed-By: /etc/apt/keyrings/lodi-flat.gpg

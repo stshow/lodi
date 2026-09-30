@@ -1,0 +1,21 @@
+# Upstream CPython for [tools] python. This recipe says where to look;
+# it lists no version. `lodi lock` discovers versions from the assets of the newest releases.
+[recipe]
+name        = "python"
+description = "Relocatable CPython builds from python-build-standalone"
+homepage    = "https://github.com/astral-sh/python-build-standalone"
+
+[versions]
+strategy = "github_assets"
+repo     = "astral-sh/python-build-standalone"
+releases = 2
+asset    = "cpython-${version}+${tag}-${arch_rust}-install_only.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 1
+checksum_file    = "https://github.com/astral-sh/python-build-standalone/releases/download/${tag}/SHA256SUMS"
+
+[spec]
+bin  = ["bin/python3", "bin/pip3"]
+path = ["bin"]

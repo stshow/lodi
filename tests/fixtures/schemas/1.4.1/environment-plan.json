@@ -1,0 +1,21 @@
+{
+  "arch": "x86_64",
+  "env": [
+    [
+      "SPECIMEN",
+      "1"
+    ]
+  ],
+  "format": "lodi-spike-plan/1",
+  "lodiMajor": 0,
+  "lodiVersion": "1.4.1",
+  "mode": "host",
+  "packages": [],
+  "profile": "default",
+  "schema": 1,
+  "tasks": {
+    "hello": {
+      "run": "echo hello"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+# yq for [tools] yq. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+# This is mikefarah's Go yq. Upstream publishes a bare executable whose name carries no
+# version, so the release tag alone is the version; it is installed as `bin/yq`.
+[recipe]
+name        = "yq"
+description = "A portable command-line YAML, JSON and XML processor"
+homepage    = "https://mikefarah.gitbook.io/yq"
+
+[versions]
+strategy = "github_releases"
+repo     = "mikefarah/yq"
+asset    = "yq_linux_${arch_alt}"
+
+[asset]
+format = "binary"
+
+[spec]
+bin  = ["bin/yq"]
+path = ["bin"]

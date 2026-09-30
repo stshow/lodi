@@ -1,0 +1,27 @@
+# Upstream Go for [tools] go. This recipe says where to look; it lists no
+# version. `lodi lock` discovers versions from go.dev's own release index, and the digest it
+# pins is the one that index publishes for the file it chose.
+[recipe]
+name        = "go"
+description = "The Go programming language toolchain, official linux builds"
+homepage    = "https://go.dev"
+
+[versions]
+strategy     = "json_index"
+url          = "https://go.dev/dl/?mode=json&include=all"
+version_key  = "version"
+strip_prefix = "go"
+files_key    = "files"
+file_key     = "filename"
+file         = "go${version}.linux-${arch_alt}.tar.gz"
+
+[asset]
+url              = "https://go.dev/dl/go${version}.linux-${arch_alt}.tar.gz"
+format           = "tar.gz"
+strip_components = 1
+checksum         = "index"
+checksum_key     = "sha256"
+
+[spec]
+bin  = ["bin/go", "bin/gofmt"]
+path = ["bin"]

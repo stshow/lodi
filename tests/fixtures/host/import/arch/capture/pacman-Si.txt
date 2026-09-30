@@ -1,0 +1,29 @@
+Repository      : extra
+Name            : base
+Version         : 3-2
+Description     : a package
+
+Repository      : extra
+Name            : linux
+Version         : 6.13.4.arch1-1
+Description     : a package
+
+Repository      : extra
+Name            : linux-firmware
+Version         : 20250211.27ba3ab6-1
+Description     : a package
+
+Repository      : extra
+Name            : neovim
+Version         : 0.10.4-4
+Description     : a package
+
+Repository      : extra
+Name            : ripgrep
+Version         : 14.1.1-1
+Description     : a package
+
+Repository      : extra
+Name            : zsh
+Version         : 5.9-7
+Description     : a package

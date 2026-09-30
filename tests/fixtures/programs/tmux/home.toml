@@ -1,0 +1,15 @@
+[home]
+version = "1"
+
+[programs.tmux]
+prefix = "C-a"
+mouse = true
+status = true
+base-index = 1
+escape-time = 10
+history-limit = 50000
+default-terminal = "tmux-256color"
+mode-keys = "vi"
+extra = """
+bind r source-file ~/.config/tmux/tmux.conf
+"""

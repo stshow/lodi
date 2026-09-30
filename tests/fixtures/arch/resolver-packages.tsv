@@ -1,0 +1,4 @@
+# name	version	depends	provides	replaces	conflicts	groups	description
+alpha	1.0-1	beta>=2.0	-	-	-	dev	fixture alpha command
+beta	2.1-1	-	virtual-beta=2.1	-	-	dev	fixture beta library
+gamma	3.0-1	virtual-beta>=2.0	-	-	-	-	fixture gamma application

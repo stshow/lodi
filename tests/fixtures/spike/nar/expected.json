@@ -1,0 +1,42 @@
+{
+  "fixtures": {
+    "dir-empty": {
+      "narBytes": 96,
+      "nixSha256": "a50a5ab6d992f5598edd92105059fae9acfc192981e08bd88534c2167e92526a"
+    },
+    "dir-mixed": {
+      "narBytes": 205024,
+      "nixSha256": "fdecad95f00dfd5551dcb01dee20268baa4167994830702c5ccb93786b3c6371"
+    },
+    "dir-nested-empty": {
+      "narBytes": 600,
+      "nixSha256": "db3660c942e105c91f57c6c39ddbed03537d5e2b502d26a73a893c2750196539"
+    },
+    "file-1mib-plus-3": {
+      "narBytes": 1048696,
+      "nixSha256": "4fd1db31ffafb8d3835d5251d3984044a0e633cb0a19d59779b8ffdd764a740e"
+    },
+    "file-8-bytes": {
+      "narBytes": 120,
+      "nixSha256": "22d63223426447e64aa20d76d506b3e062a2d242bb797536dbf3ee681be3f53c"
+    },
+    "file-empty": {
+      "narBytes": 112,
+      "nixSha256": "77ac62e2629d8e45f624589c0c8bf99e24b3a722349bf1e79bc186008534e246"
+    },
+    "file-executable": {
+      "narBytes": 168,
+      "nixSha256": "5e0accf02cedede5e4119ffa15e79e79a5fb1fb9bc43c3d434f33227a14477a0"
+    },
+    "file-regular": {
+      "narBytes": 120,
+      "nixSha256": "1c37d01af40be2e80691de3cc3df44377a699afbb17c68f080964b2fd071fc13"
+    },
+    "symlink-top": {
+      "narBytes": 128,
+      "nixSha256": "bfaf9fd8d674150c1d64ab3a32ffcb1fa231fe896acaf96cba4902a3af0b711e"
+    }
+  },
+  "nixVersion": "nix-store (Nix) 2.34.8",
+  "source": "nix-store --dump <fixture> | sha256sum, fixtures built by tests/spike_store.rs"
+}

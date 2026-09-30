@@ -1,0 +1,16 @@
+Package files:
+ 100 /var/lib/dpkg/status
+     release a=now
+ 500 http://deb.debian.org/debian bookworm-backports/main amd64 Packages
+     release v=12-updates,o=Debian,a=bookworm-backports,n=bookworm-backports,l=Debian Backports,c=main,b=amd64
+     origin deb.debian.org
+ 500 http://deb.debian.org/debian bookworm/main amd64 Packages
+     release v=12.11,o=Debian,a=stable,n=bookworm,l=Debian,c=main,b=amd64
+     origin deb.debian.org
+ 500 http://download.docker.com/linux/debian bookworm/stable amd64 Packages
+     release o=Docker,a=bookworm,n=bookworm,l=Docker CE,c=stable,b=amd64
+     origin download.docker.com
+ 500 http://ppa.launchpadcontent.net/lodi-testing/ppa/ubuntu noble/main amd64 Packages
+     release v=24.04,o=LP-PPA-lodi-testing,a=noble,n=noble,l=lodi-testing,c=main,b=amd64
+     origin ppa.launchpadcontent.net
+Pinned packages:

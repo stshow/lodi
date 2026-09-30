@@ -1,0 +1,7 @@
+# Written by lodi from a [sources] table of the host manifest; edit that table, not this file.
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: bookworm
+Components: stable
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/lodi-docker.asc

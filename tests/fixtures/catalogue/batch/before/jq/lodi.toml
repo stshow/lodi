@@ -1,0 +1,5 @@
+[project]
+name = "before-jq"
+
+[tools]
+jq = "latest"

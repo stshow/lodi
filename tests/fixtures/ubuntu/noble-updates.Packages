@@ -1,0 +1,33 @@
+Package: libc6
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 2.39-0ubuntu8.4
+Depends: libgcc-s1
+Filename: pool/main/l/libc6/libc6_2.39-0ubuntu8.4_amd64.deb
+Size: 4085
+SHA256: 1a590db21759ec3fd2c0c5270c6cdb80fb19fd7598308c29f6beedf556bcb4fd
+Description: synthetic fixture entry for libc6
+
+Package: make
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4.3-4.1build3
+Depends: libc6 (>= 2.39-0ubuntu8.4)
+Filename: pool/main/m/make/make_4.3-4.1build3_amd64.deb
+Size: 4068
+SHA256: c1e6c7ceda95a1a828cb2f87a3ee2ddbed7413d59190ec9f9e0d358bb8cbcaa6
+Description: synthetic fixture entry for make
+
+Package: libc6-dev
+Priority: optional
+Section: libdevel
+Architecture: amd64
+Version: 2.39-0ubuntu8.4
+Depends: libc6 (= 2.39-0ubuntu8.4)
+Provides: libc-dev
+Filename: pool/main/l/libc6-dev/libc6-dev_2.39-0ubuntu8.4_amd64.deb
+Size: 4153
+SHA256: 25a35b83925ba6cc705eee5bfb82a8279b01f8b27635968ea95296bff2643beb
+Description: synthetic fixture entry for libc6-dev

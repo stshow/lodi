@@ -1,0 +1,98 @@
+== plan: exit Some(0)
+-- stdout
++ package curl
++ package git
++ package ripgrep
++ package sqlite3
++ package task-english
++ package task-ssh-server
+~ package ripgrep (hold)
+2 action(s)
+-- stderr
+== apply: exit Some(0)
+-- stdout
+journal <journal>
++ package curl
++ package git
++ package ripgrep
++ package sqlite3
++ package task-english
++ package task-ssh-server
+~ package ripgrep (hold)
+2 action(s) applied
+-- stderr
+== host.lock
+{
+  "version": 2,
+  "format": "lodi-host-lock/2",
+  "generatedBy": "lodi 1.2.0",
+  "appliedAt": "<time>",
+  "distro": "debian",
+  "distroVersion": "12",
+  "packages": {
+    "curl": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "git": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "linux-image-amd64": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ripgrep": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": true
+    },
+    "sqlite3": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "task-english": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "task-ssh-server": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    }
+  },
+  "files": {},
+  "baseline": {
+    "explicit": [
+      "curl",
+      "git",
+      "linux-image-amd64",
+      "ripgrep",
+      "sqlite3",
+      "task-english",
+      "task-ssh-server"
+    ],
+    "holds": {
+      "ripgrep": "1.0-1"
+    },
+    "files": {}
+  },
+  "source": "/etc/lodi"
+}
+
+== journal
+{"record":"header","version":1,"journalId":"<journal>","startedAt":"<time>","lodiVersion":"1.2.0","root":"<root>","manifestDigest":"sha256:0df44be767e2773f0aebf4b84cc74b60a0bf490e89a0b0467333efe1cd422c45","distro":"debian","programs":[["apt-get","<fake>/bin/apt-get"],["dpkg-query","<fake>/bin/dpkg-query"]],"euid":<id>,"actions":[{"id":"p1","kind":"packages.transaction","summary":"+ package curl; + package git; + package ripgrep; + package sqlite3; + package task-english; + package task-ssh-server","pre":[],"post":[],"packagesPre":{"curl":{"installed":false},"git":{"installed":false},"ripgrep":{"installed":false},"sqlite3":{"installed":false},"task-english":{"installed":false},"task-ssh-server":{"installed":false}},"packagesPost":{"curl":{"installed":true,"version":"1.0-1"},"git":{"installed":true,"version":"1.0-1"},"ripgrep":{"installed":true,"version":"1.0-1"},"sqlite3":{"installed":true,"version":"1.0-1"},"task-english":{"installed":true,"version":"1.0-1"},"task-ssh-server":{"installed":true,"version":"1.0-1"}},"commands":[["apt-get","install","-o","RootDir=<root>","-y","-o","Dpkg::Options::=--force-confdef","-o","Dpkg::Options::=--force-confold","--","curl","git","ripgrep","sqlite3","task-english","task-ssh-server"]],"programs":["<fake>/bin/apt-get"]},{"id":"m1","kind":"packages.marks","summary":"~ package ripgrep (hold)","pre":[],"post":[],"packagesPre":{"ripgrep":{"installed":true,"held":false}},"packagesPost":{"ripgrep":{"installed":true,"held":true}},"commands":[["apt-mark","hold","-o","RootDir=<root>","--","ripgrep"]],"programs":["<fake>/bin/apt-mark"]}]}
+{"record":"begin","action":"p1","at":"<time>"}
+{"record":"end","action":"p1","at":"<time>"}
+{"record":"begin","action":"m1","at":"<time>"}
+{"record":"end","action":"m1","at":"<time>"}
+{"record":"finished","at":"<time>"}
+== plan after: exit Some(0)
+-- stdout
+nothing to do
+-- stderr

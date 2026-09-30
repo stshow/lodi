@@ -1,0 +1,3 @@
+base 3-2
+linux 6.13.4.arch1-1
+linux-firmware 20250211.27ba3ab6-1

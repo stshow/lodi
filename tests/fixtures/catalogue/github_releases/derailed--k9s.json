@@ -1,0 +1,1412 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/checksums.sha256",
+    "digest": "sha256:dda56946b28b50a56edc43a1b7e24563308f8e1ef5070b1febfc567d63b66b96",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:7e8802c57c45a0cd389e8fc38472243fe4cf48d8ad5957e189ce370e19e5eda0",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 42172258
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:4e8c27a168097842772b6b6be72a7d45b1ac67140fa672414f68ac8f5e2f93fa",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 577502
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:9b8c0e8f461e5d33aeee43a67f5ef4aff646a008a786887b8266cbb153c610cc",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 39201894
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:2ccf54e9d4e3b517a09079d21606981122d28a549173c61e119cad2506977ba9",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 577504
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:07276162a0a88d25180c3c3cc86c10cdec63eed687d9297719aefa4f031e86cf",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 41274932
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:23d0cb24572684034e90ee43ba01166a7dc841b645bfa8754537f7fc64a3b486",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 577880
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:7921d7aed585518f5ac0ebee06fe36623935e8730799506e0cda659359cf6888",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 37318410
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:c775407702aef68f44fb7a4986e43289e3b8085a42d4fadca606118a35a7a3e9",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 577880
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_amd64.apk",
+    "digest": "sha256:82fb5de3ff472add55769eabbaec7b363ac0355455200567ce75c77b8dd55d9a",
+    "name": "k9s_linux_amd64.apk",
+    "size": 43263401
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_amd64.deb",
+    "digest": "sha256:56b539a509eb2d6357cf4f575ed38c089f0e4880c95f79a70196b54f14954908",
+    "name": "k9s_linux_amd64.deb",
+    "size": 41539644
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_amd64.rpm",
+    "digest": "sha256:f32dd976bf71250d3cace6f9ed4bf253e5082609e4ac4facfad308ba800af743",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 43265311
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:c3752ad51a5a4015a113819c4eeb6e55a4d0e4b8e652494797532f6fc8161dd7",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 41387759
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:299e4c83526d989688c54eda5280a5f1fca1666fceb22f79f6053315e2a3c382",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 575499
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm.apk",
+    "digest": "sha256:6c9a0b3d285a91d1e3c362d055f9bc3e1010fe50a80be644a79857109e00f4ca",
+    "name": "k9s_linux_arm.apk",
+    "size": 40384004
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm.deb",
+    "digest": "sha256:6bfd793218fc9e531f708572fbd28db57a509743e32ee0cfabf6b8747367a2d9",
+    "name": "k9s_linux_arm.deb",
+    "size": 39025546
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm.rpm",
+    "digest": "sha256:fdf2c45aff7b988f09f8d89bdd90c3cd39cadb027e6f17b24e80905b93401e99",
+    "name": "k9s_linux_arm.rpm",
+    "size": 40390219
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm64.apk",
+    "digest": "sha256:16c4e40d183f5721ee9634a872d33f6fe45fa648f9b90c0c1553a1d8f7a72985",
+    "name": "k9s_linux_arm64.apk",
+    "size": 38931082
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm64.deb",
+    "digest": "sha256:9dbc652cb3a6ede7279216e49c638ac2d5dfb701edd4e407e89dc42cb9920423",
+    "name": "k9s_linux_arm64.deb",
+    "size": 37561976
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_arm64.rpm",
+    "digest": "sha256:60402bda1e9a475171f9ec21405b0ed13b12292df3719400a784d675fc62f5c6",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 38844907
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:3ee05c82e5f9198928a4e86133608ba6a2c10a2244d6a7789e820f78319d640c",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 37438999
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:5117e677d209fe9bd26ba4cbce1474a8138eff1ce2a40d7cc201330ef2b3ef2e",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 575499
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:9675b53e699557f451f1cafb1ddd6b315dc535febd16e200dae16af217ce0132",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 38927578
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:a0be78c70d6a1bb1420f279fb2acb83d71d3c83cd78432fa7c989bdc4318214f",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 574038
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_ppc64le.apk",
+    "digest": "sha256:2d782f1e3d26f9dc32048122d5367b3ecefc30fd559c486defc69585de876190",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 38794988
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_ppc64le.deb",
+    "digest": "sha256:5bbccda677e43a8e9ce5503c136f71ee580ea5b330d12d940bfbac5f66422320",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 37478094
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:baee7217f2662856c91605fe89651467187196e084428c322aac28195de4c3d0",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 38839413
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:a5ff210b0684d75629175757a27cb209cc45958eb1b452cd4460d83b3d537b91",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 37329473
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:893c696f001449f3203e91033fbead0022e1f06958adf34b3ef4a41e99d94cbd",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 574784
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_s390x.apk",
+    "digest": "sha256:4e473dbde42efde6736ba437d2252a4531a5072b907b57c0f32aa99dd5c82340",
+    "name": "k9s_linux_s390x.apk",
+    "size": 42113494
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_s390x.deb",
+    "digest": "sha256:2cde61d454e656eda4ce8a6d78e5c018e62e05d07c8ad344cc989ace4c8bd9e5",
+    "name": "k9s_linux_s390x.deb",
+    "size": 40064994
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_linux_s390x.rpm",
+    "digest": "sha256:baa7410ad6b5d115d63c16a24a82c6c6ed395bb87db149d0cfda70a219708fcd",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 42076600
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:edf7fac3d8df79067c2bbbc44f8188e4af30cd7dc00e64ef0e3e227f691e2286",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 39827123
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:dd9bacd1005f4d82befe60e3dd1755d46b0d8dc6c4cc71c9b49468f23664b6ec",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 574038
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Windows_amd64.zip",
+    "digest": "sha256:bba299f1877913979831543a008f2e104995d2ea4ac8f23d7f49c0444857d973",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 42330705
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:d5345e58a2a77146034ff1d38cac899a4334bc537e2cb8d2eec76d8f70de4737",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 590262
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Windows_arm64.zip",
+    "digest": "sha256:a61c11ac1e9c64e02ce852dd43b630abafda8f0a2c5fd46c752a39f0670a0244",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 37580994
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:5f69205c721f1798bc46fdd9a7c2aecf3bb63d384c89ddd40661a002a39a3206",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 590262
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.51.0"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/checksums.sha256",
+    "digest": "sha256:24941490877b9e97f6faf6cf1ffc3334c4d5adc8e563c2f695bfc1817e74ba63",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:80f3e30767ad3603bec9664db019e85f94493aa741d7755553ee6e47876df30e",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 41075148
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:434b8d2a56e1cc96944ca482eec0e8033b8dad842258b8a606b469a7a4101f53",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 574633
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:68ff1541c60620466989019e86101805c1b6c70a746b1561261a403801f7fd48",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 38249920
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:221a22130b4b4cf531829002781709b721d985e9b6c6fe89743cb068e4856a18",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 574635
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:8d12947f59e31d26e056d49d4af96fc8f239707d79d9cd4d9be64bbf6c7f9fee",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 40236374
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:21995aaeddef7e87115eb121d6b36919a72a9eb8647a7dfd13f1c11c426430bd",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 575009
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:1fd7710eddaa103c05003756417dc2e61bf597c4d84430dad905ab780bb81034",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 36442374
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:bbc1954ad46faa4b65d0bf74820592309ac9b376f9a2ef8acd87387f858f888c",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 575009
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_amd64.apk",
+    "digest": "sha256:2a8ecf5eb3c17bc1d40565e8d717f626a0458cad7ea45193cde17adfbe77f73c",
+    "name": "k9s_linux_amd64.apk",
+    "size": 42147009
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_amd64.deb",
+    "digest": "sha256:3d32a01ee64577272675382beac964a8e054d2a2d7c5348be43ea68b14d3d586",
+    "name": "k9s_linux_amd64.deb",
+    "size": 40478764
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_amd64.rpm",
+    "digest": "sha256:e68b30e058139d76b2cd8bf92e439d83ffd51a3496280407ff19f38bcbc535d3",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 42202876
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:0b697ed4aa80997f7de4deeed6f1fba73df191b28bf691b1f28d2f45fa2a9e9b",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 40317994
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:26109838ba0fcfa1f82a0b3491b71fa71e73d15db3aafba7599a701f0f4aab5c",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm.apk",
+    "digest": "sha256:d281186ff55649b972f86b8c33a4a0b9f459be2b0250153b47dcd131dc68706a",
+    "name": "k9s_linux_arm.apk",
+    "size": 39232398
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm.deb",
+    "digest": "sha256:09904f7337b5a944583a402f96bb4690da0c60aeccc445d2d2201d36ff8c5a3c",
+    "name": "k9s_linux_arm.deb",
+    "size": 37856010
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm.rpm",
+    "digest": "sha256:f89c96e34f863e4d5f33eb473dfa4f57c4d964c9e57239026db8ba6f70a89aa3",
+    "name": "k9s_linux_arm.rpm",
+    "size": 39257826
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm64.apk",
+    "digest": "sha256:397397f6a185e9fc4a3d92eb6e51960074195c5801ed857e2a75fa0940d77eaa",
+    "name": "k9s_linux_arm64.apk",
+    "size": 37916665
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm64.deb",
+    "digest": "sha256:9b4c773fa53d5bb04b8e95ecb0693aac5136695da045f3f1ca9fd63ceb9f5994",
+    "name": "k9s_linux_arm64.deb",
+    "size": 36656138
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_arm64.rpm",
+    "digest": "sha256:b19689f9da1c6d71b98f8522c045fa8fb153e003a3d630e70d2a6b1aeb4b7253",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 37974228
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:d3dcc051d6be26ee911c00f583412802ebe203a189e51bc079332cb410c83b38",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 36523079
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:1a8c90955a9789a467b5ecb644c682e5c430eff9843110bf3ded3a9f605a9a1f",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:619a1822d1c23314e6ac3627fe5465b01a15f62ab416aaa29deb1d3514ab6433",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 37753978
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:4417c132c9a2dc647c1459f522b96cb9a64582415fcfb9c3e0ed74872b7e811f",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_ppc64le.apk",
+    "digest": "sha256:0c34dc027070a0cb426962355a8dade6f637d9988fcd6eb3c73b8217fc5dd313",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 37859070
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_ppc64le.deb",
+    "digest": "sha256:56dfd3d18073ed3fd4c15863327c12904ff562df535e3fa79825f1bcc608e3d4",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 36515636
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:19dc8f9225d70cfb109ad37b1823c71eca7c3dda813f1a1e876b2df21d312d56",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 37908672
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:ce8a66cb38726d27f21c7e7c8b14400542c42f2f8bc6391d5ff24ca220ed6ca6",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 36371806
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:f5823a51ba9233913b23c0d8bcd0fc989014e097dea6e316352198622a2458bc",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 573376
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_s390x.apk",
+    "digest": "sha256:e70ea0588e117d2890fe5c973367fd15ac15bd4e7ca26a6fd2b5ddfacb187473",
+    "name": "k9s_linux_s390x.apk",
+    "size": 41192570
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_s390x.deb",
+    "digest": "sha256:e6a810504371077ae3cbd9aa8eaf4e44ca3174a062a1b484171786a4e9e58f46",
+    "name": "k9s_linux_s390x.deb",
+    "size": 39109004
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_linux_s390x.rpm",
+    "digest": "sha256:d13fbbb60ffbe4b0a6ba3327744ea6e3a53b6235fc2d425eb6d35dbe133e1524",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 41170513
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:1936cd96e78cde73717a88d30a63277124e09e16b03552684d3d5213f5b4aba8",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 38900021
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:6e71eced19fe72a3b02c05c5ed8a9aeb8f026432bac4a27e4b1cb349f330d59e",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Windows_amd64.zip",
+    "digest": "sha256:9d4e8672c4e55c04cb137475062bc88da7fc0878e04d53df181196449600da16",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 41267748
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:06a84dbf2412a2ff8ae4157846fac670987f23e1ae865d18144c7a1854fc7943",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 587379
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Windows_arm64.zip",
+    "digest": "sha256:005bd1a54a52c914eb6cbf29403b572ab48e4345f0cb86614873ff56b9e80b0c",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 36696908
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:506cbf63b58ec3371953cdc77c5c419ab615e2f2d62f01012898f36787a0fc0c",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 587381
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.50.18"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/checksums.sha256",
+    "digest": "sha256:6457a16d70ac843aafe8b45a69d6625efa87e515aa3f9ba8252e99afb714f8d6",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:80f15b56a72d18385066bfb7f849dfb29517de287e17cf65ba95b6029fa0ce2b",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 41077300
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:f9fba332db0c0c18d5c4e23e14a62cd51684ba1701ba5cf0bb27351d8e1a5f07",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 574635
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:f503c4a9ae0a32f4bfdd8ad73a0f2f0d5e29f0766287b7ade83bcce906d450b7",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 38256771
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:3163deb2479e7f89f89973bd61531b8ebf50e4a7ec4ddb96a6e4d0c95c1eabe1",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 574635
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:60bce88229d3d5caa45d216d285d12a2d9e1e9f877425a123c00d083abc6aabd",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 40238178
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:7e748a50429edecf43715e3b78ae65b914bc7dd21ad5200930870e4fea83ba76",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 575009
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:78414aabf4fed054a25d7a56911b8ab8c1d531eeefacfe3a7423ecf71fec035a",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 36453277
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:3c11bc2b879c286c68ac5329d84f1cd28deeed66854d809add0825d8a006e25e",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 575009
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_amd64.apk",
+    "digest": "sha256:754c1c2ba5d5ecddc3e55c2f72a3b381305530a0c09d5b768fa9c283a502be65",
+    "name": "k9s_linux_amd64.apk",
+    "size": 42107006
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_amd64.deb",
+    "digest": "sha256:470db1484c73d3b60e04d2a60aacc2fe7285d0ffa095eca66c56076c265146d1",
+    "name": "k9s_linux_amd64.deb",
+    "size": 40491322
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_amd64.rpm",
+    "digest": "sha256:5eba922fa1086c864ef4047923505cc0cef111b5890913eba3c8e73927243cfb",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 42191136
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:657d0d5ce95922507b44e544b65d3f7bc93c23b967c10f68fa012e3e6fc29e91",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 40336174
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:9c4040c2f6683ea5f0b71eece967a1597ce0d6621cdd530dc2551a12b2cba544",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm.apk",
+    "digest": "sha256:6569c336f83a53d5c6de841a5b8c52a62189cb4f1e8e040d4db8ddc51ad13767",
+    "name": "k9s_linux_arm.apk",
+    "size": 39240421
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm.deb",
+    "digest": "sha256:f41442332dbd0092adbf94d4bfde6919f5e6dcd76380082a950e3b82525b7de7",
+    "name": "k9s_linux_arm.deb",
+    "size": 37868468
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm.rpm",
+    "digest": "sha256:c838837bf931f884737acbd1e2183b4eb682eee3e7b6456f79b3dbbba616ca2a",
+    "name": "k9s_linux_arm.rpm",
+    "size": 39227931
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm64.apk",
+    "digest": "sha256:e6465eb050f1d82bfad209952c4f92a43d20b6422d8cfa3a24a9bd76d58aa463",
+    "name": "k9s_linux_arm64.apk",
+    "size": 37934163
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm64.deb",
+    "digest": "sha256:c5daca29965a0fca18123ef2e47c313c1095292fdde830ad18ba1aa5f3f44b67",
+    "name": "k9s_linux_arm64.deb",
+    "size": 36662698
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_arm64.rpm",
+    "digest": "sha256:9cf56fff066d6897e0e552aa9b686358b1524309a3fb9fa85c7bb6b1848fdbf1",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 37949693
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:98e5bb90aecb6e5ae189b747e3ff595ea4f9616fe666ad628266d2826f8764b3",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 36531796
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:c45dd34042cabbb41290ee0e0aa214cbf0de80a7bcbcead153d63ad392f1f3ab",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 572630
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:2855bf98195a959683c8925120b4660cd1d854679e9352e16a137036e2de0a57",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 37767538
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:6576adf3342f28983efa193900de4c20e2d0a9a817efb6e7d7206398d9d69f2e",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_ppc64le.apk",
+    "digest": "sha256:130d946fcf3856e697d8dece0814caa79cea955b275a7f43de780e667034af27",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 37887263
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_ppc64le.deb",
+    "digest": "sha256:59ecdc75243c58124f486ed17b4f55c47971cfdf974c87ced2f95a1e05c2e996",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 36524328
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:f0cf76bca5f7ffb39ff7c9c922ca352b2dedbbfc35ed17a6d4281233ec480e8a",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 37911820
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:ced29a5646a0eb5fd93c8ad42327146098767c0b4d8e5b71bd5137370429ade7",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 36379602
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:d89232fd0fe503c698c2cb956636859b7163e165e6848e82acfa28d4b3e4e259",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 573378
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_s390x.apk",
+    "digest": "sha256:2df283f3460e9528ad1f128d2661f75d3e66d6ca18a96e85379d709175e870cb",
+    "name": "k9s_linux_s390x.apk",
+    "size": 41195899
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_s390x.deb",
+    "digest": "sha256:fb4e67b080907c9a2c874426b56834b7b9fe4e8cdf9963cfb087db8c2f1930b0",
+    "name": "k9s_linux_s390x.deb",
+    "size": 39115824
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_linux_s390x.rpm",
+    "digest": "sha256:89036b4e02fcc90decb453351e09cc813b2922fb18ca7b83a410421393b7fcaf",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 41223647
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:e9d1409f17d25705b2f1aa9eb4daa9df695de16d3c20be3f633d481c459b4e88",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 38908258
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:0ca5500ab3ab6c395a9dc9b630e67c661ae7a69f1ab5a608cc596ba5e74d137e",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 572632
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Windows_amd64.zip",
+    "digest": "sha256:275b0fb57daf72dfb150c3472bc106abb0f163cab38151bde5a11bdc0c856770",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 41282205
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:9965282a0bcfa7551675cf03a3d67168d003413fd1c82cd9400be0cc0b46fa88",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 587381
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Windows_arm64.zip",
+    "digest": "sha256:c7f3b28960d72b71b5589abaed8d83d33a34c13d1ab035987a4af7767485743e",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 36703589
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.17/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:907ed2a8e414f0d5363d50fe9fa5fe660e90823c33e111d4a16f0568d2021a19",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 587381
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.50.17"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/checksums.sha256",
+    "digest": "sha256:cb4f4fccfff139fd776e1d10c3796dbed917b6d4b4a0663348d512bcae4539b3",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:4dfaccbf0521df1794b352911abe70339422b96c74b470c2636a5de1c00fb943",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 41564335
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:b93ed99bf74b4fc3fdd0f5c4c9aeb856f3ee70c5dfbe881139fe12ebdfa46f96",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 568445
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:83e3adcf479af1a816fc3907e751d4a7b2b0a6d2ea742d88e23356d8f0a45bc3",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 38736004
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:dcae5a52d6619c00c9d54c3edbe1fe556ca9d4820493cb80144c5719834ca4a4",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 568445
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:9430178a11eee6fda582e81fe1bc1ff327d274da7451a4a6eb7303ca21a28834",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 40721139
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:5051742d04c86518a2be49e67c2d3c34c6349f5fc79d0334b6a1222cbc1cd798",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 568815
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:b7dd33cb4371489893a44270f44aca917b77c3b037f44a8404bf3259b1f66c69",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 36913065
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:4561b63d84ace4a3f4e2e6f6453fcd12dbda0b8d81b3113b4889795f52db5870",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 568815
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_amd64.apk",
+    "digest": "sha256:8b88016fe75cbec2cf6390a50f2c550fc1b824a0f31cd652bf1aba3effc7fe84",
+    "name": "k9s_linux_amd64.apk",
+    "size": 42629774
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_amd64.deb",
+    "digest": "sha256:d25a146a947ef0002610a94a911e212569d127d4a8f82786db6a71746b27447d",
+    "name": "k9s_linux_amd64.deb",
+    "size": 40953352
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_amd64.rpm",
+    "digest": "sha256:92d66639349b77bc0a78b6a1c256ffaa4efa01fa847bfa6da51fd9c663a88383",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 42693620
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:bda09dc030a08987fe2b3bed678b15b52f23d6705e872d561932d4ca07db7818",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 40791576
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:90fc665683da209f102413dc60f961ca208790107651ed333b89d081aab131c4",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 566444
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm.apk",
+    "digest": "sha256:a4c2fe6b6cd8d5bfd22d6667533ad8ac8c337ae1fbd6e17c4c33a4282c53e5a0",
+    "name": "k9s_linux_arm.apk",
+    "size": 39742527
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm.deb",
+    "digest": "sha256:ebae6c7d09ff11becd4cc6152d938a385bd70f0b9490f9791912b9cbd7c028d4",
+    "name": "k9s_linux_arm.deb",
+    "size": 38352578
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm.rpm",
+    "digest": "sha256:5c0ed5f528b879470c4081b867f9bd4fd263ba315e409ef56abc5f0a50debd1b",
+    "name": "k9s_linux_arm.rpm",
+    "size": 39790626
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm64.apk",
+    "digest": "sha256:bbb21e7ff03687815bcc2712f0e43542558e2f5097ff144bbe3dd8f1858bcc95",
+    "name": "k9s_linux_arm64.apk",
+    "size": 38455163
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm64.deb",
+    "digest": "sha256:733fb212d1aa7b0ebdc927f25e05d1fa0ea0b37be10bc037d12038e67be3bbbd",
+    "name": "k9s_linux_arm64.deb",
+    "size": 37116032
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_arm64.rpm",
+    "digest": "sha256:726664b85b1c4b6bfd88eeccbb92680b51be8467b7bdfac6064aa93b923e23e9",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 38424751
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:7f3b414bc5e6b584fbcb97f9f4f5b2c67a51cdffcbccb95adcadbaeab904e98e",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 36984299
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:f26b676bdbfade364539d99d4a75a2547fbf0254e70d758599428f8dddd62687",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 566446
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:5b0b1eb48b48a73df91d1f0c96e57a40ffc7e7d96da2df5978b0e947ed8334b9",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 38254588
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:62a2efebe3a5250b04cbbae51e803a599c3fd296146dff32aa3bfbf93e804795",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 566444
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_ppc64le.apk",
+    "digest": "sha256:02b210bfe60fb1395ac5e0a41840a76fff71b87217c5b2905f111e851a867d73",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 38357854
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_ppc64le.deb",
+    "digest": "sha256:fa56f95eab69ac84dd9c89c14e3990bb4d87fd0e42ac1354a1ebd210b6f0c95d",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 36980372
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:9e09191dcf1e7afd35a72628bc0e93bb6770e24c00664f6c8ce39b653517d6d6",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 38351091
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:24f6fe1d87d3d0dde519a0c645d219f2f7dc9ff21bf60c8c09921456bcff861a",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 36832025
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:c47170e357377716a45d352a0ec1a18709a757f6e0c9505365ef4390acb18e77",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 567184
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_s390x.apk",
+    "digest": "sha256:875f376b620e678c18586d218afda5d7f9f68463d61c543dca543f12ecc0cac6",
+    "name": "k9s_linux_s390x.apk",
+    "size": 41683584
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_s390x.deb",
+    "digest": "sha256:adcc840af4f7c5e833e6a72ab1eeac177499d8d3206e9bd4fe2d358769e02da3",
+    "name": "k9s_linux_s390x.deb",
+    "size": 39617552
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_linux_s390x.rpm",
+    "digest": "sha256:b585af2abedf0ef9e4b336f7e9747a68e91a37eb9816842c52a17c774c4c3af0",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 41723883
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:d2a7cc99f32c328201a6c69544f42e55d28fae6cdfe0d05eb3ecf1cf86823be7",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 39396063
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:971c2ec4dedc681f32c65d994818ab7be698d6ac1e2192e3212388b9a77264fd",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 566446
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Windows_amd64.zip",
+    "digest": "sha256:af166d249bfd87c7dc3e93838d677bcab4396159e7aff600b50c43142442a16e",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 41795301
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:110432eeb08435abe8db049ede6ff2a9ee65ce8f63368d263e9309772d5a1b57",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 581165
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Windows_arm64.zip",
+    "digest": "sha256:c09fa3d399b2529730f4024bab6655c01ced23b462af248bf9fc14e839935152",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 37169173
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.16/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:1de9245ccf6d2c5619fb00ea56385f26d6e57991921740e7b9f52e49c593821d",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 581167
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.50.16"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/checksums.sha256",
+    "digest": "sha256:e01220ceb4a7ec8ebaac9f80e9f02b2206e431c4d9c728d92162bbbc2d4c1b32",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:241657098919c2ba1788517431384c9d08f501cd9b0f5005bc9c345b68c72b49",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 41213432
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:3b501798eb0eb1cf0ec51dc9185ddb8ced98b9a0a0754e18a6c890b1074bfb8b",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 566002
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:3f9c9b1c0208e2da5ae98e619771d3a7055baf8efdc7b95e072cac6767faabae",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 38417868
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:2b28e1833fced16ab467a8788bc6296ade7116933c6fd04cc376e43b0c0aa2da",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 566002
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:469799ef54e8f6d01aae5aa8f8743ed77b365e7acf71217aa59635cb93367cb1",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 40385234
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:4458557f363d2e3be16bddb9e74a5f1c8e2c7d8f1023a62d1264c2caae501243",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 566368
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:a3380bfaec41d9df0c46650503ec765829f13ff2bde65e426448585eaa494fb1",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 36597947
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:d9e93dfd50060c3a112b5da568fc43eed5b7cca2179f43426318b0ed0e1398b6",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 566370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_amd64.apk",
+    "digest": "sha256:d2058e945afde73b5e572cbe3e4983cb064842840ce6c465d0758506304c3899",
+    "name": "k9s_linux_amd64.apk",
+    "size": 42309273
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_amd64.deb",
+    "digest": "sha256:9e53544dd00a9965bcde2a0bc0a8ca5a046286839606e4a806badcc83576240d",
+    "name": "k9s_linux_amd64.deb",
+    "size": 40611640
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_amd64.rpm",
+    "digest": "sha256:c734aa5421fdbf09c52fea34848887576d30430a41d070820e1d314e271e81d6",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 42282749
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:c66513543ad8ae7a82856a6dd767d28d11b5abcdcd78d67added0934b6433d34",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 40460318
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:a7beea54a93d100a38449c76e579aa7bb190f673303942a796dfb32448dbfbcf",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm.apk",
+    "digest": "sha256:2d32af82746add5b951c642ac5def576e4846a73ec34ad76aa2d9fdfb8b29023",
+    "name": "k9s_linux_arm.apk",
+    "size": 39442352
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm.deb",
+    "digest": "sha256:c894749c6e7e43eafd29dc20d91c7b99416450eca9fc0feb2a7fee41c583c91d",
+    "name": "k9s_linux_arm.deb",
+    "size": 38020586
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm.rpm",
+    "digest": "sha256:9888ff003330e33d05d1ddba28aec808d55c97e6bbb14a545f233ff347227ef7",
+    "name": "k9s_linux_arm.rpm",
+    "size": 39427820
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm64.apk",
+    "digest": "sha256:edf286209a0da52c50114538282e699188d13c5b69a050acaa926722e6e584b3",
+    "name": "k9s_linux_arm64.apk",
+    "size": 38180071
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm64.deb",
+    "digest": "sha256:1a07ce30fef7d98d396370b7b43979d7c164011380f9df3ff9659f156ea4ea80",
+    "name": "k9s_linux_arm64.deb",
+    "size": 36803230
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_arm64.rpm",
+    "digest": "sha256:1281100bf68100b02cc5a200c598cdb89d3ed8f7569caeda01c7984685c93dcb",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 38112490
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:938d8a4deaebeeeab01a0ba521a5a3aea675dd3119e801a5099d5bd0bf0a1b58",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 36670904
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:11081419f6921ea98a79cc763a30c59ad974229e19a916ea887b57504204f912",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:c049d2d19d077de323c8bf07c79560b420ed29892b4b9c28af1b719c2b9e7b2b",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 37920008
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:4aadbea605c4bc3a4bba9e19eb5bdd1852c88d525d86277f98ab4fab76da38c5",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 564003
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_ppc64le.apk",
+    "digest": "sha256:efb3310e720ebfb092b7184642eaace33558dede947a23838cde4db619ac1771",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 38065726
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_ppc64le.deb",
+    "digest": "sha256:31582a055d70a27c884719b444a22c182a55384ed6bad5a806e7f48fbdc5ed09",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 36685338
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:c68597e0f68c79b83de0d1bffded1871082dadb66f98e96387d7b71b9dcf3113",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 38082210
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:a88d80ffa2b55068b3dc68766002f2844418793eacdc91901a33cc1c0b3affde",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 36534802
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:3c6b816d3ad1fd48b8895fb8767c47aca9d1b03788593214a5030a17f0b0acb4",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 564739
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_s390x.apk",
+    "digest": "sha256:1cad3773f0f9d1a97492af1cf815fb7f1799da466db8cefb9e9710a25f4a39c6",
+    "name": "k9s_linux_s390x.apk",
+    "size": 41359740
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_s390x.deb",
+    "digest": "sha256:c5041240363b7cd083b3293e36b5d32b9dae1b5330abd02564104fe494d56167",
+    "name": "k9s_linux_s390x.deb",
+    "size": 39289316
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_linux_s390x.rpm",
+    "digest": "sha256:8cdd8b6a9dcf05b6bcd08b197c8a034755367e990157f4c0b8f189badf167424",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 41354578
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:0866ca552d1c72e33e98815d67d4b760ed6389def0127e4a5099d47a78c02014",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 39078192
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:5b92668f7c991530e3cc61779acd223d86b97b096918d91e63aa96d40b75cd37",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Windows_amd64.zip",
+    "digest": "sha256:479d24bae4a54c3ed659d6f6f0aae22f70ae83ac08599562c521199714aab6cd",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 41525586
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:a8eaa8ac33b6c21e7099ef790b590b417558e55293c86caf3b94aa1cd75f9898",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 577450
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Windows_arm64.zip",
+    "digest": "sha256:f610c4a44164fa3ed5b4f11ecc9af3956f8cff64a7b641aa213a68235c66d201",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 36919030
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:fffae0bd0f6320d7a996b5965bc30395a0a841871f9d7997d7cbc331c3f6ab2e",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 577452
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.50.15"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/checksums.sha256",
+    "digest": "sha256:e6a00bc80c472304af184fe7c433eb195b8fa8af88a5d9383d165d75676c43e4",
+    "name": "checksums.sha256",
+    "size": 3370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Darwin_amd64.tar.gz",
+    "digest": "sha256:24066d3c5884f4fddae4ce1f835e190ceaf3708daba7dcd5551a786ebb33f24d",
+    "name": "k9s_Darwin_amd64.tar.gz",
+    "size": 41213448
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Darwin_amd64.tar.gz.sbom.json",
+    "digest": "sha256:be57b60b3d482fe0c8d8f3d932abecd048aceeb7538606cddd8fe1dba70fd4f5",
+    "name": "k9s_Darwin_amd64.tar.gz.sbom.json",
+    "size": 566002
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Darwin_arm64.tar.gz",
+    "digest": "sha256:4917be4f015d27016c18de65d1bb14f562bf1811f87fdc01b0d57e6899b79f4d",
+    "name": "k9s_Darwin_arm64.tar.gz",
+    "size": 38418404
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Darwin_arm64.tar.gz.sbom.json",
+    "digest": "sha256:0803a6e925f01f3c0f9a788e9fdf394c49299ecb01050290bc36af17e98fde35",
+    "name": "k9s_Darwin_arm64.tar.gz.sbom.json",
+    "size": 566002
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Freebsd_amd64.tar.gz",
+    "digest": "sha256:d3415ed1918a60edbba4b9043933d5858d08c9355ccef3bbb4cc4b962df2b5ed",
+    "name": "k9s_Freebsd_amd64.tar.gz",
+    "size": 40385180
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "digest": "sha256:2911c1dedc8e361bec8f1115d3af74f60485083db118d391cabad6f587517ee2",
+    "name": "k9s_Freebsd_amd64.tar.gz.sbom.json",
+    "size": 566370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Freebsd_arm64.tar.gz",
+    "digest": "sha256:35b9026a3825937be51c5e15fc5d27d180bc317b24ca26ef3d360e18e046c55d",
+    "name": "k9s_Freebsd_arm64.tar.gz",
+    "size": 36597784
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "digest": "sha256:c43d448fba61e1ed4f8bc0250b9be9ef547db83e6adf94dfa818ed657873e8c9",
+    "name": "k9s_Freebsd_arm64.tar.gz.sbom.json",
+    "size": 566370
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_amd64.apk",
+    "digest": "sha256:66c552811bce3f07a809c142a5b8c023030b676eb9dc41b73380880d527774ab",
+    "name": "k9s_linux_amd64.apk",
+    "size": 42294640
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_amd64.deb",
+    "digest": "sha256:03fee51b58e12a6e9f16fe76b3acacf063526ec7a39328265904b7a3e07fbb6c",
+    "name": "k9s_linux_amd64.deb",
+    "size": 40611076
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_amd64.rpm",
+    "digest": "sha256:48318216157280fd3cd2107c1efed3484b818bf5c62df8e7f0d3b6f81b766757",
+    "name": "k9s_linux_amd64.rpm",
+    "size": 42254297
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_amd64.tar.gz",
+    "digest": "sha256:0466564fa0e8a492499a4401dba54e6c9c6c34a98ee0a3125189c91f80a1a85d",
+    "name": "k9s_Linux_amd64.tar.gz",
+    "size": 40459271
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_amd64.tar.gz.sbom.json",
+    "digest": "sha256:ba51cb97c1142ecfa9f3821d35adcf3350e855a77a8fc20a773c2e3c1711527d",
+    "name": "k9s_Linux_amd64.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm.apk",
+    "digest": "sha256:9673e1054baa6f2e94c708b862606a4a7a059be060ea73bdaba8ded38b03ad4b",
+    "name": "k9s_linux_arm.apk",
+    "size": 39445718
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm.deb",
+    "digest": "sha256:689cbc3b2395a9ae45dafeb0bc0eb359e5a9e690150493458ffb69e08adaee48",
+    "name": "k9s_linux_arm.deb",
+    "size": 38021722
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm.rpm",
+    "digest": "sha256:ca14b406f42fc3143b1c4182e4c8a18feea472b764ae0a386b8258f392a58e09",
+    "name": "k9s_linux_arm.rpm",
+    "size": 39426842
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm64.apk",
+    "digest": "sha256:221c63eab831faf598652c05284cd3420054e8405e3ed53a8d97df6bfc69d64f",
+    "name": "k9s_linux_arm64.apk",
+    "size": 38179551
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm64.deb",
+    "digest": "sha256:180a4368f6b4804a11b3f8c58bf0946d313c661404724c02a9e2da42d4b8c2e0",
+    "name": "k9s_linux_arm64.deb",
+    "size": 36803012
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_arm64.rpm",
+    "digest": "sha256:a8bf6cfdb4bd9a70d8aa4c7b0d4a3daeef9b0a47733774fb532216df9b9105b6",
+    "name": "k9s_linux_arm64.rpm",
+    "size": 38131171
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_arm64.tar.gz",
+    "digest": "sha256:42f7d8b294d67a423ab7029327cd0fce8cfe3db61f47de3cd90f2bc1ffc4e069",
+    "name": "k9s_Linux_arm64.tar.gz",
+    "size": 36670763
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_arm64.tar.gz.sbom.json",
+    "digest": "sha256:5e4bc7f654c1afa0272da885d6f2c4559829ef6a9fa05e73f81f70d7d54f50ab",
+    "name": "k9s_Linux_arm64.tar.gz.sbom.json",
+    "size": 564003
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_armv7.tar.gz",
+    "digest": "sha256:d9fd3ec2563f4f0a576edd95424623978c773765346ce5ca34063964ee9ffbc6",
+    "name": "k9s_Linux_armv7.tar.gz",
+    "size": 37920586
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_armv7.tar.gz.sbom.json",
+    "digest": "sha256:2bbaf5551579699ff9b59bd27373aa350d688d7d378c8dd46d6a88b06bb201d7",
+    "name": "k9s_Linux_armv7.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_ppc64le.apk",
+    "digest": "sha256:7acfc67b553bf82a44d4d19284d00954feea7e9ccdfe47b3126b363a613bb410",
+    "name": "k9s_linux_ppc64le.apk",
+    "size": 38077223
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_ppc64le.deb",
+    "digest": "sha256:7c352fd326c80de610dd233843633a0f8c938e7f7dc18d35d7dcb1d564815a25",
+    "name": "k9s_linux_ppc64le.deb",
+    "size": 36684970
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_ppc64le.rpm",
+    "digest": "sha256:1d370f92e5d7489fb17d4021f770eedf46441db73709f52e824d02e524350763",
+    "name": "k9s_linux_ppc64le.rpm",
+    "size": 38064377
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_ppc64le.tar.gz",
+    "digest": "sha256:213eef29413428c47785c2baf4af514a57faeb33184d41202066013d2f957ab1",
+    "name": "k9s_Linux_ppc64le.tar.gz",
+    "size": 36534290
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "digest": "sha256:f052d156977e8e7389a5cac59435c7b8ce4fafd267f6b941c40c134c09c27ff6",
+    "name": "k9s_Linux_ppc64le.tar.gz.sbom.json",
+    "size": 564739
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_s390x.apk",
+    "digest": "sha256:bbca9390d9b1103d6d4cd296c731920f0765d9ea844023927d24ffccd6b42bc7",
+    "name": "k9s_linux_s390x.apk",
+    "size": 41356732
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_s390x.deb",
+    "digest": "sha256:c2869c7916f429b1c9b32bf6aed720745264391f9de4149688ca88aaee9c29c1",
+    "name": "k9s_linux_s390x.deb",
+    "size": 39289686
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_linux_s390x.rpm",
+    "digest": "sha256:d4ee916b0adf0d1af65ca5654c8797a46e6d79da5e11c7bfaa151896beff5b16",
+    "name": "k9s_linux_s390x.rpm",
+    "size": 41352079
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_s390x.tar.gz",
+    "digest": "sha256:014050c33460753955809c9a8b0aa15fa3944b25d45cd9919337f1a8b23ded40",
+    "name": "k9s_Linux_s390x.tar.gz",
+    "size": 39078467
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Linux_s390x.tar.gz.sbom.json",
+    "digest": "sha256:24fea4f860d4a10da9374d57163f1ea8c66b956aafe8c9d4547ea3a2d24cb48a",
+    "name": "k9s_Linux_s390x.tar.gz.sbom.json",
+    "size": 564005
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Windows_amd64.zip",
+    "digest": "sha256:4bad4e4c8573ef83ba0bb8c2e93369bb0454f186be6cba5d64a7446e3a8c98eb",
+    "name": "k9s_Windows_amd64.zip",
+    "size": 41525397
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Windows_amd64.zip.sbom.json",
+    "digest": "sha256:c8575b05a0e8054009d9ed61c68887f84fc59d7945132340218dbd1c339311a4",
+    "name": "k9s_Windows_amd64.zip.sbom.json",
+    "size": 577450
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Windows_arm64.zip",
+    "digest": "sha256:6a1b2701cd0b69fa1736077d4f659928c91f1e6932b21a1de454079eac44554c",
+    "name": "k9s_Windows_arm64.zip",
+    "size": 36919474
+   },
+   {
+    "browser_download_url": "https://github.com/derailed/k9s/releases/download/v0.50.14/k9s_Windows_arm64.zip.sbom.json",
+    "digest": "sha256:53d5030017062d3b265659801a52e8c8e694fb51bd9a6a8b0bd9287489951860",
+    "name": "k9s_Windows_arm64.zip.sbom.json",
+    "size": 577452
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v0.50.14"
+ }
+]

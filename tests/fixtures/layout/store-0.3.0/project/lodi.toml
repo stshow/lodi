@@ -1,0 +1,9 @@
+[project]
+version = "1"
+name = "layout"
+
+[env]
+LAYOUT = "1"
+
+[tasks.hello]
+run = "echo hello"

@@ -1,0 +1,19 @@
+# k9s for [tools] k9s. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+[recipe]
+name        = "k9s"
+description = "A terminal UI to interact with Kubernetes clusters"
+homepage    = "https://k9scli.io"
+
+[versions]
+strategy = "github_releases"
+repo     = "derailed/k9s"
+asset    = "k9s_Linux_${arch_alt}.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 0
+
+[spec]
+bin  = ["k9s"]
+path = ["."]

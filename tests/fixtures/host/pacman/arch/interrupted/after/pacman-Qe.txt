@@ -1,0 +1,14 @@
+base 3-3
+btrfs-progs 7.1-1
+cloud-guest-utils 0.33-3
+cloud-init 26.2-1
+dosfstools 4.2-5
+efibootmgr 18-4
+gptfdisk 1.0.10-2
+grub 2:2.14-1
+linux 7.2.6.arch2-1
+openssh 10.5p1-1
+patch 2.8-1
+qemu-guest-agent 11.1.1-4
+sudo 1.9.17.p2-6
+unzip 6.0-23

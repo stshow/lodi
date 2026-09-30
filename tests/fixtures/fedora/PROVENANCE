@@ -1,0 +1,40 @@
+Fedora 44 fixtures for tests/fedora_base.rs (fd-1, LD-435). Fetched 2026-09-28 over HTTPS.
+
+Fedora-Container-44-1.7-x86_64-CHECKSUM
+  verbatim, from
+  https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Container/x86_64/images/Fedora-Container-44-1.7-x86_64-CHECKSUM
+  SHA-256 of the file as fetched: 80b508bc3341680b09a4299a11d6f776fdf7d6a8b55f027e2db3130d81f11d0b; it is committed unchanged.
+  It states Fedora-Container-Base-Generic-44-1.7.x86_64.oci.tar.xz: 70170200 bytes, SHA-256
+  75200f5752a74a21a616ca9a75e25beb594e2e117a0195c54f87c0b3e3974d1b. The archive itself was
+  fetched once to measure it and is not committed: its index.json names the image manifest
+  sha256:f1e66cdd6eff2c9ccad192f8865af9be6d69b46b3f13329d2975a2d61a1296c5, which names one
+  layer; `rpm -qa` in that layer gave the 146 builds (and one gpg-pubkey entry) that
+  catalogue/bases/fedora.toml lists as `installed`.
+
+bb09509d54a5d1e07ad37d1abe8869bb69ab363310273e5e394bcab0b9ab7eab-primary.xml.zst
+  trimmed from
+  https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Everything/x86_64/os/repodata/c48e47563bbf65b996c95caf4a608223f982c314cab637e6ab87dd1df67b9d26-primary.xml.zst
+  SHA-256 of the original compressed file: c48e47563bbf65b996c95caf4a608223f982c314cab637e6ab87dd1df67b9d26
+  (15678154 bytes); decompressed: 0818500b9143c2e3b251ebe9fd6027b74c0f09fbf47ef1e79681f2dd859c67e2
+  (185300395 bytes, 76354 packages).
+  Kept, byte for byte, are the XML declaration and <metadata> head (its packages="N" count set to
+  the kept number) and 173 whole <package> elements: every x86_64 and noarch build of the 146
+  names the base image holds; of jq, oniguruma, zip, unzip, ntpstat, nss-mdns, avahi,
+  avahi-libs, chrony, dbus, dbus-broker, dbus-common, dbus-libs, expat, libdaemon, libedit,
+  libfdisk, libseccomp, systemd and systemd-shared (dnf5's answers for `jq zip` and `ntpstat
+  nss-mdns`); and every provider of each requirement of those builds that the base image does
+  not already meet, and of each name a rich dependency of theirs mentions, so that every choice
+  the resolver makes on the fixture is the choice it makes on the whole index. That added
+  glibc-gconv-extra, libbpf, ntpsec, redhat-rpm-config, rpm-build, systemd-rpm-macros and
+  util-linux. The trimmed XML (545929 bytes, SHA-256
+  bf9ec7645e91f8ac0af098eeef57ac5d3352316c6c05a22998c8ea1e34e29a7d) was compressed with
+  `zstd -19 --no-check` (zstd 1.5.7); the file is named by its SHA-256, as createrepo_c names
+  one.
+
+repomd.xml
+  trimmed from
+  https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Everything/x86_64/os/repodata/repomd.xml
+  SHA-256 of the original: da3845427d188097f6fd71b417a039bdfb8efefc4f38ca44b5cbb94f95a18991.
+  Kept are its head and its <data type="primary"> element, whose checksum, open-checksum,
+  location, size and open-size were rewritten to state the trimmed file above; the other
+  <data> elements were dropped.

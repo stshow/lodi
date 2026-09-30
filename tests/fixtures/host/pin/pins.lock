@@ -1,0 +1,36 @@
+{
+  "arch": "x86_64",
+  "distro": "debian",
+  "format": "lodi-host-pins/1",
+  "pins": {
+    "bc": {
+      "filename": "pool/main/b/bc/bc_1.07.1-3+b1_amd64.deb",
+      "policy": "date",
+      "repository": "debian",
+      "requested": "2026-09-01T00:00:00Z",
+      "sha256": "sha256:baaa4e935c5e3bcd57d4f2f4e7a1ddc67bd4eb8629d98f97a696548849ae01ac",
+      "snapshot": "2026-09-01T00:00:00Z",
+      "version": "1.07.1-3+b1"
+    },
+    "tzdata": {
+      "filename": "pool/main/t/tzdata/tzdata_2024b-0+deb12u1_all.deb",
+      "policy": "date",
+      "repository": "debian",
+      "requested": "2025-03-01",
+      "sha256": "sha256:9426e641cdcea0b890fa270930e2577c71ce2085c445e058b08870b2adee554d",
+      "snapshot": "2025-03-01T00:00:00Z",
+      "version": "2024b-0+deb12u1"
+    }
+  },
+  "release": "bookworm",
+  "snapshot": {
+    "indexes": {
+      "debian-security/dists/bookworm-security/Release": "sha256:61af2cea34f0a4d43b9f9baf86b82c153c65611a71a1ab2ec177dfbe2235580e",
+      "debian/dists/bookworm-updates/Release": "sha256:bc11b699a6db1725a46a981eb5676ccba5fc4a4b91f08a81a3bf7ceea030f6da",
+      "debian/dists/bookworm/Release": "sha256:779667c1a82441486a16b1bdc1da288fb90d58ef2bf4fec42609e8e5ab483815"
+    },
+    "instant": "2026-09-01T00:00:00Z",
+    "requested": "2026-09-01T00:00:00Z"
+  },
+  "version": 1
+}

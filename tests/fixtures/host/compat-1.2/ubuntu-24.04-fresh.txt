@@ -1,0 +1,70 @@
+== plan: exit Some(0)
+-- stdout
++ package linux-generic
++ package ubuntu-minimal
++ package ubuntu-server-minimal
++ package ubuntu-standard
+1 action(s)
+-- stderr
+== apply: exit Some(0)
+-- stdout
+journal <journal>
++ package linux-generic
++ package ubuntu-minimal
++ package ubuntu-server-minimal
++ package ubuntu-standard
+1 action(s) applied
+-- stderr
+== host.lock
+{
+  "version": 2,
+  "format": "lodi-host-lock/2",
+  "generatedBy": "lodi 1.2.0",
+  "appliedAt": "<time>",
+  "distro": "ubuntu",
+  "distroVersion": "24.04",
+  "packages": {
+    "linux-generic": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ubuntu-minimal": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ubuntu-server-minimal": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    },
+    "ubuntu-standard": {
+      "version": "1.0-1",
+      "mark": "manual",
+      "held": false
+    }
+  },
+  "files": {},
+  "baseline": {
+    "explicit": [
+      "linux-generic",
+      "ubuntu-minimal",
+      "ubuntu-server-minimal",
+      "ubuntu-standard"
+    ],
+    "holds": {},
+    "files": {}
+  },
+  "source": "/etc/lodi"
+}
+
+== journal
+{"record":"header","version":1,"journalId":"<journal>","startedAt":"<time>","lodiVersion":"1.2.0","root":"<root>","manifestDigest":"sha256:0dbbcd7b92c8bc0c2cc0e7bdb2d8a2949847aebae2a02e8c0d1522ed4dd48128","distro":"ubuntu","programs":[["apt-get","<fake>/bin/apt-get"],["dpkg-query","<fake>/bin/dpkg-query"]],"euid":<id>,"actions":[{"id":"p1","kind":"packages.transaction","summary":"+ package linux-generic; + package ubuntu-minimal; + package ubuntu-server-minimal; + package ubuntu-standard","pre":[],"post":[],"packagesPre":{"linux-generic":{"installed":false},"ubuntu-minimal":{"installed":false},"ubuntu-server-minimal":{"installed":false},"ubuntu-standard":{"installed":false}},"packagesPost":{"linux-generic":{"installed":true,"version":"1.0-1"},"ubuntu-minimal":{"installed":true,"version":"1.0-1"},"ubuntu-server-minimal":{"installed":true,"version":"1.0-1"},"ubuntu-standard":{"installed":true,"version":"1.0-1"}},"commands":[["apt-get","install","-o","RootDir=<root>","-y","-o","Dpkg::Options::=--force-confdef","-o","Dpkg::Options::=--force-confold","--","linux-generic","ubuntu-minimal","ubuntu-server-minimal","ubuntu-standard"]],"programs":["<fake>/bin/apt-get"]}]}
+{"record":"begin","action":"p1","at":"<time>"}
+{"record":"end","action":"p1","at":"<time>"}
+{"record":"finished","at":"<time>"}
+== plan after: exit Some(0)
+-- stdout
+nothing to do
+-- stderr

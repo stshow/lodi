@@ -1,0 +1,1556 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/dist-manifest.json",
+    "digest": "sha256:5bf3478702aa936221565642ea2b65329445524a8252164d5802910eca52933e",
+    "name": "dist-manifest.json",
+    "size": 46717
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/sha256.sum",
+    "digest": "sha256:c9745edca267c451050799a893cf03aa74050069b0f84b60520283a311a9c9cf",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/source.tar.gz",
+    "digest": "sha256:1223a372ecaf506bbef2dd0aa3976e8932a840bcba446b25f42caf35b2f202ba",
+    "name": "source.tar.gz",
+    "size": 8691602
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/source.tar.gz.sha256",
+    "digest": "sha256:18b853dc32997a372903ef48f63e174aa753ca168e37bdedaade213a687c3817",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:85f00cbdc6dd3e97eba4c31b4d014375a9fdfe8f570023b84e5102fc3456896b",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16929004
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:d13a23cee43f4b3bfe0768c62156cbbda0c52aeb4ca2eaadbda025af36d50cd0",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:3e1aa6849d77f0e00dc865e4afab5c5b32de053e21fe35bf5ad5cec3734ec976",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 19188769
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:1ad31efa5f6cde26789c89ab0af6ead09663b0d13fc0bd69d839ef96b48bff5f",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:d636d1b678e9e7f367ecb22b46bd1cabbed234d6bc3b4d96365d2b507f72f86c",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18965833
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:d14c6fe786f1f500d8fb31059dde544e49075bc587d87791611ba9bfe7e48f13",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:a6096da273d548cb9f277d237a01ac7344a39ef0f455c0e148e4dc9737c1596b",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 21082371
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:db2ff7a36d6659684ca1868c9be5abc9513be3a80deb470015ee02c71293b302",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:16a98a65ef8545f7c32cf717683aac44248369ffaa41c43e665341489359c654",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21734997
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:b59ad7b9852e67d4c2ca6e988ef47b48b66ab8afaa914eeae479a193eaa7a87a",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:796e101976e18a0f92d90b6f3efd289f77fbc5afd1aaa6fdedd3c84c209eabab",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 21334880
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:5d55f5e1030d4020a578789ec31c2e8323a098536da7d9cfcd5fd82ea2088b3a",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:421c5f9c53d49088e705e7a64fea147082a2191178ea1d8c51d9ad758ca899f6",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 21260897
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:0df1a4c04e3441289ffe497eae45330121624bdc0c07b7b6847dafd6876a132f",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:1d3653cb6eafd1e675e979d7cd8eeac1456202f8927a2216419993077a4c473f",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19763839
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:d7009f0ccf7e3a5614219823a095c3f1948781287176330a68b392cf1005142d",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:3faa79a70e2a1aa6eb3cd78eba02263f3e4b17b6be584a01429968f92ff74966",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 22150466
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:522b82061e4d8fa4ced88f725e964611be8ffcbfc6134c8497d20acb422d1415",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:fc05220cfa1c6585e0e209877c228393b25a96e17cd43028b06566ac894cd078",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 21281290
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:338ef947ca0524836819e549bd8bc5f3aeabc7adc03d936030a9915ac1cfd087",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-installer.ps1",
+    "digest": "sha256:e08cfe98a992b95c04b5c8e8a3e61a5cf4565ef844c78770659a98bb8a4b1b31",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-installer.sh",
+    "digest": "sha256:37b82230b28617c6c24fa52364fa28aa37f2aa40c114809a623f6b064a9730e5",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:eb6dbedaaa622af32cba2388e0d2d47e34c8724d4214a129d614b96f071d8e53",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23525831
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:1bd260cbb200a10e3768e2475f6f2b80ac82be2633cb675d26b1d252a590da68",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:65b807b24357133c49d97ca9394ee7e13ca62822e1095376c809654b35f39cf2",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 22397841
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:21fb02e3580d1df1a7ef444b2b2050e7f75a74483b22ebe527339550a0886b89",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:87c339a735b578f285b961bebdefe0a671f3652477d1e84dc69cd1a829f45e92",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 22281273
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:4f1ddd5cd592bb08d7d671d619b995cd5524cc320389c13e00b9e5f2b4a867b9",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:d99f69f47fc5e0975d6e7a5745cf2332317015caffb3bb81e5154cc7b66fa77a",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 23204632
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f3a617669311b9d5e9a0fd364a1b4fcd7c78e21bbff8721d7519ed1faf79a91a",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:8dcf05a8c809bb3c471d2b614788ba27a6e41298fc8c31ac84b5f4339fd468e5",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20592896
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:cd15f774d77b945579add9769f82dc67799b596887e461d81afd05e8461c8dbc",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:a252121d5b59398fcb137c6ea448176459a44010f33f67e0072305a637119ca7",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17906210
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:11fe093acfe91865a0558cf02bb92195765dc1cd3ad7d369553ce56d0d40ae78",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:fa82fd8dde8e8eefdecada6aa0889666556cfceb690d06e0c3bca49eb3070a63",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19755224
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6c89204e7d1f4efa16a7072915c1776daf6d54d979b910395d7a3780fcb0e3ef",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:6401c4665d8fa2a9893e087c91f585430738e3170f5398a1141483efb4a93310",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22632353
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.17/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:65ba28c6836317464fd5e8da1aa94b76c8eb382327fa6b56799eec3e9a43b163",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.17"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/dist-manifest.json",
+    "digest": "sha256:7586643be55f0ac9a32ce22f895b63b236790c89ff6abeb27dd0b581e2cca22d",
+    "name": "dist-manifest.json",
+    "size": 48775
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/sha256.sum",
+    "digest": "sha256:af05da02a97178c998fa4d98cdd57fe51e7512a7c274f8e62140f36da162a40b",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/source.tar.gz",
+    "digest": "sha256:cf73a21058e5d7c15e57131b9270d113d2f8903870e12c3e02a14751e11c1a5c",
+    "name": "source.tar.gz",
+    "size": 8673102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/source.tar.gz.sha256",
+    "digest": "sha256:3a5bdb6ac2d21fbf1a24b5b3b0d725131c95ab934c29d04c1c0481b8ed43b41f",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:b6e03fae61704b1aa622f12b792a69483e837b83068e44f4fd34f8a07a8f74a3",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16854469
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:dc57c6814c9cf991ae5b90585f2d35680acbb5f7888f68f27ef66f8396ebdf0d",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:9977129f89c4036edfcb200d2484755571e51fa74517f02e478c1d7bcc353b2e",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 19186712
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:a03f7efb921b18da095457d182ddd025b1c769adff5e0d369546d5a173bc7508",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:36d913ee9c647481d64f1a0a0485f85ff2feaee605c341fc22e73398f9212c26",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18878218
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:83182ce7a8c465a07dc068a081d20e87bedc3eab13a1886c1f416f3dda56e396",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:5beba1f35c0922fd086cce850ce919e55bc4e873c4fcda891343526afdb4c5b3",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 21100650
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:c97ebc76f7a6c7bb9dfb945ce12849cf26fc6736cc6722ee74aa2eda59e506d7",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:d91fa9dede60e851e4bb3ae8060300042bc6bf924476fae71898d2c08c46a9cf",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21673258
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:5b7cbb930a8772ea672e305034e57de435f66e8a582cfbeb5177355d990bf533",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:fbdfca5d4ace4a5abbf343c0f10a0b68c5eac0201073d2a504e32c57c0873669",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 21262804
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:4915259cc5ed85dc566edc23a27a0daaca360907b7caf90370335f0f44834eaf",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:f5a3b6c7fbd4c7ea66cbd704d821ffed0d20abbfa8a12c2e68d6dd22476d308b",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 21177513
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:12db5a55ac16d3ca89984ff30e1dfa08962e35f6e5cb376f55d18cc3f42cac93",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:0d4889cc6c4058f4fbc28f6c50ec09b528ef998547cac5c3425e1a0b8169e847",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19736716
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:1e63d0408f890c3dbabdeaf59ec9454393b2dee940cea305638951e21963dd8e",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:0e8743e653ed124c526a9e86ee6a08fa6eee7618a3f12cc9033c74674bd2047f",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 22123125
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:ddc94a68bcaafd1d52a3618514cdb5df128d99d302c5e10ffd816036cd2198c8",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:f609686cbe67884eeb57daebd58eb0fef35f930dd92fd2c14e931da7515c7454",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 21270743
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:55f9b1e4f3d176d440d2b7a8e775b973c4aef00f3d63053997cfdd6b5146c1e2",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-installer.ps1",
+    "digest": "sha256:0926597b005ef1a11d0a1a52c324cc9b0f0e84140c1e8cd1b648e2a00193c933",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-installer.sh",
+    "digest": "sha256:889a5745afddc78b389841caede74711003b782e2ec8c2f29b3c03cbd7b580a9",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:312dc82f441debff371fe5fc0068b538787678d6d79edc86f028b011920a2f6a",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23446310
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:0d02a4cc0d06e197db87803fe393a4f97b7f9f1dc973547bfda8ae3e6f243db9",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8b0142eee9d291c602218126e3fc558fe9bc1b7c8f1cc0b03dcd8df9f2f218a1",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 22292184
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f15259e7a55c50ea90359e70c8d8e201d1775185ec79655989e478c864d40812",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:188af30f025c35569b302b84793a4c286f6740902885d054917375edbfd0193c",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 22170678
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:cde7959619ade17f1f9f919e07d607533bc864629030b617c63054ce98de9aad",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:b90cc954c2cd52b695104e215189a0c8d9e6ceaee753c9be1a871bb8d969e9c3",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 23172993
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:921e7f9297a72cd9b02d776f7402803ae9fc7a364f76a3af5ed44b541ce11e9b",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:a42bcc9ce97eb8b364d7f162233a9c6b8c0ee25388e551d362809795127e0c31",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20494293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:71434beca49a8e6e8cf7918379038373f043a0dec020f9f00d66746a9ef33703",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:f730454bf09019754e5e5abd71a8aa18683cb739cba0d9c720bac2e7c901160f",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17818061
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:25e055b7c3caf0fbac21fc4e51ef098a5094e4af1a450ac18c971ff3dd5bf69d",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8e5c6e5523dffc2dcf615bd995554c84c9feb4e577808a3fb8698a639d3f8d9c",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19678908
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7174528cab90900012e059f60b390e3b9ada5d7bbb5faafec3c8b6ab5862cc94",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:a01206ffbd60f3a7ee30949be1863527986f5307494a064042c69ce7e6d44799",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22612285
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.16/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:183a72761f5bcd56ad675aed8edaca7858a1e66e934b2af77cced9a559d30775",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.16"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/dist-manifest.json",
+    "digest": "sha256:eae42b58eaf3729260b43590d17407f9361f81a9b18b8185a832e4b131f185c9",
+    "name": "dist-manifest.json",
+    "size": 44979
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/sha256.sum",
+    "digest": "sha256:4ad6f294e372e97aa1b7a74165f7dd2c4d8023b53a1a309b0a487e6e3a26b33d",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/source.tar.gz",
+    "digest": "sha256:808bfe1762cc6169e6f3aa26245955e2d1b18c83e34f7982412556d121867719",
+    "name": "source.tar.gz",
+    "size": 8614142
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/source.tar.gz.sha256",
+    "digest": "sha256:3a52f4ad87cc192265038710e5e7c18f49d81bc9664860e4857333e496b437d7",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:dc304b9ed1b24174572290fba60ac3f6fe63c73a671f0439e62a91375841964d",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16678128
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:214bfafc37171baa38b269652c70a02e22dc7f2835dd61e98cc29c988a31309f",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:a37c8e96cb1260488c8510b64c848533a3a82a2fdf9e905de7c2700ceebf6437",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 18880214
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:9cba0d5d0de9914cd30dbc27c4220472c286c38708a5dada82e30016f1314db0",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:0e9a3499b0587d449c9ff684c0160da607826e4af1cee220bc87f378702d3e08",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18654404
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:2273691f85918e6b6628586ca38692e1ef28762a5362c2fe5b94b7f9a27e2d2a",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:93b801abb146e6431fb0434346a0162e65d3f0d1cd7360144d04c43488fd7f7d",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 20754110
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:b65eadc7e8f82fcefd6a4b694a253a97cb997949c38fb27ca04fece183318547",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:9b0204dbd368a7a5f84d3ef015684c3b0e830911641ebf4575f44ad4901c1b3e",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21399463
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:b2b441581624a423b71883d0ac6ec3a55a4fbab16853b4f7acd77a83accb7ec6",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:a0afe9cfc7dc4acc18e613f68c5b010b849323b3a3d6e9311b29d289dc94f95e",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 20966743
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:5d3d3ca5aacb07162e304faa442c2eaf0cc62e76e21d0a4f917dcdf86d18a03e",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a113c782e6f96a56f73aba601cde73ddbe877e0a4179eabeb5b6e86be9bb75d9",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 20911080
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:4b7442fb9dd82bbdee79ca3759034f065fc5ccb28fd31ec0559ad3ece1761e63",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:cc8b28f77cf19f7ed88569d6d9163e503ebc94e1b70069889852bcf38839c559",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19495810
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:99aa4803d3e681a1ad36f91b06ee0e3c1d617bba4153f3d4e90d8fc264afe9e0",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6fa19118f01ee547d5b9a3f4af389c5c929a34e0074a4313d3cdb3ce9c97fdcd",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 21847440
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:8bdeca2caa74c707df3a60ead9a7fd16ed875c9a6c5c4143859d98d40b68ab55",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:b66d6cf7916addeda13fbb61abe003ecc62f048e3a213d6bd2494ca7e8022989",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 20960742
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:017349e4ad99484839f8478caceda3f117f32a1eb941a82edd5a8ed6f01f364b",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-installer.ps1",
+    "digest": "sha256:63f2d7e2ccc347cc018127b22f56f569080e5730a390dcb702b654daf6822193",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-installer.sh",
+    "digest": "sha256:716a1d6844740756c68770fcec2f79c2013fb9b03869a113f61e15f6f482a6a1",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:5f49c97ae7ec25c45513466e00a32cacb148f3824367c7e498c0b53a270bc1e2",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23152180
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:57c0ed79c2f147ae3feb8fa7f1a6400148cd61ff16622f08cef1eb859024b8bf",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:4c8f75c5969737b67621957010df5337bb721a8d48fdbb1620f5d35c3f1dd268",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 22020574
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:9c1a6d41937ac9cd3038987d74723a0ace4ddbdf9ec43311cd599b83e8e685b0",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:8c03514f57e517eb87a376deb3d6475045f6ce550956c6082910b4a529d08a47",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 21897093
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:78a6ec9345c3ecd7ee33acae23d69d44dafd829b6ad5c518df25b3045493c28d",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:1f5701cb5eedc5a34d3dd5896ca3bf509b15d382b3448f370df46e0a631889c1",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 22838095
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:796dba4fbd7ac524a0298e140aec1660a9a0a1f032e7c6481a07d132be7118d8",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:e9ca61775532368fe518ab03e7a354c7ecab8ccb3c7d941c775fcc4a362b801b",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20292831
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:d8303de24e3d5d00dfc25cc65120596a2402670e6ecca62e825da34995f93e66",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:477bd99a84e34891f2bd4c9152ddeb74e971accccbc59c0f0301f11f08a32d46",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17578593
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:a170d852ef2d3089d4ff9757a20be7fe7bae514127e1295efb88da54b1ad78b1",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:f97935763c04be3e692460a7aaeaaab8fc3b78fcf8b389da820b38ae7423a638",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19443011
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:dbf47d3d9fcfff6738e8b598961bc3325d8e3b5ece3896d254f3b73eabfbff07",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:999c0c3da986953e508985c3932d283d2c62eb167b4f8d81e79f565e34104959",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22429965
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:eb18702fa5e6a4ba3bb09fcfca2ea7b07a618f20da573f3b8f7eb9517f65526d",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.15"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/dist-manifest.json",
+    "digest": "sha256:a30c6be7e0669e33f286bc4753e373a1c7f9efbb3a4afb709b694a51f930454c",
+    "name": "dist-manifest.json",
+    "size": 49515
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/sha256.sum",
+    "digest": "sha256:568296087d4a3764207d4bf33c322b659478f22ac47a64dc8b85266d2edf8cf3",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/source.tar.gz",
+    "digest": "sha256:8825048fc8dba3b5ffc9aa935a1ab64316a8cb4af17fef1b32724437a4bb3301",
+    "name": "source.tar.gz",
+    "size": 8614430
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/source.tar.gz.sha256",
+    "digest": "sha256:30f39971d58ec1cc859546b0866ce809edfe654af22df3ea89e3c7d36f77b1c2",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:dfed5683c5873d65eff8476eb93526059b81e5646a68305b5c94a26b29990894",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16557498
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:0850d0c7aee788e5f729589bf39512c7b8f807b4cd7d5bdb25edae6cad7ea4b7",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:46b930bdbb338099c7d9da711b751240eb97876eda6a553a2c28323967232041",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 18835508
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:8b56f894705e4cb483769e0b80e5dd2a1f2b5076520ac253f1a8ef7072a75079",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:7fb91bd5d10529c60723eaec3caf44726f89280e5aeed78af8fc63fcad004c9b",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18533566
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7e6970f1001b67730e369a8444921e8303011c17bce2f1ea8210f5d66103bab8",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:571b5c73c9bcc294f8087f22613edb7c7ceb191f4dbf8cafd3f2ff15e6147d36",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 20749485
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:511f3f21490d22fe55199750482579f7a77cfb04de873dc1a7447e132c4a2487",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:6e0df0e690d5c29ce65ec6962d8b262a93e9951077f05d78943f858e7d6e9185",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21330754
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:5268fd943137de8115c40f6ac673f6f6dfac40e773571fcd8a88292492e8811f",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:c20a18bb275a6fc2599bc321d37e52650a449237c6111da203a1d73b45921b25",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 20913178
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:9362ce61ec53cc72d645ff2f2b162284f6ab3ce2775f383220b65b72263730d5",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a128725e1e40226a9309d603cbb4c36e272932092a77f4d0478ef2fb8eacaa05",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 20830079
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:410400b501eaf79521b8f4259ed0308b686ef298de39f2280723b963bd2606a7",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:ddd9afd789c60a38d82f3021239e22daacc67b9ef0719345ee6f0dcc37ab93ae",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19486943
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:b320eda866aa857a97583574fe103e6e5f84a447d45b53f62fe0cc6b68bfe6a9",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:de65ccdb90dd818248161db761ae3b6713b1b3230a1b55068ad327598b3a14b8",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 21757847
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:026f0f6e56d226bc2dc4001fdb406ef4382a2d9bbc7f8341e819f26a78703fd2",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:268538a3b90c90f7d68d31ed781f0f2cb8618188019c8bb09ce0e7876bb54829",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 20898900
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:d85a0958ed2702feec33ae0d1c2bd3baef2ffe719d7c864e35a53ad07e56e8ff",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-installer.ps1",
+    "digest": "sha256:ecfa5e9a48e21e0cf39580b4edfa632d75eb22466a1de65ed5a1b8596a8911cf",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-installer.sh",
+    "digest": "sha256:fd0163716801bf4c48c89cd96ea6bbcb836b99a75e633ff4b72a016b55aa137b",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6a6c2a91d6240700eb36895c3fb0533bd5e9c696a95e0a55f7a7ae844cbde537",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23083877
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:0c6734a01cab809e8e56cb178f18ca2c2bd5c549be3a04200f422da648a8ef06",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:df2c854c77b1d32f75ef08282511b050066b3db9d7abc4dc2c23ea26227c6b74",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 21915702
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:39f77d2099b7d1b00b6edc3fcf8e7ba9009d28f7101daf1f255c38e59c95e5be",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:c6d0824ebdf23811dfa659148ae2c224b385d07ae1b4c282e5bf6abe3d603a74",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 21805506
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:9c39cc63171b04b55ff318dcdce6b94ab179380eb2a119873d45a17f99e9313d",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:e01aec9706c88f93f90409eab42324571e2b2c9c2938aaa266ad048b37c52c6f",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 22762536
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:68c24a5222288734c4d0d2c9893771befdd5336d3a9964670bc9df52be00ea96",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:e11a70264ceca38e929ecaeed953c323e517af7b960ebf9722d5918e8c7f0375",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20203017
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:e76d334a3e76a9127f8749d2b1ca5290331555012b381532f6b046874e3628e1",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:02cecb254f37f3396da625680796d3990164a590fb5611d46f719ad83e7b9a89",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17620125
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:ca0c195f4f91d836757577fc5f4e533d869cf9e6cc4deaf2cf45127d65cc4083",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:18ef5c3888ae59828cb13f38d57e9389b8173ecc719eff163bfafc74b38f5936",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19355592
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:90023404825025b5ff73abc8274cf11b038f458e5d8c13459505b863ad3d11de",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:df163630683e5a2106d3320e2a448fde8eda5e7b9b47f617c5c332769728e735",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22189054
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:bd62645abf0f5f16abd6ef8025d4daf3f842e407622d7a63a69d9629859923ec",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.14"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/dist-manifest.json",
+    "digest": "sha256:1b20e2e1ea5f75c28952184a5ef11a27e7ba43de45bee31d6e1cef0cb7125797",
+    "name": "dist-manifest.json",
+    "size": 45719
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/sha256.sum",
+    "digest": "sha256:61824ffa805ef12a5a5b1e7653430e3f771ca943f9c9befb7fddc7d82387f32c",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/source.tar.gz",
+    "digest": "sha256:50eb9ac4b920cd2ac730f5e64f35776da3ab1f58a9481fa239402a42e9f4cf5d",
+    "name": "source.tar.gz",
+    "size": 8767904
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/source.tar.gz.sha256",
+    "digest": "sha256:66ae6a10aa4398c8d8a08d955d2536a5c9b7718b942607ca01be28c77a1c31e1",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:7e6ddb9316acc00f2296c82ff4d99977870ee34b2f0ddcae9444d714db9364ed",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16674623
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:484f367a6640db23ab4f4a4defe85cd937bba5f53249d099533ddaedbff2080a",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:1efb2654b06e7063d4ac1fc9d49a9bda9a6704d82f035b589a2751a592f14151",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 18817671
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:7f5ca562f6a32a131846070c58b9276dd70e21f367c8fbfa88c69c60e78e575c",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:2eaa5d94f5db7b3a1a092156b9420459e42ab0217d917fe74a876309cef9b5e9",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18581057
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:38ad66cda679b26696b007555f1a129220a7ff54eb83e49e918eca0301beee92",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:f44bc1037a17889fe562fffd2002d4ed108e499fbe68b4f022af244dc7b8244f",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 20808721
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:1dfd479a439bbfc6ee350ea8ceae82883143db97066f5e37b17659bbabfd69a5",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:2c7644f891edcf1e74a1b9dde96ea4ba00b41301c936c87e843683656703ada2",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21439741
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:2052817200c659286df888f145e955f06e9ed1b3908310a2b72ed7d0b8b8d0d6",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:19252c4d21fce112817b9e07bef6b2e9c90cef80fe82659533105b37a772d067",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 21029846
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:949316c573e3c0c8589bebf13242b926581ba1e354456cbb6adad8f522cb1d08",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:54e2c10e4e6c18a3efbac645ea02d7e6b768ae2f975275595915a7039e802b75",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 20949868
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:076c127aa1008fc4d5c071e222ea529ff2db2010ccecc871c17db3f6d5bc2afd",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:4ddcdf859d3bd337a156a2fc567e685e4b3d61e07b4a2dbbed7aeb4325e116ac",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19496145
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:9fe82eba9112fb599e3bb35de2907e375d89474af8c66a6672539898a230f717",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:beb56f6eda61bc69a8acc1bca07929365aa5cd2e912e35c35003a45e266d8a0e",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 21797882
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:e7bc37efe1b7b1391f8714ff68b38f54741d939591e294b013f3536805c417b3",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:6c93a9703b6145266240cb2aeb31d3574c21b33570fddf92461707b906eb3a65",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 20927731
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:3629f4f4ac7f61dbe7d1c78e92411714d7588ad23cb68ad933e793469fb9ce70",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-installer.ps1",
+    "digest": "sha256:6a749fe05b2617ede62127832d6f4c37e7b406740c7bc0dc62fe77f5e5ebdb20",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-installer.sh",
+    "digest": "sha256:e7265962d703f3ca66b3e90fae8fcdc6d4e4b587027e9479ccc29b25c3f68d4e",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:cd45ac73fc711e717602a4dc0c9e19d9c6563d15b14515a9a5dd49b00172a8b6",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23069985
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f8784384ac135aa4e34bf2e4ae2f1672239cd2d8cf2ab332cc5a5bfc4068586a",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:ff1fb4d7e4c1d3a4acc6eff69b2530e846964260469df345e0239059517c0a21",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 22008648
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:42e388e3db93db8566b0c2c23ee4c3969926ee66ea0349971ba17e6621b9d039",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:b88312b410c1183e33ae9fa7738f35b7cd7396b2aa0e82836d7e88dbf23e5fb5",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 21891176
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:448b0cbc01dc944a1382d3b3d48eb75087732bd64dd5905f17007de445d04234",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:d41e4784c2187c76970690a9e9a288231f5ec8d2160ad8464be74aa9c06717e8",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 22787587
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:775b3fd3845e6fe83d3d0cac7b87f96033eb3f88b6e864690f312ce43b4b1995",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:5e287ef61cb6a9b61b3a83fef124fd143e400468a7dac794230147a810e17119",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20284513
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:5f588b81e1a3dffb3fe11bae642b693c8cea3c83496c63dbfdb300d52c5cb88b",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:a86c9dc7bad9b03f388583b7187c05fe9951c2e0d392217e8fd43d97787f6ec2",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17612025
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:4be6068ab4a1185171ad02e1b7707c71c6ca486cfd2e07a853b2c97a3b53ca6c",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:745765a3b6e360ad76743599ae5c42e9278c7edf8bbff9fc76d05bf2623a04dd",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19391575
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:de23e6b34258425ce005ab3d1d72414b41495add1445fcb21eb0be3bf5a11fba",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:4e2bfd0c9007b1032a50e539e965fd0a6037d87ad93ae1580d220a92d4c94098",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22268586
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:21b4d437f4a4c780c361abb636e9fd1922a3e4a9545773210d6835df85545935",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.13"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/dist-manifest.json",
+    "digest": "sha256:f07ca8d7c472ce798ac318e2195208f32e30ef323da5e88a64a862c7375f7753",
+    "name": "dist-manifest.json",
+    "size": 45177
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/sha256.sum",
+    "digest": "sha256:b6a718a5a328eb84868187d35b92870da84fcdc48312ed03ab9a230bd51eb80a",
+    "name": "sha256.sum",
+    "size": 1901
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/source.tar.gz",
+    "digest": "sha256:85958e5cbccdb0f560e5a03c4414544f869af30d070dfa53fe2730cd7f6a9ef6",
+    "name": "source.tar.gz",
+    "size": 8755209
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/source.tar.gz.sha256",
+    "digest": "sha256:50586b44176499a5c70ae36a70ca0866338fc6cdc3dc69b6152aea0f4778616b",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:46740540b63fdee9a6cb2e19baf3f1f475b850c440a33e63455087a6871263f1",
+    "name": "uv-aarch64-apple-darwin.tar.gz",
+    "size": 16621353
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:ef4e6a42592b01fb2af405896148ffe56913664f70577c7d2498b3226d049120",
+    "name": "uv-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:36559da51ecee83b2b1d80aa1a0ede2f80e2d9e5761fffcbb9e9366a7f3d022a",
+    "name": "uv-aarch64-pc-windows-msvc.zip",
+    "size": 18767337
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:43060b935243a34a63aa520127167b204a01e179931c1c87a32721fd2dfad741",
+    "name": "uv-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 97
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:fe08db50cc1b56cd1da7801065ed1103d27ed3f9571cd122386cfc7faf1b8df5",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 18605224
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:883b533da2b9050b4277a7d2c355c777b5eb4ffd1c9aa9123afb4badb3657c7c",
+    "name": "uv-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:82e59fff633cbd96fb675f37c7a748c056d909a59ecf476f8ff0e5bee76b9b23",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz",
+    "size": 20774699
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:cbe724d99e89bf6e41f47f5ee7228c8c84a8b950a883561a887e410bbc4311e0",
+    "name": "uv-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:72ac215cb44636c62de5a672c9ff822acd1ffd90b96f751c359902c8de11c75b",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 21395904
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:e27661bab17d95a0960dd029cca3a671142b4f212eaf2d7e68f0b7db85facc2e",
+    "name": "uv-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:ed00794f3750bcf405556ac28e8aff0480a4e309e4ab1505df9f96b83088b230",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 20953012
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:dbd9396acfd18afb09666b0054b68e8e32d2e046d8954d9f1fc73f41c3730f40",
+    "name": "uv-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:74220d4b9df5507f527478313f17190cdff1078532efb8547483804372f77f47",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 20890618
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:e1d91bbfc70b24283ce68b72850b4730212a93fd52a77e670457c63a6878fda2",
+    "name": "uv-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-pc-windows-msvc.zip",
+    "digest": "sha256:5d6ea94bc2fdbcd39710e0bac00db2a771aae05d09a34387841187958af48362",
+    "name": "uv-i686-pc-windows-msvc.zip",
+    "size": 19345386
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:d5fffc86b5bf8167ce3427ef158b017f32db3ac9c23f7c4a185925953c1ab150",
+    "name": "uv-i686-pc-windows-msvc.zip.sha256",
+    "size": 94
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:ce4411f863d3bd0cf97699eecebce9331ae72d69cf57735806321bf60b637b03",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz",
+    "size": 21811093
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:10085a364a635a5469cdc99ab09668a99847fde3c14f49c38f7b7bf0bc9bc501",
+    "name": "uv-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:b0a733aa67b9ea4d5dd28c1ae2c8393ce1be4b032c3d51642d6b05190f21fb6a",
+    "name": "uv-i686-unknown-linux-musl.tar.gz",
+    "size": 20957892
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:a0e94053921b7ef9a01ec137a5e7358e07eee7f50dd6cf41d00c9b0f0fa0c2d7",
+    "name": "uv-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-installer.ps1",
+    "digest": "sha256:00b69ae502ad6a6c5af9d606559a29f218374f086cafa89bc2f6408a1f3e24b5",
+    "name": "uv-installer.ps1",
+    "size": 23293
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-installer.sh",
+    "digest": "sha256:f4f45f7f5f213d96efc1978b8772b2c037d495d9161ffa7468f8167c6b031033",
+    "name": "uv-installer.sh",
+    "size": 71308
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:b5d05f6cb74605da9bb371ee9f8128bb8611ba1fab324bd4abc6e70a83abe0c7",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 23044456
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:b3e76171f298484c157b2a8e1baa8355587d173c76bf8797ac077bd3628bd08a",
+    "name": "uv-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:7b0b054d9a7d7b2c32e9ca111b271091240c81cb41487bcbe65992a2baca9c97",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 21991662
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6a6c7dd9b11f74e1637cd1c99772785ee2a2ce6b457dbf769a3ebef19ee2debe",
+    "name": "uv-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d2324e24ad526bbc45ac8a40f4d846c315efef9d4c91bb25725f29ccf2382b8a",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz",
+    "size": 21870596
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:a12e6afc81c85b4f2faad0b2df360d9167816a7e781eeb064e45828a0503dea6",
+    "name": "uv-riscv64gc-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:53135d16813f9ad961c809828da06f2339d49510c110668fe2e0353fef46b213",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz",
+    "size": 22779160
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:e759628d76b16fdaa163885e94400f4841dd95a54f1f57dd7efe35031e7db4c4",
+    "name": "uv-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:0dc8cd6c961582b0d140b5398f96b23502885277fb3464241456a2435e460dfa",
+    "name": "uv-x86_64-apple-darwin.tar.gz",
+    "size": 20274466
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:fa7931d12498d8a10684b6e5cbdd2ef16b21a0a1ca6c533fa79e6ad540836ab4",
+    "name": "uv-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:3d54912924c36e862c14f427d04f2ed70a99e8001d1c30caa101f6d5711626d5",
+    "name": "uv-x86_64-pc-windows-msvc.zip",
+    "size": 17558567
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:80d38c84a24b31410ed7de26b29746c26a6ef95a400cca114d4e6c1a137dc3d7",
+    "name": "uv-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:ab9b309d4586403f024e100abaceb396616e178a553e2500c36087d180f09509",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 19401972
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:e655e1370956600456edd0bba78cc0b08cb7b8d0c5ed2e0637162eae98124812",
+    "name": "uv-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0b0bbd7144f91d9b694e29c920fca3a060322bd134e8507e5eb92049a3e2edf0",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz",
+    "size": 22354451
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:7bebb436ef27fd2b0017b6ef6314aa8ab469a74f04ac97969e9dbbf45eb7d396",
+    "name": "uv-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.12.12"
+ }
+]

@@ -1,0 +1,5 @@
+# Recorded by scripts/mpin-local.sh --fixtures on 2026-09-24: the per-package interface for tzdata 2024b-0ubuntu0.24.04.1 (ubuntu noble).
+# listing.json keeps five fields of each entry; files.json is the answer as served.
+# Each line: the public URL, then the sha256 of its untrimmed bytes.
+https://api.launchpad.net/devel/ubuntu/+archive/primary?ws.op=getPublishedBinaries&exact_match=true&binary_name=tzdata&distro_arch_series=https%3A%2F%2Fapi.launchpad.net%2Fdevel%2Fubuntu%2Fnoble%2Famd64&ws.size=300 8fc60e8f54b33248e75f807bcb59ede9e20cf52acce0db5d7a75d1c75f830e71
+https://api.launchpad.net/devel/ubuntu/+archive/primary/+binarypub/220595145?ws.op=binaryFileUrls&include_meta=true 5d09a2f654b815c78d6eebeac4b0f15b63dc8b3d812aa9f964f15f6aed15b9ea

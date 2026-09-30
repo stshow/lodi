@@ -1,0 +1,187 @@
+Package: base-files
+Essential: yes
+Priority: required
+Section: admin
+Architecture: amd64
+Version: 13ubuntu10.5
+Filename: pool/main/b/base-files/base-files_13ubuntu10.5_amd64.deb
+Size: 4170
+SHA256: 4b1adb845f3f10b6a32ca56184383439fdc961a9c32c74047d88b6dbcffebfeb
+Description: synthetic fixture entry for base-files
+
+Package: libc6
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 2.39-0ubuntu8.3
+Depends: libgcc-s1
+Filename: pool/main/l/libc6/libc6_2.39-0ubuntu8.3_amd64.deb
+Size: 4085
+SHA256: 78a55960bbb5bb9936ab6dc6ac356781a667a98f40f907f877786cd8d0914f09
+Description: synthetic fixture entry for libc6
+
+Package: libgcc-s1
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 14-20240412-0ubuntu1
+Depends: gcc-14-base (= 14-20240412-0ubuntu1), libc6 (>= 2.38)
+Filename: pool/main/l/libgcc-s1/libgcc-s1_14-20240412-0ubuntu1_amd64.deb
+Size: 4153
+SHA256: 738d02affbf93522036706c2722d9a65315da2380623d8cb10b3b10d0b37c3f2
+Description: synthetic fixture entry for libgcc-s1
+
+Package: gcc-14-base
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 14-20240412-0ubuntu1
+Filename: pool/main/g/gcc-14-base/gcc-14-base_14-20240412-0ubuntu1_amd64.deb
+Size: 4187
+SHA256: e2ef3dcb47886fc7fc444dbc89e4feed61d37267337ca9305d46e1bd86b209e0
+Description: synthetic fixture entry for gcc-14-base
+
+Package: dpkg
+Priority: required
+Section: admin
+Architecture: amd64
+Version: 1.22.6ubuntu6.1
+Filename: pool/main/d/dpkg/dpkg_1.22.6ubuntu6.1_amd64.deb
+Size: 4068
+SHA256: 567c99426b85244cae5aa187d3ed13f992f3a61d3113e951cdbfd76c581cdb78
+Description: synthetic fixture entry for dpkg
+
+Package: mawk
+Priority: required
+Section: utils
+Architecture: amd64
+Version: 1.3.4.20240123-1build1
+Provides: awk
+Filename: pool/main/m/mawk/mawk_1.3.4.20240123-1build1_amd64.deb
+Size: 4068
+SHA256: b8b99fea7685fecfc7cbfa716237b9102517fc090badd8a4ce5e0543e185d38b
+Description: synthetic fixture entry for mawk
+
+Package: perl-base
+Priority: required
+Section: perl
+Architecture: amd64
+Version: 5.38.2-3.2ubuntu0.1
+Provides: perl:any
+Filename: pool/main/p/perl-base/perl-base_5.38.2-3.2ubuntu0.1_amd64.deb
+Size: 4153
+SHA256: 97751e48de0d6dc156917b4cae4d30fee179056ddda9bd3f2b16697a25e49070
+Description: synthetic fixture entry for perl-base
+
+Package: make
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4.3-4.1build2
+Depends: libc6 (>= 2.34)
+Filename: pool/main/m/make/make_4.3-4.1build2_amd64.deb
+Size: 4068
+SHA256: 4434efacc0d73252dd664fb217ad2c4ffdf8f12b4b9fe39ff0f09ceb05de6aee
+Description: synthetic fixture entry for make
+
+Package: gcc
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 4:13.2.0-7ubuntu1
+Depends: gcc-13 (>= 13.2.0-23~), libc6 (>= 2.38)
+Provides: c-compiler
+Filename: pool/main/g/gcc/gcc_4%3a13.2.0-7ubuntu1_amd64.deb
+Size: 4051
+SHA256: 2e2e4789f918c874951fe8898b85c10bda49e9c2e3a6f883cddfd1fb844d1507
+Description: synthetic fixture entry for gcc
+
+Package: gcc-13
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 13.2.0-23ubuntu4
+Depends: gcc-13-base (= 13.2.0-23ubuntu4), libc6 (>= 2.38)
+Provides: c-compiler
+Filename: pool/main/g/gcc-13/gcc-13_13.2.0-23ubuntu4_amd64.deb
+Size: 4102
+SHA256: 225742db7f4330c1250c84367d5a5ff6f3e0b2369ac230d45b3358efa4623397
+Description: synthetic fixture entry for gcc-13
+
+Package: gcc-13-base
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 13.2.0-23ubuntu4
+Filename: pool/main/g/gcc-13-base/gcc-13-base_13.2.0-23ubuntu4_amd64.deb
+Size: 4187
+SHA256: 87591d59d17e40f7f8fb38ff14d363adcc8ac018bd73f51fc0e23c500ec6bc56
+Description: synthetic fixture entry for gcc-13-base
+
+Package: libc6-dev
+Priority: optional
+Section: libdevel
+Architecture: amd64
+Version: 2.39-0ubuntu8.3
+Depends: libc6 (= 2.39-0ubuntu8.3)
+Provides: libc-dev
+Filename: pool/main/l/libc6-dev/libc6-dev_2.39-0ubuntu8.3_amd64.deb
+Size: 4153
+SHA256: c86d4b92abb36bfe751619879fd2ae5d99f9f41f3579ef9cf4b9ff803056f29f
+Description: synthetic fixture entry for libc6-dev
+
+Package: build-essential
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 12.10ubuntu1
+Depends: gcc (>= 4:13.2), make, libc6-dev | libc-dev, perl:any
+Filename: pool/main/b/build-essential/build-essential_12.10ubuntu1_amd64.deb
+Size: 4255
+SHA256: c3e5d163c89b245ad98d24b57e80cb70c0ff3b61c53a8f89df1bb57900e9cb57
+Description: synthetic fixture entry for build-essential
+
+Package: pkgconf
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 1.8.1-2build1
+Depends: libc6 (>= 2.38)
+Breaks: make (<< 3.0)
+Filename: pool/main/p/pkgconf/pkgconf_1.8.1-2build1_amd64.deb
+Size: 4119
+SHA256: 8055291618949a0d89fd8f403856f92ae6c90af114ab2abc8ed4965a78b22e95
+Description: synthetic fixture entry for pkgconf
+
+Package: ubuntu-needs-future-ssl
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Depends: libssl3t64 (>= 9.0.0)
+Filename: pool/main/u/ubuntu-needs-future-ssl/ubuntu-needs-future-ssl_1.0-1_amd64.deb
+Size: 4391
+SHA256: c95532155f2c930f976dd3b8451eb76e4acca4f5ace2acbb0e507ee49b853771
+Description: synthetic fixture entry for ubuntu-needs-future-ssl
+
+Package: ubuntu-needs-i386
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Depends: libc6:i386
+Filename: pool/main/u/ubuntu-needs-i386/ubuntu-needs-i386_1.0-1_amd64.deb
+Size: 4289
+SHA256: c7f8563b03d94ca54d2c53501533827c8f3ce1711e5beb86a11dda9aee098b8f
+Description: synthetic fixture entry for ubuntu-needs-i386
+
+Package: ubuntu-conflicts-make
+Priority: optional
+Section: misc
+Architecture: amd64
+Version: 1.0-1
+Conflicts: make
+Filename: pool/main/u/ubuntu-conflicts-make/ubuntu-conflicts-make_1.0-1_amd64.deb
+Size: 4357
+SHA256: 94dc862efc5cb73d6af5be4293848cc217bb0bb20c4b9dd3e1e95948d18e366e
+Description: synthetic fixture entry for ubuntu-conflicts-make

@@ -1,0 +1,5 @@
+00506e0a15fe0e5fac7e72246a8cf932db2d540bfd0f HEAD symref-target:refs/heads/main
+003d6e0a15fe0e5fac7e72246a8cf932db2d540bfd0f refs/heads/main
+003ee6c89d9b455f2126035656cb0474352dd7ac7b6e refs/heads/other
+006ac2e18d7bbc286cd4230fd74501b72b9fb450223d refs/tags/v1 peeled:e6c89d9b455f2126035656cb0474352dd7ac7b6e
+0000

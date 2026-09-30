@@ -1,0 +1,1484 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/dist-manifest.json",
+    "digest": "sha256:7428dd7ac39ff0b9f09f33c07c979e16c2924ab18921b172d240dd02e938a86e",
+    "name": "dist-manifest.json",
+    "size": 45026
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:33d35394499094cf6eb90f730dc82f11c0fab05d176378ae4f67de985ecc4146",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9392961
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:466d135e58b20b3a4f94534b22523d642bf0483ae27146e7c10c7d913d8f1ad0",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:98f41e001af9ccbbd16a9948b1214e711af9bacfaa204951d831584dfe109fcf",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9584475
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:3219d4dce44cc4706ac9d64bad8c63d62ebe5b90bd0d8ab69a4ac571e2776847",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a13061e8f471b49c9d2aa284c32dd54a0e5534d702d1a44e1d7f4c875569586d",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9512715
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:1441d95e36855a4c89fb0fa8c36bd54afed9e671b5fbc66c9110cafb16b6c2f7",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:40d9feb7210a6d984bb98b5f825afdcf36216ee464a884e26c104f97226c7713",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9609798
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:cd13155bcf46553fa672313091fdf9387ce94b2ef0da69c896255a045b7eda2e",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:89d8c636848dbdb5abd4c46ddc72f1de43f138e02c04c5e7d5e6092d3064bee6",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9647884
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:726da8f143545a7fca9a71f1809dd178ba8be7946bb78665e89dbb6f207411c1",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:5361a518161c1fc8be5730ddbc3f3d1e89b791b0c14cc1fa4f0b26005ae148cf",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9486666
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:0742ba5ae8e5d9c0ba211f491e0d4c38cd089f81511f2651857cfe45dafa88ab",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:9bad6a09b6dc2b075b5caa690135be84402b7ac1bf4314fd759b87d724db6793",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9475976
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:145d933eaeca2f07d7f0cd270e79b1a46e672bea61258d56a191c5d36b5addf1",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:9bc72f1facaeb61d659604e4ae5807e461ddde4af32c5d6beb53bf55223b1b90",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9526839
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:30dfe26ec9e85e21d07082f7325bf9848bc01420c89fda9ab517aaeb77e292f2",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:f3d8de54d0179a8749c5aa018760f86f70b8d1317835d507bf27b1542fde17dd",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10171990
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:60d2a6d620e6ff6377a8fe7e3b17d948162fe22f1e46f875aab0a18969d4e9dd",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:352fd90092114092e537f95382b21de6e2a500a1cdd2ce7651e37d9ca57c24c5",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9887645
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:62490b7249f410781928390408a07a4afaaf4c26ee069b458babb601faf1723a",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-installer.ps1",
+    "digest": "sha256:40cb78fd8f15713af4888184196db68e7faa5a9babf5902a059ded25b544c87b",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-installer.sh",
+    "digest": "sha256:3d1b806cc5cf26e24b70eb0f6fbe92672efe8d57812e37dfd5053c636d79d5e3",
+    "name": "ruff-installer.sh",
+    "size": 70504
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:bd0810f35dbc6d59491b40b486d88ff783134c774cac1f2bf725d9c503e5b7de",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 11017107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:096fb71f30a68c886ae23395494b74dcbb09bfcd727a63de6458822bd51be27c",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:367c2db932c50a77d4231a7ce3aaac1eae8e9e2c32eb3e979dd8f4b5cb5d3fe3",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10250100
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:cc66bf975d5664706d67dd78b4732cc1edc6ea2f68b124213df97afb8496bbdd",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:9fc575fd9a5b9701ce6fbf13cc2df7f60eabd35b6e04f0dac890474d66800180",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10577159
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:56a9805f8737f30dda734374ed292269035b3bd3f82cc4dd07a861871d65fb00",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:e98ea259a021c87d3a1f8bf18639d2e32dcd45cb2ef1afcb41b13e295de1e2b3",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9861239
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:397525ab5286cbe04fc04efa6ebd75dde9693dced13f486b3ab2c7b3b99ac754",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:fe5eb06b2f185b0d8035e17df9df0c831e59b3c98f11170206500650218a0b76",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9762824
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:201dcfce4d3dec1b948713d30912fd2950ed51c4ae5a4ca1d122c427ec14a893",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:1bfbb819b5d4f9af501748862276b60e412d336034d99387691a4d4bce7a6f13",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 10016146
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:be49d8f501a49507b6e932aa4f77f23e4630cc61f1e995b0fcadfe529fb94605",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:6a561ed4bc860472f7833dfb0f0b8285d3969fa627188c5678ea4ac2c462bbee",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10360561
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:6fd9b5ec617cf11e46fbf5d18f4cec77dcfaa737cc6fd5287e1d7bdcf3d6a578",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/sha256.sum",
+    "digest": "sha256:def311fdbdbab2ff8fa7a88c00e072e294328accc407a4cb02849de4230913cf",
+    "name": "sha256.sum",
+    "size": 1830
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/source.tar.gz",
+    "digest": "sha256:87df064eb5582c59e2575959b8b43ab6550c727d6a9875cc515d0299b826c067",
+    "name": "source.tar.gz",
+    "size": 13879867
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.9/source.tar.gz.sha256",
+    "digest": "sha256:92e338ae5f0467f20ef0422b64aee8274cb0f63d4453285a0ccc5d372c153111",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.9"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/dist-manifest.json",
+    "digest": "sha256:add6612f09cb2bfe01f393114fedc33be15a0c8d9ecb740c9e9b9de6ab62e3ae",
+    "name": "dist-manifest.json",
+    "size": 45926
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:0ffa53899f2970d24f14fbed8d8265c87180b159b7100794d97a1527dc60fa79",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9329431
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:915e5b452a51477480fe6489513f61167c6255cb6cc8f442b0bef798566e90f2",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:0ac8a56e66c3aa8f528f145cc77d59e419b007da1d537356a0d10e4148f36e0e",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9517399
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:6ad910ff8ced3eab05ee9dc1ef4993ee501e75bd191f7d01c9021ea097d4956e",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8ff18ee07d6ed3cfbd05fdc9012646a79482c00045dbcbf32416ef8f14ab1f7e",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9468965
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6cc50a080d1cc5ce3ad34c490408ad4dde619d5204f0573e24b0f20090278cee",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:57a4e072b6b74a4dd0036b7b253e056bdb70e02c68504ca6f2bfca2707d03fb6",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9565440
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:1cb6241edce7c9a91655927e68d52b5c4d5fc46a6e00c97961d8eea897c20365",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:13a2b870a1c56955b966079e906cfcde01fef2b26fa4452e6b7a357a35d5d74a",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9618586
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:ecf4d30d2a21a84028252cf75d8f27e82a10ccc334207b6a0b5ec4b0d7add8fc",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:720229a62de8a6b055c8792820d7be8912506dfe0e4d2adba9aeb67b89e02c58",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9455443
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:7515ac0f94db9cb6e009420408ee58d36d266fe383f684967074a102b7ea71e5",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:4aa8accdd13b0e0c810dedbcb17b35f417ef2c2662af8e9eb4daf259d6b2ff49",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9451184
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:c04900ec6a029eff6b17b488de1b1f80d9f5afb1c71a3adaa75a47acd3508c8e",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:8f1000bcc0f323bd449502e5ffc89c649e606270eb05eb718d60859ebfa6f9eb",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9471760
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:3f774844aa14afaef2cc57350d9973b60e98786ee44c38cfd2bfbaf7fc85a438",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8511e545d83735055ae91f1ff2552facaeacef8e9f8bc141d8e4d0e779737afc",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10138122
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:e0a67cbe12b52e9c6a9bd774d49cae30ccab68925a10f91d1edfc6a5edc9572a",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:a921388e4343fe7eed55de7a74dc87511900aba4d76f80209a0302bf8ada7728",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9847953
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:d0d48f9b150f09d538a9d72f28dff457574cf470e54db4773b144efe5ab63d6c",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-installer.ps1",
+    "digest": "sha256:06ce5545d87d2f4edca79c4923feba5046fe93c756dc212653a974e13d24e9a5",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-installer.sh",
+    "digest": "sha256:e6004fd2e7d523dd1086b9ba761d06151fdce9cbea8f366f5a8e993f30c42ed8",
+    "name": "ruff-installer.sh",
+    "size": 70504
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:97f4bc4fb6b5d291399dda13ba4a649040efdff59534b5a20fa3ed8d8412d861",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 10938886
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7b68b6bb9b6f9a105661b9314ee15d1375c9a3361b48c195d69bfa062638d661",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a0c3dbaeb407eb76a38ce4524be6f2321ead48681e842a1d60da8b7b45a8ac8b",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10175004
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:0a24adb84891c60b62b717f1aa250cd7efddf86984f73a8c550ecf9bd6dc75b0",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:47e0117cc78a16fcc2d11040f376eb1ef4bb1677c9ce09b6ee655a41dab65555",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10483304
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:3fbe23601878a867c4da117696dadb3ccecf3d4c8c83b947b7fbb5f12f322dbe",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:bccb4d49c5c9f7e69fd42df2475730a08a641af31b8e0ee5e775e3dd829c4686",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9789310
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:14b0d044f3bd20652218f7bf7b8d88c18b9102eb16d5397f92e11dc6ce857de1",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:7985e06caf14b0077cb68da41edbf812e1d9654fe4c144d72b71138e96350129",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9759952
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:5ffdf33d27b564ecf961a548e9b28a3a0acc47f1e16e1ae5732b2ddd1b1c8d57",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:c4a8c7c152532bcb7e7ede4bd6ccd440dcacddffcdcdd79b90090ac6021f41c2",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 9935479
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:9131b2f8ea2badbf3b10c880dd9bde2087c2f518ae785b6b57153c6e353de4f7",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:e56aa612121de356f37d05f3284cd806081fb72d5dbd4814b3810c5a23c562cc",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10274044
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:38dec7c69c501ebdbc602e6a85996b69114d7b311d417f15971b5cfa5f3e9590",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/sha256.sum",
+    "digest": "sha256:c66e3b6d11787f73e8775ea8eb6c583a7e12893703d9917e3f67c4da6386387c",
+    "name": "sha256.sum",
+    "size": 1830
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/source.tar.gz",
+    "digest": "sha256:e30ff9dffc204ba22ea2f3b8dd85d718fd1f49d547101f974186192155967015",
+    "name": "source.tar.gz",
+    "size": 13695015
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.8/source.tar.gz.sha256",
+    "digest": "sha256:6055fa1c887b80c56afe9dbfdaa7ebc3cf5ed6ac8b50db63c0afcac7f9c5eaeb",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.8"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/dist-manifest.json",
+    "digest": "sha256:c26b1c2485c316d2920268ea3357cdd078f3dcf624ad2cbb195b334fd88b9572",
+    "name": "dist-manifest.json",
+    "size": 45928
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:80221a5e0b1ae29262a74496f2ad1380c1ab52b3edd8cee13ec76d8acff406ca",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9344878
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:0a631722ccf3cb52ad0de7852d26e48a50d6f46962c0de5bfc135ae7f6d0c712",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:34befde8f261aae96a1edf8e84eeafa09e2ffc0df7e3ccaae52bcf39d29bd233",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9543884
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:da47b85126530922d04acbbf04378b751f7167c560b7201496aebd96c6e63a98",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:1e06b11127c28387c8066da4ce6a617a84a359591be09dbf581fbb0c3e006239",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9443710
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:28f04aed0a16383a407fe9fbf2efe554ab233b24c593e4b5c2be50f87b24d7f8",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:dd669efe4ac74ffd5842b26147c36cdd6c93b9cf0d10d5e53c12ec5b44f540bd",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9598106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:e4005a53ad9d6111c565f90ba4f85d29f9cf0eefc9231be796035e5338220961",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:a26e8281fedb6a2f01cbb908fe053663c129bf3367e42f8d0916c9698b515220",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9620059
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:f072f338d3cdaec74e934f381258edaab80feb0478ebbaac75de5c2ed5829c4a",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:7d346a8cd67f5a11ea859f47aec55bc1560570033b5012453f050a8804c7c5ab",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9443672
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:5ff39a406cd34526139a779128a2d707000b9569046f01f01ebad1b9a9c4a3d4",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:849be4c0aac3e76157d38b2f84b9b7b786f662d35194cf04f420ca44675ddba0",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9435463
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:7f76c20a93b9759cf8bf8d3cdbb59db5af345a28bd1f3663feaad2297c87f0fd",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:f4d838b95a81d0d415613c625825aab7c116b91a15f794527afc864e7745c109",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9437837
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:5eaddac3891703b86585afd9edc8353b5d954acf149d45cf670b537db455604b",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6c91f1a9e21c7dcedfca57ff40a869fa4f94e75313c23be45a5bb71b3d4fda44",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10192034
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:658d8d6d793a8584f5bea8fbd6a593833254675ea928ddded29a56c6d0c50196",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:368457e3eb3b77286978e09afd1902b27ac8f97bab840cd9d0810f4bad947752",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9906372
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:58bf1c6818d86ac218f4bbdd714d731d57d175bcee69d1aa296f5ef63bdf7ac4",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-installer.ps1",
+    "digest": "sha256:ef172c140d398ad3f419f818b17f8cc70ea32ca7a81295a39191ed9693a13210",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-installer.sh",
+    "digest": "sha256:9d1338dbfffd973fd6d329164691afecdcc53b106d26a6c72aaeec25feaae820",
+    "name": "ruff-installer.sh",
+    "size": 70504
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:8d98b953950000dd3ecee47f28f8fabd644256d1b3d426c9c7455380419b8506",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 10903830
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f88d66a0723ad5aad4096c5315febb4edeb0e60ae68ae9cd13be17b4c544a82e",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:933bf3cad0ef6a28eac5f27e44c3363d00c78e752cd0426c2ab8f2c865a9b8de",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10207435
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:bdd8b418d5c758de1de8fe693c6aded3be3d0ad8f4541c6bd9f6e097cff17537",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:544b8289a35e0db54faab498d45050a5d936cdb79a984c3f3cbdbaf650c85bb5",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10547172
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f9b2eeaeb1e6fdf4cab2d703fafc0d0f62587b947bdea713d83b180559de5af1",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:6f3b98ec349f470b7efde5294d44e5171613ddaac3c251a918a7946b303d3ec2",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9864923
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:971692d96227d55e4614550fb13baaa4a8a83630a68c39d264c258f14e95acf2",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:a099e761fb841fc33d44031aa37e16a3d154922fd3da284396e58ae687973e45",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9764202
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:222562e038ff0f2c564b9100f47c8d5b58045ea66a4d200c55703999af91e01a",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:73894c7b7c9a53fd66ed715eb3a1ec65077f316328e377057a98bdb7fcba0326",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 9977676
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:03d46ddc9e4526cf479f84937ce5e833bb88bc7c472e1d778b82c0c0ddea3475",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:8d28939cf5cabe54a2f8f7cbfab52c643436d1bc70474198181db9e48f504411",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10355951
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:c6f7483f13eb016e8649c781b4bf6d4ee63234bb6ebf713a9353df86840f4dbd",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/sha256.sum",
+    "digest": "sha256:d2efbdfba953fee2c80f6a35bc8549b8e057780d81f7a895b6fcfd94ba33c5b8",
+    "name": "sha256.sum",
+    "size": 1830
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/source.tar.gz",
+    "digest": "sha256:c2e3564246e58954e13d7ca19d56db424de4d2ed7c07108713ff9c5f686e9b9e",
+    "name": "source.tar.gz",
+    "size": 13601132
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.7/source.tar.gz.sha256",
+    "digest": "sha256:445a195f787ddac25148fc530d8047322f00d30684b8e7a8e36c514cb3dcfb97",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.7"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/dist-manifest.json",
+    "digest": "sha256:428cedd21967d634936b542af4a53a2346fc60a38780dc1dcd59b3a3b25ac5e5",
+    "name": "dist-manifest.json",
+    "size": 44013
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:77513748c833b435b82453ba20e07db808ef6c5121945ede80a6cf21bee468a4",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9331576
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:36a74a57360f7fb23dff09f84d7236b1ef5e257c3272361922dcdb409ba87d98",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:0a14f2a8de7e6a2bb43f47b329d639970462a8ca302b1c4c18668b5e3135462e",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9539018
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:ea9d34fef76b2efad8edf6a4db7f0ede07cf1d9790e4e29b4c3685e0e8903d5b",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:3c1b99f65b8bf2df64ff099ee072e11b4652813e2c164ec875a26fc9e99be88f",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9436379
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7e1d39e422c711ad4248e91cecd613626965bb1eaba31e246ddc5863a1244a38",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:9b28fc0646a7379c5a25f68b559669c39bc000325bbad5b64b47fcf6a3b582ae",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9592731
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:a9ba9c4db8af57d5fffe91101832bc36d54711cdd486d98fe8cfce50151b7ee9",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:54e219f6fa9fc933f0134918e12275388ec9c9c0a14ce56a156c89185628692b",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9580439
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:eaf9952f304a92d9c5214a70f0feb4e1d0c23d1109b407783bdbdbae07dda9fb",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:5f8e6453d6ac337d7b59a52cd8f0646f2a6b3e12a9039f7dc4800a03830383d3",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9415884
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:f279db4bf6cebcf659d6ae50aa9150b4a5dbc81162037e9b5078706e2f17d6bc",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:5f564c42249f40e70e41542caa26f81f46333196c822e029adc04410c3f525fb",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9412882
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:5c1a9fcf25cbb495279bc8dbf361f5293bf9146c73042e869d525492a7cf7a61",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:8f05bd2ee05672ea1ecafe7b75d53dce0490ca6eefac32e5a5fac546026a6b24",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9426521
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:909e839494aef0c3584561f28c17c701ccbf4874dbbc52dc6f4ffd1e27da1c46",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:70cc9a5e989f7ec8d00e5c0c1709aae56edc8ab6e53e582522bdc471a8a43af5",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10168435
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:53cabd951974404f3d43097d758e6dd346996c901b43acfa4d54eb5ca34db66f",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:f3afad5f2933e79459a95a9975ce28a77231a0133af61916786bc8632b867974",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9892821
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:c92d5192f31e3d8c5e9d0af3b937d2cd9c7b9126083f310f0d9e99ac4c6682ff",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-installer.ps1",
+    "digest": "sha256:b747d72a63191dd85737c8d6f5480943093762bfdf14b79770e61052e367bcc4",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-installer.sh",
+    "digest": "sha256:72dbb93c9473bcc5e67bd033bd903a3badc473b7f28deeaa725529f811d0e3ac",
+    "name": "ruff-installer.sh",
+    "size": 68260
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:5688226c9f68da7b048560ba1dd56fe8e199c5528ee5c8bdded4ee25d5079587",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 10866564
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:2ccb8921ffbe1a12124b2eec3a4641088aa1eb3321feefde4eaa6f37dc164a4b",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:6d4f32179f1fad29551ff9106d7af6be773177fca5e4baae7488db57980d16a8",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10199798
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:4ac4956492f8c7db4a64ae4a11a31389d722e79e6d30455eefcb2b2df97deb44",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:f77f8443ea0b3afc297ea2dc873510a3e99f8f822ac4c906fccce4cae6391eaf",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10488777
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:165cf01a5d0fb1c5975ec29899b77fbfcd9edb25918463c65a5110849945ee56",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:87cce7e591603efa979be9044ac00835638a5d9052947070b6e2e7c0cdb21940",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9840296
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:7de5baa18a1caea2bae02935e2a811ccc032534a4df0c68439d2217e21e0ec8b",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:d968cbf82bcb42042a59e9478a48f9a00db88cceaa2eeaa86c4834c02a70eaf6",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9729653
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:cf8c9b8baea5ea6a424ea94c7bffc0cc376e68aeed2a3ea6496ecd18188fc37b",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:0696335ef16615d8c7445ad438750eb0f55b3da6f153df21265a7c6d5750254f",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 9926956
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:f3b998eec6d6b372de6141e44613a742e31881d89cf54bf737f577f1bc039180",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:63740c5a1576dea4e1f2ff3f7427031188d23a11b7a4f78560749b8732a3b724",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10337077
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:de208403f9e5e4184c01393081712adef18ae5bd4cb661e3f48a9b776771c84e",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/sha256.sum",
+    "digest": "sha256:6694a132cac4bde94b08fa0ea1b24e58bd5553e01ec11965faf9d78140a7f79c",
+    "name": "sha256.sum",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/source.tar.gz",
+    "digest": "sha256:cc00971afa1067767a81b55b53ba54bcf35f747f990a5e146236c407590dff97",
+    "name": "source.tar.gz",
+    "size": 13480803
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.6/source.tar.gz.sha256",
+    "digest": "sha256:6694a132cac4bde94b08fa0ea1b24e58bd5553e01ec11965faf9d78140a7f79c",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.6"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/dist-manifest.json",
+    "digest": "sha256:3f03fca9a9f31ab8564d829d27d8a8f9c2d6d5b5d37d170a5a15b055cb4e68af",
+    "name": "dist-manifest.json",
+    "size": 41421
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:ed142f8656e0092828c103dd058b55b871c88e13a801cade8f860d8a9ca8943e",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9305728
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:4b723996fd3def5cb062410d556737f2d5e6d8ca03c5ca70822e85ec624eb415",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:30874e50be1f31626022358bbcaa80112ce1065b9297e5a9c4654f0b5a230d39",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9522424
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:ac9d6f396d6672476f7202ba2342c4d85848437cb6abceb97cfdc90e795b78b5",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:796079ea998dba3e455394077ba51a4c500c2402d3920580c646a0580f20370c",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9451036
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:e7569d961b73d45d60f60410cc07c0172193ddef023546e82d14e123dd957bd9",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:ae88ae21344546a4b3e5d342360197ea8e79d3794d673cc807c6f302d8b87f03",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9588201
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:50048d1fb0be1a73b676f6a02f16aa937d0d2b998e7e59d3413a920035244d29",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:8cff03acf4816cc1391f4304b982ce10a0de37c8623c095668523c0037d3d19e",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9579866
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:cce87d9c4e1dee432d87141dba6743173d9af5eb26a98e7f49f6afc804f256e6",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:dabf33e2dd3dee40badb154b40886b7b23eb9f6e53c04a6a117c1c26e5401b05",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9401082
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:59d90fe2b78b37579b2ca480c5fde82256ab2ce85e54b521030610d467302868",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:bf7f3761c1086f5b7816aedf099b6260170fcce3fe52e97dbd88389df0a48de3",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9398926
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:b295cb2e59eb6dd5b4b5cf5b206e4a594d672e38f7661ec907aef8913e42ac9c",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:20057031df4f11751908cf87931364328e57ae403f69032b49aebfa9b0b60743",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9414122
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:352df64eb3846cdc3d3f196612efa0da28a4e2a3ffa44a4542dbec68f6c3ee22",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:19b55dabbb7a314ec1e8cba5ccc45a676e2fed58893fede19f00e6362f8c5ac7",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10164971
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6371ff185dc8d08b14aaa2cac6aa7dbd01d19b846479621f8582d14dc9df99d7",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:d5e653a5eb0a4982e0a01be5f48cc3dcb1cb49b50e62655bf02be3aeee7214e8",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9890229
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:48d4b4d841500a768e65397b6437750f5975e3b2f877994bf77de5db417d468d",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-installer.ps1",
+    "digest": "sha256:9942b0ce797c8d6ab707d45fc9da75d7f3313b199948a3c2e542b913beaec7b3",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-installer.sh",
+    "digest": "sha256:ef3150ad1a67a95f5bd6f3521579d0f8e0fb2bf80a485104fb342ebc3e8044c5",
+    "name": "ruff-installer.sh",
+    "size": 68260
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:cdd9272c353053604a38986c971f69a9f24b0c8e2e6c9abea1d1a4d7944dd866",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 10853984
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:698ec9c3239cfe397543a341aae373a0be60d9bd2256604871da02b5441d7d9c",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:1c520a72e12837288e71e8e6b76f8ea507a18f7af8743378155d1e34a126ae3f",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10189625
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:1d88f8f14baf226753336778426ed0a63e9a55393d59c8e1f2846c3fd1a0d74c",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:a3391e391c53d412bb1479bb1770cc33123084be4137d57d9677436fc0a4bc93",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10487333
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6ed2044341930d8f5df54a0ac969f2888ae5b85981d371e6549ddd1ace99c77d",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:4895245fe294cd9f38b8c941b9aa009b3015729f73327bdbf8a716b7fec8f84d",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9826945
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:6fbb6ddf9941128ab28da0c3eda596604f15052139edcabb38eb9d15616d5e05",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:02fe2fc6d04eb4e768c34daaca4990b327ea83e84b0eac58affb924c0f554a75",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9694748
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:01f216fe28af1a5bed330b67dfe84b46e6ace7f008aeb39ffc75f8a4f501b460",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:65b8bae7e43f12a91b71036a52176012b3aefb725d5ae263e2771474110a0983",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 9922616
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:94cfa354be0c44eaede295bd20fa540668de68c5350858bea5a906cc5e0dfe1e",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0c560ee4a72245c6d0c9cdfd9dd69cbdc348b9448349707cf4061cea62472059",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10318115
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:3d9e6ae0ce5f1003ae006992f22bb210f8d4424c18d5658c8fe5e17636c2303b",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/sha256.sum",
+    "digest": "sha256:ba5f73a71f0f0a3fd84dc87026c5f5b747ef849b1d15ff3f03b7f6d8444f420c",
+    "name": "sha256.sum",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/source.tar.gz",
+    "digest": "sha256:d9fab4fd3317cc276916c4620941648b4ae44aeed54ebdd2aa1cb12c5b8a5fd0",
+    "name": "source.tar.gz",
+    "size": 13268856
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.5/source.tar.gz.sha256",
+    "digest": "sha256:ba5f73a71f0f0a3fd84dc87026c5f5b747ef849b1d15ff3f03b7f6d8444f420c",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.5"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/dist-manifest.json",
+    "digest": "sha256:a5afb8950c5c4370b5a07e7a370522f1b9e6c1b252ece9a90040ccd144616bab",
+    "name": "dist-manifest.json",
+    "size": 44597
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-apple-darwin.tar.gz",
+    "digest": "sha256:b4ad832b7734592aa1c6710dbc15277ed9d3d54c8bd44bb25bb7b14ae9098b88",
+    "name": "ruff-aarch64-apple-darwin.tar.gz",
+    "size": 9332658
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:7617b0c56263289966ccd6ae32e414828db3bd0f85d9191b33fc4c27cb849d13",
+    "name": "ruff-aarch64-apple-darwin.tar.gz.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-pc-windows-msvc.zip",
+    "digest": "sha256:da426ce57cffb8399aec0efcdca54a7bd775877d43ed4cdc8bbe0db1ba612b27",
+    "name": "ruff-aarch64-pc-windows-msvc.zip",
+    "size": 9575513
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:de44521660000c307a1e496808cd7e24659c729363fca987699876cfc9bcc2b9",
+    "name": "ruff-aarch64-pc-windows-msvc.zip.sha256",
+    "size": 99
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:08eb65c07016f1b6d2a874777492a230c7d5822bdf34030af217825b57911b0a",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+    "size": 9460209
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:6ca3602e1dfeea85ac283338c2a30bdd0fa843666b0e67a378a770ea7882b1ab",
+    "name": "ruff-aarch64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2b828176fed3fa23361accb749e305f804bb050395a05ed96c769a8fd4c8e440",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+    "size": 9623223
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:e8de46afa2cd80cc0e061b6e9b2225f48db07cf787f7d197ffd71dc7ef3d4683",
+    "name": "ruff-aarch64-unknown-linux-musl.tar.gz.sha256",
+    "size": 105
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:04029c5ac9448504e7d15b3f37c02ec91e4aa1721b5f646544468a05b8d7db29",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz",
+    "size": 9578171
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:e4886ca2cf32be64234a31afc78d936519d87060e52982616ba3b2b7c34928d1",
+    "name": "ruff-arm-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 107
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "digest": "sha256:16d2a99ce3f5e459e16fd7af9cc5800ea97312fe582368dde22f375b6745db23",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+    "size": 9410314
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "digest": "sha256:70c3245769232b95c7a7bf7acda1f3ba0bdf5005ab569f0d33e4957e9bc6dc69",
+    "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "digest": "sha256:babfdf9ee445ef4490ce8c838ead79bf74ec0ed6010b18aa99fdb68bbbd5ae33",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz",
+    "size": 9399466
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "digest": "sha256:ce68320bf1b20a23b2501fb81713379d8130ec1451e88321eeac4b6258233fa8",
+    "name": "ruff-armv7-unknown-linux-musleabihf.tar.gz.sha256",
+    "size": 109
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-pc-windows-msvc.zip",
+    "digest": "sha256:3a153f833c729ea4e67379c91637d9ac02917c4d9edf866b22fabbf84b89ae93",
+    "name": "ruff-i686-pc-windows-msvc.zip",
+    "size": 9404919
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:9b6864647c258b601425609703c1b3276cb49af6a6a49e358a9f963ffe5cccd8",
+    "name": "ruff-i686-pc-windows-msvc.zip.sha256",
+    "size": 96
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:fa2d20225c6eed473bab358323510fd6fc8604d6b98798bb774da019d3490b2c",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+    "size": 10158024
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:3dcfc0db51b63d908136d8c9e97557b70a0682adaaa2ca54345fbd644d4b7ed3",
+    "name": "ruff-i686-unknown-linux-gnu.tar.gz.sha256",
+    "size": 101
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-unknown-linux-musl.tar.gz",
+    "digest": "sha256:2ad466eeaa1078a2fe5e9efaf395c62bc57dcbe938cbc58eb1db53bad23bb3ce",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz",
+    "size": 9889240
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:9c3dbf9c9fd78ff093480ef181c6ea09ce1770d1c242b6810460b59934a784ac",
+    "name": "ruff-i686-unknown-linux-musl.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-installer.ps1",
+    "digest": "sha256:03cc9cf30b8c5d0bbc1806d842cc66216036625918de485a4acbe1e8501e96ad",
+    "name": "ruff-installer.ps1",
+    "size": 22594
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-installer.sh",
+    "digest": "sha256:4dc3926bee1112ce302164e677d72cd1cc1f0c459e64aa516f7526d8792f54f3",
+    "name": "ruff-installer.sh",
+    "size": 68260
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:ae42d24a22851893848341a9244d467ebd50fbcf88d3cf2b2f7900d3c8a5487f",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz",
+    "size": 10932442
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:725de59759339ffe67c960ad416ddbe89a51cea9026858ba425b69ad0a504de0",
+    "name": "ruff-powerpc64le-unknown-linux-gnu.tar.gz.sha256",
+    "size": 108
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:e2becfd12ae19fb77da6dbbd7ce437d3701b0ca687ac0d46da1a5bbc0ceedb9f",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz",
+    "size": 10246556
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:9412864aadbc534dec73cad2609ea8c8ab53d30addc67832d38b81e4eac26ac9",
+    "name": "ruff-riscv64gc-unknown-linux-gnu.tar.gz.sha256",
+    "size": 106
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-s390x-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:d3899941e592b7ecb50d0a4389412ede324eecb9437955327ef8237213c13293",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz",
+    "size": 10439044
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:8ae3d44d88f175fb1e190dde1e82ffe1512b6809c561a9ab435547c9e0806931",
+    "name": "ruff-s390x-unknown-linux-gnu.tar.gz.sha256",
+    "size": 102
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-apple-darwin.tar.gz",
+    "digest": "sha256:233b7368e00b25064abd0db19f7cb1b43117fef41d7106170e6ffec50a0201ca",
+    "name": "ruff-x86_64-apple-darwin.tar.gz",
+    "size": 9865447
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "digest": "sha256:855be1904060245da35069fca02bbb35ec62c1d3455d53785efc730ec9739e11",
+    "name": "ruff-x86_64-apple-darwin.tar.gz.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-pc-windows-msvc.zip",
+    "digest": "sha256:5e3a9521e568fd925d554abd606f40bb51e59327c28db716eb3faf2c5b6ce123",
+    "name": "ruff-x86_64-pc-windows-msvc.zip",
+    "size": 9743340
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "digest": "sha256:365db22fee702ca96dcf2f97ce19bc219876bebe416b9cf7534520072eda55dd",
+    "name": "ruff-x86_64-pc-windows-msvc.zip.sha256",
+    "size": 98
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "digest": "sha256:9cb1234804ddb0f7f57cef3f81623ce5acb990e40af7cce08dc7778c9d7ee96c",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz",
+    "size": 9899646
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "digest": "sha256:7b78f6a90e7c81e817579ebd8fce42e256a1d1bee292f4fbcb7978ade4d16c1a",
+    "name": "ruff-x86_64-unknown-linux-gnu.tar.gz.sha256",
+    "size": 103
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0c2a1616b0782dbf7ee04239576887c4c894277189e04ba94ff3160eba9c1863",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+    "size": 10313237
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "digest": "sha256:0d9663259907e0c53847fe1bfaa2bd0dd43e81458ac969e8c80ea724338ca486",
+    "name": "ruff-x86_64-unknown-linux-musl.tar.gz.sha256",
+    "size": 104
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/sha256.sum",
+    "digest": "sha256:766857c416f8ca9dedbcc501c5da4f74f72eb51c0b982a0c916784ab76374dae",
+    "name": "sha256.sum",
+    "size": 81
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/source.tar.gz",
+    "digest": "sha256:1791d25eed0479ea85da253eecf059d899c5d814189b677fbc22c7b971c354c2",
+    "name": "source.tar.gz",
+    "size": 13120186
+   },
+   {
+    "browser_download_url": "https://github.com/astral-sh/ruff/releases/download/0.16.4/source.tar.gz.sha256",
+    "digest": "sha256:766857c416f8ca9dedbcc501c5da4f74f72eb51c0b982a0c916784ab76374dae",
+    "name": "source.tar.gz.sha256",
+    "size": 81
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "0.16.4"
+ }
+]

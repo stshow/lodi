@@ -1,0 +1,8 @@
+# Which format version this directory is written in. catalogue/README.md describes the format.
+# `min_lodi_version` is the oldest Lodi that can read every file here: the Ubuntu base
+# definition uses the `dated_checksum_dir` rootfs strategy, which older builds do not have. It
+# is a statement about this data, not Lodi's own version, and nothing reads it yet.
+[catalogue]
+schema           = "1"
+name             = "lodi-builtin"
+min_lodi_version = "0.3.0"

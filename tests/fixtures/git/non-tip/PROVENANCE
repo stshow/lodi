@@ -1,0 +1,23 @@
+{
+  "commands": [
+    "git init -b main",
+    "git add .",
+    "git commit -m first",
+    "git commit -m second",
+    "git commit -m nested (nested case only)",
+    "git tag -a v1 <first>",
+    "git branch other <first>",
+    "git clone --bare <source> <repo.git>",
+    "git http-backend GET info/refs (Git-Protocol: version=2)",
+    "git http-backend POST git-upload-pack (ls-refs; fetch deepen 1)"
+  ],
+  "commit": "e6c89d9b455f2126035656cb0474352dd7ac7b6e",
+  "git": "git version 2.55.0",
+  "sha256": {
+    "advertisement.bin": "3fca95b8bc9314a89a33dbeb8af10b2e241964e0c2fb50d8dffbfffff38b76c6",
+    "fetch-request.bin": "8f4f3890d296c68a8f55a2b7bd00b1bd797c0eafc31f90071860bde79a0b87da",
+    "fetch-response.bin": "8e07a15a7b01b3bdafbf78d41160a413ffb451c213fafa7f77d981b5a582cd7b",
+    "ls-request.bin": "30f5149ff5f5a60ddababe9b0932fd61736653a3e2e310b7ae2d9f2138ebdb9d",
+    "ls-response.bin": "b9abd8bb10dbf6e57ca104ac9c223bb2d8c8cf4c6cef7b8f385c1f4c84a8ab94"
+  }
+}

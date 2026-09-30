@@ -1,0 +1,209 @@
+aspell-en:
+  Installed: 2020.12.07-0-1
+  Candidate: 2020.12.07-0-1
+  Version table:
+ *** 2020.12.07-0-1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+aspell:
+  Installed: 0.60.8-4+b1
+  Candidate: 0.60.8-4+b1
+  Version table:
+ *** 0.60.8-4+b1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+base-files:
+  Installed: 12.4+deb12u5
+  Candidate: 12.4+deb12u5
+  Version table:
+ *** 12.4+deb12u5 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+bash:
+  Installed: 5.2.15-2+b7
+  Candidate: 5.2.15-2+b7
+  Version table:
+ *** 5.2.15-2+b7 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+containerd.io:
+  Installed: 1.7.27-1~debian.12~bookworm
+  Candidate: 1.7.27-1~debian.12~bookworm
+  Version table:
+ *** 1.7.27-1~debian.12~bookworm 500
+        500 https://download.docker.com/linux/debian bookworm/stable amd64 Packages
+        100 /var/lib/dpkg/status
+coreutils:
+  Installed: 9.1-1
+  Candidate: 9.1-1
+  Version table:
+ *** 9.1-1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+curl:
+  Installed: 7.88.1-10+deb12u12
+  Candidate: 7.88.1-10+deb12u12
+  Version table:
+ *** 7.88.1-10+deb12u12 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+debianutils:
+  Installed: 5.7-0.5~deb12u1
+  Candidate: 5.7-0.5~deb12u1
+  Version table:
+ *** 5.7-0.5~deb12u1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+docker-ce:
+  Installed: 5:28.3.3-1~debian.12~bookworm
+  Candidate: 5:28.3.3-1~debian.12~bookworm
+  Version table:
+ *** 5:28.3.3-1~debian.12~bookworm 500
+        500 https://download.docker.com/linux/debian bookworm/stable amd64 Packages
+        100 /var/lib/dpkg/status
+docker-ce-cli:
+  Installed: 5:28.3.3-1~debian.12~bookworm
+  Candidate: 5:28.3.3-1~debian.12~bookworm
+  Version table:
+ *** 5:28.3.3-1~debian.12~bookworm 500
+        500 https://download.docker.com/linux/debian bookworm/stable amd64 Packages
+        100 /var/lib/dpkg/status
+dpkg:
+  Installed: 1.21.22
+  Candidate: 1.21.22
+  Version table:
+ *** 1.21.22 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+git-man:
+  Installed: 1:2.39.5-0+deb12u2
+  Candidate: 1:2.39.5-0+deb12u2
+  Version table:
+ *** 1:2.39.5-0+deb12u2 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+git:
+  Installed: 1:2.39.5-0+deb12u2
+  Candidate: 1:2.39.5-0+deb12u2
+  Version table:
+ *** 1:2.39.5-0+deb12u2 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+kmod:
+  Installed: 30+20221128-1
+  Candidate: 30+20221128-1
+  Version table:
+ *** 30+20221128-1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+libc6:
+  Installed: 2.36-9+deb12u7
+  Candidate: 2.36-9+deb12u7
+  Version table:
+ *** 2.36-9+deb12u7 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+libcurl4:
+  Installed: 7.88.1-10+deb12u12
+  Candidate: 7.88.1-10+deb12u12
+  Version table:
+ *** 7.88.1-10+deb12u12 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+libgcc-s1:
+  Installed: 12.2.0-14+deb12u1
+  Candidate: 12.2.0-14+deb12u1
+  Version table:
+ *** 12.2.0-14+deb12u1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-base:
+  Installed: 4.9
+  Candidate: 4.9
+  Version table:
+ *** 4.9 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-image-6.1.0-26-amd64:
+  Installed: 6.1.112-1
+  Candidate: 6.1.112-1
+  Version table:
+ *** 6.1.112-1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+linux-image-amd64:
+  Installed: 6.1.112-1
+  Candidate: 6.1.112-1
+  Version table:
+ *** 6.1.112-1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+lodi-hand-built:
+  Installed: 0-1
+  Candidate: 0-1
+  Version table:
+ *** 0-1 100
+        100 /var/lib/dpkg/status
+openssh-client:
+  Installed: 1:9.2p1-2+deb12u3
+  Candidate: 1:9.2p1-2+deb12u3
+  Version table:
+ *** 1:9.2p1-2+deb12u3 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+openssh-server:
+  Installed: 1:9.2p1-2+deb12u3
+  Candidate: 1:9.2p1-2+deb12u3
+  Version table:
+ *** 1:9.2p1-2+deb12u3 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+perl-base:
+  Installed: 5.36.0-7+deb12u1
+  Candidate: 5.36.0-7+deb12u1
+  Version table:
+ *** 5.36.0-7+deb12u1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+ripgrep:
+  Installed: 13.0.0-4+b2
+  Candidate: 13.0.0-4+b2
+  Version table:
+ *** 13.0.0-4+b2 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+sqlite3:
+  Installed: 3.40.1-2+deb12u1
+  Candidate: 3.40.1-2+deb12u1
+  Version table:
+ *** 3.40.1-2+deb12u1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+systemd:
+  Installed: 252.30-1~deb12u2
+  Candidate: 252.30-1~deb12u2
+  Version table:
+ *** 252.30-1~deb12u2 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+tar:
+  Installed: 1.34+dfsg-1.2+deb12u1
+  Candidate: 1.34+dfsg-1.2+deb12u1
+  Version table:
+ *** 1.34+dfsg-1.2+deb12u1 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+task-english:
+  Installed: 3.73
+  Candidate: 3.73
+  Version table:
+ *** 3.73 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status
+task-ssh-server:
+  Installed: 3.73
+  Candidate: 3.73
+  Version table:
+ *** 3.73 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+        100 /var/lib/dpkg/status

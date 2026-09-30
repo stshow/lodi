@@ -1,0 +1,24 @@
+ /etc/apt/auth.conf d40eb78886bdfb128d7fcc154da284aa
+ /etc/apt/auth.conf.d/90local d40eb78886bdfb128d7fcc154da284aa
+ /etc/crypttab d40eb78886bdfb128d7fcc154da284aa
+ /etc/fstab d40eb78886bdfb128d7fcc154da284aa
+ /etc/group d40eb78886bdfb128d7fcc154da284aa
+ /etc/gshadow d40eb78886bdfb128d7fcc154da284aa
+ /etc/hostname d40eb78886bdfb128d7fcc154da284aa
+ /etc/krb5.keytab d40eb78886bdfb128d7fcc154da284aa
+ /etc/machine-id d40eb78886bdfb128d7fcc154da284aa
+ /etc/netrc d40eb78886bdfb128d7fcc154da284aa
+ /etc/NetworkManager/system-connections/home.nmconnection d40eb78886bdfb128d7fcc154da284aa
+ /etc/pacman.d/gnupg/pubring.conf d40eb78886bdfb128d7fcc154da284aa
+ /etc/pacman.d/mirrorlist d40eb78886bdfb128d7fcc154da284aa
+ /etc/passwd d40eb78886bdfb128d7fcc154da284aa
+ /etc/pki/client.p12 d40eb78886bdfb128d7fcc154da284aa
+ /etc/shadow d40eb78886bdfb128d7fcc154da284aa
+ /etc/ssh/ssh_host_ed25519_key d40eb78886bdfb128d7fcc154da284aa
+ /etc/ssl/private/site.conf d40eb78886bdfb128d7fcc154da284aa
+ /etc/subgid d40eb78886bdfb128d7fcc154da284aa
+ /etc/subuid d40eb78886bdfb128d7fcc154da284aa
+ /etc/sudoers.d/90-local d40eb78886bdfb128d7fcc154da284aa
+ /etc/wpa_supplicant/wpa_supplicant.conf d40eb78886bdfb128d7fcc154da284aa
+ /usr/local/etc/outside.conf d40eb78886bdfb128d7fcc154da284aa
+ /etc/apt/apt.conf.d/99obsolete d40eb78886bdfb128d7fcc154da284aa obsolete

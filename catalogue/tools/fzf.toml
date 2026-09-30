@@ -1,0 +1,20 @@
+# fzf for [tools] fzf. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+# Shell key bindings stay the user's own line; the recipe installs only the program.
+[recipe]
+name        = "fzf"
+description = "A general-purpose command-line fuzzy finder"
+homepage    = "https://junegunn.github.io/fzf"
+
+[versions]
+strategy = "github_releases"
+repo     = "junegunn/fzf"
+asset    = "fzf-${version}-linux_${arch_alt}.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 0
+
+[spec]
+bin  = ["fzf"]
+path = ["."]

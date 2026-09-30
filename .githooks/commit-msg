@@ -1,0 +1,77 @@
+#!/bin/sh
+# .githooks/commit-msg
+#
+# Blocks a commit if its message contains a disallowed email address, or
+# carries a partial or malformed prevention record (#336).
+# Hooks are a safety net; --no-verify is forbidden by project policy
+# (see .githooks/README.md).
+
+hook_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck disable=SC1091
+. "$hook_dir/lib.sh"
+
+msg_file=$1
+
+if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
+    echo "ERROR: commit-msg hook: no commit message file given." >&2
+    exit 1
+fi
+
+offenders=$(scan_text_for_emails < "$msg_file")
+
+if [ -n "$offenders" ]; then
+    echo "ERROR: commit message contains disallowed email address(es):" >&2
+    printf '%s\n' "$offenders" | sed 's/^/    /' >&2
+    echo "" >&2
+    echo "Remove the personal/real email address(es) from the commit message." >&2
+    exit 1
+fi
+
+# #336: the prevention record. A message that carries any of the four trailer keys (at the start
+# of a line, above git's scissors line) carries all four, once each and well-formed. A message
+# without them passes: whether a fix needs one is decided at landing (kind:failure), not here.
+# tooling/supervisor/bin/failure.py holds the same grammar; its --self-test runs this hook too.
+body=$(sed '/^# -\{1,\} >8 -\{1,\}$/,$d' "$msg_file")
+if printf '%s\n' "$body" | grep -Eq '^(Cause|Recurs|Prevention|Fingerprint):'; then
+    kinds='hook|gate-step|test|reaper|timer|signal|guard|config'
+    sources='gate|land|disk|runner|agent|origin|tree|perf|host|release-pass|post-landing-matrix|manual'
+    problems=
+    for key in Cause Recurs Prevention Fingerprint; do
+        n=$(printf '%s\n' "$body" | grep -c "^$key:")
+        if [ "$n" -eq 0 ]; then
+            problems="$problems
+    $key: is missing"
+            continue
+        fi
+        if [ "$n" -gt 1 ]; then
+            problems="$problems
+    $key: appears $n times; one line each"
+            continue
+        fi
+        value=$(printf '%s\n' "$body" | sed -n "s/^$key:[[:space:]]*//p" | sed 's/[[:space:]]*$//')
+        case $key in
+            Cause) re='^[^[:space:]].*$' hint='one line: why it happened' ;;
+            Recurs) re='^(yes|no|unknown), *[^[:space:]].*$' hint='yes|no|unknown, <why>' ;;
+            Prevention)
+                re="^(($kinds): *[^[:space:]].*|#[0-9]+([^0-9].*)?|none, because *[^[:space:]].*)\$"
+                hint="<kind>: <what> (kind: $(echo "$kinds" | sed 's/|/, /g')), #N, or none, because <reason>" ;;
+            Fingerprint)
+                re="^($sources):[^[:space:]]+\$"
+                hint="<source>:<slug> (source: $(echo "$sources" | sed 's/|/, /g'))" ;;
+        esac
+        if ! printf '%s\n' "$value" | grep -Eq "$re" \
+            || printf '%s\n' "$value" | grep -Eq '<(why|what|reason|source|slug|kind|one line|mechanism)([^[:alnum:]_]|$)'; then
+            problems="$problems
+    $key: $value -- expected $hint"
+        fi
+    done
+    if [ -n "$problems" ]; then
+        echo "ERROR: the prevention record (#336) is incomplete or malformed:$problems" >&2
+        echo "" >&2
+        echo "A message that carries one of Cause:, Recurs:, Prevention:, Fingerprint: carries all four," >&2
+        echo "one line each (see tooling/supervisor/TICK.md). Fix the lines and commit again." >&2
+        exit 1
+    fi
+fi
+
+exit 0

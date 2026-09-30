@@ -1,0 +1,3 @@
+deb http://ftp.mirror.example.invalid/debian bookworm main non-free-firmware
+deb http://ftp.mirror.example.invalid/debian-security bookworm-security main non-free-firmware
+deb http://ftp.mirror.example.invalid/debian bookworm-updates main non-free-firmware

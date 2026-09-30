@@ -1,0 +1,19 @@
+# lazygit for [tools] lazygit. This recipe says where to look; it lists no version. `lodi lock`
+# discovers versions from the tags of the newest GitHub releases.
+[recipe]
+name        = "lazygit"
+description = "A simple terminal UI for git commands"
+homepage    = "https://github.com/jesseduffield/lazygit"
+
+[versions]
+strategy = "github_releases"
+repo     = "jesseduffield/lazygit"
+asset    = "lazygit_${version}_linux_${arch}.tar.gz"
+
+[asset]
+format           = "tar.gz"
+strip_components = 0
+
+[spec]
+bin  = ["lazygit"]
+path = ["."]

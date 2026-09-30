@@ -1,0 +1,14 @@
+# Managed by lodi from home.toml [programs.starship]. Edit home.toml, not this file:
+# a hand edit here is drift, and `lodi home apply` stops on it.
+
+add_newline = false
+command_timeout = 500
+format = "$directory$git_branch$character"
+scan_timeout = 30
+
+[character]
+error_symbol = "[>](bold red)"
+success_symbol = "[>](bold green)"
+
+[git_branch]
+symbol = "git "

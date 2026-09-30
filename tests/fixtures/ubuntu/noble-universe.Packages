@@ -1,0 +1,33 @@
+Package: jq
+Priority: optional
+Section: utils
+Architecture: amd64
+Version: 1.7.1-3build1
+Depends: libjq1 (= 1.7.1-3build1), libc6 (>= 2.38)
+Filename: pool/universe/j/jq/jq_1.7.1-3build1_amd64.deb
+Size: 4034
+SHA256: 9ff7223ed8be969f2b79c18134fbf142dbc5081cc48b85e6e0625786d00107e0
+Description: synthetic fixture entry for jq
+
+Package: libjq1
+Priority: optional
+Section: libs
+Architecture: amd64
+Version: 1.7.1-3build1
+Depends: libc6 (>= 2.38)
+Filename: pool/universe/l/libjq1/libjq1_1.7.1-3build1_amd64.deb
+Size: 4102
+SHA256: e7759c2d71bd87ba2cf96628d94f33c75c6286ad9f055a19d8167adcbe0ee6f6
+Description: synthetic fixture entry for libjq1
+
+Package: tcc
+Priority: optional
+Section: devel
+Architecture: amd64
+Version: 0.9.27+git20220323.f6ab6ff-4
+Depends: libc6 (>= 2.38)
+Provides: c-compiler
+Filename: pool/universe/t/tcc/tcc_0.9.27+git20220323.f6ab6ff-4_amd64.deb
+Size: 4051
+SHA256: ca5a766b4dfdc37f302657506f9a2b2b5f560a11bdd508afd42ee3352a683a7d
+Description: synthetic fixture entry for tcc

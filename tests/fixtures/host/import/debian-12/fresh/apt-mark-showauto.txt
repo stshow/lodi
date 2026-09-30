@@ -1,0 +1,6 @@
+aspell
+aspell-en
+kmod
+linux-base
+linux-image-6.1.0-26-amd64
+openssh-client

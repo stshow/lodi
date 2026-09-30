@@ -1,0 +1,2 @@
+lxd_29619.snap
+snapd_23258.snap

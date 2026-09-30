@@ -1,0 +1,15 @@
+Origin: Ubuntu
+Label: Ubuntu
+Suite: noble
+Version: 24.04
+Codename: noble
+Date: Thu, 25 Apr 2024 15:10:33 UTC
+Architectures: amd64 arm64 armhf i386 ppc64el riscv64 s390x
+Components: main restricted universe multiverse
+Description: Ubuntu Noble 24.04
+Acquire-By-Hash: yes
+SHA256:
+ 2e9814a01982f9ab492937aaf11c3062512a6b5e29d13a905413e98318b8f3f3 460 main/binary-amd64/Packages.xz
+ a878b5f97cb44827652af154d093c077b02ec3193f9cdd1492cf3430fc3574de 623 main/binary-amd64/Packages
+ aa243f851c731c1587bd6f9d23eb348831df29a4d132e66edfa48b135c3abe20 288 universe/binary-amd64/Packages.xz
+ 731bc7ce2679f252290d7cafa9989df427e110186656d229d8b6cc5868f49015 272 universe/binary-amd64/Packages

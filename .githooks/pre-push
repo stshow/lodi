@@ -1,0 +1,123 @@
+#!/bin/sh
+# .githooks/pre-push
+#
+# Final safety net before anything leaves the machine: for every ref being
+# pushed, walks every commit that is not already on the remote and checks
+# its author email, committer email, message, and added-line diff content.
+# Hooks are a safety net; --no-verify is forbidden by project policy
+# (see .githooks/README.md).
+
+hook_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck disable=SC1091
+. "$hook_dir/lib.sh"
+
+remote_name=$1
+# remote_url=$2   # unused, kept for readability of the hook signature
+
+zero=0000000000000000000000000000000000000000
+
+# #572: the identity pin and the landing rules below are the owner's (lodi.enforceIdentity=true);
+# a contributor's clone keeps the content checks only.
+enforce=""
+identity_enforced && enforce=1
+
+# Landing guidance (#301, LD-468): main moves only through the one landing command, which holds
+# the landing lock and says so with LODI_LANDING_LOCK_HELD. A project that copies this hook sets
+# its own command here.
+LANDING_COMMAND='tooling/supervisor/bin/land-lane.sh --issue <N> "Models: <each seat that ran>"'
+to_main=""
+behind=""
+
+fail=0
+report=""
+
+# githooks(5): pre-push receives one line per ref on stdin:
+#   <local ref> SP <local sha1> SP <remote ref> SP <remote sha1> LF
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+    [ -n "$local_ref" ] || continue
+
+    [ -n "$enforce" ] && case "$remote_ref" in
+        refs/heads/main)
+            [ -n "${LODI_LANDING_LOCK_HELD:-}" ] || to_main=1 ;;
+        refs/heads/claude/*-wip) ;;
+        refs/heads/claude/*)
+            if [ "$local_sha" != "$zero" ] \
+                && git rev-parse -q --verify "refs/remotes/$remote_name/main" >/dev/null 2>&1 \
+                && ! git merge-base --is-ancestor "refs/remotes/$remote_name/main" "$local_sha"; then
+                behind="${behind}${behind:+ }${remote_ref#refs/heads/}"
+            fi ;;
+    esac
+
+    # Deleting a remote ref: nothing new is being uploaded.
+    if [ "$local_sha" = "$zero" ]; then
+        continue
+    fi
+
+    if [ "$remote_sha" = "$zero" ]; then
+        # New branch/tag on the remote: nothing to exclude except commits
+        # already known via some other remote-tracking ref.
+        range_commits=$(git rev-list "$local_sha" --not --remotes="$remote_name" 2>/dev/null)
+    else
+        range_commits=$(git rev-list "$remote_sha..$local_sha" 2>/dev/null)
+    fi
+
+    [ -n "$range_commits" ] || continue
+
+    for sha in $range_commits; do
+        reasons=""
+
+        author_email=$(git show -s --format='%ae' "$sha")
+        committer_email=$(git show -s --format='%ce' "$sha")
+
+        if [ -n "$enforce" ] && email_is_disallowed "$author_email"; then
+            reasons="${reasons}author email '$author_email' not allowed; "
+        fi
+        if [ -n "$enforce" ] && email_is_disallowed "$committer_email"; then
+            reasons="${reasons}committer email '$committer_email' not allowed; "
+        fi
+
+        msg_offenders=$(git show -s --format='%B' "$sha" | scan_text_for_emails)
+        if [ -n "$msg_offenders" ]; then
+            reasons="${reasons}message contains: $(printf '%s' "$msg_offenders" | tr '\n' ' '); "
+        fi
+
+        diff_offenders=$(git show --format= --no-color -U0 "$sha" \
+            | grep '^+' \
+            | grep -v '^+++' \
+            | cut -c2- \
+            | scan_text_for_emails)
+        if [ -n "$diff_offenders" ]; then
+            reasons="${reasons}diff adds: $(printf '%s' "$diff_offenders" | tr '\n' ' '); "
+        fi
+
+        if [ -n "$reasons" ]; then
+            report="${report}${sha} (${local_ref}): ${reasons}
+"
+            fail=1
+        fi
+    done
+done
+
+if [ "$fail" -ne 0 ]; then
+    echo "ERROR: push blocked - disallowed email address(es) found in commit(s) being pushed:" >&2
+    printf '%s' "$report" | sed 's/^/    /' >&2
+    echo "" >&2
+    echo "Hooks are a safety net; --no-verify is forbidden by project policy." >&2
+    exit 1
+fi
+
+if [ -n "$to_main" ]; then
+    echo "ERROR: push refused - main moves only through the landing command." >&2
+    echo "Do this: commit on a claude/ branch (git switch -c claude/<name>), then run" >&2
+    echo "    $LANDING_COMMAND" >&2
+    echo "It rebases onto main, checks, pushes and fast-forwards main for you." >&2
+    exit 1
+fi
+if [ -n "$behind" ]; then
+    echo "ERROR: push refused - $behind is behind $remote_name/main." >&2
+    echo "Do this: run $LANDING_COMMAND" >&2
+    echo "(it rebases for you), or to push by hand first run: git fetch $remote_name && git rebase $remote_name/main" >&2
+    exit 1
+fi
+
+exit 0

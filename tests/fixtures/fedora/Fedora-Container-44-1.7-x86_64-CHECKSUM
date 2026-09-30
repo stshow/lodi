@@ -1,0 +1,29 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+# Fedora-Container-Base-Generic-44-1.7.x86_64.oci.tar.xz: 70170200 bytes
+SHA256 (Fedora-Container-Base-Generic-44-1.7.x86_64.oci.tar.xz) = 75200f5752a74a21a616ca9a75e25beb594e2e117a0195c54f87c0b3e3974d1b
+# Fedora-Container-Base-Generic-Minimal-44-1.7.x86_64.oci.tar.xz: 54983896 bytes
+SHA256 (Fedora-Container-Base-Generic-Minimal-44-1.7.x86_64.oci.tar.xz) = 2e405ab2b84155c32887f07ed1b259b342acda7547272607c1d18eb7cd1af961
+# Fedora-Container-Toolbox-44-1.7.x86_64.oci.tar.xz: 323108132 bytes
+SHA256 (Fedora-Container-Toolbox-44-1.7.x86_64.oci.tar.xz) = 214a6735d8dbd73d2bd708e103eabf4aa5ee7f3b4a6b2ca0f05061374be82b02
+# Fedora-FEX-RootFS-44-1.7.x86_64.erofs.xz: 978146572 bytes
+SHA256 (Fedora-FEX-RootFS-44-1.7.x86_64.erofs.xz) = 0458cb2ba8aa1931254be65b6368d7b6e4397433712f4c013ad13c9fab6201e5
+# Fedora-WSL-Base-44-1.7.x86_64.wsl: 162846319 bytes
+SHA256 (Fedora-WSL-Base-44-1.7.x86_64.wsl) = 2e5b153ba4b639952bf546be577fc19b832fe8944caa7de342b32f10da7d319a
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEENvYS3PJ/fRpIqDXk2/z3HG2fkKYFAmnrjWAACgkQ2/z3HG2f
+kKZjMA/7BVCf1vFM6unPwQsdOBccIYGsANSXqj1evwwNNnilcdzVXjsm+j9SleVq
+558CTGFN6QFpaUPLA8ddBBae7+o9Lus6hr4PChVtA4TS+ikv5g9t0i+4PeQcAZen
+O/7J0vD37WbzqRDQsnRfNUi+RK3QCzBF98fCqS6LlSoHLwMVrwutBTUNHaN+PV8Q
+Bbn2tvn7EgVOqhKZ7EiX4oigP0S0Y0iInIgLR4qWzPuIFeC/tugmc5jXpbnRbEYs
+rwmjdw8acmeR107ra4CFNPsaznmNhTWQyqX0yGJURiPZmE1ZOmU7pDiLfcs5sndn
+sA3Oaw/F6K74nanE7OlKvv/MfR4DFFaKcBfURkjGeoEpAFOT/yWtwWPXVoP6EnI9
+dlIbcWIBxpgA0N3hsv19UkJIeCkeHX6E2/oanjxNV1vUlpA8o8HzpsRfomlLZIIW
+sFzIE7FRyuD+YRIIKR2coTfPeEeu/mJg4tRabylv7kbJsJtT8VHtYEY+ECVoam9G
+WDwAuYV0RV8L4hKsgO0sYmvlvH4YxjkPa/aWHf+zUbZfva3HZUdj1RbXUnfb7JzY
+U9e3e6qHvX5p2TKt+Y6kZb0uJcyiCwDVfLcmCR4gUmRev/8js6APxQSkn7ZehlIW
+OajqsmYhTDoYepx5nxodcoPrtgNOhTIeBWHB1JbMatKTeC/FeCw=
+=idmh
+-----END PGP SIGNATURE-----

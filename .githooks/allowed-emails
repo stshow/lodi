@@ -1,0 +1,11 @@
+# Allowed identity / content email patterns, one POSIX ERE per line.
+# Lines beginning with '#' (after optional leading whitespace) and blank
+# lines are ignored. Each pattern is matched with `grep -E` against a
+# single candidate email address.
+#
+# DO NOT add the repository owner's real personal email address to this
+# file, in any form, for any reason. See .githooks/README.md.
+
+# The one permitted identity: the owner's GitHub-generated noreply address
+# (id+username@users.noreply.github.com). Nothing else is allowed.
+^33067247\+stshow@users\.noreply\.github\.com$

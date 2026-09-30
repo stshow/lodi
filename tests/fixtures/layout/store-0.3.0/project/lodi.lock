@@ -1,0 +1,13 @@
+{
+  "base": null,
+  "format": "lodi-spike-lock/1",
+  "generatedBy": "lodi 0.3.0",
+  "manifestHash": "sha256:ce23518331fe73a95a92db42fb3b6e30e8b9927bffef715e80cdfd094daaabae",
+  "packages": {},
+  "profiles": {
+    "default": {
+      "packages": []
+    }
+  },
+  "version": 1
+}

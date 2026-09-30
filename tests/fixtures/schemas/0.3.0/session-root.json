@@ -1,0 +1,13 @@
+{
+  "activation": {
+    "envhash": "sha256:5a0c047285a3d4a97b7eb59185d170f84b7c3236161a5afc074ada74330d4a9a",
+    "id": "sha256:291d3603983f0a78897154fa5e62373c37fbe287b8e38176b6f2f4febfe4404e",
+    "profile": "default",
+    "projectRoot": "/tmp/work030/proj",
+    "runtime": "host"
+  },
+  "entries": [
+    "env-5a0c047285a3d4a97b7eb59185d170f8"
+  ],
+  "pid": 3224679
+}

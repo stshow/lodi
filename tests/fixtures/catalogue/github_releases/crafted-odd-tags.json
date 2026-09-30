@@ -1,0 +1,41 @@
+[
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/nightly/fd-nightly-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "name": "fd-nightly-x86_64-unknown-linux-musl.tar.gz",
+    "size": 64
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "nightly"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v1.2.3-rc1/fd-v1.2.3-rc1-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "name": "fd-v1.2.3-rc1-x86_64-unknown-linux-musl.tar.gz",
+    "size": 64
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.2.3-rc1"
+ },
+ {
+  "assets": [
+   {
+    "browser_download_url": "https://github.com/sharkdp/fd/releases/download/v1.2.2/fd-v1.2.2-x86_64-unknown-linux-musl.tar.gz",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "name": "fd-v1.2.2-x86_64-unknown-linux-musl.tar.gz",
+    "size": 64
+   }
+  ],
+  "draft": false,
+  "prerelease": false,
+  "tag_name": "v1.2.2"
+ }
+]

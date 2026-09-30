@@ -1,0 +1,19 @@
+# ShellCheck for [tools] shellcheck. This recipe says where to look; it lists no
+# version.
+[recipe]
+name        = "shellcheck"
+description = "A static analysis tool for shell scripts"
+homepage    = "https://www.shellcheck.net"
+
+[versions]
+strategy = "github_releases"
+repo     = "koalaman/shellcheck"
+asset    = "shellcheck-${tag}.linux.${arch}.tar.xz"
+
+[asset]
+format           = "tar.xz"
+strip_components = 1
+
+[spec]
+bin  = ["shellcheck"]
+path = ["."]

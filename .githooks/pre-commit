@@ -1,0 +1,179 @@
+#!/bin/sh
+# .githooks/pre-commit
+#
+# Blocks a commit if:
+#   - the author/committer identity is not the allowed noreply identity (only
+#     in a clone with lodi.enforceIdentity=true, #572), or
+#   - any *added* line in the staged diff contains a disallowed email
+#     address, a /home/<login>/ path or one of the provider words AGENTS.md
+#     §1.6 names, or any staged file name contains an address, a provider
+#     word or a `home/<login>/` component named after the committer's login
+#     (the policy's own files are exempt from all but the addresses, as they
+#     are in scripts/gate.sh), or
+#   - a staged file is a merge leftover (#338): `*.orig`, `*.rej` or a git
+#     mergetool backup (`*_BACKUP_<pid>*`, `_BASE_`, `_LOCAL_`, `_REMOTE_`), or
+#   - the staged content fails one of the gate's cheap, file-local checks
+#     (#311): the changed-line style guard, the host-scope safety scan or
+#     the documentation check.
+#
+# This is a safety net, not the only line of defence: --no-verify is
+# forbidden by project policy (see .githooks/README.md).
+
+hook_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck disable=SC1091
+. "$hook_dir/lib.sh"
+
+check_identity || exit 1
+
+fail=0
+
+# --- 1. staged file names -------------------------------------------------
+# Only the names that hold a candidate token go through the per-name scan:
+# a root commit stages every file in the tree.
+staged_files=$(git diff --cached --name-only | grep -Ei "$EMAIL_TOKEN_REGEX|home/|$PROVIDER_WORD_REGEX")
+if [ -n "$staged_files" ]; then
+    name_offenders=$(printf '%s\n' "$staged_files" | while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        off=$(printf '%s\n' "$f" | scan_text_for_emails)
+        if ! is_policy_file "$f"; then
+            off="$off$(printf '%s\n' "$f" | scan_name_for_private_tokens)"
+        fi
+        if [ -n "$off" ]; then
+            printf '%s: filename contains disallowed token(s): %s\n' "$f" "$(printf '%s' "$off" | tr '\n' ' ')"
+        fi
+    done)
+    if [ -n "$name_offenders" ]; then
+        echo "ERROR: disallowed token(s) (email, /home/<login>/ path or provider word) found in staged file names:" >&2
+        printf '%s\n' "$name_offenders" | sed 's/^/    /' >&2
+        fail=1
+    fi
+fi
+
+# --- 1b. merge leftovers (#338) ---------------------------------------------
+# A staged file (not a deletion, so removing one commits) named like a hand
+# merge's or patch's backup. Names only, so it costs nothing.
+leftover_fail=0
+leftovers=$(git diff --cached --name-only -z --no-renames --diff-filter=d \
+    | tr '\000' '\n' | merge_leftovers)
+if [ -n "$leftovers" ]; then
+    echo "ERROR: merge leftover(s) staged (a hand merge's or patch's backup copy):" >&2
+    printf '%s\n' "$leftovers" | while IFS= read -r f; do
+        printf '    %s: unstage it with git rm --cached -- %s\n' "$f" "$f" >&2
+    done
+    leftover_fail=1
+fi
+
+# --- 2. added lines in the staged diff, with file:line context ----------
+# Turn `git diff --cached -U0` into "path:newline:content" for every
+# added ('+') line, tracking the current file (from "+++ b/path") and the
+# current new-file line number (from "@@ -a,b +c,d @@").
+annotated=$(git diff --cached --no-color -U0 | awk '
+    /^\+\+\+ / {
+        f = $0
+        sub(/^\+\+\+ /, "", f)
+        sub(/^[ab]\//, "", f)
+        file = f
+        next
+    }
+    /^@@/ {
+        newline = 0
+        if (match($0, /\+[0-9]+/)) {
+            newline = substr($0, RSTART + 1, RLENGTH - 1) + 0
+        }
+        next
+    }
+    /^\+/ {
+        content = substr($0, 2)
+        print file ":" newline ":" content
+        newline++
+        next
+    }
+')
+
+# One grep keeps only the lines that hold a candidate token; the per-line
+# shell loop below would take hours over a root commit's whole tree.
+annotated=$(printf '%s\n' "$annotated" | grep -Ei "$EMAIL_TOKEN_REGEX|$PRIVATE_TOKEN_REGEX")
+
+if [ -n "$annotated" ]; then
+    diff_offenders=$(printf '%s\n' "$annotated" | while IFS= read -r entry; do
+        file=$(printf '%s\n' "$entry" | cut -d: -f1)
+        line=$(printf '%s\n' "$entry" | cut -d: -f2)
+        content=$(printf '%s\n' "$entry" | cut -d: -f3-)
+        off=$(printf '%s\n' "$content" | scan_text_for_emails)
+        if ! is_policy_file "$file"; then
+            more=$(printf '%s\n' "$content" | scan_text_for_private_paths)
+            [ -z "$more" ] || off="$off${off:+
+}$more"
+        fi
+        if [ -n "$off" ]; then
+            printf '%s:%s: disallowed token(s): %s\n' "$file" "$line" "$(printf '%s' "$off" | tr '\n' ' ')"
+        fi
+    done)
+    if [ -n "$diff_offenders" ]; then
+        echo "ERROR: disallowed token(s) (email, /home/<login>/ path or provider word) found in staged changes:" >&2
+        printf '%s\n' "$diff_offenders" | sed 's/^/    /' >&2
+        fail=1
+    fi
+fi
+
+# --- 3. the gate's cheap, file-local checks on the staged content (#311) --
+# Each runs the gate's own script in its staged mode (the index, not the
+# working tree), only when a staged path is in its scope, and prints the
+# gate's own message naming the file, line and rule. scripts/gate.sh still
+# runs all three as the backstop. A check that needs cargo, the network or
+# the whole tree does not belong here.
+check_fail=0
+top=$(git rev-parse --show-toplevel)
+run_gate_check() {
+    # $1 = the gate's step name, $2 = the script under scripts/, then its arguments.
+    name=$1
+    script=$2
+    shift 2
+    [ -f "$top/scripts/$script" ] || return 0
+    if ! out=$(cd "$top" && python3 -B "scripts/$script" "$@" 2>&1); then
+        printf '%s
+' "$out" >&2
+        echo "pre-commit: FAIL $name (scripts/$script $*)" >&2
+        check_fail=1
+    fi
+}
+if command -v python3 >/dev/null 2>&1; then
+    tab=$(printf '\t')
+    status=$(git -c core.quotePath=false diff --cached --name-status --no-renames)
+    live=$(printf '%s\n' "$status" | grep -v '^D' | cut -f2-)
+    if printf '%s\n' "$live" | grep -qiE '\.(md|json)$'; then
+        run_gate_check "changed-line style" check-style.py --staged
+    fi
+    if printf '%s\n' "$live" | grep -qE '^(scripts|tests)/|^docs/milestones/.*/probes/'; then
+        run_gate_check "host-scope safety scan" check-host-safety.py --staged
+    fi
+    # #594: a self-test's cache key in scripts/gate.sh must list every script its test loads;
+    # a script or gate change is checked here, not first in the gate (reads the working tree).
+    if printf '%s\n' "$status" | grep -qE "${tab}(scripts/|tooling/supervisor/bin/|\.githooks/)"; then
+        run_gate_check "self-test cache keys" test-gate-cache-keys.py
+    fi
+    # Its inputs, or a deletion that may break one of its links.
+    docs_inputs='(README|AGENTS)\.md|docs/ERRORS\.md|docs/scopes/.*|src/main\.rs'
+    if printf '%s\n' "$status" | grep -qE "^D|${tab}(${docs_inputs})\$"; then
+        run_gate_check "documentation check" check-docs.py --staged
+    fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+    echo "" >&2
+    echo "Commit blocked: remove the personal token(s) above (AGENTS.md section 1.6)." >&2
+fi
+if [ "$leftover_fail" -ne 0 ]; then
+    echo "" >&2
+    echo "Commit blocked: unstage and delete the merge leftover(s) above (#338)." >&2
+fi
+if [ "$check_fail" -ne 0 ]; then
+    echo "" >&2
+    echo "Commit blocked: fix the staged finding(s) above; scripts/gate.sh runs the same checks." >&2
+fi
+if [ "$fail" -ne 0 ] || [ "$check_fail" -ne 0 ] || [ "$leftover_fail" -ne 0 ]; then
+    echo "Hooks are a safety net; --no-verify is forbidden by project policy." >&2
+    exit 1
+fi
+
+exit 0

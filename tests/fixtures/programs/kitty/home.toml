@@ -1,0 +1,14 @@
+[home]
+version = "1"
+
+[programs.kitty]
+font_family = "JetBrains Mono"
+font_size = 11
+background_opacity = 0.9
+scrollback_lines = 10000
+enable_audio_bell = false
+confirm_os_window_close = 0
+map = { "ctrl+shift+t" = "new_tab_with_cwd", "ctrl+shift+enter" = "new_window_with_cwd" }
+extra = """
+include current-theme.conf
+"""
