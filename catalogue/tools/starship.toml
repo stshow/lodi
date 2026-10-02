@@ -1,6 +1,6 @@
-# starship for [tools] starship. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# The prompt's init line stays the user's own; the recipe installs only the program.
+# starship for [tools] starship. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. The prompt's init line stays the
+# user's own; the recipe installs only the program.
 [recipe]
 name        = "starship"
 description = "The minimal, blazing-fast and customizable prompt for any shell"

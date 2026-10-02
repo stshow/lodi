@@ -70,7 +70,6 @@ pub fn plan(
     lock: Option<&HostLock>,
     out: &mut Vec<BasicAction>,
     record: &mut BTreeMap<String, BasicRecord>,
-    notes: &mut Vec<String>,
 ) -> Result<(), Diagnostic> {
     let recorded = |key: &str| lock.and_then(|lock| lock.basics.get(key));
     let declared = &manifest.kernel.parameters;
@@ -80,7 +79,7 @@ pub fn plan(
         .is_some_and(|boot| boot.loader == Loader::SystemdBoot)
     {
         // systemd-boot boots them, from `/etc/kernel/cmdline` ([`super::boot`]); GRUB, now the
-        // fallback, keeps the command line it booted (bv-1).
+        // fallback loader, keeps the command line it last booted.
         if !declared.is_empty() {
             record.insert(
                 PARAMETERS_KEY.to_string(),
@@ -96,7 +95,6 @@ pub fn plan(
             declared,
             recorded(PARAMETERS_KEY),
             record,
-            notes,
         )?);
     }
     out.extend(modules(gate, &manifest.kernel.modules)?);
@@ -142,35 +140,9 @@ fn with_parameters(text: &str, parameters: Option<&str>) -> Vec<u8> {
     out.into_bytes()
 }
 
-/// The GRUB file with lodi's line holding `parameters` (bv-1's confirmation).
-pub fn grub_write(gate: &Gate, parameters: &str) -> Result<Write, Diagnostic> {
-    let text = super::basics::read(gate, GRUB).ok_or_else(|| {
-        Diagnostic::new(
-            "E_BOOT_LOADER",
-            format!("no {GRUB} to set [kernel] parameters in"),
-        )
-        .hint("lodi sets kernel parameters through GRUB; nothing was changed")
-    })?;
-    Ok(Write {
-        path: GRUB.to_string(),
-        bytes: Some(with_parameters(
-            &String::from_utf8_lossy(&text),
-            Some(parameters),
-        )),
-        mode: 0o644,
-    })
-}
-
-/// The parameters of lodi's line in the GRUB file: those the default boots with.
-pub fn confirmed(gate: &Gate) -> String {
-    super::basics::read(gate, GRUB)
-        .and_then(|text| parameters_in(&String::from_utf8_lossy(&text)))
-        .unwrap_or_default()
-}
-
 /// The calls that make the default boot `want` in place of `old`: [`loader`]'s, and on Fedora,
 /// where those are `grubby`'s, [`mkconfig`] after them for lodi's entries.
-pub fn default_calls(gate: &Gate, old: &str, want: &str) -> Result<Vec<Invocation>, Diagnostic> {
+fn default_calls(gate: &Gate, old: &str, want: &str) -> Result<Vec<Invocation>, Diagnostic> {
     let mut calls = loader(gate, old, want)?;
     if gate.distro == Distro::Fedora {
         calls.push(mkconfig(gate, "[kernel] parameters")?);
@@ -221,19 +193,17 @@ pub fn mkconfig(gate: &Gate, needs: &str) -> Result<Invocation, Diagnostic> {
     Ok(tool.invocation(&["-o", config.as_str()]))
 }
 
-/// A change of the parameters boots once as a trial first ([`super::trial`]); their removal
-/// is the distribution's own command line again, with the confirmed entry kept as a fallback.
+/// The parameters: a change, or their removal, is the default from the next boot, and the entry
+/// that was the default stays as the fallback ([`super::fallback`]).
 fn parameters(
     gate: &Gate,
     declared: &[String],
     recorded: Option<&BasicRecord>,
     record: &mut BTreeMap<String, BasicRecord>,
-    notes: &mut Vec<String>,
 ) -> Result<Option<BasicAction>, Diagnostic> {
     let text = super::basics::read(gate, GRUB).map(|t| String::from_utf8_lossy(&t).into_owned());
     let line = text.as_deref().and_then(parameters_in);
-    let trial = super::trial::Trial::read(gate).filter(|trial| !trial.is_systemd_boot());
-    if declared.is_empty() && recorded.is_none() && line.is_none() && trial.is_none() {
+    if declared.is_empty() && recorded.is_none() && line.is_none() {
         return Ok(None);
     }
     let want = declared.join(" ");
@@ -247,91 +217,54 @@ fn parameters(
         )
         .hint("lodi sets kernel parameters through GRUB; nothing was changed"));
     };
-    let status = trial.as_ref().map(|trial| (trial, trial.status(gate)));
     let old = recorded
         .map(|r| r.value.clone())
         .or(line.clone())
         .unwrap_or_default();
-    let grub = |parameters: Option<&str>| Write {
+    let grub = Write {
         path: GRUB.to_string(),
-        bytes: Some(with_parameters(&text, parameters)),
+        bytes: Some(with_parameters(
+            &text,
+            (!declared.is_empty()).then_some(&want),
+        )),
         mode: 0o644,
     };
-    if declared.is_empty() {
-        if let Some((trial, super::trial::Status::Reverted)) = status {
-            notes.push(trial.note(super::trial::Status::Reverted));
+    let now = line.clone().unwrap_or_default();
+    if !declared.is_empty() {
+        record.insert(
+            PARAMETERS_KEY.to_string(),
+            BasicRecord {
+                value: want.clone(),
+                was: None,
+            },
+        );
+        // The default boots with them. A record that lost them writes the loader again.
+        if line.as_deref() == Some(want.as_str())
+            && recorded.map(|r| r.value.as_str()) == Some(want.as_str())
+        {
+            return Ok(None);
         }
-        // The default changes only when lodi's line held parameters: keep that entry.
-        let calls = default_calls(gate, line.as_deref().unwrap_or_default(), "")?;
-        let step = super::trial::new_default(gate, grub(None), line.is_some(), calls)?;
-        let detail = match line {
-            Some(_) => format!(
-                "the distribution's own at the next boot, and the entry before it as {}",
-                super::trial::KNOWN_GOOD
-            ),
-            None => "the distribution's own at the next boot".to_string(),
-        };
-        return Ok(Some(BasicAction {
-            key: "parameters",
-            change: Change::Remove,
-            what: line.unwrap_or(old),
-            detail,
-            step,
-        }));
     }
-    record.insert(
-        PARAMETERS_KEY.to_string(),
-        BasicRecord {
-            value: want.clone(),
-            was: None,
-        },
-    );
-    let change = if recorded.is_none() && line.is_none() {
-        Change::Add
+    // The default changes only when lodi's line changes: then its entry is the fallback.
+    let changes = now != want;
+    let (step, replaced) =
+        super::fallback::new_default(gate, grub, changes, default_calls(gate, &old, &want)?)?;
+    let mut detail = "the default from the next boot".to_string();
+    if changes {
+        let fallback = super::fallback::kept(super::fallback::KNOWN_GOOD, replaced);
+        detail = format!("{detail}; {fallback}");
+    }
+    let (change, what) = if declared.is_empty() {
+        (Change::Remove, line.unwrap_or(old))
+    } else if recorded.is_none() && line.is_none() {
+        (Change::Add, want)
     } else {
-        Change::Set
+        (Change::Set, what(&old, &want))
     };
-    if line.as_deref() == Some(want.as_str()) {
-        // The default boots with them: confirmed. A record that lost them writes them again.
-        if recorded.map(|r| r.value.as_str()) == Some(want.as_str()) && trial.is_none() {
-            return Ok(None);
-        }
-        let step = super::trial::new_default(
-            gate,
-            grub(Some(&want)),
-            false,
-            default_calls(gate, &old, &want)?,
-        )?;
-        return Ok(Some(BasicAction {
-            key: "parameters",
-            change,
-            what: want,
-            detail: "the default entry".to_string(),
-            step,
-        }));
-    }
-    match status {
-        Some((trial, now)) if trial.parameters == want && now != super::trial::Status::Reverted => {
-            notes.push(trial.note(now));
-            return Ok(None);
-        }
-        Some((trial, super::trial::Status::Reverted)) => {
-            notes.push(trial.note(super::trial::Status::Reverted));
-        }
-        _ => {}
-    }
-    let confirmed = line.unwrap_or_default();
-    let (detail, step, trial) = super::trial::trial(
-        gate,
-        &confirmed,
-        &want,
-        mkconfig(gate, "[kernel] parameters")?,
-    )?;
-    notes.push(trial.note(super::trial::Status::Pending));
     Ok(Some(BasicAction {
         key: "parameters",
         change,
-        what: what(&old, &want),
+        what,
         detail,
         step,
     }))

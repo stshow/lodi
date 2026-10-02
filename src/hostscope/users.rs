@@ -88,6 +88,8 @@ pub struct Planned {
     /// The names the record of this plan's apply manages.
     pub users: BTreeSet<String>,
     pub groups: BTreeSet<String>,
+    /// Another account's `authorized_keys` this process may not read (#709).
+    pub unread: Vec<super::plan::Unread>,
 }
 
 fn conflict(message: String) -> Diagnostic {
@@ -267,7 +269,19 @@ pub fn plan(
                     });
                 }
                 if !declared.ssh_keys.is_empty() {
-                    let present = read_keys(root, &user.home)?;
+                    let shown = format!("{}/.ssh/authorized_keys", user.home);
+                    // Another account's home or `.ssh` is closed to the person: the root run
+                    // reads it (#709).
+                    let present = match read_keys(root, &user.home) {
+                        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => {
+                            planned.unread.push(super::plan::Unread {
+                                action: format!("ssh keys {name}"),
+                                shown,
+                            });
+                            None
+                        }
+                        read => read.map_err(|e| io_error(&shown, &e))?,
+                    };
                     let missing: Vec<String> = declared
                         .ssh_keys
                         .iter()
@@ -423,35 +437,30 @@ fn open_home(root: &Path, home: &str) -> io::Result<OwnedFd> {
 }
 
 /// The lines of `<home>/.ssh/authorized_keys`, or `None` when there is no such file.
-fn read_keys(root: &Path, home: &str) -> Result<Option<Vec<String>>, Diagnostic> {
-    let shown = format!("{home}/.ssh/authorized_keys");
+fn read_keys(root: &Path, home: &str) -> io::Result<Option<Vec<String>>> {
+    let absent = |e: io::Error| match e.kind() {
+        io::ErrorKind::NotFound => Ok(None),
+        _ => Err(e),
+    };
     let home_fd = match open_home(root, home) {
         Ok(fd) => fd,
-        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
-        Err(e) => return Err(io_error(&shown, &e)),
+        Err(e) => return absent(e),
     };
     let ssh = match openat(home_fd.as_raw_fd(), ".ssh", DIR_FLAGS, 0) {
         Ok(fd) => fd,
-        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
-        Err(e) => return Err(io_error(&shown, &e)),
+        Err(e) => return absent(e),
     };
     let flags = libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC;
     let fd = match openat(ssh.as_raw_fd(), "authorized_keys", flags, 0) {
         Ok(fd) => fd,
-        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
-        Err(e) => return Err(io_error(&shown, &e)),
+        Err(e) => return absent(e),
     };
     let file = std::fs::File::from(fd);
     if !file.metadata().is_ok_and(|m| m.is_file()) {
-        return Err(io_error(
-            &shown,
-            &io::Error::other("it is not a regular file"),
-        ));
+        return Err(io::Error::other("it is not a regular file"));
     }
     let mut text = String::new();
-    file.take(1 << 20)
-        .read_to_string(&mut text)
-        .map_err(|e| io_error(&shown, &e))?;
+    file.take(1 << 20).read_to_string(&mut text)?;
     Ok(Some(text.lines().map(str::to_string).collect()))
 }
 
@@ -461,7 +470,9 @@ fn read_keys(root: &Path, home: &str) -> Result<Option<Vec<String>>, Diagnostic>
 fn add_keys(root: &Path, user: &passwd::User, keys: &[String]) -> Result<(), Diagnostic> {
     let shown = format!("{}/.ssh/authorized_keys", user.home);
     let fail = |e: io::Error| io_error(&shown, &e);
-    let present = read_keys(root, &user.home)?.unwrap_or_default();
+    let present = read_keys(root, &user.home)
+        .map_err(fail)?
+        .unwrap_or_default();
     let home = open_home(root, &user.home).map_err(fail)?;
     let ssh = match openat(home.as_raw_fd(), ".ssh", DIR_FLAGS, 0) {
         Ok(fd) => fd,

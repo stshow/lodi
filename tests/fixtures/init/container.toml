@@ -1,4 +1,4 @@
-# lodi.toml: this project's environment, written by `lodi init`. `lodi lock` pins
+# lodi.toml: this project's environment, written by `lodi init`. `lodi develop` pins
 # what it asks for in ./lodi.lock, and `lodi develop -- COMMAND` runs a command in it.
 
 # The project's name. `version` is the format of this file, and "1" is the only one.
@@ -13,7 +13,7 @@ name = "hello"
 distro = "debian"
 release = "bookworm"
 
-# Distribution packages to install in that image. `lodi lock` pins each one and all
+# Distribution packages to install in that image. lodi.lock pins each one and all
 # it depends on, and the image is rebuilt when this list changes.
 [packages]
 common = []
@@ -23,7 +23,7 @@ common = []
 [tools]
 python = "3.12"
 
-# Tasks run with /bin/sh -c in that environment, and only after `lodi trust`:
+# Tasks run with /bin/sh -c in that environment, once you allow them on first use:
 #   lodi run versions
 # [tasks.versions]
 # run = "python3 --version"

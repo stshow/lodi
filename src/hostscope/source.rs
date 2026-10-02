@@ -1,27 +1,23 @@
 //! A host is a directory you own (LD-379, W3 of `docs/design/HOST_WORKFLOW.md`).
 //!
-//! `lodi host plan`, `apply` and `import` take an optional positional `SOURCE`:
-//!
-//! - if `SOURCE/host.toml` exists, `SOURCE` is the host, and `--host` beside it is a usage error;
-//! - otherwise the host is `SOURCE/<name>/`, where the name is `--host NAME` or the root's
-//!   hostname — `<root>/etc/hostname`, and `gethostname` only when the root is `/` — and must be
-//!   one safe path component. There is no `#` selector: zsh's `EXTENDED_GLOB` reads `#` as a
-//!   glob operator;
-//! - a host directory that is not there is `E_NO_MANIFEST`, whose hint lists the hosts that are.
+//! `SOURCE` is the folder of the config part's `host.toml` (`lodi switch`), and that folder is
+//! the host: 2.0 never walks a folder of hosts by hostname, the 1.x repository layout (#710). A
+//! folder without `host.toml` is `E_NO_MANIFEST`, except for an import, which writes there.
 //!
 //! With no `SOURCE` the host is `<root>/etc/lodi`, read by the rules it always was.
 //!
 //! # Applying a directory someone else could write is refused, by rule
 //!
-//! The trusted owners are root, and the invoking user when unprivileged, or `SUDO_UID` when root
-//! runs under `sudo` with a `SUDO_UID` that is not 0 ([`trusted_owners`]). Every directory from
+//! The trusted owners are root, and the invoking user when unprivileged, or the person behind root
+//! under `sudo` (`SUDO_UID`) or `doas` (`DOAS_USER`) when that is not root
+//! ([`super::privilege::owners`]). Every directory from
 //! the root — `/` itself, or the `--root` under one, which is why a `SOURCE` outside a `--root` is
 //! refused — down to the host directory, and every directory and file the apply reads below it,
 //! must not be a symbolic link (never followed: `O_NOFOLLOW`), must belong to a trusted owner and
 //! must have `mode & 0o022 == 0`, with no exception for a sticky bit ([`untrusted`]). A file must
 //! be a regular one, judged on its open descriptor without blocking. A host directory on NFS or
 //! SMB/CIFS is refused ([`refused_filesystem`]). Every refusal is `E_PATH_ESCAPE` (exit 3),
-//! naming the path and the rule; there is no bypass flag. Arming (`/etc/lodi/host-allowed`) and
+//! naming the path and the rule; there is no bypass flag. Arming (`/etc/lodi/may-manage`) and
 //! LD-333's rule for what an apply changes are unchanged.
 //!
 //! The walk is made on **descriptors**, not on names (validator-repair-1): each directory is
@@ -48,8 +44,10 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::diag::Diagnostic;
 
-use super::landing;
-use super::safety::{self, Gate, Options};
+use super::safety::{Gate, Options};
+
+/// The host file's name inside its folder.
+pub const MANIFEST: &str = "host.toml";
 
 /// The rule every refusal of this module states in its hint.
 const RULE: &str = "lodi reads a host directory only when every directory from / down to it, and \
@@ -124,6 +122,26 @@ pub fn untrusted(owner: u32, mode: u32, owners: &[u32]) -> Option<String> {
     None
 }
 
+/// Who may own what a walk reads, and the owners whose private group may also write it (#684):
+/// `(uid, gid)` pairs, empty but for a home's sources (LD-520, LD-523).
+#[derive(Debug, Clone, Copy)]
+pub struct Trust<'a> {
+    pub owners: &'a [u32],
+    pub private: &'a [(u32, u32)],
+}
+
+impl Trust<'_> {
+    /// Why an entry with `meta` is not one lodi reads, or `None` when it is: [`untrusted`], with
+    /// a private group's write taken out.
+    fn why(&self, meta: &fs::Metadata) -> Option<String> {
+        let mut mode = meta.mode();
+        if self.private.contains(&(meta.uid(), meta.gid())) {
+            mode &= !0o020;
+        }
+        untrusted(meta.uid(), mode, self.owners)
+    }
+}
+
 /// Why a filesystem of this `statfs` type is refused, or `None`: a network filesystem's owners
 /// and modes are the server's word, not this kernel's.
 pub fn refused_filesystem(f_type: i64) -> Option<&'static str> {
@@ -146,15 +164,16 @@ fn escape(path: &Path, why: &str) -> Diagnostic {
 
 /// The flags every directory of the walk is opened with: never through a link, and only a
 /// directory.
-const DIR_FLAGS: i32 = libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC;
+pub(crate) const DIR_FLAGS: i32 =
+    libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC;
 /// The flags a file is opened with: never through a link, and without blocking on a FIFO or a
 /// device before it is judged.
-const FILE_FLAGS: i32 =
+pub(crate) const FILE_FLAGS: i32 =
     libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC | libc::O_NOCTTY;
 
 /// Open `name` below the directory `parent` — or the absolute `name` itself when there is no
 /// parent — with `flags`, as a file.
-fn open_at(parent: Option<&fs::File>, name: &OsStr, flags: i32) -> io::Result<fs::File> {
+pub(crate) fn open_at(parent: Option<&fs::File>, name: &OsStr, flags: i32) -> io::Result<fs::File> {
     let name = CString::new(name.as_bytes())
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "a NUL in a path"))?;
     let at = parent.map_or(libc::AT_FDCWD, AsRawFd::as_raw_fd);
@@ -180,14 +199,14 @@ fn refused_open(path: &Path, error: &io::Error) -> Diagnostic {
 }
 
 /// Judge an open directory by the descriptor it was opened on.
-fn judge_open_dir(path: &Path, handle: &fs::File, owners: &[u32]) -> Result<(), Diagnostic> {
+fn judge_open_dir(path: &Path, handle: &fs::File, trust: Trust) -> Result<(), Diagnostic> {
     let meta = handle
         .metadata()
         .map_err(|e| escape(path, &format!("it could not be inspected ({e})")))?;
     if !meta.is_dir() {
         return Err(escape(path, "it is not a directory"));
     }
-    if let Some(why) = untrusted(meta.uid(), meta.mode(), owners) {
+    if let Some(why) = trust.why(&meta) {
         return Err(escape(path, &why));
     }
     Ok(())
@@ -198,11 +217,11 @@ fn step(
     parent: &fs::File,
     path: &Path,
     name: &OsStr,
-    owners: &[u32],
+    trust: Trust,
 ) -> Result<Option<fs::File>, Diagnostic> {
     match open_at(Some(parent), name, DIR_FLAGS) {
         Ok(handle) => {
-            judge_open_dir(path, &handle, owners)?;
+            judge_open_dir(path, &handle, trust)?;
             Ok(Some(handle))
         }
         Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(None),
@@ -213,7 +232,7 @@ fn step(
 /// Open `dir` by walking to it from `anchor` one component at a time, each opened below the
 /// descriptor of the one above and judged on its own descriptor, `anchor` and `dir` included.
 /// A step that is not there is refused as well: the walk leads to a directory that must exist.
-fn open_walk(anchor: &Path, dir: &Path, owners: &[u32]) -> Result<fs::File, Diagnostic> {
+fn open_walk(anchor: &Path, dir: &Path, trust: Trust) -> Result<fs::File, Diagnostic> {
     let below = dir.strip_prefix(anchor).map_err(|_| {
         escape(
             dir,
@@ -225,11 +244,11 @@ fn open_walk(anchor: &Path, dir: &Path, owners: &[u32]) -> Result<fs::File, Diag
     })?;
     let mut handle =
         open_at(None, anchor.as_os_str(), DIR_FLAGS).map_err(|e| refused_open(anchor, &e))?;
-    judge_open_dir(anchor, &handle, owners)?;
+    judge_open_dir(anchor, &handle, trust)?;
     let mut cursor = anchor.to_path_buf();
     for part in below.components() {
         cursor.push(part.as_os_str());
-        handle = step(&handle, &cursor, part.as_os_str(), owners)?
+        handle = step(&handle, &cursor, part.as_os_str(), trust)?
             .ok_or_else(|| escape(&cursor, "it is not there"))?;
     }
     Ok(handle)
@@ -320,51 +339,27 @@ pub struct Host {
     /// place, and otherwise the host directory as the root sees it (`~/hosts/box` spelled out, or
     /// `/hosts/box` under a `--root` whose `hosts/box` it is).
     pub source: String,
-    /// Whether this is `<root>/etc/lodi`, read by the rules it always was.
-    pub in_place: bool,
     /// The owners everything read here may have.
     pub owners: Vec<u32>,
+    /// [`Trust::private`]: empty but for a home's sources.
+    pub private: Vec<(u32, u32)>,
     /// The directory the positional `SOURCE` named, when there was one: the owner of this is who
     /// an import under `sudo` writes as.
     pub named: Option<PathBuf>,
 }
 
 impl Host {
-    /// The manifest in place, `<root>/etc/lodi`.
-    pub fn in_place(gate: &Gate) -> Host {
-        let dir = gate.root.join(&landing::IN_PLACE[1..]);
-        Host {
-            anchor: dir.clone(),
-            dir,
-            source: super::lock::IN_PLACE_SOURCE.to_string(),
-            in_place: true,
-            owners: vec![super::files::trusted_owner(gate.system_root, gate.euid)],
-            named: None,
+    /// Who may own and write what is read below it.
+    pub fn trust(&self) -> Trust<'_> {
+        Trust {
+            owners: &self.owners,
+            private: &self.private,
         }
     }
 
     pub fn manifest_path(&self) -> PathBuf {
-        self.dir.join(landing::MANIFEST)
+        self.dir.join(MANIFEST)
     }
-}
-
-/// The usage error of `--host` beside a `SOURCE` that is itself a host, or `None`. `src/main.rs`
-/// asks this before it runs the verb, and a usage error exits 2 with no `E_` code.
-pub fn usage(options: &Options) -> Option<String> {
-    let (Some(source), Some(host)) = (&options.source, &options.host) else {
-        return None;
-    };
-    source
-        .join(landing::MANIFEST)
-        .symlink_metadata()
-        .is_ok()
-        .then(|| {
-            format!(
-                "--host {host} chooses a host in a directory of hosts, and {} is itself a host \
-                 (it holds host.toml); drop --host, or name the directory of hosts",
-                source.display()
-            )
-        })
 }
 
 /// The root's hostname: the first line of `<root>/etc/hostname`, and `gethostname` only when the
@@ -397,30 +392,12 @@ pub fn hostname(root: &Path, system_root: bool) -> Result<String, Diagnostic> {
             path.display()
         ),
     )
-    .hint("name the host with --host NAME"))
+    .hint(format!("write this machine's name to {}", path.display())))
 }
 
-/// The hosts a directory of hosts holds: its sub-directories with a `host.toml`, sorted.
-fn hosts_in(dir: &Path) -> Vec<String> {
-    let mut found: Vec<String> = fs::read_dir(dir)
-        .map(|entries| {
-            entries
-                .flatten()
-                .filter(|entry| {
-                    entry.file_type().is_ok_and(|kind| kind.is_dir())
-                        && entry.path().join(landing::MANIFEST).is_file()
-                })
-                .map(|entry| entry.file_name().to_string_lossy().into_owned())
-                .collect()
-        })
-        .unwrap_or_default();
-    found.sort();
-    found
-}
-
-/// Choose and judge the host a command reads. `owners` are [`trusted_owners`] for the process.
-/// For an import (`create`), a host directory that is not there yet is not a refusal: it is
-/// where the import will write.
+/// Choose and judge the host a command reads: the folder `SOURCE` names. `owners` are
+/// [`trusted_owners`] for the process. For an import (`create`), a folder with no `host.toml`
+/// yet is not a refusal: it is where the import will write.
 pub fn select(
     gate: &Gate,
     options: &Options,
@@ -428,7 +405,8 @@ pub fn select(
     create: bool,
 ) -> Result<Host, Diagnostic> {
     let Some(named) = &options.source else {
-        return Ok(Host::in_place(gate));
+        return Err(Diagnostic::new("E_NO_MANIFEST", "no host folder was named")
+            .hint("name the folder that holds host.toml"));
     };
     let named = absolute(named);
     if fs::symlink_metadata(&named).is_err() {
@@ -438,45 +416,20 @@ pub fn select(
         )
         .hint("SOURCE names an existing host directory, or a directory of hosts"));
     }
-    let named_handle = open_walk(&gate.root, &named, owners)?;
-    let (dir, handle) = if exists_at(&named_handle, landing::MANIFEST) {
-        if options.host.is_some() {
-            return Err(Diagnostic::new(
-                "E_UNSUPPORTED",
-                usage(options).unwrap_or_default(),
-            ));
-        }
-        (named.clone(), named_handle)
-    } else {
-        let name = match &options.host {
-            Some(name) => name.clone(),
-            None => hostname(&gate.root, gate.system_root)?,
-        };
-        if !safe_component(&name) {
-            return Err(escape(
-                &named.join(&name),
-                &format!("the host name {name:?} is not one path component"),
-            ));
-        }
-        let dir = named.join(&name);
-        match step(&named_handle, &dir, OsStr::new(&name), owners)? {
-            Some(handle) => (dir, handle),
-            None if create => (dir, named_handle),
-            None => {
-                let found = hosts_in(&named);
-                let listed = if found.is_empty() {
-                    "it holds no host".to_string()
-                } else {
-                    format!("the hosts it holds: {}", found.join(", "))
-                };
-                return Err(Diagnostic::new(
-                    "E_NO_MANIFEST",
-                    format!("no host {name:?} in {}", named.display()),
-                )
-                .hint(format!("{listed}; choose one with --host NAME")));
-            }
-        }
+    let trust = Trust {
+        owners,
+        private: &[],
     };
+    let named_handle = open_walk(&gate.root, &named, trust)?;
+    // The folder named is the host's: 2.0 never walks a folder of hosts by hostname, the 1.x
+    // repository layout (#710). An import writes there; anything else needs its `host.toml`.
+    if !create && !exists_at(&named_handle, MANIFEST) {
+        return Err(Diagnostic::new(
+            "E_NO_MANIFEST",
+            format!("no {} in {}", MANIFEST, named.display()),
+        ));
+    }
+    let (dir, handle) = (named.clone(), named_handle);
     judge_filesystem(&dir, handle.as_raw_fd())?;
     let source = if gate.system_root {
         dir.display().to_string()
@@ -490,8 +443,8 @@ pub fn select(
         dir,
         anchor: gate.root.clone(),
         source,
-        in_place: false,
         owners: owners.to_vec(),
+        private: Vec::new(),
         named: Some(named),
     })
 }
@@ -518,9 +471,7 @@ pub fn read_file(host: &Host, relative: &str, limit: usize) -> Result<Option<Vec
     if !meta.is_file() {
         return Err(escape(&path, "it is not a regular file"));
     }
-    if !host.in_place
-        && let Some(why) = untrusted(meta.uid(), meta.mode(), &host.owners)
-    {
+    if let Some(why) = host.trust().why(&meta) {
         return Err(escape(&path, &why));
     }
     judge_filesystem(&path, file.as_raw_fd())?;
@@ -550,7 +501,7 @@ fn open_parent(
     let path = host.dir.join(rel);
     // Walked again from the root on every read, on descriptors: nothing judged by an earlier walk
     // is trusted by name.
-    let mut handle = open_walk(&host.anchor, &host.dir, &host.owners)?;
+    let mut handle = open_walk(&host.anchor, &host.dir, host.trust())?;
     let mut cursor = host.dir.clone();
     let parts: Vec<_> = rel.components().collect();
     let Some((last, between)) = parts.split_last() else {
@@ -558,7 +509,7 @@ fn open_parent(
     };
     for part in between {
         cursor.push(part.as_os_str());
-        match step(&handle, &cursor, part.as_os_str(), &host.owners)? {
+        match step(&handle, &cursor, part.as_os_str(), host.trust())? {
             Some(next) => handle = next,
             None => return Ok(None),
         }
@@ -578,7 +529,7 @@ pub fn inspect(host: &Host, relative: &str) -> Result<Option<fs::FileType>, Diag
     let meta = file
         .metadata()
         .map_err(|e| escape(&path, &format!("it could not be inspected ({e})")))?;
-    if let Some(why) = untrusted(meta.uid(), meta.mode(), &host.owners) {
+    if let Some(why) = host.trust().why(&meta) {
         return Err(escape(&path, &why));
     }
     judge_filesystem(&path, file.as_raw_fd())?;
@@ -592,7 +543,7 @@ pub fn read_dir(
     let Some((parent, path, name)) = open_parent(host, relative)? else {
         return Ok(None);
     };
-    let Some(dir) = step(&parent, &path, &name, &host.owners)? else {
+    let Some(dir) = step(&parent, &path, &name, host.trust())? else {
         return Ok(None);
     };
     judge_filesystem(&path, dir.as_raw_fd())?;
@@ -618,25 +569,11 @@ pub struct Input {
     pub host: Host,
     pub manifest: Vec<u8>,
     pub sources: BTreeMap<String, Vec<u8>>,
-    /// The git revision `host` was fetched at, for a host read from a URL (LD-401).
-    pub git: Option<super::lock::GitRecord>,
 }
 
-/// Read the manifest of `host`, whole, under the manifest's cap. The manifest in place is read
-/// the way it always was ([`safety::read_config`]); a host directory's by [`read_file`].
-pub fn read_manifest(gate: &Gate, host: &Host) -> Result<Option<Vec<u8>>, Diagnostic> {
-    let limit = crate::manifest::MAX_MANIFEST_BYTES;
-    if host.in_place {
-        safety::read_config(
-            &gate.root,
-            safety::MANIFEST,
-            gate.system_root,
-            gate.euid,
-            limit,
-        )
-    } else {
-        read_file(host, landing::MANIFEST, limit)
-    }
+/// Read the manifest of `host`, whole, under the manifest's cap ([`read_file`]).
+pub fn read_manifest(host: &Host) -> Result<Option<Vec<u8>>, Diagnostic> {
+    read_file(host, MANIFEST, crate::manifest::MAX_MANIFEST_BYTES)
 }
 
 /// Read every `source` of `manifest` below `host`, each under [`super::MAX_SOURCE_BYTES`].

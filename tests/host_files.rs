@@ -311,7 +311,7 @@ fn packages_are_refused_before_any_apply_state_is_written() {
     // missing arm.
     for distro in [Distro::Debian, Distro::Ubuntu, Distro::Arch] {
         assert_eq!(
-            lodi::hostscope::pm::backend_for(distro, &root.dir, false, Operation::Plan).distro(),
+            lodi::hostscope::pm::backend_for(distro, &root.dir, Operation::Plan).distro(),
             distro
         );
     }
@@ -422,10 +422,10 @@ fn an_owner_or_mode_change_is_refused_for_a_file_with_a_second_link() {
 }
 
 /// A directory apply creates on the way to a path is 0755 whatever the leaf is: a private file
-/// gets no private parents, and only the host state directory and its journal directory, the
-/// leaves the scope keeps for itself, are 0700.
+/// gets no private parents. The host state directory and its journal directory are 0755 too, so
+/// that a preview as the person reads them (LD-507).
 #[test]
-fn directories_apply_creates_on_the_way_are_0755_and_only_the_state_leaves_are_private() {
+fn directories_apply_creates_on_the_way_and_the_state_folders_are_0755() {
     let root = Root::new("files-parent-modes");
     root.debian_with(&manifest(
         &root,
@@ -442,10 +442,9 @@ fn directories_apply_creates_on_the_way_are_0755_and_only_the_state_leaves_are_p
         "var",
         "var/lib",
         "var/lib/lodi",
+        "var/lib/lodi/host",
+        "var/lib/lodi/host/journal",
     ] {
         assert_eq!(mode(dir), 0o755, "{dir}");
-    }
-    for dir in ["var/lib/lodi/host", "var/lib/lodi/host/journal"] {
-        assert_eq!(mode(dir), 0o700, "{dir}");
     }
 }

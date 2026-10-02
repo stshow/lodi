@@ -1,4 +1,4 @@
-//! Metadata fetching for `lodi lock` (LD-16).
+//! Metadata fetching for a lock (LD-16).
 //!
 //! Every URL must be HTTPS. `LODI_FETCH_REWRITE` redirects URL prefixes to a mirror
 //! (`<prefix>=<replacement>`, several separated by `;`): the lock always records the original
@@ -17,11 +17,13 @@
 //! read — or averages less than the floor over a whole window.
 //!
 //! Retries (LD-386, [`Retry`]): a failure that passes — an HTTP status 500, 502, 503 or 504, a
-//! step before the response that timed out, a connection refused, reset or cut off, a name
-//! lookup the resolver says to try again, a body that stalled or dripped under the floor — is
+//! step after the name lookup that timed out, a connection refused, reset or cut off, a body
+//! that stalled or dripped under the floor, a host unreachable for now — is
 //! tried again from its first byte after a bounded, jittered, growing wait, with one line on
 //! stderr per retry. An answer is never tried again: every 4xx, a refused URL or redirect, a body
-//! over its limit. What is fetched and how it is verified are the same on every attempt.
+//! over its limit, and what an offline machine meets: a name lookup that failed or timed out,
+//! a network down or unreachable. Saying so at once beats minutes of waits (LD-528). What is
+//! fetched and how it is verified are the same on every attempt.
 //! `LODI_FETCH_ATTEMPTS` (1 to 10) sets fewer attempts; 1 never tries again.
 //!
 //! Conditional requests (LD-404, [`api_cache`]): a fetcher given an [`ApiCache`] keeps every answer
@@ -434,19 +436,22 @@ fn refused(url: &str, status: u16, headers: &ureq::http::HeaderMap) -> Failure {
 }
 
 /// Whether a request that failed may succeed if it is tried again (LD-386): a timeout of any
-/// step, and the I/O failures [`transient_io`] names. A certificate or protocol error, a name
-/// with no address, a malformed response are not.
+/// step after the name lookup, and the I/O failures [`transient_io`] names. A certificate or
+/// protocol error, a name lookup that failed or timed out, a malformed response are not.
 fn transient(e: &ureq::Error) -> bool {
     match e {
+        ureq::Error::Timeout(ureq::Timeout::Resolve) => false,
         ureq::Error::Timeout(_) => true,
         ureq::Error::Io(io) => transient_io(io),
         _ => false,
     }
 }
 
-/// Whether an I/O failure passes: a connection refused, reset, aborted or cut off, a network or
-/// host unreachable for now, a timeout, or a name lookup the resolver says to try again. The
-/// client hands its own errors through `std::io` wrapped; those are judged by [`transient`].
+/// Whether an I/O failure passes: a connection refused, reset, aborted or cut off, a host
+/// unreachable for now, or a timeout. A machine offline does not: no network to reach (down or
+/// unreachable) and a failed name lookup, even one the resolver says to try again (`EAI_AGAIN`),
+/// are said at once (LD-528). The client hands its own errors through `std::io` wrapped; those
+/// are judged by [`transient`].
 fn transient_io(e: &std::io::Error) -> bool {
     use std::io::ErrorKind as Kind;
     if let Some(inner) = e.get_ref().and_then(|i| i.downcast_ref::<ureq::Error>()) {
@@ -462,19 +467,8 @@ fn transient_io(e: &std::io::Error) -> bool {
             | Kind::TimedOut
             | Kind::WouldBlock
             | Kind::UnexpectedEof
-            | Kind::NetworkUnreachable
             | Kind::HostUnreachable
-            | Kind::NetworkDown
-    ) || temporary_lookup_failure(e)
-}
-
-/// A name lookup that failed with `EAI_AGAIN`, in glibc's words and in musl's (the static binary):
-/// the standard library hands every lookup failure through as text. A name that does not exist is
-/// an answer and is not tried again.
-fn temporary_lookup_failure(e: &std::io::Error) -> bool {
-    let text = e.to_string();
-    text.starts_with("failed to lookup address information: ")
-        && (text.ends_with("Temporary failure in name resolution") || text.ends_with("Try again"))
+    )
 }
 
 /// The wait a `Retry-After` value asks for (RFC 9110 §10.2.3): a number of seconds, or an
@@ -2399,12 +2393,13 @@ mod tests {
             ErrorKind::BrokenPipe,
             ErrorKind::TimedOut,
             ErrorKind::UnexpectedEof,
-            ErrorKind::NetworkUnreachable,
             ErrorKind::HostUnreachable,
         ] {
             assert!(transient_io(&Error::from(kind)), "{kind:?}");
         }
         for kind in [
+            ErrorKind::NetworkUnreachable,
+            ErrorKind::NetworkDown,
             ErrorKind::PermissionDenied,
             ErrorKind::InvalidData,
             ErrorKind::NotFound,
@@ -2413,14 +2408,14 @@ mod tests {
         }
         let lookup =
             |detail: &str| Error::other(format!("failed to lookup address information: {detail}"));
-        assert!(transient_io(&lookup(
+        assert!(!transient_io(&lookup(
             "Temporary failure in name resolution"
         )));
-        assert!(transient_io(&lookup("Try again")));
+        assert!(!transient_io(&lookup("Try again")));
         assert!(!transient_io(&lookup("Name or service not known")));
         assert!(!transient_io(&lookup("Name does not resolve")));
         assert!(transient(&ureq::Error::Timeout(ureq::Timeout::Connect)));
-        assert!(transient(&ureq::Error::Timeout(ureq::Timeout::Resolve)));
+        assert!(!transient(&ureq::Error::Timeout(ureq::Timeout::Resolve)));
         assert!(transient(&ureq::Error::Io(Error::from(
             ErrorKind::ConnectionReset
         ))));

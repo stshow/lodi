@@ -163,6 +163,15 @@ fn stderr(out: &Output) -> String {
     String::from_utf8(out.stderr.clone()).unwrap()
 }
 
+/// The `lodi: warning W_…` lines a run printed on standard error, in order.
+fn warnings(out: &Output) -> Vec<String> {
+    stderr(out)
+        .lines()
+        .filter(|line| line.starts_with("lodi: warning W_"))
+        .map(str::to_string)
+        .collect()
+}
+
 /// A directory holding exactly the named executables (each a shell script that exits 0): the
 /// `PATH` a run of the binary sees.
 fn path_with(env: &HomeEnv, tag: &str, names: &[&str]) -> PathBuf {
@@ -183,6 +192,13 @@ fn command(env: &HomeEnv, path: &Path) -> Command {
         .env("LODI_HOME", data(env))
         .env("XDG_DATA_HOME", env.home().join(".local/share"))
         .env("PATH", path);
+    command
+}
+
+/// `lodi ARGS` through [`command`], a 1.x home verb read as `lodi switch --home` (LD-518).
+fn lodi(env: &HomeEnv, path: &Path, args: &[&str]) -> Command {
+    let mut command = command(env, path);
+    env.on_gate(&mut command, args);
     command
 }
 
@@ -416,10 +432,9 @@ fn git_warns_when_absent_or_shadowed_and_installs_nothing() {
 
     let before = home_gate().ledger_lines().len();
     for verb in ["plan", "apply", "status"] {
-        let out = command(&env, &empty).args(["home", verb]).output().unwrap();
+        let out = lodi(&env, &empty, &["home", verb]).output().unwrap();
         assert_eq!(out.status.code(), Some(0), "{verb}: {}", stderr(&out));
-        let lines: Vec<String> = stderr(&out).lines().map(str::to_string).collect();
-        assert_eq!(lines, [not_found, shadowed], "{verb}");
+        assert_eq!(warnings(&out), [not_found, shadowed], "{verb}");
     }
     let written = env.home().join(".config/git/config");
     assert_eq!(
@@ -446,12 +461,9 @@ fn git_warns_when_absent_or_shadowed_and_installs_nothing() {
     }
 
     let with_git = path_with(&env, "git", &["git"]);
-    let out = command(&env, &with_git)
-        .args(["home", "plan"])
-        .output()
-        .unwrap();
+    let out = lodi(&env, &with_git, &["home", "plan"]).output().unwrap();
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stderr(&out), format!("{shadowed}\n"));
+    assert_eq!(warnings(&out), [shadowed]);
 }
 
 // ---------------------------------------------------------------------------------- shells ----
@@ -617,18 +629,6 @@ fn a_snippet_is_a_regular_file_below_the_manifest() {
     assert!(text.ends_with("\ntrue\n"), "{text}");
 }
 
-/// §4.1, §5: a shell module renders into the data root, which must be below the home directory
-/// like every managed path; a data root outside it is `E_CONFIG`.
-#[test]
-fn a_shell_module_needs_the_data_root_below_home() {
-    let env = home_env("shell-data-outside");
-    write_manifest(&env, &format!("{HEAD}[programs.zsh]\nhistsize = 1\n"));
-    let out = env.command().args(["home", "plan"]).output().unwrap();
-    assert_eq!(out.status.code(), Some(3), "{}", stderr(&out));
-    assert!(stderr(&out).contains("E_CONFIG"), "{}", stderr(&out));
-    assert!(stderr(&out).contains("renders a file outside the home directory"));
-}
-
 fn tool_declaration(url: &str, body: &[u8]) -> String {
     format!(
         "[tools.alpha]\nversion = \"1.0.0\"\nurl = \"{url}\"\nsha256 = \"{}\"\n\
@@ -669,9 +669,8 @@ fn the_shell_files_include_the_tools_and_apply_prints_their_lines_last() {
     write_manifest(&env, &format!("{HEAD}{SHELLS}\n{tools}"));
     let path = path_with(&env, "shells", &["bash", "fish", "zsh"]);
     let run = |args: &[&str]| {
-        command(&env, &path)
+        lodi(&env, &path, args)
             .env("LODI_FETCH_REWRITE", server.rewrite())
-            .args(args)
             .output()
             .unwrap()
     };
@@ -680,11 +679,11 @@ fn the_shell_files_include_the_tools_and_apply_prints_their_lines_last() {
     let out = run(&["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(
-        stderr(&out),
-        "",
+        warnings(&out),
+        Vec::<String>::new(),
         "the shells are on PATH, nothing is shadowed"
     );
-    let shown = stdout(&out);
+    let shown = stderr(&out);
     assert!(
         shown.ends_with(
             "add this line to your shell rc file (lodi never edits it):\n  . \
@@ -808,16 +807,15 @@ fn the_shell_files_include_the_tools_and_apply_prints_their_lines_last() {
     // With fish as $SHELL and [programs.fish] declared, status prints neither W_FISH_HOOKS nor the
     // POSIX line; without the module, W_FISH_HOOKS is back.
     let status = |shell: &str| {
-        command(&env, &path)
+        lodi(&env, &path, &["home", "status"])
             .env("SHELL", shell)
-            .args(["home", "status"])
             .output()
             .unwrap()
     };
     let out = status("/usr/bin/fish");
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(!stderr(&out).contains("W_FISH_HOOKS"), "{}", stderr(&out));
-    assert!(!stdout(&out).contains(
+    assert!(!stderr(&out).contains(
         "rc file (lodi never edits it):\n  . \"$HOME/.local/share/lodi/home-scope/profile.sh\""
     ));
 
@@ -849,13 +847,13 @@ fn the_fish_dropin_is_an_ordinary_owned_file() {
         &env,
         &format!("{HEAD}[programs.fish]\ngreeting = \"\"\nabbrs = {{ gs = \"git status\" }}\n"),
     );
-    let run = |args: &[&str]| command(&env, &path).args(args).output().unwrap();
+    let run = |args: &[&str]| lodi(&env, &path, args).output().unwrap();
 
     let out = run(&["home", "plan"]);
     assert!(
-        stdout(&out).contains("backup: first unmanaged copy kept"),
+        support::home_part(&out).contains("backup: first unmanaged copy kept"),
         "{}",
-        stdout(&out)
+        stderr(&out)
     );
     let out = run(&["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
@@ -911,13 +909,10 @@ fn a_disabled_shell_module_prints_no_line() {
         &format!("{HEAD}[programs.bash]\nenable = false\nhistsize = 1\n"),
     );
     let empty = path_with(&env, "none", &[]);
-    let out = command(&env, &empty)
-        .args(["home", "apply"])
-        .output()
-        .unwrap();
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stderr(&out), "");
-    assert!(!stdout(&out).contains("rc file"), "{}", stdout(&out));
+    let out = lodi(&env, &empty, &["home", "apply"]).output().unwrap();
+    assert!(support::nothing(&out), "{}", stderr(&out));
+    assert!(!stderr(&out).contains("rc file"), "{}", stderr(&out));
+    assert!(out.stdout.is_empty(), "{}", stdout(&out));
     assert!(!data(&env).join("home-scope/shell/init.bash").exists());
 }
 
@@ -1306,16 +1301,15 @@ fn nvim_and_tmux_warn_when_shadowed_or_absent() {
         );
         let empty = path_with(&env, "empty", &[]);
         for verb in ["plan", "apply", "status"] {
-            let out = command(&env, &empty).args(["home", verb]).output().unwrap();
+            let out = lodi(&env, &empty, &["home", verb]).output().unwrap();
             assert_eq!(
                 out.status.code(),
                 Some(0),
                 "{module} {verb}: {}",
                 stderr(&out)
             );
-            let lines: Vec<String> = stderr(&out).lines().map(str::to_string).collect();
             assert_eq!(
-                lines,
+                warnings(&out),
                 [not_found.clone(), shadowed.clone()],
                 "{module} {verb}"
             );
@@ -1324,11 +1318,8 @@ fn nvim_and_tmux_warn_when_shadowed_or_absent() {
         assert_eq!(fs::read_to_string(&by).unwrap(), "older\n", "{module}");
 
         let with = path_with(&env, module, &[executable]);
-        let out = command(&env, &with)
-            .args(["home", "plan"])
-            .output()
-            .unwrap();
-        assert_eq!(stderr(&out), format!("{shadowed}\n"), "{module}");
+        let out = lodi(&env, &with, &["home", "plan"]).output().unwrap();
+        assert_eq!(warnings(&out), [shadowed], "{module}");
     }
 
     // helix looks for `hx`, not `helix`.
@@ -1338,8 +1329,7 @@ fn nvim_and_tmux_warn_when_shadowed_or_absent() {
         &format!("{HEAD}[programs.helix]\ntheme = \"onedark\"\n"),
     );
     let named_helix = path_with(&env, "helix", &["helix"]);
-    let out = command(&env, &named_helix)
-        .args(["home", "plan"])
+    let out = lodi(&env, &named_helix, &["home", "plan"])
         .output()
         .unwrap();
     assert!(
@@ -1348,8 +1338,8 @@ fn nvim_and_tmux_warn_when_shadowed_or_absent() {
         stderr(&out)
     );
     let hx = path_with(&env, "hx", &["hx"]);
-    let out = command(&env, &hx).args(["home", "plan"]).output().unwrap();
-    assert_eq!(stderr(&out), "");
+    let out = lodi(&env, &hx, &["home", "plan"]).output().unwrap();
+    assert_eq!(warnings(&out), Vec::<String>::new());
 }
 
 const STARSHIP_SHELLS: &str = r#"

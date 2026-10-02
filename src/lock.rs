@@ -7,8 +7,9 @@
 //! catalogue or index discovery. It is written atomically; a failure leaves the previous lock.
 //!
 //! Staleness follows `spec/02` §6: an entry whose normalized request differs from the manifest
-//! is stale, a fresh entry is kept as is even if upstream has something newer, and `lodi lock`
-//! performs no network access when every entry is fresh.
+//! is stale, a fresh entry is kept as is even if upstream has something newer, and locking
+//! performs no network access when every entry is fresh. `lodi develop` and `lodi run` lock by
+//! themselves (LD-496).
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -278,6 +279,8 @@ pub enum LockProblem {
     Invalid(String),
     /// Entries that are missing or stale for the manifest.
     Stale(Vec<String>),
+    /// A config's lock (`lodi-config-lock`, #696), which shares the file name, never the format.
+    ConfigLock,
 }
 
 impl LockProblem {
@@ -285,7 +288,7 @@ impl LockProblem {
         match self {
             LockProblem::Missing => {
                 Diagnostic::new("E_LOCK_STALE", format!("{file} does not exist"))
-                    .hint("run `lodi lock`")
+                    .hint("`lodi develop` and `lodi run` write it")
             }
             LockProblem::Version { found, writer } => {
                 let reads = crate::schema::artifact(LOCK_ARTIFACT).read_set();
@@ -294,12 +297,11 @@ impl LockProblem {
                     format!("{file} has lock version {found}; this lodi reads version {reads}"),
                 );
                 d.notes.push(crate::schema::note_for(writer.as_deref()));
-                d.hint("use the lodi that wrote it, or run `lodi lock` with this one")
+                d.hint("use the lodi that wrote it; this lodi never replaces it")
             }
             LockProblem::Invalid(why) => {
-                Diagnostic::new("E_LOCK_STALE", format!("{file} is invalid: {why}")).hint(format!(
-                    "remove {file} and run `lodi lock` to resolve again"
-                ))
+                Diagnostic::new("E_LOCK_STALE", format!("{file} is invalid: {why}"))
+                    .hint(format!("remove {file} to resolve every entry again"))
             }
             LockProblem::Stale(entries) => {
                 let mut d = Diagnostic::new(
@@ -309,8 +311,21 @@ impl LockProblem {
                 for e in entries {
                     d.notes.push(e.clone());
                 }
-                d.hint("run `lodi lock`")
+                d.hint("`lodi develop` and `lodi run` resolve what changed")
             }
+            LockProblem::ConfigLock => Diagnostic::new(
+                "E_CONFIG",
+                format!(
+                    "{file} is a config's lock ({}, written by `lodi switch`, `lodi update` and \
+                     `lodi pin` for host.toml and home.toml), not a project lock \
+                     ({LOCK_FORMAT}); lodi never replaces it",
+                    crate::config::lock::FORMAT
+                ),
+            )
+            .hint(format!(
+                "keep the config in a folder of its own (`lodi switch PATH` reads it there) and \
+                 take {file} out of this project, then run `lodi develop` to lock the project"
+            )),
         }
     }
 }
@@ -319,6 +334,11 @@ impl LockProblem {
 pub fn parse_lock(bytes: &[u8]) -> Result<LockFile, LockProblem> {
     let value: serde_json::Value = serde_json::from_slice(bytes)
         .map_err(|e| LockProblem::Invalid(format!("not JSON: {e}")))?;
+    // A config's lock is named as one, whatever its version: never a stale project lock.
+    if value.get("format").and_then(serde_json::Value::as_str) == Some(crate::config::lock::FORMAT)
+    {
+        return Err(LockProblem::ConfigLock);
+    }
     // The schema version is read from the raw JSON and decided **before** the document is
     // deserialized, and a version outside the read-set is refused whether it is newer or older:
     // there is no upgrade on read, because an upgrade on read is a write (design call D18).
@@ -331,15 +351,6 @@ pub fn parse_lock(bytes: &[u8]) -> Result<LockFile, LockProblem> {
             });
         }
         None => return Err(LockProblem::Invalid("missing or unknown `version`".into())),
-    }
-    // A repository's root lock shares the file name, never the format (LD-416): named, not
-    // reported as a stray field.
-    if value.get("format").and_then(serde_json::Value::as_str) == Some(crate::flakelock::FORMAT) {
-        return Err(LockProblem::Invalid(format!(
-            "it is a repository lock ({}, written by `lodi update` and the pin verbs for \
-             `lodi apply`), not a project lock ({LOCK_FORMAT})",
-            crate::flakelock::FORMAT
-        )));
     }
     let lock: LockFile =
         serde_json::from_value(value).map_err(|e| LockProblem::Invalid(e.to_string()))?;
@@ -641,14 +652,7 @@ pub fn tools_staleness(tools: &tools::ToolSet, lock: &LockFile) -> Vec<String> {
         match lock.packages.get(label) {
             None if skipped_here(decl) => {}
             None => stale.push(format!("{label}: missing")),
-            Some(entry) if entry.request != tool_request(label, decl) => {
-                stale.push(format!(
-                    "{label}: locked for `{}`, the manifest asks for `{}`",
-                    entry.request.constraint,
-                    decl.effective(HOST_ARCH).constraint_text
-                ));
-            }
-            Some(entry) => stale.extend(recipe_staleness(label, entry, &recipes)),
+            Some(entry) => stale.extend(moved(label, decl, entry, &recipes)),
         }
     }
     for label in lock.packages.keys() {
@@ -657,6 +661,35 @@ pub fn tools_staleness(tools: &tools::ToolSet, lock: &LockFile) -> Vec<String> {
         }
     }
     stale
+}
+
+/// The tools `lock` holds an entry for whose request, or recipe of your own, changed since: what
+/// only `lodi update` locks again for a config, as a switch fills only what is missing (LD-528).
+pub fn tools_moved(tools: &tools::ToolSet, lock: &LockFile) -> Vec<String> {
+    let recipes = crate::catalogue::user::active().unwrap_or_default();
+    tools
+        .iter()
+        .filter_map(|(label, decl)| {
+            let entry = lock.packages.get(label)?;
+            moved(label, decl, entry, &recipes)
+        })
+        .collect()
+}
+
+fn moved(
+    label: &str,
+    decl: &ToolDecl,
+    entry: &ToolEntry,
+    recipes: &crate::catalogue::user::UserRecipes,
+) -> Option<String> {
+    if entry.request != tool_request(label, decl) {
+        return Some(format!(
+            "{label}: locked for `{}`, the manifest asks for `{}`",
+            entry.request.constraint,
+            decl.effective(HOST_ARCH).constraint_text
+        ));
+    }
+    recipe_staleness(label, entry, recipes)
 }
 
 /// Why the recipe `entry` was resolved through is no longer the one its tool resolves through
@@ -884,7 +917,7 @@ impl std::fmt::Display for Failure {
     }
 }
 
-/// What `lodi lock` did.
+/// What locking did.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Outcome {
     /// Every entry was fresh; nothing was fetched or written.
@@ -914,23 +947,14 @@ pub fn load_manifest(root: &Path) -> Result<(ProjectManifest, Vec<u8>), Failure>
 
 /// Read `root/lodi.lock` if it exists.
 pub fn read_lock(root: &Path) -> Result<LockFile, LockProblem> {
-    read_lock_named(root, LOCK_FILE)
-}
-
-/// Read the home scope's lock through the exact parser and validator the project lock uses.
-pub fn read_home_lock(root: &Path) -> Result<LockFile, LockProblem> {
-    read_lock_named(root, HOME_LOCK_FILE)
-}
-
-fn read_lock_named(root: &Path, file: &str) -> Result<LockFile, LockProblem> {
-    match fs::read(root.join(file)) {
+    match fs::read(root.join(LOCK_FILE)) {
         Ok(bytes) => parse_lock(&bytes),
         Err(e) if e.kind() == io::ErrorKind::NotFound => Err(LockProblem::Missing),
         Err(e) => Err(LockProblem::Invalid(format!("cannot read: {e}"))),
     }
 }
 
-/// Frozen use (`spec/10` `--frozen`, `lodi lock --check`): the lock of the project in `root`,
+/// Frozen use (`spec/10` `--frozen`): the lock of the project in `root`,
 /// only if it exists, is valid and is fresh for the manifest. Never resolves, fetches or
 /// writes, so no version can be substituted.
 pub fn frozen(root: &Path) -> Result<LockFile, Failure> {
@@ -947,11 +971,31 @@ pub fn frozen(root: &Path) -> Result<LockFile, Failure> {
     }
 }
 
-/// `lodi lock` for the project in `root`: resolve missing and stale entries, keep fresh ones,
-/// and write the lock atomically. `now` is seconds since the Unix epoch (the snapshot pinned
-/// when the manifest has none is [`default_snapshot`] of the base's family: `now` floored to the
-/// hour for an apt base, OD-17, and the previous UTC day for an Arch base, LD-381).
+/// Lock the project in `root`, as `lodi develop` and `lodi run` do first (LD-496): resolve
+/// missing and stale entries, keep fresh ones byte for byte, drop removed ones, and write the
+/// lock atomically. A lock that cannot be read, or one a newer lodi wrote, is never replaced.
+/// `now` is seconds since the Unix epoch (the snapshot pinned when the manifest has none is
+/// [`default_snapshot`] of the base's family: `now` floored to the hour for an apt base, OD-17,
+/// and the previous UTC day for an Arch base, LD-381).
 pub fn lock_project(root: &Path, fetcher: &dyn Fetcher, now: i64) -> Result<Outcome, Failure> {
+    relock_project(root, fetcher, now, false)
+}
+
+/// `lodi update` in a project (#696): every tool and the base resolved afresh, ignoring the
+/// lock's entries, and `./lodi.lock` written unless its bytes would not change. `lodi.toml` is
+/// only read; a lock that cannot be read, or one a newer lodi wrote, is never replaced.
+pub fn update_project(root: &Path, fetcher: &dyn Fetcher, now: i64) -> Result<Outcome, Failure> {
+    relock_project(root, fetcher, now, true)
+}
+
+/// [`lock_project`] (fresh entries kept, a lock with nothing stale left alone), or with `afresh`
+/// [`update_project`] (every entry resolved again, a lock that comes out the same left alone).
+fn relock_project(
+    root: &Path,
+    fetcher: &dyn Fetcher,
+    now: i64,
+    afresh: bool,
+) -> Result<Outcome, Failure> {
     let (manifest, manifest_bytes) = load_manifest(root)?;
     crate::catalogue::user::active().map_err(Failure::one)?;
     let previous = match read_lock(root) {
@@ -959,18 +1003,23 @@ pub fn lock_project(root: &Path, fetcher: &dyn Fetcher, now: i64) -> Result<Outc
         Err(LockProblem::Missing) => None,
         Err(problem) => return Err(Failure::one(problem.diagnostic(LOCK_FILE))),
     };
-    if let Some(lock) = &previous
+    if !afresh
+        && let Some(lock) = &previous
         && staleness(&manifest, lock).is_empty()
     {
         return Ok(Outcome::UpToDate(lock.clone()));
     }
+    let kept = if afresh { None } else { previous.as_ref() };
     let (lock, resolved) = resolve_manifest(
         &manifest,
         sha256_tagged(&manifest_bytes),
-        previous.as_ref(),
+        kept,
         fetcher,
         now,
     )?;
+    if afresh && previous.as_ref() == Some(&lock) {
+        return Ok(Outcome::UpToDate(lock));
+    }
     write_atomic(&root.join(LOCK_FILE), lock.to_canonical_json().as_bytes()).map_err(|e| {
         Failure::one(Diagnostic::new(
             "E_STORE_IO",
@@ -998,9 +1047,18 @@ pub fn resolve_manifest(
     let base = match &manifest.container {
         None => None,
         Some(container) => {
-            let keep = previous
-                .and_then(|l| l.base.as_ref())
-                .filter(|b| base_is_fresh(manifest, b).is_empty());
+            let pinned = previous.and_then(|l| l.base.as_ref());
+            let keep = pinned.filter(|b| base_is_fresh(manifest, b).is_empty());
+            // A base whose distribution, release and snapshot request are unchanged keeps the
+            // snapshot it pins: only its package list changed, so the closure is resolved again
+            // in the same archive state and no package already locked moves (LD-496).
+            let snapshot_pin = pinned
+                .filter(|b| {
+                    b.distro == container.distro.name()
+                        && b.release == container.release
+                        && container.snapshot.as_ref().is_none_or(|s| *s == b.snapshot)
+                })
+                .and_then(|b| parse_utc(&b.snapshot));
             match keep {
                 Some(b) => Some(b.clone()),
                 None => {
@@ -1008,8 +1066,9 @@ pub fn resolve_manifest(
                     let def = builtin_base(distro)
                         .expect("every supported distro has a built-in base definition")
                         .map_err(Failure::one)?;
-                    let snapshot = match &container.snapshot {
-                        Some(text) => parse_utc(text).ok_or_else(|| {
+                    let snapshot = match (&container.snapshot, snapshot_pin) {
+                        (_, Some(pinned)) => pinned,
+                        (Some(text), None) => parse_utc(text).ok_or_else(|| {
                             Failure::one(Diagnostic::new(
                                 "E_TYPE",
                                 format!("snapshot `{text}` is not YYYY-MM-DDTHH:MM:SSZ"),
@@ -1017,11 +1076,11 @@ pub fn resolve_manifest(
                         })?,
                         // A Fedora release's repository and image never change after the
                         // release, so its lock records the release's own instant (LD-435).
-                        None if def.family == Family::Dnf => def
+                        (None, None) if def.family == Family::Dnf => def
                             .releases
                             .get(container.release.as_str())
                             .map_or(now, |release| release.snapshot_min),
-                        None => default_snapshot(def.family, now),
+                        (None, None) => default_snapshot(def.family, now),
                     };
                     let request = BaseRequest {
                         release: &container.release,
@@ -1135,6 +1194,21 @@ pub fn write_atomic_with(
         let _ = fs::remove_file(&tmp);
     }
     result
+}
+
+/// The line that says a lock was written: what was resolved, then the whole lock in one line. A
+/// lock written with nothing resolved names no parenthesis: an empty one reads as something left
+/// out.
+pub fn wrote(lock: &LockFile, resolved: &[String]) -> String {
+    if resolved.is_empty() {
+        format!("wrote {LOCK_FILE}: {}", summary(lock))
+    } else {
+        format!(
+            "wrote {LOCK_FILE} (resolved {}): {}",
+            resolved.join(", "),
+            summary(lock)
+        )
+    }
 }
 
 /// A one-line summary of a lock for the terminal.

@@ -6,6 +6,8 @@
 //! pointing the product at this machine. `python3 -B scripts/check-host-safety.py` is a gate
 //! step that fails when a committed script or test acquires a way around that.
 
+#[path = "support/fakehost.rs"]
+mod fakehost;
 #[path = "support/hostroot.rs"]
 mod hostroot;
 /// The suite's one wait ceiling, declared once at this binary's root (`tests/support/wait.rs`).
@@ -65,7 +67,7 @@ fn an_unarmed_root_is_refused_before_the_manifest_is_opened() {
 
     let error = lodi::hostscope::plan(&root.options()).unwrap_err();
     assert!(
-        error.to_string().contains("etc/lodi/host-allowed"),
+        error.to_string().contains(lodi::marker::MARKER),
         "the refusal names the marker: {error}"
     );
     assert!(
@@ -92,12 +94,11 @@ fn a_marker_that_is_not_a_regular_file_is_not_an_armed_root() {
     root.debian().write("etc/lodi/host.toml", "");
     std::fs::create_dir_all(root.path("etc/lodi")).expect("the directory");
     std::fs::write(root.path("etc/lodi/elsewhere"), "").expect("the target");
-    std::os::unix::fs::symlink("elsewhere", root.path("etc/lodi/host-allowed"))
-        .expect("the symlink");
+    std::os::unix::fs::symlink("elsewhere", root.path(lodi::marker::MARKER)).expect("the symlink");
     refuses_both_ways(&root, "E_HOST_NOT_ARMED", 9);
 
-    std::fs::remove_file(root.path("etc/lodi/host-allowed")).expect("the symlink goes");
-    std::fs::create_dir(root.path("etc/lodi/host-allowed")).expect("a directory marker");
+    std::fs::remove_file(root.path(lodi::marker::MARKER)).expect("the symlink goes");
+    std::fs::create_dir(root.path(lodi::marker::MARKER)).expect("a directory marker");
     refuses_both_ways(&root, "E_HOST_NOT_ARMED", 9);
 }
 
@@ -105,7 +106,7 @@ fn a_marker_that_is_not_a_regular_file_is_not_an_armed_root() {
 #[test]
 fn a_distribution_this_build_does_not_manage_is_refused() {
     let root = Root::new("safety-unmanaged");
-    root.arm()
+    root.may_manage()
         .write("etc/os-release", "ID=nixos\nVERSION_ID=\"25.11\"\n")
         .write("etc/lodi/host.toml", "");
     refuses_both_ways(&root, "E_UNSUPPORTED", 3);
@@ -135,7 +136,7 @@ fn a_root_whose_package_manager_is_not_on_path_stops_at_no_runtime() {
         return;
     }
     let root = Root::new("safety-noruntime");
-    root.arm().arch().write("etc/lodi/host.toml", "");
+    root.may_manage().arch().write("etc/lodi/host.toml", "");
     refuses_both_ways(&root, "E_NO_RUNTIME", 7);
     let error = lodi::hostscope::plan(&root.options()).unwrap_err();
     assert!(
@@ -201,48 +202,6 @@ fn an_owner_the_root_does_not_know_is_refused() {
     assert_eq!(error.codes(), vec!["E_APPLY"]);
 }
 
-/// The hint for `/` is built without `/` ever being opened: it is a string, and that is all the
-/// evidence this repository ever collects about the machine it runs on. It names the one command
-/// that arms a machine, run as root, and says what that command writes (LD-320).
-#[test]
-fn the_arming_hint_for_the_system_root_names_the_arm_command_run_as_root() {
-    let hint = safety::arm_command(Path::new("/"), true);
-    // check-host-safety: refusal — the hint is asserted to name the command, not run it.
-    assert!(hint.contains("sudo lodi host arm "), "{hint}");
-    assert!(
-        hint.contains("/etc/lodi/host-allowed, an empty file"),
-        "{hint}"
-    );
-    assert!(
-        !hint.contains("install -D"),
-        "no hand-written install line any more: {hint}"
-    );
-    assert!(
-        !hint.contains("--root"),
-        "the system root is armed without --root: {hint}"
-    );
-}
-
-/// The privilege step of `host arm`, proved where it is decided: a pure function of the resolved
-/// root and an **injected** effective uid. The command is never run against `/` here — not to
-/// arm it and not to watch it refuse (`AGENTS.md` §8, LD-45).
-#[test]
-fn arming_the_system_root_needs_uid_0_and_a_scratch_root_does_not() {
-    use lodi::hostscope::arm::may_arm;
-    for euid in [1, 1000, 65534] {
-        let refused = may_arm(Path::new("/"), euid).expect_err("an unprivileged arm of /");
-        assert_eq!(refused.code, "E_NEED_ROOT");
-        assert_eq!(lodi::diag::exit_status(refused.code), 9);
-        let text = refused.to_string();
-        assert!(text.contains("nothing was created"), "{text}");
-        // check-host-safety: refusal — the hint is asserted to name the command, not run it.
-        assert!(text.contains("sudo lodi host arm"), "{text}");
-        assert!(may_arm(Path::new("/srv/scratch"), euid).is_ok());
-    }
-    assert!(may_arm(Path::new("/"), 0).is_ok(), "root may arm /");
-    assert!(may_arm(Path::new("/srv/scratch"), 0).is_ok());
-}
-
 /// The manifest is never opened before the gate has passed, and a root that passes the gate
 /// reads its identity from the root itself, not from this machine.
 #[test]
@@ -259,15 +218,12 @@ fn the_context_comes_from_the_root_and_never_from_this_machine() {
 
 // ------------------------------------------------------------ T-3: the safe command is reachable
 
+/// The safe command is reachable: `switch` names its journal flag, and no help claims a
+/// rollback the host part does not have.
 #[test]
-fn help_names_only_the_host_verbs_and_their_safety_flags() {
+fn help_names_switch_with_its_journal_flag_and_no_rollback() {
     let mut text = String::new();
-    for subject in [
-        &["--help"][..],
-        &["help", "host"],
-        // check-host-safety: refusal — the help of that command is read, and nothing is run.
-        &["help", "host", "apply"],
-    ] {
+    for subject in [&["--help"][..], &["help", "switch"]] {
         let help = Command::new(env!("CARGO_BIN_EXE_lodi"))
             .args(subject)
             .output()
@@ -275,12 +231,9 @@ fn help_names_only_the_host_verbs_and_their_safety_flags() {
         assert!(help.status.success());
         text.push_str(&String::from_utf8(help.stdout).expect("utf-8"));
     }
-    assert!(text.contains("lodi host plan [--root DIR]"), "{text}");
-    assert!(text.contains("lodi host apply [--root DIR]"), "{text}");
-    assert!(text.contains("lodi host arm [--root DIR]"), "{text}");
-    assert!(!text.contains("lodi host disarm"), "{text}");
-    assert!(text.contains("--resolved JOURNAL-ID"), "{text}");
-    assert!(!text.contains("lodi host status"), "{text}");
+    assert!(text.contains("lodi switch [PATH | URL]"), "{text}");
+    assert!(text.contains("--resolved ID"), "{text}");
+    assert!(!text.contains("lodi host"), "{text}");
     for claim in ["rollback", "generation", "undo"] {
         assert!(!text.to_lowercase().contains(claim), "{text}");
     }
@@ -470,37 +423,37 @@ fn on_the_system_root_the_environment_cannot_choose_the_package_manager() {
 }
 
 /// Rule (LD-357): a package-manager program that someone other than its owner could write is
-/// never run, and the search does not go on past it. The real binary is run on a scratch root
-/// with a `PATH` holding one directory whose `apt-get` is group- or world-writable.
+/// never run, and the search does not go on past it. The real binary previews a switch of a
+/// scratch root with a `PATH` whose first directory's `apt-get` is group- or world-writable,
+/// ahead of the fake machine's own.
 #[test]
 fn a_package_manager_writable_by_others_is_refused() {
     for (mode, name) in [(0o775, "group"), (0o757, "world")] {
-        let root = Root::new(&format!("safety-pm-{name}"));
-        root.debian_with(&with_one_file(&root));
-        let bin = root.path(".bin");
+        let case = fakehost::Case::new(&format!("safety-pm-{name}"), fakehost::Machine::debian());
+        case.set_manifest(&with_one_file(&case.root));
+        let bin = case.root.path(".bin");
         std::fs::create_dir_all(&bin).expect("a bin directory");
-        for program in ["apt-get", "dpkg-query"] {
-            let path = bin.join(program);
-            std::fs::write(&path, "#!/bin/sh\nexit 0\n").expect("a program");
-            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
-                .expect("its mode");
+        {
+            let _writing = fakehost::writing();
+            for program in ["apt-get", "dpkg-query"] {
+                let path = bin.join(program);
+                std::fs::write(&path, "#!/bin/sh\nexit 0\n").expect("a program");
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
+                    .expect("its mode");
+            }
+            std::fs::set_permissions(bin.join("apt-get"), std::fs::Permissions::from_mode(mode))
+                .expect("a writable program");
         }
-        std::fs::set_permissions(bin.join("apt-get"), std::fs::Permissions::from_mode(mode))
-            .expect("a writable program");
-        let output = Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(["host", "plan", "--root"])
-            .arg(&root.dir)
-            .env("PATH", &bin)
-            .output()
-            .expect("lodi runs");
-        let stderr = String::from_utf8_lossy(&output.stderr);
+        let path = format!("{}:{}", bin.display(), case.elevating_path());
+        let output = case.verb_env("plan", &[], &[("PATH", &path)]);
+        let stderr = fakehost::err(&output);
         assert_eq!(output.status.code(), Some(7), "{name}: {stderr}");
         assert!(stderr.contains("E_NO_RUNTIME"), "{name}: {stderr}");
         assert!(
             stderr.contains("group- or world-writable"),
             "{name}: {stderr}"
         );
-        nothing_was_changed(&root);
+        nothing_was_changed(&case.root);
     }
 }
 
@@ -510,7 +463,9 @@ fn a_package_manager_writable_by_others_is_refused() {
 fn a_symlinked_manifest_is_refused_before_any_action() {
     let root = Root::new("safety-manifest-link");
     let manifest = with_one_file(&root);
-    root.arm().debian().write("srv/elsewhere.toml", &manifest);
+    root.may_manage()
+        .debian()
+        .write("srv/elsewhere.toml", &manifest);
     std::os::unix::fs::symlink(
         root.path("srv/elsewhere.toml"),
         root.path("etc/lodi/host.toml"),
@@ -547,7 +502,7 @@ fn an_etc_lodi_writable_by_others_or_linked_is_refused_before_any_action() {
     let root = Root::new("safety-etc-lodi-link");
     let manifest = with_one_file(&root);
     root.debian()
-        .write("srv/lodi/host-allowed", "")
+        .write("srv/lodi/may-manage", "")
         .write("srv/lodi/host.toml", &manifest);
     std::os::unix::fs::symlink(root.path("srv/lodi"), root.path("etc/lodi")).expect("a link");
     refuses_both_ways(&root, "E_PATH_ESCAPE", 3);
@@ -572,65 +527,81 @@ fn a_manifest_or_lock_writable_by_others_is_refused_before_any_action() {
         refuses_both_ways(&root, "E_PATH_ESCAPE", 3);
         let error = lodi::hostscope::plan(&root.options()).unwrap_err();
         assert!(
-            error.to_string().contains("group- or world-writable"),
+            error
+                .to_string()
+                .contains(&root.path(file).display().to_string()),
             "{file}: {error}"
         );
         nothing_was_changed(&root);
     }
 }
 
-/// Rule: a `--root` that does not exist is reported as missing, before the arming step, by
-/// every host command that takes one; a root that exists and is not armed is still
-/// `E_HOST_NOT_ARMED`, with the hint that arms it.
+/// Rule: a `--root` that does not exist is reported as missing (`E_STORE_IO`, exit 6) by every
+/// 2.0 command that takes one, before anything is read: never as a root that names no hostname,
+/// and the root is not created.
 #[test]
 fn a_root_that_does_not_exist_is_missing_not_unarmed() {
     let root = Root::new("safety-missing-root");
     let missing = root.path("not-there");
-    for verb in ["plan", "apply", "import"] {
+    let home = root.path("scratch-home");
+    std::fs::create_dir_all(&home).expect("a scratch home");
+    let commands: [&[&str]; 6] = [
+        &["switch", "--host", "--dry-run"],
+        &["switch"],
+        &["import", "--yes"],
+        &["update"],
+        &["pin", "--all"],
+        &["unpin", "--all"],
+    ];
+    for command in commands {
         let output = Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(["host", verb, "--root"])
+            .args(command)
+            .arg("--root")
             .arg(&missing)
+            .env_clear()
+            .env("HOME", &home)
+            .env("PATH", root.path(".no-bin"))
+            .env("LODI_HOST_REQUIRE_ROOT", "1")
             .output()
             .expect("lodi runs");
         let stderr = String::from_utf8_lossy(&output.stderr);
-        assert_eq!(output.status.code(), Some(6), "{verb}: {stderr}");
+        assert_eq!(output.status.code(), Some(6), "{command:?}: {stderr}");
         assert!(
             stderr.contains("lodi: error E_STORE_IO"),
-            "{verb}: {stderr}"
+            "{command:?}: {stderr}"
         );
-        assert!(stderr.contains("does not exist"), "{verb}: {stderr}");
-        assert!(!stderr.contains("E_HOST_NOT_ARMED"), "{verb}: {stderr}");
-        assert!(!stderr.contains("arm this root"), "{verb}: {stderr}");
-        assert!(!missing.exists(), "{verb} created the root");
+        assert!(stderr.contains("does not exist"), "{command:?}: {stderr}");
+        assert!(!stderr.contains("hostname"), "{command:?}: {stderr}");
+        assert!(!missing.exists(), "{command:?} created the root");
     }
-
-    let output = Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .args(["host", "plan", "--root"])
-        .arg(&root.dir)
-        .output()
-        .expect("lodi runs");
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert_eq!(output.status.code(), Some(9), "{stderr}");
-    assert!(stderr.contains("lodi: error E_HOST_NOT_ARMED"), "{stderr}");
-    assert!(stderr.contains("lodi host arm --root"), "{stderr}");
 }
 
-/// Rule: when a program the package backend needs is not on `PATH`, the hint names the command
-/// that was actually run. The real binary runs `plan` and `import` on a scratch Debian root
-/// whose `PATH` holds only `apt-get` and `dpkg-query`, which the gate requires, so the refusal
-/// comes from the backend at the moment it reaches for one of the others.
+/// `verb` ([`fakehost::command_line`]) on `case`'s scratch root, on a terminal, with `bin`
+/// after the stub elevators as the whole `PATH`: an import asks an elevator first, and its root
+/// run finds the same `PATH`.
+fn on_path(case: &fakehost::Case, verb: &str, bin: &Path) -> std::process::Output {
+    let path = format!(
+        "{}:{}",
+        case.base().join("elevators").display(),
+        bin.display()
+    );
+    case.verb_env(verb, &[], &[("PATH", path.as_str())])
+}
+
+/// Rule: when a program the package backend needs is not on `PATH`, the hint names the 2.0
+/// command that was run, and no 1.x verb (LD-523). The real binary runs `switch --host
+/// --dry-run` and `import --yes` on a scratch Debian root whose `PATH` holds only `apt-get` and
+/// `dpkg-query`, which the gate requires, so the refusal comes from the backend at the moment it
+/// reaches for one of the others.
 #[test]
 fn a_missing_package_program_names_the_command_that_was_run() {
-    for verb in ["plan", "import"] {
-        let root = Root::new(&format!("safety-norun-{verb}"));
-        root.arm().debian();
+    for (verb, named) in [("plan", "lodi switch"), ("import", "lodi import")] {
+        let case =
+            fakehost::Case::new(&format!("safety-norun-{verb}"), fakehost::Machine::debian());
         if verb == "plan" {
-            root.write(
-                "etc/lodi/host.toml",
-                "[host]\nversion = \"1\"\n\n[packages]\ncommon = [\"bc\"]\n",
-            );
+            case.set_manifest("[host]\nversion = \"1\"\n\n[packages]\ncommon = [\"bc\"]\n");
         }
-        let bin = root.path(".bin");
+        let bin = case.root.path(".bin");
         std::fs::create_dir_all(&bin).expect("a bin directory");
         for program in ["apt-get", "dpkg-query"] {
             let path = bin.join(program);
@@ -638,12 +609,7 @@ fn a_missing_package_program_names_the_command_that_was_run() {
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
                 .expect("its mode");
         }
-        let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
-        command.args(["host", verb, "--root"]).arg(&root.dir);
-        if verb == "import" {
-            command.arg("--stdout");
-        }
-        let output = command.env("PATH", &bin).output().expect("lodi runs");
+        let output = on_path(&case, verb, &bin);
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert_eq!(output.status.code(), Some(7), "{verb}: {stderr}");
         assert!(
@@ -652,33 +618,45 @@ fn a_missing_package_program_names_the_command_that_was_run() {
         );
         assert!(stderr.contains("is not on PATH"), "{verb}: {stderr}");
         assert!(
-            stderr.contains(&format!("run `lodi host {verb}`")),
+            stderr.contains(&format!("run `{named}`")),
             "{verb}: {stderr}"
         );
-        assert!(!stderr.contains("apply"), "{verb}: {stderr}");
-        assert!(!root.exists("var/lib/lodi"), "{verb} created host state");
+        assert!(!stderr.contains("lodi host"), "{verb}: {stderr}");
+        assert!(
+            !case.root.exists("var/lib/lodi"),
+            "{verb} created host state"
+        );
+        assert_eq!(
+            case.elevator_calls().len(),
+            usize::from(verb == "import"),
+            "{verb}"
+        );
     }
 }
 
 /// Rule: on an Arch root whose `PATH` has no `pacman`, the gate's step 5 refuses before any
-/// backend exists, and its hint names the command that was run as the backend's own would. The
-/// real binary runs `plan`, `import` and `apply` on a scratch Arch root with a one-file manifest
-/// and an empty `PATH`; each stops at `E_NO_RUNTIME` with its own verb, and nothing is changed.
+/// backend exists, and its hint names the 2.0 command that was run as the backend's own would,
+/// and no 1.x verb (LD-523). The real binary runs `switch --host --dry-run`, `import --yes` and
+/// `switch --host` on a scratch Arch root with a one-file config and an empty `PATH`; each stops
+/// at `E_NO_RUNTIME` with its own command, and nothing is changed.
 #[test]
 fn a_missing_pacman_names_the_command_that_was_run() {
-    for verb in ["plan", "import", "apply"] {
-        let root = Root::new(&format!("safety-nopacman-{verb}"));
-        root.arm()
-            .arch()
-            .write("etc/lodi/host.toml", &with_one_file(&root));
-        let bin = root.path(".bin");
-        std::fs::create_dir_all(&bin).expect("an empty bin directory");
-        let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
-        command.args(["host", verb, "--root"]).arg(&root.dir);
-        if verb == "import" {
-            command.arg("--stdout");
+    let commands = [
+        ("plan", "lodi switch"),
+        ("import", "lodi import"),
+        ("apply", "lodi switch"),
+    ];
+    for (verb, named) in commands {
+        let case = fakehost::Case::new(
+            &format!("safety-nopacman-{verb}"),
+            fakehost::Machine::arch(),
+        );
+        if verb != "import" {
+            case.set_manifest(&with_one_file(&case.root));
         }
-        let output = command.env("PATH", &bin).output().expect("lodi runs");
+        let bin = case.root.path(".bin");
+        std::fs::create_dir_all(&bin).expect("an empty bin directory");
+        let output = on_path(&case, verb, &bin);
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert_eq!(output.status.code(), Some(7), "{verb}: {stderr}");
         assert!(
@@ -690,17 +668,15 @@ fn a_missing_pacman_names_the_command_that_was_run() {
             "{verb}: {stderr}"
         );
         assert!(
-            stderr.contains(&format!("run `lodi host {verb}` on a arch machine")),
+            stderr.contains(&format!("run `{named}` on a arch machine")),
             "{verb}: {stderr}"
         );
-        for other in ["plan", "import", "apply"] {
-            if other != verb {
-                assert!(
-                    !stderr.contains(&format!("lodi host {other}")),
-                    "{verb}: {stderr}"
-                );
-            }
-        }
-        nothing_was_changed(&root);
+        assert!(!stderr.contains("lodi host"), "{verb}: {stderr}");
+        nothing_was_changed(&case.root);
+        assert_eq!(
+            case.elevator_calls().len(),
+            usize::from(verb == "import"),
+            "{verb}"
+        );
     }
 }

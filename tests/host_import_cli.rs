@@ -1,10 +1,12 @@
-//! M-Import T-3: the host scope's import verb is reachable, and what it reaches is bounded.
+//! M-Import T-3: the host scope's import is reachable, and what it reaches is bounded. Since
+//! LD-522 it is 2.0's `lodi import --yes [PATH]`, on a terminal through the fake machine's stub
+//! elevators (`tests/support/fakehost.rs`), landing a flat config.
 //!
 //! T-1 and T-2 landed the import core and the configuration capture as a **library**: no command
 //! reached them, so nothing they could do was yet something a person could ask for. This file is
 //! the other side of that. It drives the **real binary** as a child process against scratch roots
-//! below `CARGO_TARGET_TMPDIR`, offline, guestless and with a `PATH` that holds exactly one
-//! directory: the test's own shims. No package manager runs on this machine and none could — this
+//! below `CARGO_TARGET_TMPDIR`, offline, guestless and with a `PATH` that holds the test's own
+//! shims and the fake's stub elevators alone. No package manager runs on this machine and none could — this
 //! machine has none and must never get one (`AGENTS.md` §8) — and **no `lodi host` command in this
 //! file is run against `/`**, with or without a flag, which `python3 -B scripts/check-host-safety.py`
 //! is a gate step to keep true.
@@ -12,12 +14,12 @@
 //! # The two things every case asserts
 //!
 //! 1. **the exit status and the code**, from a real run of the real binary;
-//! 2. **that the root did not move**, from a full census — relative path, type, mode, size and
-//!    **nanosecond** mtime of every object below it — taken before the command and again after.
-//!    Acceptance row (h) is that census: an import reads a machine and writes nothing to it, and a
-//!    mode or an mtime is where a write that touched nothing else would still show. The cases of
-//!    LD-325, where the no-flag import lands in place, assert instead that every object that
-//!    moved is below `etc/lodi/` and that nothing outside it moved.
+//! 2. **that the machine did not move**, from a full census — relative path, type, mode, size
+//!    and **nanosecond** mtime of every object below the root but the person's home (where the
+//!    config lands) and the record of the host an import leaves (`etc/lodi/host.lock`) — taken
+//!    before the command and again after. Acceptance row (h) is that census: an import reads a
+//!    machine and writes nothing else to it, and a mode or an mtime is where a write that touched
+//!    nothing else would still show.
 //!
 //! The recordings under `tests/fixtures/host/import/` are the hand-authored ones T-1 and T-2
 //! committed, whose `PROVENANCE.json` says they were written from public package metadata and
@@ -26,6 +28,8 @@
 
 #[path = "support/credentials.rs"]
 mod credentials;
+#[path = "support/fakehost.rs"]
+mod fakehost;
 #[path = "support/hostroot.rs"]
 mod hostroot;
 /// The suite's one wait ceiling, declared once at this binary's root (`tests/support/wait.rs`,
@@ -39,10 +43,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
-use std::sync::RwLock;
-
-use hostroot::Root;
+use std::process::Output;
 
 /// The names this test gives the invoking user and group inside its scratch roots. They are
 /// invented: no real user name, group name or home path is ever written into a root here.
@@ -82,18 +83,19 @@ fn gid() -> u32 {
 
 // ------------------------------------------------------------------------------ the case ---
 
-/// One scratch root, one scenario's recordings, and a shim directory of this case's own.
+/// One fake machine (`tests/support/fakehost.rs`), one scenario's recordings, and a shim
+/// directory of this case's own in front of the fake's stub elevators.
 ///
 /// Every case builds its own shims with the fixture directory written into them, so no state
 /// travels between cases and nothing has to be serialized: two cases can run at once and neither
 /// can see the other's recordings.
 struct Case {
-    root: Root,
-    /// The one directory a child's `PATH` holds.
+    host: fakehost::Case,
+    /// The one directory of programs a child's `PATH` holds beside the stub elevators.
     bin: PathBuf,
     /// Where the shims append their argv.
     log: PathBuf,
-    /// Somewhere to put `--out` and `HOME` that is not below the root.
+    /// Somewhere that is not below the root.
     outside: PathBuf,
 }
 
@@ -105,8 +107,8 @@ impl Case {
             "the recordings {} are not there",
             fixtures.display()
         );
-        let root = Root::new(&format!("import-cli-{name}"));
-        root.arm();
+        let host = fakehost::Case::new(&format!("import-cli-{name}"), fakehost::Machine::debian());
+        let root = &host.root;
         root.write(
             "etc/os-release",
             &fs::read_to_string(fixtures_root().join("debian-12").join("os-release"))
@@ -118,54 +120,74 @@ impl Case {
         root.write(
             "etc/passwd",
             &format!(
-                "root:x:0:0:root:/root:/bin/sh\n{OWNER}:x:{}:{}::/nonexistent:/bin/sh\n",
+                "root:x:0:0:root:/root:/bin/sh\n{OWNER}:x:{}:{}::/home:/bin/sh\n",
                 uid(),
                 gid()
             ),
         );
         root.write("etc/group", &format!("root:x:0:\n{GROUP}:x:{}:\n", gid()));
+        // The owner agreed once (#705): the marker in place before any census is taken.
+        root.write("etc/lodi/may-manage", "")
+            .chmod("etc/lodi/may-manage", 0o644);
 
-        let base = support::scratch(&format!("import-cli-{name}"));
+        let base = host.base().join("import-cli");
         let (bin, outside) = (base.join("bin"), base.join("outside"));
         fs::create_dir_all(&bin).expect("the shim directory");
-        fs::create_dir_all(outside.join("home")).expect("a directory outside the root");
+        fs::create_dir_all(&outside).expect("a directory outside the root");
         let log = base.join("argv.log");
         write_shims(&bin, &log, &fixtures);
         Case {
-            root,
+            host,
             bin,
             log,
             outside,
         }
     }
 
-    /// Run the real binary. `PATH` holds the shim directory and nothing else, so the only
+    /// `PATH`: the fake's stub elevators, then the shim directory and nothing else, so the only
     /// programs `lodi` can resolve are this test's.
-    fn lodi(&self, args: &[&str]) -> Output {
-        self.run_with_path(&self.bin.display().to_string(), args)
+    fn path(&self) -> String {
+        format!(
+            "{}:{}",
+            self.host.base().join("elevators").display(),
+            self.bin.display()
+        )
     }
 
-    /// The same, with a `PATH` the caller chooses — `""` is the machine with no package manager.
-    fn run_with_path(&self, path: &str, args: &[&str]) -> Output {
-        let home = self.outside.join("home");
-        fs::create_dir_all(&home).expect("a scratch home");
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-        Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(args)
-            .current_dir(&self.outside)
-            .env_clear()
-            .env("PATH", path)
-            .env("HOME", &home)
-            .output()
-            .expect("the lodi binary runs")
+    /// `lodi import --yes EXTRA --root ROOT` on a terminal, as a person runs it.
+    fn import(&self, extra: &[&str]) -> Output {
+        self.run_with_path(&self.path(), "import", extra)
     }
 
-    fn root_arg(&self) -> String {
-        self.root.dir.display().to_string()
+    /// `lodi switch --host --dry-run --root ROOT`, the 1.x plan.
+    fn plan(&self) -> Output {
+        self.run_with_path(&self.path(), "plan", &[])
     }
 
-    fn out_dir(&self) -> PathBuf {
-        self.outside.join("captured")
+    /// A 1.x host verb's name, run as its 2.0 command with a `PATH` the caller chooses: the stub
+    /// elevators alone are the machine with no package manager.
+    fn run_with_path(&self, path: &str, verb: &str, extra: &[&str]) -> Output {
+        self.host.verb_env(verb, extra, &[("PATH", path)])
+    }
+
+    /// The config folder the import writes when no PATH is typed.
+    fn config(&self) -> PathBuf {
+        self.host.config()
+    }
+
+    /// A census of the machine: the root less the person's home, where the config and the run's
+    /// log land, and less the record of the host an import leaves as a converged switch would
+    /// (`etc/lodi/host.lock`, and so `etc/lodi`'s mtime).
+    fn machine(&self) -> Census {
+        census(&self.host.root.dir)
+            .into_iter()
+            .filter(|(path, _)| {
+                path != "home"
+                    && !path.starts_with("home/")
+                    && path != "etc/lodi"
+                    && path != "etc/lodi/host.lock"
+            })
+            .collect()
     }
 
     /// Every argv the shims saw, one line per invocation, in order.
@@ -184,13 +206,11 @@ impl Case {
 /// The bodies use **shell builtins only** — `read`, `printf`, `case` — so a child's `PATH` can
 /// hold the shim directory alone. A shim that needed `cat` would need a `PATH` with the real
 /// system's `bin` directories on it, and then `lodi` could resolve a real package manager.
-/// Held for writing while a case writes its shims and for reading while a case spawns a child.
-/// A child forked while another case's shim is still open for writing would hold that open file
-/// until it execs, and a shim run in that instant fails with ETXTBSY ("Text file busy").
-static SHIMS: RwLock<()> = RwLock::new(());
-
+/// Written under [`fakehost::writing`]: a child forked while another case's shim is still open
+/// for writing would hold that open file until it execs, and a shim run in that instant fails
+/// with ETXTBSY ("Text file busy").
 fn write_shims(bin: &Path, log: &Path, fixtures: &Path) {
-    let _writing = SHIMS.write().unwrap_or_else(|e| e.into_inner());
+    let _writing = fakehost::writing();
     let bodies = [
         // Neither of these is ever reached by an import, and that is the point: one that were
         // would be in the log, and `nothing_the_command_runs_mutates_the_machine` says which.
@@ -332,29 +352,35 @@ fn stdout(output: &Output) -> String {
 /// modes. One is refused for its mode, one is unmodified and so never a candidate, and the other
 /// five are world-readable and on no list of `src/hostscope/import/files.rs`, so they are taken.
 fn write_the_configuration(case: &Case) {
-    case.root
+    case.host
+        .root
         .write("etc/sysctl.d/99-local.conf", "vm.swappiness = 10\n")
         .chmod("etc/sysctl.d/99-local.conf", 0o644);
-    case.root
+    case.host
+        .root
         .write("etc/ca-certificates.conf", "!mozilla/Local_CA.crt\n")
         .chmod("etc/ca-certificates.conf", 0o644);
     // Refused for its mode: not readable by other, so it is never opened.
-    case.root
+    case.host
+        .root
         .write("etc/openvpn/client.conf", "remote vpn.invalid 1194\n")
         .chmod("etc/openvpn/client.conf", 0o600);
     // Not refused: none of the three is on the hard path list (`NEVER_CAPTURED`) or under a
     // directory or ending it names, so each is captured because it is world-readable.
-    case.root
+    case.host
+        .root
         .write("etc/ssh/sshd_config", "PermitRootLogin no\n")
         .chmod("etc/ssh/sshd_config", 0o644);
-    case.root
+    case.host
+        .root
         .write("etc/resolv.conf", "nameserver 192.0.2.1\n")
         .chmod("etc/resolv.conf", 0o644);
-    case.root
+    case.host
+        .root
         .write("etc/nslcd.conf", "uri ldap://ldap.invalid\n")
         .chmod("etc/nslcd.conf", 0o644);
     // Unmodified: equal to the bytes its package shipped, so not a candidate at all.
-    case.root.write(
+    case.host.root.write(
         "etc/default/keyboard",
         "# keyboard defaults\nXKBMODEL=\"pc105\"\nXKBLAYOUT=\"us\"\n",
     );
@@ -385,46 +411,11 @@ fn write_the_refusables(case: &Case) {
         "etc/wpa_supplicant/wpa_supplicant.conf",
         "usr/local/etc/outside.conf",
     ] {
-        case.root
+        case.host
+            .root
             .write(rel, "# changed since the package shipped it\n")
             .chmod(rel, 0o644);
     }
-}
-
-// ------------------------------------------------------------------- (c) the arming gate ---
-
-/// Acceptance (c): an unarmed root is `E_HOST_NOT_ARMED` at exit 9 **before the manifest
-/// directory is opened**.
-///
-/// The proof is the manifest itself: `etc/lodi/host.toml` is there and is unreadable. A gate that
-/// opened it — or the directory holding it — before checking the marker would fail with a read
-/// error, not with the arming refusal, and this test would say so.
-#[test]
-fn an_unarmed_root_is_refused_before_anything_below_it_is_opened() {
-    let case = Case::new("unarmed", "capture");
-    fs::remove_file(case.root.path("etc/lodi/host-allowed")).expect("the marker comes off");
-    case.root.write("etc/lodi/host.toml", "unreadable\n");
-    case.root.chmod("etc/lodi/host.toml", 0o000);
-    let before = census(&case.root.dir);
-    // The manifest and the directory holding it are both unreadable, so a gate that opened
-    // either one before checking the marker would fail with a read error instead.
-    case.root.chmod("etc/lodi", 0o000);
-    // check-host-safety: refusal — a scratch root this test owns and never armed.
-    let out = case.lodi(&["host", "import", "--root", &case.root_arg()]);
-    assert_eq!(out.status.code(), Some(9), "{}", stderr(&out));
-    assert!(
-        stderr(&out).contains("E_HOST_NOT_ARMED"),
-        "{}",
-        stderr(&out)
-    );
-    assert!(stdout(&out).is_empty(), "{}", stdout(&out));
-    assert!(
-        case.argv_log().is_empty(),
-        "an unarmed root ran {:?}",
-        case.argv_log()
-    );
-    case.root.chmod("etc/lodi", 0o755);
-    assert_eq!(before, census(&case.root.dir), "the root moved");
 }
 
 // ------------------------------------------------------------- (d) no package manager ---
@@ -434,236 +425,71 @@ fn an_unarmed_root_is_refused_before_anything_below_it_is_opened() {
 #[test]
 fn an_armed_root_with_no_package_manager_is_no_runtime() {
     let case = Case::new("no-runtime", "capture");
-    let before = census(&case.root.dir);
-    // check-host-safety: refusal — the same scratch root, with an empty PATH.
-    let out = case.run_with_path("", &["host", "import", "--root", &case.root_arg()]);
+    let before = case.machine();
+    let elevators = case.host.base().join("elevators").display().to_string();
+    let out = case.run_with_path(&elevators, "import", &[]);
     assert_eq!(out.status.code(), Some(7), "{}", stderr(&out));
     assert!(stderr(&out).contains("E_NO_RUNTIME"), "{}", stderr(&out));
     assert!(stdout(&out).is_empty(), "{}", stdout(&out));
-    assert_eq!(before, census(&case.root.dir), "the root moved");
+    assert_eq!(before, case.machine(), "the root moved");
+    assert!(!case.host.root.exists("etc/lodi/host.lock"));
 }
 
-// ----------------------------------------------------- (e) --out inside the scope's own ---
+// ------------------------------------------------------ (e) PATH inside the scope's own ---
 
-/// Acceptance (e): an `--out` that resolves inside a directory the host scope owns is
-/// `E_STORE_IO` at exit 6 and writes nothing — including through a relative path and a symbolic
-/// link, because a refusal a `..` could walk around would not be one.
+/// Acceptance (e): a PATH that resolves inside a folder lodi keeps for the host itself
+/// (`etc/lodi`, `var/lib/lodi` below the root) is `E_STORE_IO` at exit 6 and writes nothing —
+/// including through a `..` and a symbolic link, because a refusal a `..` could walk around would
+/// not be one. Nothing is read: no shim and no elevator runs.
 #[test]
 fn out_inside_a_directory_the_scope_owns_is_store_io_and_writes_nothing() {
     let case = Case::new("out-owned", "capture");
     write_the_configuration(&case);
-    let root = case.root_arg();
     let link = case.outside.join("into-the-root");
-    std::os::unix::fs::symlink(case.root.path("etc/lodi"), &link).expect("a link");
+    std::os::unix::fs::symlink(case.host.root.path("etc/lodi"), &link).expect("a link");
 
     let spellings = [
-        case.root.path("etc/lodi").display().to_string(),
-        case.root.path("etc/lodi/captured").display().to_string(),
-        case.root.path("var/lib/lodi/host").display().to_string(),
-        format!("{}/etc/lodi/../lodi/deeper", case.root.dir.display()),
+        case.host.root.path("etc/lodi").display().to_string(),
+        case.host
+            .root
+            .path("etc/lodi/captured")
+            .display()
+            .to_string(),
+        case.host
+            .root
+            .path("var/lib/lodi/host")
+            .display()
+            .to_string(),
+        format!("{}/etc/lodi/../lodi/deeper", case.host.root.dir.display()),
         link.display().to_string(),
     ];
     for out in spellings {
-        let before = census(&case.root.dir);
-        // check-host-safety: refusal — the same scratch root.
-        let output = case.lodi(&["host", "import", "--root", &root, "--out", &out]);
+        let before = census(&case.host.root.dir);
+        let output = case.import(&[&out]);
         assert_eq!(
             output.status.code(),
             Some(6),
-            "--out {out} was not refused:\n{}",
+            "{out} was not refused:\n{}",
             stderr(&output)
         );
         assert!(
             stderr(&output).contains("E_STORE_IO"),
-            "--out {out}:\n{}",
+            "{out}:\n{}",
             stderr(&output)
         );
         assert!(stdout(&output).is_empty(), "{}", stdout(&output));
-        assert_eq!(before, census(&case.root.dir), "--out {out} moved the root");
+        assert_eq!(before, census(&case.host.root.dir), "{out} moved the root");
     }
     // The refusal is decided before the machine is read: nothing ran at all.
     assert!(
         case.argv_log().is_empty(),
-        "a refused --out ran {:?}",
+        "a refused PATH ran {:?}",
         case.argv_log()
     );
-}
-
-// --------------------------------------------------------- (f) E_EXISTS and --force ---
-
-/// Acceptance (f): an existing `DIR/host.toml` is `E_EXISTS` at exit 3 and is left exactly as it
-/// was; with `--force` it is replaced by the generated manifest, at 0644, with the bundle beside
-/// it. The root does not move in either case.
-#[test]
-fn an_existing_manifest_is_reconciled_not_refused_until_force_replaces_it() {
-    let case = Case::new("exists", "capture");
-    write_the_configuration(&case);
-    let root = case.root_arg();
-    let out = case.out_dir();
-    fs::create_dir_all(&out).expect("the out directory");
-    fs::write(
-        out.join("host.toml"),
-        "# a file the operator wrote\n[host]\nversion = \"1\"\n",
-    )
-    .expect("the existing file");
-    let existing = census(&out);
-    let before = census(&case.root.dir);
-
-    // An existing manifest is no longer E_EXISTS (LD-378): it is reconciled. Lodi has no record
-    // of a sync of this directory, so the reconcile is a report and writes nothing.
-    // check-host-safety: refusal — the same scratch root.
-    let reported = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &root,
-        "--out",
-        &out.display().to_string(),
-    ]);
-    assert_eq!(reported.status.code(), Some(0), "{}", stderr(&reported));
     assert!(
-        !stderr(&reported).contains("E_EXISTS"),
-        "{}",
-        stderr(&reported)
-    );
-    let said = String::from_utf8_lossy(&reported.stdout).into_owned();
-    assert!(said.contains("not reconciled"), "{said}");
-    assert!(said.contains("--force"), "{said}");
-    assert_eq!(existing, census(&out), "the report wrote something");
-    assert_eq!(before, census(&case.root.dir), "the root moved");
-
-    // check-host-safety: refusal — the same scratch root.
-    let forced = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &root,
-        "--out",
-        &out.display().to_string(),
-        "--force",
-    ]);
-    assert_eq!(forced.status.code(), Some(0), "{}", stderr(&forced));
-    let written = fs::read_to_string(out.join("host.toml")).expect("the manifest");
-    assert!(written.starts_with(GENERATED), "{written}");
-    assert_eq!(
-        fs::metadata(out.join("host.toml"))
-            .expect("the manifest's metadata")
-            .permissions()
-            .mode()
-            & 0o7777,
-        0o644,
-        "the manifest is written 0644"
-    );
-    // No file is copied from /etc (si-1): the changed one is named with the table that
-    // declares it, and nothing travels beside the manifest.
-    assert!(!out.join("files").exists(), "a file was copied from /etc");
-    assert!(!written.contains("[files."), "{written}");
-    assert!(
-        written.contains("#   /etc/sysctl.d/99-local.conf\n"),
-        "{written}"
-    );
-    assert!(
-        written.contains("[etc.\"sysctl.d/99-local.conf\"]"),
-        "{written}"
-    );
-    // Nothing of this machine's identity leaves with it but its [system] host name.
-    assert!(!without_hostname(&written).contains(HOST_NAME), "{written}");
-    assert_eq!(before, census(&case.root.dir), "the root moved");
-}
-
-/// An `--out` directory the import creates itself is one it then trusts: under a umask that
-/// leaves the group write bit (Ubuntu's default 002), every directory it makes on the way is
-/// 0755, and the bundle is written. A group-writable directory that was already there is still
-/// refused (LD-333); only what the import makes is its to shape (LD-343).
-#[test]
-fn an_out_directory_the_import_makes_is_trusted_under_a_group_writable_umask() {
-    let case = Case::new("out-umask", "capture");
-    write_the_configuration(&case);
-    let root = case.root_arg();
-    let out = case.out_dir().join("nested");
-    let home = case.outside.join("home");
-    let spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-    // check-host-safety: refusal — the same scratch root.
-    let made = Command::new("/bin/sh")
-        .arg("-c")
-        .arg("umask 002 && exec \"$0\" \"$@\"")
-        .arg(env!("CARGO_BIN_EXE_lodi"))
-        .args(["host", "import", "--root", &root, "--out"])
-        .arg(&out)
-        .current_dir(&case.outside)
-        .env_clear()
-        .env("PATH", &case.bin)
-        .env("HOME", &home)
-        .output()
-        .expect("the lodi binary runs");
-    drop(spawning);
-    assert_eq!(made.status.code(), Some(0), "{}", stderr(&made));
-    for dir in [case.out_dir(), out.clone()] {
-        let mode = fs::metadata(&dir)
-            .expect("the made directory")
-            .permissions()
-            .mode()
-            & 0o7777;
-        assert_eq!(mode, 0o755, "{} is {mode:04o}", dir.display());
-    }
-    assert!(out.join("host.toml").is_file(), "no manifest was written");
-
-    let loose = case.outside.join("loose");
-    fs::create_dir_all(&loose).expect("an operator's directory");
-    fs::set_permissions(&loose, fs::Permissions::from_mode(0o775)).expect("its mode");
-    // check-host-safety: refusal — the same scratch root.
-    let refused = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &root,
-        "--out",
-        &loose.display().to_string(),
-    ]);
-    assert_eq!(refused.status.code(), Some(3), "{}", stderr(&refused));
-    assert!(
-        stderr(&refused).contains("E_PATH_ESCAPE"),
-        "{}",
-        stderr(&refused)
-    );
-    assert!(
-        !loose.join("host.toml").exists(),
-        "the refused import wrote a manifest"
-    );
-}
-
-// ---------------------------------------------- --stdout: standard output, no capture ---
-
-/// With `--stdout` the manifest goes to standard output, no configuration file is captured, and
-/// nothing is written anywhere — not under the root, and not in the working directory either.
-/// These are the bytes the no-flag form printed before LD-325 moved them behind the flag.
-#[test]
-fn with_stdout_the_manifest_goes_to_standard_output_and_nothing_is_captured() {
-    let case = Case::new("stdout", "capture");
-    write_the_configuration(&case);
-    let before = census(&case.root.dir);
-    let outside_before = census(&case.outside);
-
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&["host", "import", "--root", &case.root_arg(), "--stdout"]);
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let text = stdout(&out);
-    assert!(text.starts_with(GENERATED), "{text}");
-    assert!(text.contains("[packages]"), "{text}");
-    assert!(
-        !text.contains("[files."),
-        "an import with --stdout declared a file whose bytes nobody wrote:\n{text}"
-    );
-    assert!(
-        !stderr(&out).contains("is not captured:"),
-        "nothing was offered to the policy, so no file can be refused:\n{}",
-        stderr(&out)
-    );
-    assert_eq!(before, census(&case.root.dir), "the root moved");
-    assert_eq!(
-        outside_before,
-        census(&case.outside),
-        "the working directory moved"
+        case.host.elevator_calls().is_empty(),
+        "a refused PATH ran {:?}",
+        case.host.elevator_calls()
     );
 }
 
@@ -678,18 +504,10 @@ fn with_stdout_the_manifest_goes_to_standard_output_and_nothing_is_captured() {
 fn refusals_are_warnings_on_standard_error_and_change_no_exit_status() {
     let case = Case::new("refusals", "refusals");
     write_the_refusables(&case);
-    let out_dir = case.out_dir();
-    let before = census(&case.root.dir);
+    let out_dir = case.config();
+    let before = case.machine();
 
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &case.root_arg(),
-        "--out",
-        &out_dir.display().to_string(),
-    ]);
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let text = stderr(&out);
     let warnings: Vec<&str> = text
@@ -724,7 +542,7 @@ fn refusals_are_warnings_on_standard_error_and_change_no_exit_status() {
         !out_dir.join("files").exists(),
         "a refused file was written out"
     );
-    assert_eq!(before, census(&case.root.dir), "the root moved");
+    assert_eq!(before, case.machine(), "the root moved");
 }
 
 /// The real command copies no file from `/etc` (si-1): each file of
@@ -736,23 +554,16 @@ fn a_credential_in_any_shape_never_leaves_the_file() {
     let shapes = credentials::shapes();
     for (index, shape) in shapes.iter().enumerate() {
         let rel = format!("etc/credential-shapes/{index:02}.conf");
-        case.root.write(&rel, &shape.text).chmod(&rel, 0o644);
+        case.host.root.write(&rel, &shape.text).chmod(&rel, 0o644);
     }
     let benign = "etc/credential-shapes/benign.conf";
-    case.root
+    case.host
+        .root
         .write(benign, credentials::BENIGN)
         .chmod(benign, 0o644);
-    let out_dir = case.out_dir();
+    let out_dir = case.config();
 
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &case.root_arg(),
-        "--out",
-        &out_dir.display().to_string(),
-    ]);
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let text = stderr(&out);
     // Since si-1 no file is copied from /etc: each changed file is named, and none travels.
@@ -793,17 +604,13 @@ fn a_credential_in_any_shape_never_leaves_the_file() {
 fn nothing_the_command_runs_mutates_the_machine() {
     let case = Case::new("census", "capture");
     write_the_configuration(&case);
-    let root = case.root_arg();
-    let out = case.out_dir().display().to_string();
-    let before = census(&case.root.dir);
+    let typed = case.host.root.path("home/typed").display().to_string();
+    let before = case.machine();
 
-    for args in [
-        // check-host-safety: refusal — the same scratch root, in every shape.
-        vec!["host", "import", "--root", &root, "--stdout"],
-        vec!["host", "import", "--root", &root, "--out", &out],
-        vec!["host", "import", "--root", &root, "--out", &out, "--force"],
-    ] {
-        let output = case.lodi(&args);
+    // Every shape: shown, landed in the standard folder, landed where typed, and refused for
+    // a folder that already has a host.
+    for args in [vec!["--dry-run"], vec![], vec![typed.as_str()], vec![]] {
+        let output = case.import(&args);
         assert!(
             matches!(output.status.code(), Some(0) | Some(3)),
             "`lodi {}` exited {:?}:\n{}",
@@ -814,7 +621,7 @@ fn nothing_the_command_runs_mutates_the_machine() {
     }
     assert_eq!(
         before,
-        census(&case.root.dir),
+        case.machine(),
         "an import changed the machine it read"
     );
 
@@ -847,17 +654,9 @@ fn nothing_the_command_runs_mutates_the_machine() {
 #[test]
 fn every_package_left_out_is_one_warning_on_standard_error_and_the_exit_is_zero() {
     let case = Case::new("offbase", "off-base");
-    let out_dir = case.out_dir();
+    let out_dir = case.config();
 
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &case.root_arg(),
-        "--out",
-        &out_dir.display().to_string(),
-    ]);
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let text = stderr(&out);
     let warnings: Vec<&str> = text
@@ -888,48 +687,22 @@ fn every_package_left_out_is_one_warning_on_standard_error_and_the_exit_is_zero(
     assert_eq!(report.len(), 1, "{told}");
     assert!(
         report[0].ends_with(
-            "host.toml: 2 package(s) declared, 3 not captured; no file copied from /etc"
+            "host.toml: 2 package(s) declared, 3 not captured; read NOT CAPTURED in it first"
         ),
         "{told}"
     );
     assert!(!told.contains("W_UNCAPTURED"), "{told}");
 
-    // With --stdout the same lines are on standard error and the manifest alone is on standard
-    // output, so that `lodi host import --root … --stdout > host.toml` is one usable file.
-    // check-host-safety: refusal — the same scratch root.
-    let piped = case.lodi(&["host", "import", "--root", &case.root_arg(), "--stdout"]);
-    assert_eq!(piped.status.code(), Some(0), "{}", stderr(&piped));
-    let piped_warnings: Vec<&str> = stderr(&piped)
-        .lines()
-        .filter(|line| line.starts_with("W_UNCAPTURED"))
-        .map(|line| line.to_string().leak() as &str)
-        .collect();
-    assert_eq!(piped_warnings, warnings, "{}", stderr(&piped));
-    // Standard output is the manifest and nothing else: it opens with the generated header,
-    // closes with the last line of the comment block, and carries no warning and no report.
-    let text = stdout(&piped);
-    assert!(text.starts_with(GENERATED), "{text}");
-    assert!(!text.contains("W_UNCAPTURED"), "{text}");
-    assert!(!text.contains("package(s) declared"), "{text}");
-    // The last line is the repositories part's (LD-367): the hand-built name, attributed to no
-    // `[sources]` block.
-    assert_eq!(
-        text.trim_end().lines().next_back(),
-        Some(
-            "#     unattributed: no enabled repository offers the installed version (a package \
-             file, or a repository since removed)"
-        ),
-        "{text}"
-    );
-    // The declarations are the ones the file on disk carries. No capture is taken with
-    // `--stdout`, so the file's configuration paragraphs are the only difference between them.
+    // The declarations and the repositories part (LD-367) are in the file it wrote.
     let written = fs::read_to_string(out_dir.join("host.toml")).expect("the manifest");
     for shared in [
         "common = [\n  \"golang-1.22\",\n  \"ripgrep\",\n]\n",
         "#   docker-ce               Docker, bookworm/stable\n",
         "#   lodi-agent              LP-PPA-lodi-testing, noble/main\n",
+        "#     unattributed: no enabled repository offers the installed version (a package \
+         file, or a repository since removed)\n",
     ] {
-        assert!(text.contains(shared) && written.contains(shared), "{text}");
+        assert!(written.contains(shared), "{written}");
     }
 }
 
@@ -940,17 +713,9 @@ fn every_package_left_out_is_one_warning_on_standard_error_and_the_exit_is_zero(
 #[test]
 fn a_machine_with_no_index_warns_once_and_leaves_nothing_out() {
     let case = Case::new("offindex", "off-index");
-    let out_dir = case.out_dir();
+    let out_dir = case.config();
 
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &case.root_arg(),
-        "--out",
-        &out_dir.display().to_string(),
-    ]);
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let text = stderr(&out);
     let unchecked: Vec<&str> = text
@@ -979,7 +744,7 @@ fn a_machine_with_no_index_warns_once_and_leaves_nothing_out() {
     assert_eq!(report.len(), 1, "{told}");
     assert!(
         report[0].ends_with(
-            "host.toml: 5 package(s) declared, 0 not captured; no file copied from /etc"
+            "host.toml: 5 package(s) declared, 0 not captured; read NOT CAPTURED in it first"
         ),
         "{told}"
     );
@@ -1008,36 +773,29 @@ fn a_machine_with_no_index_warns_once_and_leaves_nothing_out() {
 fn with_no_flag_the_import_lands_in_place_and_plan_resolves_every_source() {
     let case = Case::new("in-place", "capture");
     write_the_configuration(&case);
-    let root = case.root_arg();
-    let before = census(&case.root.dir);
+    let before = case.machine();
 
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&["host", "import", "--root", &root]);
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let manifest = case.root.path("etc/lodi/host.toml");
-    // What it wrote and that nothing else changed, what to read first, and the next command,
-    // which writes nothing (u-1, LD-380): three lines, the first of them the one line it was.
+    let manifest = case.config().join("host.toml");
+    // What it wrote and what to read first, then the next command, which writes nothing.
     let told = stdout(&out);
     let lines: Vec<&str> = told.lines().collect();
-    assert_eq!(lines.len(), 3, "three lines:\n{told}");
+    assert_eq!(lines.len(), 2, "two lines:\n{told}");
     assert!(
         lines[0].starts_with(&format!("wrote {}: ", manifest.display())),
         "{told}"
     );
     assert!(
-        lines[0].ends_with(&format!(
-            "not captured, no file copied from /etc; no package and no file outside {} changed",
-            case.root.path("etc/lodi").display()
-        )),
+        lines[0].ends_with("not captured; read NOT CAPTURED in it first"),
         "{told}"
     );
     assert_eq!(
-        lines[1], "read it first: NOT CAPTURED lists what was left out and how to declare it",
-        "{told}"
-    );
-    assert_eq!(
-        lines[2],
-        format!("next: lodi host plan --root {root} (writes nothing)"),
+        lines[1],
+        format!(
+            "next: review {}, commit it, then run lodi switch --dry-run",
+            case.config().display()
+        ),
         "{told}"
     );
 
@@ -1054,26 +812,19 @@ fn with_no_flag_the_import_lands_in_place_and_plan_resolves_every_source() {
         "{written}"
     );
     assert!(
-        !case.root.path("etc/lodi/files").exists(),
+        !case.config().join("files").exists(),
         "a file was copied from /etc"
     );
-    // Every object new below the root is below etc/lodi, and nothing that was there moved.
-    let after = census(&case.root.dir);
-    for (path, what) in &before {
-        if path != "etc/lodi" {
-            assert_eq!(after.get(path), Some(what), "{path} moved");
-        }
-    }
-    for path in after.keys().filter(|k| !before.contains_key(*k)) {
-        assert!(path.starts_with("etc/lodi/"), "the import wrote {path}");
-    }
+    // Below the root only the config, the run's log and the record of the host are new, and
+    // nothing that was there moved.
+    assert_eq!(before, case.machine(), "the import changed the machine");
+    assert!(case.host.root.exists("etc/lodi/host.lock"));
 
-    // check-host-safety: refusal — the same scratch root.
-    let plan = case.lodi(&["host", "plan", "--root", &root]);
+    let plan = case.plan();
     assert_eq!(plan.status.code(), Some(0), "{}", stderr(&plan));
-    let text = stdout(&plan);
+    let text = stderr(&plan);
     assert!(
-        !stderr(&plan).contains("E_") && !text.contains("missing"),
+        !text.contains("E_") && !text.contains("missing"),
         "the plan did not resolve every source:\n{text}\n{}",
         stderr(&plan)
     );
@@ -1086,130 +837,62 @@ fn with_no_flag_the_import_lands_in_place_and_plan_resolves_every_source() {
 fn an_imported_machine_with_its_basics_plans_nothing_to_do() {
     let case = Case::new("in-place-basics", "capture");
     write_the_configuration(&case);
-    case.root.write("usr/share/zoneinfo/UTC", "TZif2\n");
-    std::os::unix::fs::symlink("../usr/share/zoneinfo/UTC", case.root.path("etc/localtime"))
-        .expect("localtime");
-    case.root.write("etc/locale.conf", "LANG=C.UTF-8\n");
-    let root = case.root_arg();
-
-    // check-host-safety: refusal — the same scratch root.
-    let out = case.lodi(&["host", "import", "--root", &root]);
+    case.host.root.write("usr/share/zoneinfo/UTC", "TZif2\n");
+    std::os::unix::fs::symlink(
+        "../usr/share/zoneinfo/UTC",
+        case.host.root.path("etc/localtime"),
+    )
+    .expect("localtime");
+    case.host.root.write("etc/locale.conf", "LANG=C.UTF-8\n");
+    let out = case.import(&[]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let written = fs::read_to_string(case.root.path("etc/lodi/host.toml")).unwrap();
+    let written = fs::read_to_string(case.config().join("host.toml")).unwrap();
     for line in ["timezone = \"UTC\"", "locale = \"C.UTF-8\""] {
         assert!(written.contains(line), "{line}: {written}");
     }
 
-    // check-host-safety: refusal — the same scratch root.
-    let plan = case.lodi(&["host", "plan", "--root", &root]);
+    let plan = case.plan();
     assert_eq!(plan.status.code(), Some(0), "{}", stderr(&plan));
-    let text = stdout(&plan);
-    let kept: Vec<&str> = text
-        .lines()
-        .filter(|line| !line.starts_with("= file ") && !line.starts_with("~ index ("))
-        .collect();
-    assert_eq!(kept, ["nothing to do"], "{text}");
+    assert!(fakehost::nothing(&plan), "{}", stderr(&plan));
 }
 
-/// An existing `etc/lodi/host.toml` below the root is no longer `E_EXISTS` (LD-378): it is
-/// reconciled, and with no record of the last sync that is a report naming the apply and
-/// `--force`, with nothing written. `--force` replaces the manifest and the bundle, and a file the
-/// new manifest no longer declares is gone from `files/`, so what lands is exactly its sources —
-/// and a plan of it resolves every one.
-#[test]
-fn an_existing_manifest_in_place_is_reconciled_until_force_replaces_it_and_its_files() {
-    let case = Case::new("in-place-exists", "capture");
-    write_the_configuration(&case);
-    let root = case.root_arg();
-    case.root.write(
-        "etc/lodi/host.toml",
-        "# a file the operator wrote\n[host]\nversion = \"1\"\n",
-    );
-    case.root.write(
-        "etc/lodi/files/etc/stale.conf",
-        "a source no manifest names\n",
-    );
-    let before = census(&case.root.dir);
-
-    // check-host-safety: refusal — the same scratch root.
-    let reported = case.lodi(&["host", "import", "--root", &root]);
-    assert_eq!(reported.status.code(), Some(0), "{}", stderr(&reported));
-    let text = String::from_utf8_lossy(&reported.stdout).into_owned();
-    assert!(
-        !stderr(&reported).contains("E_EXISTS"),
-        "{}",
-        stderr(&reported)
-    );
-    assert!(
-        text.contains("not reconciled: there is no host.lock"),
-        "{text}"
-    );
-    assert!(text.contains("lodi host apply --root"), "{text}");
-    assert!(text.contains("--force"), "{text}");
-    assert_eq!(before, census(&case.root.dir), "the report wrote");
-
-    // check-host-safety: refusal — the same scratch root.
-    let forced = case.lodi(&["host", "import", "--root", &root, "--force"]);
-    assert_eq!(forced.status.code(), Some(0), "{}", stderr(&forced));
-    assert!(
-        case.root.read("etc/lodi/host.toml").starts_with(GENERATED),
-        "--force did not replace the manifest"
-    );
-    assert!(
-        !case.root.exists("etc/lodi/files/etc/stale.conf"),
-        "--force left a file the new manifest does not name"
-    );
-    assert!(
-        !case.root.read("etc/lodi/host.toml").contains("[files."),
-        "--force copied a file from /etc"
-    );
-    // check-host-safety: refusal — the same scratch root.
-    let plan = case.lodi(&["host", "plan", "--root", &root]);
-    assert_eq!(plan.status.code(), Some(0), "{}", stderr(&plan));
-}
-
-/// A symbolic link planted at `etc/lodi/host.toml` or `etc/lodi/files` — or at `etc/lodi` itself —
-/// is `E_PATH_ESCAPE` at exit 3, nothing is written through it, and the machine is not read.
+/// A symbolic link planted at the config's `host.toml` is `E_PATH_ESCAPE`, one planted as the
+/// config folder itself `E_CONFIG`, each at exit 3; nothing is written through it, and the
+/// machine is not read.
 #[test]
 fn a_planted_link_in_the_destination_is_refused() {
-    for (name, planted) in [
-        ("link-manifest", "etc/lodi/host.toml"),
-        ("link-files", "etc/lodi/files"),
-        ("link-dir", "etc/lodi"),
+    // A linked folder is not a folder to lodi, which reads it without following it.
+    for (name, planted, code) in [
+        ("link-manifest", "host.toml", "E_PATH_ESCAPE"),
+        ("link-dir", "", "E_CONFIG"),
     ] {
         let case = Case::new(name, "capture");
         write_the_configuration(&case);
         let target = case.outside.join("elsewhere");
         fs::create_dir_all(&target).unwrap();
         fs::write(target.join("witness"), "a file the link points beside\n").unwrap();
-        if planted == "etc/lodi" {
-            // The marker travels with the directory, so the root is still armed through it.
-            fs::copy(
-                case.root.path("etc/lodi/host-allowed"),
-                target.join("host-allowed"),
-            )
-            .unwrap();
-            fs::remove_dir_all(case.root.path("etc/lodi")).unwrap();
-        }
-        std::os::unix::fs::symlink(&target, case.root.path(planted)).expect("a link");
+        let config = case.config();
+        let link = if planted.is_empty() {
+            config.clone()
+        } else {
+            config.join(planted)
+        };
+        fs::create_dir_all(link.parent().unwrap()).unwrap();
+        std::os::unix::fs::symlink(&target, &link).expect("a link");
         let target_before = census(&target);
-        let before = census(&case.root.dir);
+        let before = case.machine();
 
-        // check-host-safety: refusal — the same scratch root.
-        let out = case.lodi(&["host", "import", "--root", &case.root_arg(), "--force"]);
+        let out = case.import(&[]);
         assert_eq!(out.status.code(), Some(3), "{planted}: {}", stderr(&out));
-        assert!(
-            stderr(&out).contains("E_PATH_ESCAPE"),
-            "{planted}: {}",
-            stderr(&out)
-        );
+        assert!(stderr(&out).contains(code), "{planted}: {}", stderr(&out));
         assert!(stdout(&out).is_empty(), "{planted}: {}", stdout(&out));
         assert_eq!(
             target_before,
             census(&target),
             "{planted}: wrote through it"
         );
-        assert_eq!(before, census(&case.root.dir), "{planted}: the root moved");
+        assert_eq!(before, case.machine(), "{planted}: the root moved");
+        assert!(!case.host.root.exists("etc/lodi/host.lock"), "{planted}");
         assert!(
             case.argv_log().is_empty(),
             "{planted}: the machine was read"
@@ -1217,42 +900,62 @@ fn a_planted_link_in_the_destination_is_refused() {
     }
 }
 
-/// `--stdout` and `--out` name two destinations and `--stdout --force` has nothing to replace:
-/// each is a usage error at exit 2, decided before the gate, and nothing moves.
+/// A symbolic link planted at the config's `files` is `E_PATH_ESCAPE` at exit 3 when the host is
+/// imported again: nothing is written through it, the machine is not read, and its record
+/// (`etc/lodi/host.lock`) is not written.
 #[test]
-fn stdout_with_out_or_force_is_a_usage_error() {
-    let case = Case::new("stdout-usage", "capture");
-    let root = case.root_arg();
-    let out = case.out_dir().display().to_string();
-    let before = census(&case.root.dir);
-    for args in [
-        vec!["host", "import", "--root", &root, "--stdout", "--out", &out],
-        vec!["host", "import", "--root", &root, "--out", &out, "--stdout"],
-        vec!["host", "import", "--root", &root, "--stdout", "--force"],
-    ] {
-        // check-host-safety: refusal — the same scratch root.
-        let output = case.lodi(&args);
-        assert_eq!(output.status.code(), Some(2), "{}", args.join(" "));
-        assert!(stdout(&output).is_empty(), "{}", stdout(&output));
-    }
-    assert!(!case.out_dir().exists(), "a usage error wrote --out");
-    assert_eq!(before, census(&case.root.dir), "the root moved");
-    assert!(case.argv_log().is_empty(), "a usage error read the machine");
-}
+fn a_planted_files_link_in_the_destination_is_refused() {
+    // With nothing to write under `files/`, and with a `[sources]` keyring to write there.
+    for keyring in [false, true] {
+        let case = if keyring {
+            sources_case("link-files-keyring").0
+        } else {
+            let case = Case::new("link-files", "capture");
+            write_the_configuration(&case);
+            case
+        };
+        let first = case.import(&[]);
+        assert_eq!(first.status.code(), Some(0), "{}", stderr(&first));
+        let files = case.config().join("files");
+        let _ = fs::remove_dir_all(&files);
+        let target = case.outside.join("elsewhere");
+        fs::create_dir_all(&target).unwrap();
+        fs::write(target.join("witness"), "a file the link points beside\n").unwrap();
+        std::os::unix::fs::symlink(&target, &files).expect("a link");
+        let target_before = census(&target);
+        let before = census(&case.host.root.dir);
+        let (ran, elevated) = (case.argv_log().len(), case.host.elevator_calls().len());
 
-/// Landing on the running system's own `/` needs euid 0: the decision is a pure function of the
-/// root and the effective uid, proved here with injected uids and never by pointing a host verb
-/// at `/`. Under a `--root` the invoking user lands in a tree of their own.
-#[test]
-fn only_root_lands_an_import_on_the_system_root() {
-    use lodi::hostscope::landing::may_land_in_place;
-    let refused = may_land_in_place(true, 1000).expect_err("a user on / is refused");
-    assert_eq!(refused.code, "E_NEED_ROOT");
-    assert_eq!(lodi::diag::exit_status(refused.code), 9);
-    assert!(refused.to_string().contains("--stdout"), "{refused}");
-    assert!(may_land_in_place(true, 0).is_ok());
-    assert!(may_land_in_place(false, 1000).is_ok());
-    assert!(may_land_in_place(false, 0).is_ok());
+        let out = case.import(&[]);
+        let err = stderr(&out);
+        assert_eq!(out.status.code(), Some(3), "{keyring}: {err}");
+        assert!(err.contains("E_PATH_ESCAPE"), "{keyring}: {err}");
+        assert!(
+            err.contains(&files.display().to_string()),
+            "{keyring}: the refusal names the link: {err}"
+        );
+        assert!(stdout(&out).is_empty(), "{keyring}: {}", stdout(&out));
+        assert_eq!(
+            target_before,
+            census(&target),
+            "{keyring}: wrote through it"
+        );
+        assert_eq!(
+            before,
+            census(&case.host.root.dir),
+            "{keyring}: the root moved"
+        );
+        assert_eq!(
+            case.argv_log().len(),
+            ran,
+            "{keyring}: the machine was read"
+        );
+        assert_eq!(
+            case.host.elevator_calls().len(),
+            elevated,
+            "{keyring}: an elevator ran"
+        );
+    }
 }
 
 /// The one `[sources]` case of the CLI: the `sources` scenario's `/etc/apt` copied into the
@@ -1260,14 +963,13 @@ fn only_root_lands_an_import_on_the_system_root() {
 fn sources_case(name: &str) -> (Case, PathBuf) {
     let case = Case::new(name, "sources");
     let fixture_root = fixtures_root().join("debian-12/sources/root");
-    copy_tree(&fixture_root, &case.root.dir);
+    copy_tree(&fixture_root, &case.host.root.dir);
     (case, fixture_root)
 }
 
 /// The keyring a block names travels at the path its `signed_by` names, byte for byte, beside
-/// the manifest wherever the manifest lands — `etc/lodi/files/` below the root with no flag
-/// (LD-325), `DIR/files/` with `--out DIR` — and never under the root's `etc/lodi/files/` for
-/// `--out`. Nothing of the refused repositories travels: no keyring of theirs, and never a
+/// the manifest wherever the manifest lands — the standard folder's `files/host/` with no PATH,
+/// `PATH/files/host/` with one — and never under the root's `etc/lodi/files/`. Nothing of the refused repositories travels: no keyring of theirs, and never a
 /// credential file.
 #[test]
 fn the_keyring_a_sources_block_names_lands_beside_the_manifest_and_nothing_of_the_refused() {
@@ -1277,22 +979,17 @@ fn the_keyring_a_sources_block_names_lands_beside_the_manifest_and_nothing_of_th
         } else {
             "sources-out"
         });
-        let root = case.root_arg();
-        let out = case.out_dir();
-        let out_arg = out.display().to_string();
-        let mut args = vec!["host", "import", "--root", root.as_str()];
-        if !in_place {
-            args.extend(["--out", out_arg.as_str()]);
-        }
-        // check-host-safety: refusal — the same scratch root.
-        let output = case.lodi(&args);
+        let typed = case.host.root.path("home/typed");
+        let typed_arg = typed.display().to_string();
+        let extra: &[&str] = if in_place { &[] } else { &[&typed_arg] };
+        let output = case.import(extra);
         assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
         let dir = if in_place {
-            case.root.path("etc/lodi")
+            case.config()
         } else {
-            out.clone()
+            typed.clone()
         };
-        let keyring = dir.join("files/etc/apt/keyrings/lodi-docker.asc");
+        let keyring = dir.join("files/host/etc/apt/keyrings/lodi-docker.asc");
         let bytes = fs::read(&keyring).expect("the keyring travels beside the manifest");
         assert_eq!(
             bytes,
@@ -1303,7 +1000,7 @@ fn the_keyring_a_sources_block_names_lands_beside_the_manifest_and_nothing_of_th
         let written = fs::read_to_string(dir.join("host.toml")).expect("the manifest");
         assert!(
             written.contains(&format!(
-                "# signed_by = \"files/etc/apt/keyrings/lodi-docker.asc\"\n\
+                "# signed_by = \"files/host/etc/apt/keyrings/lodi-docker.asc\"\n\
                  # signed_by_sha256 = \"{}\"\n",
                 lodi::util::sha256_hex(&bytes)
             )),
@@ -1316,20 +1013,18 @@ fn the_keyring_a_sources_block_names_lands_beside_the_manifest_and_nothing_of_th
         // No keyring becomes a [files] entry: the block is the keyring's only declaration.
         assert!(!written.contains("[files.\"/etc/apt/keyrings"), "{written}");
         for never in [
-            "files/etc/apt/keyrings/lodi-idle.gpg",
-            "files/etc/apt/keyrings/idle.gpg",
-            "files/etc/apt/keyrings/docker.asc",
-            "files/etc/apt/auth.conf.d",
-            "files/etc/apt/sources.list.d",
+            "files/host/etc/apt/keyrings/lodi-idle.gpg",
+            "files/host/etc/apt/keyrings/idle.gpg",
+            "files/host/etc/apt/keyrings/docker.asc",
+            "files/host/etc/apt/auth.conf.d",
+            "files/host/etc/apt/sources.list.d",
         ] {
             assert!(!dir.join(never).exists(), "{never} travelled");
         }
-        if !in_place {
-            assert!(
-                !case.root.exists("etc/lodi/files"),
-                "--out wrote under the root's etc/lodi/files"
-            );
-        }
+        assert!(
+            !case.host.root.exists("etc/lodi/files"),
+            "the import wrote under the root's etc/lodi/files"
+        );
     }
 }
 
@@ -1354,17 +1049,9 @@ fn a_private_key_block_anywhere_in_a_keyring_the_import_would_bundle_is_never_ca
         ("sources-private-binary", binary),
     ] {
         let (case, _) = sources_case(name);
-        fs::write(case.root.path("etc/apt/keyrings/docker.asc"), &bytes).unwrap();
-        let out = case.out_dir();
-        // check-host-safety: refusal — the same scratch root.
-        let output = case.lodi(&[
-            "host",
-            "import",
-            "--root",
-            &case.root_arg(),
-            "--out",
-            &out.display().to_string(),
-        ]);
+        fs::write(case.host.root.path("etc/apt/keyrings/docker.asc"), &bytes).unwrap();
+        let out = case.config();
+        let output = case.import(&[]);
         assert_eq!(output.status.code(), Some(0), "{name}: {}", stderr(&output));
         let written = fs::read_to_string(out.join("host.toml")).expect("the import wrote");
         assert!(!written.contains("[sources.docker]"), "{name}: {written}");
@@ -1377,7 +1064,7 @@ fn a_private_key_block_anywhere_in_a_keyring_the_import_would_bundle_is_never_ca
             "{name}: {written}"
         );
         assert!(
-            !out.join("files/etc/apt/keyrings").exists(),
+            !out.join("files/host/etc/apt/keyrings").exists(),
             "{name}: a keyring travelled"
         );
         for text in [written, stdout(&output), stderr(&output)] {
@@ -1388,35 +1075,9 @@ fn a_private_key_block_anywhere_in_a_keyring_the_import_would_bundle_is_never_ca
     }
 }
 
-/// `--stdout` prints the block, says in it that the keyring was not written and where to put
-/// it, and writes nothing anywhere.
-#[test]
-fn with_stdout_the_block_is_printed_and_says_the_keyring_was_not_written() {
-    let (case, _) = sources_case("sources-stdout");
-    let before = census(&case.root.dir);
-    // check-host-safety: refusal — the same scratch root.
-    let output = case.lodi(&["host", "import", "--root", &case.root_arg(), "--stdout"]);
-    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    let text = stdout(&output);
-    assert!(text.contains("# [sources.docker]\n"), "{text}");
-    assert!(
-        text.contains(
-            "# # the keyring was not written (--stdout): copy /etc/apt/keyrings/docker.asc\n\
-             # # to files/etc/apt/keyrings/lodi-docker.asc beside this file\n"
-        ),
-        "{text}"
-    );
-    assert_eq!(
-        before,
-        census(&case.root.dir),
-        "--stdout wrote below the root"
-    );
-    assert!(!case.out_dir().exists());
-}
-
-/// The round trip, named: import → uncomment → plan. The bundle the import writes with `--out`,
+/// The round trip, named: import → uncomment → plan. The bundle the import writes,
 /// with its `[sources.docker]` block taken the way a person takes it (every line of the block
-/// without its `# `), is copied into `etc/lodi/` below a second scratch root — the new machine,
+/// without its `# `), is copied into the config of a second scratch root — the new machine,
 /// which has no Docker stanza of its own — and plans there without error against the test's fake
 /// backend, arming the source before the index it forces.
 ///
@@ -1425,16 +1086,8 @@ fn with_stdout_the_block_is_printed_and_says_the_keyring_was_not_written() {
 #[test]
 fn round_trip_import_then_uncomment_then_plan() {
     let (case, _) = sources_case("sources-round-trip");
-    let out = case.out_dir();
-    // check-host-safety: refusal — the same scratch root.
-    let import = case.lodi(&[
-        "host",
-        "import",
-        "--root",
-        &case.root_arg(),
-        "--out",
-        &out.display().to_string(),
-    ]);
+    let out = case.config();
+    let import = case.import(&[]);
     assert_eq!(import.status.code(), Some(0), "{}", stderr(&import));
     let written = fs::read_to_string(out.join("host.toml")).expect("the import wrote");
     let mut taken = String::new();
@@ -1457,9 +1110,8 @@ fn round_trip_import_then_uncomment_then_plan() {
 
     // The new machine: the same recordings, none of the old machine's /etc/apt.
     let fresh = Case::new("sources-round-trip-new", "sources");
-    copy_tree(&out, &fresh.root.path("etc/lodi"));
-    // check-host-safety: refusal — the second scratch root.
-    let plan = fresh.lodi(&["host", "plan", "--root", &fresh.root_arg()]);
+    copy_tree(&out, &fresh.config());
+    let plan = fresh.plan();
     assert_eq!(
         plan.status.code(),
         Some(0),
@@ -1467,8 +1119,8 @@ fn round_trip_import_then_uncomment_then_plan() {
         stdout(&plan),
         stderr(&plan)
     );
-    let text = stdout(&plan);
-    assert!(!stderr(&plan).contains("E_"), "{}", stderr(&plan));
+    let text = stderr(&plan);
+    assert!(!text.contains("E_"), "{text}");
     let source = text
         .find("+ source docker")
         .unwrap_or_else(|| panic!("no source step:\n{text}"));
@@ -1478,9 +1130,7 @@ fn round_trip_import_then_uncomment_then_plan() {
     assert!(source < index, "{text}");
 
     // On the machine it was read from, the stanza it came from lists the same repository.
-    copy_tree(&out, &case.root.path("etc/lodi"));
-    // check-host-safety: refusal — the same scratch root.
-    let same = case.lodi(&["host", "plan", "--root", &case.root_arg()]);
+    let same = case.plan();
     assert_eq!(same.status.code(), Some(3), "{}", stderr(&same));
     assert!(
         stderr(&same).contains("E_DUP_RESOURCE")

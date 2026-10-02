@@ -176,7 +176,7 @@ fn tools() -> Vec<Tool> {
 const MARK: &[&str] = &["develop", "--", "sh", "-c", ": > ran"];
 
 #[test]
-fn frozen_replay_never_discovers_or_substitutes_and_stale_locks_are_refused_without_requests() {
+fn frozen_replay_never_discovers_or_substitutes_and_a_failed_or_unreadable_lock_runs_nothing() {
     let tools = tools();
     let user = User::new("faults-frozen", Server::for_tools(&tools));
     let project = user.base.join("project");
@@ -184,21 +184,12 @@ fn frozen_replay_never_discovers_or_substitutes_and_stale_locks_are_refused_with
     write_project(&project, &manifest(&tools, task), &tools);
     let lock = fs::read(project.join("lodi.lock")).unwrap();
 
-    // A fresh lock is never resolved again: `lodi lock` keeps it byte for byte, asks nothing.
-    for args in [&["lock"][..], &["lock", "--check"]] {
-        let o = user.run(&project, args);
-        assert_eq!(o.status.code(), Some(0), "{args:?}: {}", err(&o));
-    }
-    assert!(
-        user.server.requests().is_empty(),
-        "{:?}",
-        user.server.requests()
-    );
-    assert_eq!(fs::read(project.join("lodi.lock")).unwrap(), lock);
-
-    // A cold entry fetches exactly the locked artifacts, once each, and nothing else.
+    // A fresh lock is never resolved again, and a cold entry fetches exactly the locked
+    // artifacts, once each, and nothing else: no discovery, the lock byte for byte.
     let o = user.run(&project, &["develop", "--", "node"]);
     assert_eq!(out(&o), "v22.23.2\n", "{}", err(&o));
+    assert!(!err(&o).contains("wrote lodi.lock"), "{}", err(&o));
+    assert_eq!(fs::read(project.join("lodi.lock")).unwrap(), lock);
     let mut requested = user.server.requests();
     requested.sort();
     let mut locked: Vec<String> = tools.iter().map(|t| t.url.clone()).collect();
@@ -220,30 +211,35 @@ fn frozen_replay_never_discovers_or_substitutes_and_stale_locks_are_refused_with
     assert_eq!(out(&o), "v22.23.2\n");
     assert!(user.server.requests().is_empty());
 
-    // Stale (the manifest asks for another version), invalid and missing locks: exit 10 with
-    // no request, the lock untouched, nothing run.
+    // A changed request is resolved again (LD-492), and a resolution that fails (this server
+    // serves no metadata) leaves the lock as it was and runs nothing.
     let stale = manifest(&[tools[0].clone(), Tool::node("20", "20.20.2")], task);
     fs::write(project.join("lodi.toml"), stale).unwrap();
-    for args in [MARK, &["run", "mark"][..], &["lock", "--check"]] {
+    for args in [MARK, &["run", "mark"][..]] {
         let o = user.run(&project, args);
-        assert_eq!(o.status.code(), Some(10), "{args:?}: {}", err(&o));
-        assert!(err(&o).contains("E_LOCK_STALE"), "{}", err(&o));
+        assert_ne!(o.status.code(), Some(0), "{args:?}: {}", err(&o));
     }
     assert_eq!(fs::read(project.join("lodi.lock")).unwrap(), lock);
+    // An unreadable lock stops with exit 10 and no request, and is never replaced.
     fs::write(project.join("lodi.toml"), manifest(&tools, task)).unwrap();
+    user.server.clear();
     for bad in [&b"{\"version\": 1}\n"[..], b"not json", b""] {
         fs::write(project.join("lodi.lock"), bad).unwrap();
         let o = user.run(&project, MARK);
         assert_eq!(o.status.code(), Some(10), "{}", err(&o));
+        assert!(err(&o).contains("lodi.lock"), "{}", err(&o));
+        assert_eq!(fs::read(project.join("lodi.lock")).unwrap(), bad);
     }
-    fs::remove_file(project.join("lodi.lock")).unwrap();
-    let o = user.run(&project, MARK);
-    assert_eq!(o.status.code(), Some(10), "{}", err(&o));
     assert!(
         user.server.requests().is_empty(),
         "{:?}",
         user.server.requests()
     );
+    // A missing lock is resolved; a failed resolution writes none and runs nothing.
+    fs::remove_file(project.join("lodi.lock")).unwrap();
+    let o = user.run(&project, MARK);
+    assert_ne!(o.status.code(), Some(0), "{}", err(&o));
+    assert!(!project.join("lodi.lock").exists());
     assert!(!project.join("ran").exists());
 
     // A lock whose hash was altered in place is fresh, but its artifact fails verification.

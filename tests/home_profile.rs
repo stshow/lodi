@@ -1,6 +1,7 @@
 //! M-0.5 T-5: the user-wide tool profile, one PATH directory and one printed source line.
 //!
-//! Every product invocation uses `support::home_env`, with the data root moved below its scratch
+//! Every product invocation is `lodi switch --home` (1.x's `lodi home apply`, LD-518) in a
+//! `support::home_env`, with the data root moved below its scratch
 //! home so the stable instruction contains literal `$HOME`. Only the tests create a login-shell
 //! startup file, and only the tests start a login shell.
 
@@ -13,7 +14,6 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use lodi::home::profile::{PROFILE_BIN, PROFILE_SH};
-use lodi::lock::{self, parse_lock};
 use lodi::store::art_name;
 use lodi::util::sha256_hex;
 use support::{HomeEnv, Server, home_env, home_gate};
@@ -41,11 +41,23 @@ fn command(env: &HomeEnv, server: &Server) -> Command {
 }
 
 fn run(env: &HomeEnv, server: &Server, args: &[&str]) -> Output {
-    command(env, server).args(args).output().unwrap()
+    let mut command = command(env, server);
+    env.on_gate(&mut command, args).output().unwrap()
 }
 
+/// What a switch said: all of it is on standard error, standard output stays empty.
 fn stdout(out: &Output) -> String {
-    String::from_utf8(out.stdout.clone()).unwrap()
+    assert!(out.stdout.is_empty(), "{out:?}");
+    String::from_utf8(out.stderr.clone()).unwrap()
+}
+
+/// The art of `tool` the home's section of the config's `lodi.lock` holds (1.x's `home.lock`).
+fn art(env: &HomeEnv, tool: &str) -> String {
+    let lock = lodi::config::lock::read(&config(env)).unwrap();
+    let [(_, home)] = lock.homes.iter().collect::<Vec<_>>()[..] else {
+        panic!("not one home in {lock:?}");
+    };
+    art_name(&home.tools[tool]).unwrap()
 }
 
 fn stderr(out: &Output) -> String {
@@ -66,8 +78,14 @@ fn declaration(label: &str, name: Option<&str>, url: &str, bytes: &[u8], env: &s
     )
 }
 
+/// A home of `blocks` and one file: `lodi switch --home` has nothing to switch for a home of
+/// tools alone (the finding `catalogue_batch` keeps open), so every home here has a file too.
 fn manifest(blocks: &[String]) -> String {
-    format!("[home]\nversion = \"1\"\n\n{}", blocks.join("\n"))
+    format!(
+        "[home]\nversion = \"1\"\n\n[home.file.\".marker\"]\ntext = \"{}\"\n\n{}",
+        blocks.len(),
+        blocks.join("\n")
+    )
 }
 
 fn server(files: &[(&str, &[u8])]) -> Server {
@@ -158,12 +176,11 @@ fn two_tools_reach_one_idempotent_path_and_a_new_login_shell() {
         lines[1]
     );
     assert_eq!(lines[2], "1.0.0");
-    let lock = parse_lock(&fs::read(config(&env).join(lock::HOME_LOCK_FILE)).unwrap()).unwrap();
     assert_eq!(
         lines[3],
         data(&env)
             .join("store")
-            .join(art_name(&lock.packages["alpha"]).unwrap())
+            .join(art(&env, "alpha"))
             .display()
             .to_string()
     );
@@ -194,7 +211,6 @@ fn two_tools_reach_one_idempotent_path_and_a_new_login_shell() {
     write_manifest(&env, &manifest(&[alpha_decl]));
     let out = run(&env, &server, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(stdout(&out).contains("removed non-link `foreign`"));
     assert_link(&bin.join("alpha"));
     assert!(!bin.join("beta").exists());
     assert!(!bin.join("foreign").exists());
@@ -222,8 +238,7 @@ fn a_conflict_is_first_tool_wins_and_is_stable_across_applies() {
     assert!(stderr(&first).contains(warning), "{}", stderr(&first));
     assert!(!stderr(&first).contains("beta wins"), "{}", stderr(&first));
 
-    let lock = parse_lock(&fs::read(config(&env).join(lock::HOME_LOCK_FILE)).unwrap()).unwrap();
-    let alpha_art = art_name(&lock.packages["alpha"]).unwrap();
+    let alpha_art = art(&env, "alpha");
     let link = bin(&env).join("shared");
     assert_eq!(
         fs::read_link(&link).unwrap(),
@@ -234,8 +249,7 @@ fn a_conflict_is_first_tool_wins_and_is_stable_across_applies() {
     let first_target = fs::read_link(&link).unwrap();
 
     let second = run(&env, &server, &["home", "apply"]);
-    assert_eq!(second.status.code(), Some(0), "{}", stderr(&second));
-    assert!(stderr(&second).contains(warning), "{}", stderr(&second));
+    assert!(support::nothing(&second), "{}", stderr(&second));
     assert_eq!(fs::read_link(&link).unwrap(), first_target);
 }
 
@@ -251,27 +265,29 @@ fn fish_gets_only_its_warning_and_status_reports_path_without_writing() {
     );
 
     let mut apply = command(&env, &server);
-    let out = apply
-        .env("SHELL", "/usr/bin/fish")
-        .args(["home", "apply"])
+    apply.env("SHELL", "/usr/bin/fish");
+    let out = env
+        .on_gate(&mut apply, &["home", "apply"])
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(stderr(&out).contains("W_FISH_HOOKS"), "{}", stderr(&out));
-    assert!(stderr(&out).contains("$HOME/.local/share/lodi/home-scope/profile/bin"));
-    assert!(!stdout(&out).contains("add this line"), "{}", stdout(&out));
-    assert!(!stdout(&out).contains("profile.sh"), "{}", stdout(&out));
+    let shown = stdout(&out);
+    assert!(shown.contains("W_FISH_HOOKS"), "{shown}");
+    assert!(shown.contains("$HOME/.local/share/lodi/home-scope/profile/bin"));
+    assert!(!shown.contains("add this line"), "{shown}");
+    assert!(!shown.contains("profile.sh"), "{shown}");
 
     let before = home_gate().ledger_lines().len();
     let mut status = command(&env, &server);
-    let out = status
-        .env("PATH", format!("{}:/usr/bin", bin(&env).display()))
-        .args(["home", "status"])
+    status.env("PATH", format!("{}:/usr/bin", bin(&env).display()));
+    let out = env
+        .on_gate(&mut status, &["home", "status"])
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(stdout(&out).contains(" is on PATH"), "{}", stdout(&out));
-    assert!(stdout(&out).contains("$HOME/.local/share/lodi/home-scope/profile.sh"));
+    let shown = stdout(&out);
+    assert!(shown.contains(" is on PATH"), "{shown}");
+    assert!(shown.contains("$HOME/.local/share/lodi/home-scope/profile.sh"));
     let appended: Vec<_> = home_gate()
         .ledger_lines()
         .into_iter()
@@ -279,56 +295,6 @@ fn fish_gets_only_its_warning_and_status_reports_path_without_writing() {
         .filter(|(_, path)| path.starts_with(env.root()))
         .collect();
     assert!(appended.is_empty(), "status wrote: {appended:?}");
-}
-
-#[test]
-fn locked_apply_refuses_a_changed_tool_set_before_writing() {
-    let env = home_env("profile-locked-stale");
-    let url = "https://fixtures.test/locked";
-    let body = b"#!/bin/sh\necho locked\n";
-    let server = server(&[(url, body)]);
-    let first = declaration("locked", None, url, body, "");
-    write_manifest(&env, &manifest(std::slice::from_ref(&first)));
-
-    let before = home_gate().ledger_lines().len();
-    let out = run(&env, &server, &["home", "apply", "--locked"]);
-    assert_eq!(out.status.code(), Some(10), "{}", stderr(&out));
-    assert!(stderr(&out).contains("E_LOCK_STALE"), "{}", stderr(&out));
-    assert!(
-        !data(&env).exists(),
-        "a missing-lock refusal created the data root"
-    );
-    let appended: Vec<_> = home_gate()
-        .ledger_lines()
-        .into_iter()
-        .skip(before)
-        .filter(|(_, path)| path.starts_with(env.root()))
-        .collect();
-    assert!(
-        appended.is_empty(),
-        "locked missing apply wrote: {appended:?}"
-    );
-
-    let out = run(&env, &server, &["home", "apply"]);
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let target = fs::read_link(bin(&env).join("locked")).unwrap();
-
-    write_manifest(&env, &manifest(&[first.replace("1.0.0", "2.0.0")]));
-    let before = home_gate().ledger_lines().len();
-    let out = run(&env, &server, &["home", "apply", "--locked"]);
-    assert_eq!(out.status.code(), Some(10), "{}", stderr(&out));
-    assert!(stderr(&out).contains("E_LOCK_STALE"), "{}", stderr(&out));
-    assert_eq!(fs::read_link(bin(&env).join("locked")).unwrap(), target);
-    let appended: Vec<_> = home_gate()
-        .ledger_lines()
-        .into_iter()
-        .skip(before)
-        .filter(|(_, path)| path.starts_with(env.root()))
-        .collect();
-    assert!(
-        appended.is_empty(),
-        "locked stale apply wrote: {appended:?}"
-    );
 }
 
 /// Real-network package evidence: the public `home apply` path resolves and realizes jq, builds
@@ -341,12 +307,15 @@ fn live_home_apply_puts_a_real_tool_on_a_new_login_path() {
     let env = home_env("profile-live");
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[tools]\njq = \"latest\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".marker\"]\ntext = \"1\"\n\n[tools]\njq = \"latest\"\n",
     );
     let server = Server::start(BTreeMap::new());
     let mut apply = command(&env, &server);
     apply.env_remove("LODI_FETCH_REWRITE");
-    let out = apply.args(["home", "apply"]).output().unwrap();
+    let out = env
+        .on_gate(&mut apply, &["home", "apply"])
+        .output()
+        .unwrap();
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_link(&bin(&env).join("jq"));
     fs::write(

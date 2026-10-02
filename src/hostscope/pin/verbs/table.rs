@@ -1,36 +1,8 @@
-//! What `lodi host versions NAME` prints: newest first, one row per version with the day it
+//! What `lodi pin NAME` prints: newest first, one row per version with the day it
 //! arrived and whether it is the installed, the pinned or the latest one, then one line to copy.
 //! There is no prompt and no picker.
 
-use super::cache::Arrival;
 use crate::diag::Diagnostic;
-
-/// The table for `name`. `offered` is in any order; it is printed newest arrival first, and the
-/// newest is `latest`. The line to copy names the newest version.
-pub fn render(
-    name: &str,
-    offered: &[Arrival],
-    installed: Option<&str>,
-    pinned: Option<&str>,
-) -> String {
-    let rows: Vec<Row> = offered
-        .iter()
-        .map(|a| Row {
-            version: a.version.clone(),
-            at: Some(a.arrived),
-        })
-        .collect();
-    let latest = newest(&rows).map(|r| r.version.clone());
-    listing(
-        "arrived",
-        &rows,
-        installed,
-        pinned,
-        latest
-            .map(|v| format!("lodi host pin {name} --to {v}"))
-            .as_deref(),
-    )
-}
 
 /// One row of a listing: a version, and the instant it arrived or was served, when known.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,17 +11,13 @@ pub struct Row {
     pub at: Option<i64>,
 }
 
-fn newest(rows: &[Row]) -> Option<&Row> {
-    sorted(rows).into_iter().next()
-}
-
 fn sorted(rows: &[Row]) -> Vec<&Row> {
     let mut rows: Vec<&Row> = rows.iter().collect();
     rows.sort_by(|a, b| b.at.cmp(&a.at).then_with(|| a.version.cmp(&b.version)));
     rows
 }
 
-/// What `lodi host versions NAME` prints: newest first, a row with no day last, the first row
+/// What `lodi pin NAME` prints: newest first, a row with no day last, the first row
 /// `latest`, then `copy` after one blank line. `column` names the day column: `arrived` where
 /// the release's interface says when each version was published, `served` where a dated index
 /// says only what it served on that day (Debian and Arch, P1).
@@ -99,7 +67,9 @@ pub fn unknown_package(name: &str, distro: &str, known: &[String]) -> Diagnostic
         "E_UNKNOWN_PACKAGE",
         format!("the {distro} archive offers no package `{name}`"),
     );
-    let near = crate::tools::nearest(name, known);
+    // The local index may know the very name the archive lacks: it is no suggestion.
+    let mut near = crate::tools::nearest(name, known);
+    near.retain(|n| n != name);
     match near.as_slice() {
         [] => d,
         [one] => d.hint(format!("did you mean `{one}`?")),

@@ -1,4 +1,4 @@
-//! The versions cache of `lodi host versions NAME` (V2, design call D11): one file per name at
+//! The versions cache of `lodi pin NAME` (V2, design call D11): one file per name at
 //! `$LODI_HOME/cache/versions/<distro>/<name>.json`, holding the instant it was fetched and what
 //! the archive offered then. A file younger than one day is used with zero requests; an older
 //! one is refetched; a file that does not read back as exactly this name's record is refused and

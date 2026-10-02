@@ -26,14 +26,19 @@ use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use fakehost::{Case, Machine, out, story};
+use fakehost::{Case, Machine, err, story};
 
 /// An invented public key: the shape of one, and no real key anywhere.
 const KEY: &str = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxvZGktc3UtMS10ZXN0LWtleS1ub3QtcmVhbC0wMQ \
                    su-1-test";
 
 /// What a converged apply or plan with `--no-home` prints.
-const NOTHING: &str = "nothing to do\nhome skipped (--no-home)\n";
+/// Whether a switch changed nothing on the machine: nothing at all, or only the record, as after
+/// an import, which writes none (LD-514).
+fn unchanged(output: &std::process::Output) -> bool {
+    fakehost::nothing(output)
+        || (output.status.success() && err(output).contains("host: no machine changes"))
+}
 
 /// A root with no human account yet: root, two system accounts and the groups they need.
 fn case(name: &str) -> Case {
@@ -101,7 +106,7 @@ fn users_created_locked_with_ssh_keys() {
     let plan = case.verb("plan", &["--no-home"]);
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("+ user alice"),
+        err(&plan).contains("+ user alice"),
         "the plan names the account: {}",
         story(&plan)
     );
@@ -143,7 +148,7 @@ fn users_created_locked_with_ssh_keys() {
     let passwd = case.root.read("etc/passwd");
     let second = apply(&case);
     assert!(second.status.success(), "{}", story(&second));
-    assert_eq!(out(&second), NOTHING, "{}", story(&second));
+    assert!(unchanged(&second), "{}", story(&second));
     assert_eq!(case.root.read("etc/passwd"), passwd);
     assert!(
         case.log().iter().all(|l| !l.starts_with("user")),
@@ -180,7 +185,7 @@ fn groups_declared_and_members() {
 
     let second = apply(&case);
     assert!(second.status.success(), "{}", story(&second));
-    assert_eq!(out(&second), NOTHING, "{}", story(&second));
+    assert!(unchanged(&second), "{}", story(&second));
 }
 
 /// A root with human, system, no-login and below-`UID_MIN` accounts.
@@ -228,7 +233,7 @@ fn users_import_humans_only() {
 
     let plan = case.verb("plan", &["--no-home"]);
     assert!(plan.status.success(), "{}", story(&plan));
-    assert_eq!(out(&plan), NOTHING, "{}", story(&plan));
+    assert!(unchanged(&plan), "{}", story(&plan));
 
     // The person's own edit to the table survives a re-import (a reconcile).
     let edited = manifest.replace("shell = \"/usr/bin/zsh\"", "shell = \"/bin/bash\"");
@@ -250,12 +255,12 @@ fn users_reimport_leaves_nothing_to_do() {
     let import = case.import();
     assert!(import.status.success(), "{}", story(&import));
     let plan = case.verb("plan", &["--no-home"]);
-    assert_eq!(out(&plan), NOTHING, "after the import: {}", story(&plan));
+    assert!(unchanged(&plan), "after the import: {}", story(&plan));
     let again = case.import();
     assert!(again.status.success(), "{}", story(&again));
     let plan = case.verb("plan", &["--no-home"]);
     assert!(plan.status.success(), "{}", story(&plan));
-    assert_eq!(out(&plan), NOTHING, "after the re-import: {}", story(&plan));
+    assert!(unchanged(&plan), "after the re-import: {}", story(&plan));
 }
 
 /// Criterion 4: the import never opens the shadow file, and no hash, shadow field or private key
@@ -374,10 +379,10 @@ fn users_undeclared_left_untouched() {
     case.set_manifest("");
     let plan = case.verb("plan", &["--no-home"]);
     assert!(plan.status.success(), "{}", story(&plan));
-    assert!(out(&plan).contains("no longer managed"), "{}", story(&plan));
+    assert!(err(&plan).contains("no longer managed"), "{}", story(&plan));
     let second = apply(&case);
     assert!(second.status.success(), "{}", story(&second));
-    let said = out(&second);
+    let said = err(&second);
     assert!(
         said.contains("= user alice (no longer managed"),
         "{}",
@@ -405,5 +410,5 @@ fn users_undeclared_left_untouched() {
 
     let third = apply(&case);
     assert!(third.status.success(), "{}", story(&third));
-    assert_eq!(out(&third), NOTHING, "{}", story(&third));
+    assert!(unchanged(&third), "{}", story(&third));
 }

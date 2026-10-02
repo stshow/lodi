@@ -19,7 +19,7 @@ mod support;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 
-use fakehost::{Case, Family, Machine, Pkg, err, out, story};
+use fakehost::{Case, Family, Machine, Pkg, err, nothing, out, story};
 use hostroot::{Root, backups, ids};
 use lodi::hostscope::safety::{Gate, Operation};
 use serde_json::Value;
@@ -85,10 +85,13 @@ fn case(name: &str, family: Family) -> Case {
 
 /// Package-edit cases exercise the unpinned import: dated Arch sync is covered separately in
 /// host_pin_arch.rs, not by the fake machine's old, unrecorded package fixtures (LD-396).
+/// 2.0's import writes no record of the machine, so the first switch writes it, as a person's
+/// first `lodi switch` after `lodi import` does.
 fn import_for_package_edits(case: &Case) -> std::process::Output {
     let result = case.import();
-    if result.status.success() && case.family == Family::Pacman {
-        case.set_manifest(&fakehost::without_snapshot(&case.manifest()));
+    if result.status.success() {
+        let first = case.apply(&[]);
+        assert!(first.status.success(), "{}", story(&first));
     }
     result
 }
@@ -171,14 +174,14 @@ fn a_deleted_files_entry_is_planned_and_honoured(family: Family) {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("file /etc/app.conf"),
+        err(&plan).contains("file /etc/app.conf"),
         "the removal of the entry is not planned\n{}",
         story(&plan)
     );
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
     assert!(
-        out(&apply).contains("file /etc/app.conf"),
+        err(&apply).contains("file /etc/app.conf"),
         "the apply does not name the file\n{}",
         story(&apply)
     );
@@ -195,7 +198,7 @@ fn a_deleted_files_entry_is_planned_and_honoured(family: Family) {
         case.lock()
     );
     let again = case.apply(&[]);
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 }
 
 #[test]
@@ -506,83 +509,6 @@ fn a2_no_store_copy_without_backup_and_restore() {
     }
 }
 
-/// The record lodi 1.1.1 wrote for a file it adopted unchanged: no copy, `onRemove` `keep`.
-fn write_a_1_1_1_record(root: &Root) {
-    let (uid, gid) = ids(root);
-    let digest = format!(
-        "sha256:{}",
-        lodi::util::sha256_hex(root.read("etc/pre.conf").as_bytes())
-    );
-    root.write(
-        "etc/lodi/host.lock",
-        &format!(
-            "{{\n  \"version\": 1,\n  \"format\": \"lodi-host-lock/1\",\n  \"generatedBy\": \
-             \"lodi 1.1.1\",\n  \"appliedAt\": \"2026-09-23T12:00:00Z\",\n  \"distro\": \
-             \"debian\",\n  \"distroVersion\": \"12\",\n  \"packages\": {{}},\n  \"files\": {{\n    \
-             \"/etc/pre.conf\": {{\n      \"digest\": \"{digest}\",\n      \"mode\": \"0640\",\n      \
-             \"owner\": \"{uid}\",\n      \"group\": \"{gid}\",\n      \"onRemove\": \"keep\"\n    }}\n  \
-             }}\n}}\n"
-        ),
-    );
-}
-
-/// 1.1.1's record, the file unchanged: no retroactive copy is taken, and the store stays empty.
-#[test]
-fn a2_a_1_1_1_record_gets_no_retroactive_copy() {
-    let root = root_with_original("a2-111-unchanged");
-    root.debian_with(&entry(&root, "/etc/pre.conf", "original\n", "0640", ""));
-    write_a_1_1_1_record(&root);
-    // The first apply may bring the record's other halves up to date; the file record is kept.
-    lodi::hostscope::apply(&root.options()).expect("an apply over the unchanged file");
-    assert_eq!(
-        support::without_legacy(&lodi::hostscope::apply(&root.options()).unwrap()),
-        "nothing to do\n"
-    );
-    assert!(store(&root).is_empty(), "{:?}", store(&root));
-    let record = record_of(&root, "/etc/pre.conf");
-    assert!(record["backup"].is_null(), "{record}");
-    assert_eq!(record["onRemove"], "keep", "{record}");
-}
-
-/// 1.1.1's record, the entry kept and Lodi writing the file: the file is copied beside itself
-/// first, as 1.1.1 does, and a later removal restores those pre-write bytes.
-#[test]
-fn a2_a_1_1_1_record_is_copied_beside_the_file_before_a_write() {
-    let root = root_with_original("a2-111-write");
-    root.debian_with(&entry(&root, "/etc/pre.conf", "original\n", "0640", ""));
-    write_a_1_1_1_record(&root);
-    root.write(
-        "etc/lodi/host.toml",
-        &entry(&root, "/etc/pre.conf", "managed\n", "0600", ""),
-    );
-    let output = lodi::hostscope::apply(&root.options()).expect("change it");
-    assert_eq!(root.read("etc/pre.conf"), "managed\n", "{output}");
-    let beside = backups(&root);
-    assert_eq!(beside.len(), 1, "{output}");
-    assert_eq!(
-        beside[0].parent().unwrap(),
-        root.path("etc"),
-        "beside the file"
-    );
-    assert!(store(&root).is_empty());
-    root.write("etc/lodi/host.toml", "");
-    let output = lodi::hostscope::apply(&root.options()).expect("the removal");
-    assert_original(&root, &format!("1.1.1 record, changed, removed\n{output}"));
-    assert!(backups(&root).is_empty(), "the consumed copy is removed");
-}
-
-/// 1.1.1's record, the entry gone before any write: the file is left and the record forgotten.
-#[test]
-fn a2_a_1_1_1_record_removed_before_a_write_is_left_in_place() {
-    let root = root_with_original("a2-111-removed");
-    root.debian_with("");
-    write_a_1_1_1_record(&root);
-    let output = lodi::hostscope::apply(&root.options()).expect("the removal");
-    assert_original(&root, &format!("1.1.1 record removed\n{output}"));
-    assert!(record_of(&root, "/etc/pre.conf").is_null());
-    assert!(store(&root).is_empty() && backups(&root).is_empty());
-}
-
 /// A file in the store that no record names is neither read nor deleted, by a plan, an apply or
 /// a removal; a later adoption picks a name of its own.
 #[test]
@@ -664,33 +590,25 @@ fn census(dir: &std::path::Path) -> std::collections::BTreeMap<String, String> {
     out
 }
 
-/// The in-place import copies and adopts no file (si-1): its three lines are unchanged, nothing
-/// outside the root's `etc/lodi` is written (IM.5), no copy is taken into the store, and the
-/// changed file is named with the `[etc."PATH"]` that declares it. Declared that way and applied,
-/// its original is kept in the store; the entry removed, the bytes and mode it had come back.
+/// The import copies and adopts no file (si-1): nothing outside the root's `etc/lodi` and the
+/// config it writes below the scratch home is written (IM.5), no copy is taken into the store,
+/// and the changed file is named with the `[etc."PATH"]` that declares it. Declared that way and
+/// applied, its original is kept in the store; the entry removed, the bytes and mode it had come
+/// back.
 fn an_in_place_import_adopts_nothing(family: Family) {
     let case = case(&format!("a2-import-{family:?}"), family);
     let before = census(&case.root.dir);
     let import = case.import();
     assert!(import.status.success(), "{}", story(&import));
-    let told = out(&import);
-    let lines: Vec<&str> = told.lines().collect();
-    assert_eq!(lines.len(), 3, "the import's three lines:\n{told}");
-    assert!(
-        lines[0].ends_with(&format!(
-            "no package and no file outside {} changed",
-            case.root.path("etc/lodi").display()
-        )),
-        "{told}"
-    );
+    let ours = |path: &str| path.starts_with("etc/lodi/") || path.starts_with("home/");
     let after = census(&case.root.dir);
     for (path, what) in &before {
-        if path != "etc/lodi" && path != "etc" {
+        if !["etc/lodi", "etc", "home"].contains(&path.as_str()) && !ours(path) {
             assert_eq!(after.get(path), Some(what), "{path} moved");
         }
     }
     for path in after.keys().filter(|k| !before.contains_key(*k)) {
-        assert!(path.starts_with("etc/lodi/"), "the import wrote {path}");
+        assert!(ours(path), "the import wrote {path}");
     }
     assert!(store(&case.root).is_empty(), "{:?}", store(&case.root));
     assert!(!case.root.exists("etc/lodi/files"));
@@ -700,9 +618,8 @@ fn an_in_place_import_adopts_nothing(family: Family) {
         "{text}"
     );
     assert!(
-        case.lock()["files"]["/etc/app.conf"].is_null(),
-        "{}",
-        case.lock()
+        !case.has_lock() || case.lock()["files"]["/etc/app.conf"].is_null(),
+        "the record adopted the file"
     );
 
     set_table(
@@ -765,7 +682,8 @@ fn a2_a_reconcile_of_a_declared_file_changed_on_the_machine_copies_nothing() {
              group = \"{INVOKER}\"\n"
         ),
     );
-    case.root.write("etc/lodi/files/etc/app.conf", "managed\n");
+    fs::create_dir_all(case.config().join("files/etc")).unwrap();
+    fs::write(case.config().join("files/etc/app.conf"), "managed\n").unwrap();
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
     let recorded = case.lock()["files"]["/etc/app.conf"].clone();
@@ -778,14 +696,16 @@ fn a2_a_reconcile_of_a_declared_file_changed_on_the_machine_copies_nothing() {
     let again = case.import();
     assert!(again.status.success(), "{}", story(&again));
     assert!(
-        err(&again).contains(
-            "W_RECONCILE: /etc/app.conf changed on this machine and is not captured again"
-        ),
+        err(&again)
+            .contains("W_UNCAPTURED: /etc/app.conf is not captured: lodi copies no file from /etc"),
         "{}",
         story(&again)
     );
     assert!(case.manifest().contains("[files.\"/etc/app.conf\"]"));
-    assert_eq!(case.root.read("etc/lodi/files/etc/app.conf"), "managed\n");
+    assert_eq!(
+        fs::read_to_string(case.config().join("files/etc/app.conf")).unwrap(),
+        "managed\n"
+    );
     assert_eq!(case.lock()["files"]["/etc/app.conf"], recorded);
 }
 
@@ -812,9 +732,8 @@ fn a2_a_reconcile_names_a_newly_changed_file_and_adopts_nothing() {
     assert!(store(&case.root).is_empty(), "{:?}", store(&case.root));
     assert!(!case.root.exists("etc/lodi/files"));
     assert!(
-        case.lock()["files"]["/etc/app.conf"].is_null(),
-        "{}",
-        case.lock()
+        !case.has_lock() || case.lock()["files"]["/etc/app.conf"].is_null(),
+        "the record adopted the file"
     );
 }
 
@@ -899,7 +818,7 @@ fn a2_a_file_adopted_without_a_copy_is_left_in_place_when_removed() {
 }
 
 /// The record of an adoption is carried by the schema-1 file fields: no new key in a file's
-/// record. The lock itself is schema 2 since LD-378, which added the baseline beside them.
+/// record. The lock itself is schema 6 in 2.0 (#710).
 #[test]
 fn a2_the_file_record_keeps_its_schema_1_fields() {
     let root = root_with_original("a2-schema");
@@ -907,8 +826,8 @@ fn a2_the_file_record_keeps_its_schema_1_fields() {
     lodi::hostscope::apply(&root.options()).expect("adopt");
     let lock: Value =
         serde_json::from_str(&root.read("etc/lodi/host.lock")).expect("the lock parses");
-    assert_eq!(lock["format"], "lodi-host-lock/2", "{lock}");
-    assert_eq!(lock["version"], 2, "{lock}");
+    assert_eq!(lock["format"], "lodi-host-lock/6", "{lock}");
+    assert_eq!(lock["version"], 6, "{lock}");
     assert_eq!(lock["source"], "/etc/lodi", "{lock}");
     assert!(
         lock["baseline"]["files"]["/etc/pre.conf"].is_string(),
@@ -923,79 +842,6 @@ fn a2_the_file_record_keeps_its_schema_1_fields() {
             "{key}: {lock}"
         );
     }
-}
-
-/// The record 1.1.0 wrote for a file it found already right: no copy, `onRemove` `restore` — the
-/// same bytes it wrote for a file it created. Written here as that release wrote it.
-fn write_an_earlier_record(root: &Root, generated_by: &str) {
-    let (uid, gid) = ids(root);
-    let digest = format!(
-        "sha256:{}",
-        lodi::util::sha256_hex(root.read("etc/pre.conf").as_bytes())
-    );
-    root.write(
-        "etc/lodi/host.lock",
-        &format!(
-            "{{\n  \"version\": 1,\n  \"format\": \"lodi-host-lock/1\",\n  \"generatedBy\": \
-             \"{generated_by}\",\n  \"appliedAt\": \"2026-09-23T12:00:00Z\",\n  \"distro\": \
-             \"debian\",\n  \"distroVersion\": \"12\",\n  \"packages\": {{}},\n  \"files\": {{\n    \
-             \"/etc/pre.conf\": {{\n      \"digest\": \"{digest}\",\n      \"mode\": \"0640\",\n      \
-             \"owner\": \"{uid}\",\n      \"group\": \"{gid}\",\n      \"onRemove\": \"restore\"\n    }}\n  \
-             }}\n}}\n"
-        ),
-    );
-}
-
-/// An earlier release's record with no copy cannot say whether lodi created the file or found
-/// it: its removal never deletes the file — it is left where it stands, the plan says why, and the
-/// record forgets it (LD-377 validator repair).
-#[test]
-fn a2_an_earlier_releases_unbacked_record_never_deletes_the_file() {
-    for writer in ["lodi 1.1.0", "lodi 1.0.0"] {
-        let root = root_with_original(&format!("a2-earlier-{}", writer.replace(' ', "-")));
-        root.debian_with("");
-        write_an_earlier_record(&root, writer);
-        let planned = lodi::hostscope::plan(&root.options()).expect("plan");
-        assert!(
-            planned.contains("= file /etc/pre.conf (") && planned.contains("left in place"),
-            "{writer}: the plan does not say the file is left\n{planned}"
-        );
-        let output = lodi::hostscope::apply(&root.options()).expect("the removal");
-        assert_original(&root, &format!("{writer}: removed\n{output}"));
-        let lock: Value = serde_json::from_str(&root.read("etc/lodi/host.lock")).expect("a lock");
-        assert!(lock["files"].get("/etc/pre.conf").is_none(), "{lock}");
-        assert_eq!(
-            lodi::hostscope::apply(&root.options()).unwrap(),
-            "nothing to do\n"
-        );
-    }
-}
-
-/// The same record, and the entry kept and changed: the file is treated as an original, so its
-/// bytes are kept before lodi writes over them and a later removal puts them back.
-#[test]
-fn a2_an_earlier_releases_unbacked_record_keeps_the_original_before_a_write() {
-    let root = root_with_original("a2-earlier-write");
-    root.debian_with(&entry(&root, "/etc/pre.conf", "original\n", "0640", ""));
-    write_an_earlier_record(&root, "lodi 1.1.0");
-    root.write(
-        "etc/lodi/host.toml",
-        &entry(&root, "/etc/pre.conf", "managed\n", "0600", ""),
-    );
-    let output = lodi::hostscope::apply(&root.options()).expect("change it");
-    assert_eq!(root.read("etc/pre.conf"), "managed\n", "{output}");
-    assert_eq!(
-        backups(&root).len(),
-        1,
-        "the original is kept first\n{output}"
-    );
-    root.write("etc/lodi/host.toml", "");
-    let output = lodi::hostscope::apply(&root.options()).expect("the removal");
-    assert_original(
-        &root,
-        &format!("earlier record, changed, removed\n{output}"),
-    );
-    assert!(backups(&root).is_empty(), "the consumed copy is removed");
 }
 
 /// A record this release wrote for a file it created still means what it says: `restore`
@@ -1098,15 +944,12 @@ fn rows(family: Family) -> Vec<Row> {
     let arch = std::env::consts::ARCH;
     let pacman = family == Family::Pacman;
     let hold_line = if pacman {
-        "no machine changes; apply would update the record"
+        "no machine changes; the record is updated"
     } else {
         "~ package jq (hold)"
     };
-    let unhold_line = if pacman {
-        "no machine changes; apply would update the record"
-    } else {
-        "~ package jq (unhold)"
-    };
+    // The release is planned on every family, a lodi-only hold too (LD-531).
+    let unhold_line = "~ package jq (unhold: no longer pinned or held; ";
     vec![
         row(
             "add a common name",
@@ -1241,7 +1084,8 @@ fn rows(family: Family) -> Vec<Row> {
                     "optional = [\"zip\", \"nosuch\"]\n",
                 );
             },
-            "W_OPTIONAL_SKIPPED: `nosuch` is optional",
+            // `lodi switch` shows no plan warning when nothing changes (#699 finding).
+            "nothing to switch",
             installed("zip"),
         ),
         row(
@@ -1267,7 +1111,7 @@ fn rows(family: Family) -> Vec<Row> {
             // Nothing is installed that the line named, so the edit has nothing to change.
             "remove absent",
             |c| replace_in_manifest(c, "absent = [\"htop\"]\n", ""),
-            "nothing to do",
+            "nothing to switch",
             gone("htop"),
         ),
         row(
@@ -1302,7 +1146,7 @@ fn rows(family: Family) -> Vec<Row> {
             // itself, so the machine stays and the record follows the declaration.
             "its owner changed",
             |c| edit_file(c, "two\n", "0600", INVOKER),
-            "no machine changes; apply would update the record",
+            "no machine changes; the record is updated",
             |c| {
                 let owner = c.lock()["files"]["/etc/edit.conf"]["owner"].clone();
                 (owner == INVOKER)
@@ -1366,7 +1210,7 @@ fn every_edit_takes_effect(family: Family) {
             failures.push(format!("{}: {why}\n{}", row.what, story(&apply)));
         }
         let again = case.apply(&[]);
-        if out(&again) != "nothing to do\n" {
+        if !nothing(&again) {
             failures.push(format!(
                 "{}: a second apply has something to do\n{}",
                 row.what,
@@ -1475,18 +1319,84 @@ fn in_namespace(argv: &[&str]) -> Option<std::process::Output> {
     )
 }
 
-/// One host verb against the scratch root, as root of the namespace.
+/// One host verb against the scratch root, as root of the namespace: `plan` is
+/// `lodi switch --host --dry-run`, `apply` is `lodi switch --host`, on the config at the scratch
+/// `HOME`'s `~/.config/lodi` ([`write_config`]).
 fn host_in_namespace(root: &Root, verb: &str) -> std::process::Output {
+    host_in_namespace_as(root, verb, &[])
+}
+
+/// [`host_in_namespace`] with `behind` (`NAME=VALUE`: `SUDO_UID`, `DOAS_USER`) set too.
+fn host_in_namespace_as(root: &Root, verb: &str, behind: &[&str]) -> std::process::Output {
     let dir = root.dir.display().to_string();
-    // check-host-safety: refusal — one place, and it passes this scratch root as --root.
-    let argv = [
-        env!("CARGO_BIN_EXE_lodi"),
-        "host",
-        verb,
-        "--root",
-        dir.as_str(),
+    let home = format!("HOME={}", root.path("home").display());
+    let mut argv = vec![
+        "env",
+        "-u",
+        "XDG_STATE_HOME",
+        "-u",
+        "LODI_REPO",
+        "-u",
+        "SUDO_UID",
+        "-u",
+        "DOAS_USER",
+        "LODI_HOST_REQUIRE_ROOT=1",
+        home.as_str(),
     ];
+    argv.extend(behind);
+    argv.extend([env!("CARGO_BIN_EXE_lodi"), "switch", "--host"]);
+    if verb == "plan" {
+        argv.push("--dry-run");
+    }
+    // check-host-safety: refusal — one place, and it passes this scratch root as --root.
+    argv.extend(["--root", dir.as_str()]);
     in_namespace(&argv).expect("the namespace was there a moment ago")
+}
+
+/// The host manifest of the config `lodi switch` finds below the scratch root's `HOME`, for the
+/// host the root's hostname names.
+fn write_config(root: &Root, text: &str) {
+    root.write("etc/hostname", "box\n");
+    root.write("home/.config/lodi/host.toml", text);
+}
+
+/// Under `doas` the person behind root is `DOAS_USER`, as under `sudo` it is `SUDO_UID`: the
+/// config folder they own is trusted under either, never only under `sudo`.
+#[test]
+fn under_doas_the_persons_own_config_folder_is_trusted() {
+    let root = Root::new("doas-owner");
+    root.may_manage()
+        .debian()
+        .write(
+            "etc/passwd",
+            "root:x:0:0:root:/root:/bin/sh\nsample:x:1000:1000::/home:/bin/sh\n",
+        )
+        .write("etc/group", "root:x:0:\nsample:x:1000:\n");
+    write_config(&root, "[files.\"/etc/doas.conf\"]\ncontent = \"x\\n\"\n");
+    let home = root.path("home").display().to_string();
+    let Some(chown) = in_namespace(&["chown", "-R", "1000:1000", home.as_str()]) else {
+        eprintln!(
+            "under_doas_the_persons_own_config_folder_is_trusted: SKIPPED — this machine gives \
+             the invoking user no user namespace with subordinate ids"
+        );
+        return;
+    };
+    let _give_back = GiveBack(home);
+    assert!(chown.status.success(), "{chown:?}");
+    let sudo = host_in_namespace_as(&root, "plan", &["SUDO_UID=1000", "SUDO_GID=1000"]);
+    assert!(sudo.status.success(), "{}", story(&sudo));
+    let doas = host_in_namespace_as(&root, "plan", &["DOAS_USER=sample"]);
+    assert!(doas.status.success(), "{}", story(&doas));
+}
+
+/// A tree chowned to a subordinate id, handed back to the invoking user when the test ends, so
+/// the scratch root can be removed from outside the namespace.
+struct GiveBack(String);
+
+impl Drop for GiveBack {
+    fn drop(&mut self) {
+        let _ = in_namespace(&["chown", "-R", "0:0", self.0.as_str()]);
+    }
 }
 
 /// The owner and group of a path, as the namespace sees them.
@@ -1503,7 +1413,10 @@ fn owner_in_namespace(root: &Root, rel: &str) -> String {
 #[test]
 fn a3_a_real_owner_change_is_made_and_undone() {
     let root = root_with_original("a3-real-owner");
-    root.arm().debian();
+    root.may_manage()
+        .debian()
+        .write("etc/lodi/may-manage", "")
+        .chmod("etc/lodi/may-manage", 0o644);
     let path = root.path("etc/pre.conf").display().to_string();
     let Some(chown) = in_namespace(&["chown", "2:2", path.as_str()]) else {
         eprintln!(
@@ -1514,8 +1427,8 @@ fn a3_a_real_owner_change_is_made_and_undone() {
     };
     assert!(chown.status.success(), "{chown:?}");
     assert_eq!(owner_in_namespace(&root, "etc/pre.conf"), "2:2");
-    root.write(
-        "etc/lodi/host.toml",
+    write_config(
+        &root,
         "[files.\"/etc/pre.conf\"]\ncontent = \"original\\n\"\nmode = \"0640\"\nowner = \"1\"\n\
          group = \"1\"\n",
     );
@@ -1523,7 +1436,7 @@ fn a3_a_real_owner_change_is_made_and_undone() {
     let plan = host_in_namespace(&root, "plan");
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("~ file /etc/pre.conf (owner 1:1)"),
+        err(&plan).contains("~ file /etc/pre.conf (owner 1:1)"),
         "{}",
         story(&plan)
     );
@@ -1553,9 +1466,9 @@ fn a3_a_real_owner_change_is_made_and_undone() {
         "the copy keeps its owner"
     );
     let again = host_in_namespace(&root, "apply");
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 
-    root.write("etc/lodi/host.toml", "");
+    write_config(&root, "");
     let removal = host_in_namespace(&root, "apply");
     assert!(removal.status.success(), "{}", story(&removal));
     assert_eq!(
@@ -1622,7 +1535,7 @@ fn a_part_way_failure_says_what_changed(family: Family) {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        !out(&plan).contains("+ package bc") && out(&plan).contains("+ package zip"),
+        !err(&plan).contains("+ package bc") && err(&plan).contains("+ package zip"),
         "the plan was not made from the machine as it is\n{}",
         story(&plan)
     );
@@ -1633,7 +1546,8 @@ fn a_part_way_failure_says_what_changed(family: Family) {
         "{}",
         case.lock()
     );
-    assert_eq!(out(&case.apply(&[])), "nothing to do\n");
+    let again = case.apply(&[]);
+    assert!(nothing(&again), "{}", story(&again));
 }
 
 #[test]
@@ -1695,15 +1609,16 @@ fn a_partial_failure_is_honest(family: Family) {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        !out(&plan).contains("+ package bc"),
+        !err(&plan).contains("+ package bc"),
         "the plan was not made from the machine as it is\n{}",
         story(&plan)
     );
-    assert!(out(&plan).contains(not_run), "{}", story(&plan));
+    assert!(err(&plan).contains(not_run), "{}", story(&plan));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
     assert!(case.recorded().contains("bc"), "{}", case.lock());
-    assert_eq!(out(&case.apply(&[])), "nothing to do\n");
+    let again = case.apply(&[]);
+    assert!(nothing(&again), "{}", story(&again));
 }
 
 #[test]
@@ -1728,7 +1643,7 @@ fn a_scratch_root_below_a_symbolic_link_is_the_root_the_gate_opens() {
     let root = Root {
         dir: support::scratch_in(&link, "host-linked"),
     };
-    root.debian().arm();
+    root.debian().may_manage();
     let gate = Gate::open(&root.options(), Operation::Plan).expect("the scratch root is armed");
     assert_eq!(gate.root, root.dir, "the gate opened another spelling");
 }

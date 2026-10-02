@@ -1,7 +1,6 @@
-# opentofu for [tools] opentofu. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# The recipe is `opentofu` and the command `tofu`. Release candidates are pre-releases and
-# are skipped.
+# opentofu for [tools] opentofu. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. The recipe is `opentofu` and the
+# command `tofu`. Release candidates are pre-releases and are skipped.
 [recipe]
 name        = "opentofu"
 description = "An open-source infrastructure-as-code tool"

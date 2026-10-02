@@ -26,7 +26,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use support::{HomeEnv, home_env, home_gate};
+use support::{HomeEnv, home_env, home_gate, home_part};
 
 // ------------------------------------------------------------------------------- the harness ---
 
@@ -41,8 +41,7 @@ fn write_manifest(env: &HomeEnv, text: &str) {
 }
 
 fn run(env: &HomeEnv, args: &[&str]) -> Output {
-    env.command()
-        .args(args)
+    env.lodi(args)
         .stdin(Stdio::null())
         .output()
         .expect("the lodi binary runs")
@@ -57,7 +56,7 @@ fn stderr(out: &Output) -> String {
 }
 
 fn data(env: &HomeEnv) -> PathBuf {
-    env.data().join("lodi")
+    env.share().join("lodi")
 }
 
 fn state_path(env: &HomeEnv) -> PathBuf {
@@ -116,6 +115,20 @@ fn tree(root: &Path) -> BTreeMap<String, String> {
             let path = entry.path();
             let meta = fs::symlink_metadata(&path).unwrap();
             let rel = path.strip_prefix(root).unwrap().display().to_string();
+            // The switch's own records, which a refused switch writes too: its run log (and the
+            // `.local` above it), and `lodi.lock` in the config folder (as a flake's lock is
+            // written before it builds). What is under `.local/share` is still listed.
+            let home_rel = rel.strip_prefix("home/").unwrap_or(&rel);
+            if home_rel == ".local/state"
+                || home_rel.starts_with(".local/state/")
+                || home_rel == ".config/lodi/lodi.lock"
+            {
+                continue;
+            }
+            if home_rel == ".local" {
+                walk(root, &path, out);
+                continue;
+            }
             let mode = meta.permissions().mode() & 0o7777;
             if meta.file_type().is_symlink() {
                 out.insert(
@@ -176,7 +189,7 @@ fn taken_over(env: &HomeEnv) {
     fs::write(env.home().join(".zshrc"), ORIGINAL).unwrap();
     write_manifest(
         env,
-        "[home]\nversion = \"1\"\n\n[files.\".zshrc\"]\ncontent = \"# lodi\\n\"\n\
+        "[home]\nversion = \"1\"\n\n[home.file.\".zshrc\"]\ntext = \"# lodi\\n\"\n\
          on_remove = \"restore\"\n",
     );
     let out = apply(env);
@@ -190,7 +203,7 @@ fn taken_over(env: &HomeEnv) {
 /// The manifest of the second apply: `.aliases` is new and sorts first, `.zshrc` is gone and
 /// must be restored from the backup — so the apply writes one file and then reads the backup.
 const AFTER: &str =
-    "[home]\nversion = \"1\"\n\n[files.\".aliases\"]\ncontent = \"alias l=ls\\n\"\n";
+    "[home]\nversion = \"1\"\n\n[home.file.\".aliases\"]\ntext = \"alias l=ls\\n\"\n";
 
 // ------------------------------------------------------------ (a) an apply killed in the middle ---
 
@@ -217,8 +230,7 @@ fn an_apply_killed_between_two_files_writes_no_state_and_the_next_one_completes(
     mkfifo(&backup);
 
     let mut child = env
-        .command()
-        .args(["home", "apply"])
+        .lodi(&["home", "apply"])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -268,23 +280,20 @@ fn an_apply_killed_between_two_files_writes_no_state_and_the_next_one_completes(
         "alias l=ls\n"
     );
     // The state the recovery wrote describes the home as it now is: `.zshrc` is no longer
-    // managed, because it was restored. `.aliases` is **not** recorded either — the killed apply
-    // wrote those exact bytes, so the re-plan sees an unmanaged file that already holds what the
-    // manifest declares and calls it unchanged, exactly as 1.0 did (*The `.aliases` observation*
-    // of `docs/milestones/m-1.0/records/t-4.md`). M-Home adopts such a path for the 1.1 tables
-    // only: a `[files]` entry keeps 1.0's behaviour byte for byte (`docs/design/HOME_PROGRAMS.md`
-    // §10 I10, `tests/home_compat.rs`).
+    // managed, because it was restored. The killed apply wrote `.aliases`'s exact bytes, so the
+    // re-plan sees an unmanaged file that already holds what the manifest declares and adopts it.
     let files = state_files(&env);
-    assert!(
-        files.is_empty(),
+    assert_eq!(
+        files.keys().collect::<Vec<_>>(),
+        vec![".aliases"],
         "the recovered state is not what is on disk: {files:?}"
     );
     // Proof that the re-plan really did settle: a second apply has nothing left to do.
     let out = run(&env, &["home", "plan"]);
-    let text = String::from_utf8_lossy(&out.stdout).into_owned();
+    let text = home_part(&out);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(
-        !text.contains("create") && !text.contains("replace"),
+        !text.contains("create") && !text.contains("update"),
         "the home has not settled: {text}"
     );
     contained(&env, &decoy);
@@ -303,8 +312,8 @@ fn a_declared_file_that_cannot_be_written_stops_the_apply_before_anything_is_wri
     fs::set_permissions(&locked, fs::Permissions::from_mode(0o555)).unwrap();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".aliases\"]\ncontent = \"alias l=ls\\n\"\n\n\
-         [files.\"locked/z.conf\"]\ncontent = \"nope\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".aliases\"]\ntext = \"alias l=ls\\n\"\n\n\
+         [home.file.\"locked/z.conf\"]\ntext = \"nope\\n\"\n",
     );
 
     let before = tree(env.root());
@@ -390,7 +399,7 @@ fn a_backup_store_that_cannot_be_written_stops_before_the_first_replacement() {
     fs::write(env.home().join(".zshrc"), ORIGINAL).unwrap();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".zshrc\"]\ncontent = \"# lodi\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".zshrc\"]\ntext = \"# lodi\\n\"\n",
     );
     let backups = backup_dir(&env);
     fs::create_dir_all(&backups).unwrap();
@@ -420,7 +429,7 @@ fn a_backup_store_that_cannot_be_written_stops_before_the_first_replacement() {
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(
-        stderr(&out).contains("W_REPLACED_UNMANAGED"),
+        home_part(&out).contains("(backup: first unmanaged copy kept)"),
         "{}",
         stderr(&out)
     );
@@ -443,11 +452,12 @@ fn a_backup_store_that_cannot_be_written_stops_before_the_first_replacement() {
 /// it records none (M-1.0 T-1, design calls D3, D18).
 #[test]
 fn a_state_file_lodi_did_not_write_is_refused_and_nothing_is_written() {
+    let state_path = |env: &HomeEnv| data(env).join("home-scope/state.json");
     let env = home_env("faults-home-state");
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".aliases\"]\ncontent = \"alias l=ls\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".aliases\"]\ntext = \"alias l=ls\\n\"\n",
     );
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
@@ -498,8 +508,14 @@ fn a_state_file_lodi_did_not_write_is_refused_and_nothing_is_written() {
     fs::write(state_path(&env), &good).unwrap();
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    let state: serde_json::Value =
+        serde_json::from_slice(&fs::read(state_path(&env)).unwrap()).unwrap();
     assert_eq!(
-        state_files(&env).keys().collect::<Vec<_>>(),
+        state["files"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .collect::<Vec<_>>(),
         vec![".aliases"]
     );
     contained(&env, &decoy);
@@ -509,7 +525,7 @@ fn a_state_file_lodi_did_not_write_is_refused_and_nothing_is_written() {
 
 /// A digest or a backup name in `state.json` or `index.json` that is not the lowercase hex Lodi
 /// writes — a multibyte value among them — is the same invalid-state refusal as any other state
-/// Lodi did not write (`E_STORE_IO`: exit 6 from `status` and `apply`, and `plan`'s own exit 3),
+/// Lodi did not write (`E_STORE_IO`: exit 6 from the preview and the switch alike),
 /// never a panic, and nothing is written.
 #[test]
 fn a_state_or_index_value_that_is_not_a_digest_is_refused_and_never_panics() {
@@ -517,7 +533,7 @@ fn a_state_or_index_value_that_is_not_a_digest_is_refused_and_never_panics() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".aliases\"]\ncontent = \"alias l=ls\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".aliases\"]\ntext = \"alias l=ls\\n\"\n",
     );
     fs::write(env.home().join(".aliases"), "the user's own\n").unwrap();
     let out = apply(&env);
@@ -567,14 +583,13 @@ fn a_state_or_index_value_that_is_not_a_digest_is_refused_and_never_panics() {
         let index_bytes = lodi::lock::canonical_json(&index).into_bytes();
         fs::write(state_path(&env), &state_bytes).unwrap();
         fs::write(&index_path, &index_bytes).unwrap();
-        for verb in ["status", "plan", "apply"] {
+        // `status` and `plan` are both the preview in 2.0.
+        for verb in ["plan", "apply"] {
             let before = tree(env.root());
             let out = run(&env, &["home", verb]);
             let text = stderr(&out);
             assert!(!text.contains("panicked"), "{what}, {verb}: {text}");
-            // `plan` reports every refusal at the manifest-error status, as it always has.
-            let status = if verb == "plan" { 3 } else { 6 };
-            assert_eq!(out.status.code(), Some(status), "{what}, {verb}: {text}");
+            assert_eq!(out.status.code(), Some(6), "{what}, {verb}: {text}");
             assert!(text.contains("E_STORE_IO"), "{what}, {verb}: {text}");
             assert!(
                 text.contains("is not the JSON lodi wrote"),
@@ -605,7 +620,7 @@ fn a_link_where_a_backup_would_go_is_refused_and_no_backup_is_recorded() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".aliases\"]\ncontent = \"alias l=ls\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".aliases\"]\ntext = \"alias l=ls\\n\"\n",
     );
     let original = b"the user's own\n";
     fs::write(env.home().join(".aliases"), original).unwrap();
@@ -615,12 +630,18 @@ fn a_link_where_a_backup_would_go_is_refused_and_no_backup_is_recorded() {
     let planted = backup_dir(&env).join(&name);
     std::os::unix::fs::symlink(env.decoy().join("keep.txt"), &planted).unwrap();
 
-    let before = tree(env.home());
+    // The data root is under the home in 2.0; its lock and an empty state are checked below.
+    let outside_data = |env: &HomeEnv| {
+        let mut listing = tree(env.home());
+        listing.retain(|path, _| !path.starts_with(".local/share/lodi/"));
+        listing
+    };
+    let before = outside_data(&env);
     let out = apply(&env);
     let text = stderr(&out);
     assert_eq!(out.status.code(), Some(3), "{text}");
     assert!(text.contains("E_PATH_ESCAPE"), "{text}");
-    assert_eq!(tree(env.home()), before, "the home root changed");
+    assert_eq!(outside_data(&env), before, "the home root changed");
     assert!(
         !backup_dir(&env).join("index.json").exists(),
         "an index was written"
@@ -661,7 +682,7 @@ fn a_target_that_became_a_directory_or_a_link_is_refused_rather_than_followed() 
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"set editing-mode vi\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"set editing-mode vi\\n\"\n",
     );
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));

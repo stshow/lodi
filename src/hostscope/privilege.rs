@@ -1,6 +1,6 @@
 //! Who an import writes a host directory as (LD-379).
 //!
-//! `sudo lodi host import SOURCE` reads the machine as root and writes the baseline into the
+//! An import of `SOURCE` under `sudo` reads the machine as root and writes the baseline into the
 //! root-owned lock, and only then becomes the owner of `SOURCE` — `setgroups`, `setresgid`,
 //! `setresuid`, for good — before it writes anything under it. The files are born that user's,
 //! with no `chown` afterwards and so no window in which root has made something a user can
@@ -12,6 +12,7 @@
 //! the order without being root.
 
 use std::ffi::OsStr;
+use std::path::Path;
 
 use crate::diag::Diagnostic;
 
@@ -82,22 +83,23 @@ pub fn sudo_from(uid: Option<&OsStr>, gid: Option<&OsStr>) -> Option<(u32, u32)>
     (uid != 0).then_some((uid, gid))
 }
 
-/// The owners a process of `privilege` trusts ([`super::source::owners_for`]).
-pub fn owners(privilege: &dyn Privilege) -> Vec<u32> {
-    super::source::owners_for(privilege.euid(), privilege.sudo().map(|(uid, _)| uid))
+/// The owners a process of `privilege` trusts on `root` ([`super::source::owners_for`]): root,
+/// and the person behind it — `SUDO_UID`, or else `DOAS_USER` in `root`'s passwd, the person
+/// [`crate::config::User::of`] reads the config for.
+pub fn owners(privilege: &dyn Privilege, root: &Path) -> Vec<u32> {
+    let behind = privilege
+        .sudo()
+        .map(|(uid, _)| uid)
+        .or_else(|| doas_uid(root));
+    super::source::owners_for(privilege.euid(), behind)
 }
 
-/// Whom an import writes a host directory as, when it must become someone: the owner of the
-/// directory `SOURCE` named, when the process is root and that owner is not. `None` is "as this
-/// process". The owner is trusted already, so it is root or `SUDO_UID`.
-pub fn writer(privilege: &dyn Privilege, owner: u32, group: u32) -> Option<(u32, u32)> {
-    if privilege.euid() != 0 || owner == 0 {
-        return None;
-    }
-    match privilege.sudo() {
-        Some((uid, gid)) if uid == owner => Some((uid, gid)),
-        _ => Some((owner, group)),
-    }
+/// `DOAS_USER`'s uid in `root`'s passwd.
+fn doas_uid(root: &Path) -> Option<u32> {
+    let login = std::env::var("DOAS_USER")
+        .ok()
+        .filter(|login| !login.is_empty())?;
+    crate::passwd::by_name(root, &login).map(|entry| entry.uid)
 }
 
 #[cfg(test)]

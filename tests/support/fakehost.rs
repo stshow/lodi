@@ -9,7 +9,7 @@
 
 #![allow(dead_code)]
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -19,6 +19,43 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use serde_json::{Value, json};
 
 use crate::hostroot::Root;
+
+/// The real binary on a pseudo-terminal, as every host command here runs.
+#[allow(clippy::duplicate_mod)]
+#[path = "terminal.rs"]
+mod fhterminal;
+
+/// The elevators lodi knows, in its order: each a stub here (#709).
+const ELEVATORS: [&str; 3] = ["sudo", "doas", "run0"];
+
+/// The 2.0 command that keeps a 1.x host verb's behaviour (#699, story 23): `plan` is
+/// `switch --host --dry-run`, `apply` is `switch --host`, `import` is `import --yes`, and
+/// `versions`, `pin` and `unpin` are `pin` and `unpin`, and `switch` is both parts. `extra`
+/// follows, but for a switch's `--no-home`.
+pub fn command_line(verb: &str, extra: &[&str]) -> Vec<String> {
+    let head: &[&str] = match verb {
+        "plan" => &["switch", "--host", "--dry-run"],
+        "apply" => &["switch", "--host"],
+        "import" => &["import", "--yes"],
+        "versions" | "pin" => &["pin"],
+        "unpin" => &["unpin"],
+        // Both parts, host then home: what 1.x's combined `apply` of a host with a home did.
+        "switch" => &["switch"],
+        other => panic!("no 2.0 command keeps the host verb {other}"),
+    };
+    // `switch --host` runs no home part, which is what 1.x's `--no-home` asked for.
+    let switch = head[0] == "switch";
+    head.iter()
+        .copied()
+        .chain(
+            extra
+                .iter()
+                .copied()
+                .filter(|arg| !(switch && *arg == "--no-home")),
+        )
+        .map(str::to_string)
+        .collect()
+}
 
 /// Held for writing while a case writes its shims (`Case::new`) and for reading around every
 /// spawn that might exec one, in every test binary this file is compiled into (#456). `fs::write`
@@ -87,7 +124,7 @@ const PROGRAMS: &[&str] = &[
     "bootctl",
     "kernel-install",
     "grub-install",
-    // The trial boot (bv-1): the one-shot entry, under the same `--root=`.
+    // Never run by lodi (LD-491): a shim that logs its call is how a test proves it.
     "grub-reboot",
     "grub2-reboot",
     // Never run by lodi (LD-432): a shim that logs its call is how a test proves it.
@@ -95,6 +132,61 @@ const PROGRAMS: &[&str] = &[
     "restorecon",
     "chcon",
 ];
+
+/// Every recorded archive file by the public URL it was trimmed from, and every recorded answer
+/// of Ubuntu's per-package interface.
+pub fn archive_files() -> BTreeMap<String, Vec<u8>> {
+    fn walk(base: &Path, dir: &Path, out: &mut BTreeMap<String, Vec<u8>>) {
+        for entry in fs::read_dir(dir).expect("a fixture directory") {
+            let path = entry.expect("an entry").path();
+            if path.is_dir() {
+                walk(base, &path, out);
+            } else if path.file_name().is_some_and(|n| n != "PROVENANCE") {
+                let rel = path.strip_prefix(base).unwrap().display().to_string();
+                out.insert(format!("https://{rel}"), fs::read(&path).unwrap());
+            }
+        }
+    }
+    let fixtures = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/host/pin");
+    let mut out = BTreeMap::new();
+    let base = fixtures.join("archive");
+    walk(&base, &base, &mut out);
+    let interface = fixtures.join("interface");
+    let index: BTreeMap<String, String> =
+        serde_json::from_slice(&fs::read(interface.join("index.json")).unwrap()).unwrap();
+    for (url, file) in index {
+        out.insert(url, fs::read(interface.join(file)).unwrap());
+    }
+    out
+}
+
+/// Serve the newer recorded day as the dated archive of the last ended UTC day and of the next
+/// one on `server`: the instants a command given no date takes, whichever day it runs in
+/// (LD-444).
+pub fn alias_now(server: &crate::support::Server) -> Vec<String> {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    let day = lodi::arch::base::latest_published_day(now);
+    let instants: Vec<String> = [day, day + 86_400]
+        .iter()
+        .map(|at| lodi::util::format_utc(*at))
+        .collect();
+    let mut files = server.files.lock().unwrap();
+    let recorded: Vec<(String, Vec<u8>)> = files
+        .iter()
+        .filter(|(url, _)| url.contains("/20260901T000000Z/"))
+        .map(|(url, bytes)| (url.clone(), bytes.clone()))
+        .collect();
+    for instant in &instants {
+        let id = instant.replace(['-', ':'], "");
+        for (url, bytes) in &recorded {
+            files.insert(url.replace("20260901T000000Z", &id), bytes.clone());
+        }
+    }
+    instants
+}
 
 /// Which family the fake machine is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -406,6 +498,9 @@ pub struct Case {
     pub family: Family,
     dnf: bool,
     base: PathBuf,
+    /// The offline dated archive every fetch goes to: the recorded days of
+    /// `tests/fixtures/host/pin/`, the newer one served as today's too ([`alias_now`]).
+    pub archive_server: crate::support::Server,
 }
 
 impl Drop for Case {
@@ -417,8 +512,9 @@ impl Drop for Case {
 impl Case {
     pub fn new(name: &str, machine: Machine) -> Case {
         let root = Root::new(name);
-        root.arm();
+        root.may_manage();
         let (uid, gid) = crate::hostroot::ids(&root);
+        root.write("etc/hostname", "box\n");
         root.write(
             "etc/passwd",
             &format!("root:x:0:0::/root:/bin/sh\nsample:x:{uid}:{gid}::/people/sample:/bin/sh\n"),
@@ -477,6 +573,29 @@ impl Case {
                 fs::write(&file, script).expect("a shim");
                 fs::set_permissions(&file, fs::Permissions::from_mode(0o755)).expect("a shim mode");
             }
+            // Recording stub elevators that run the rest unprivileged with only `PATH`, as an
+            // elevator with a secure path does (#709), and the offline archive's rewrite, so
+            // that the root run fetches nothing from the network either.
+            let elevators = base.join("elevators");
+            fs::create_dir_all(&elevators).expect("the elevator directory");
+            let env = std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default())
+                .map(|dir| dir.join("env"))
+                .find(|file| file.is_file())
+                .expect("env on PATH");
+            for name in ELEVATORS {
+                let body = format!(
+                    "#!/bin/sh\nprintf '%s %s\\n' {name} \"$*\" >> {calls}\n\
+                     [ \"$1\" = -- ] && shift\nexec {env} -i PATH=\"$PATH\" \
+                     LODI_FETCH_REWRITE=\"$LODI_FETCH_REWRITE\" \
+                     LODI_FETCH_ATTEMPTS=\"$LODI_FETCH_ATTEMPTS\" \"$@\"\n",
+                    calls = quote(&base.join("elevator-calls")),
+                    env = quote(&env),
+                );
+                let file = elevators.join(name);
+                fs::write(&file, body).expect("a stub elevator");
+                fs::set_permissions(&file, fs::Permissions::from_mode(0o755))
+                    .expect("a stub elevator's mode");
+            }
         }
         for directory in ["home", "home/config", "home/data", "lodi-home"] {
             fs::create_dir_all(root.path(directory)).expect("scratch environment roots");
@@ -486,6 +605,11 @@ impl Case {
             family: machine.family,
             dnf: machine.dnf,
             base,
+            archive_server: {
+                let server = crate::support::Server::start(archive_files());
+                alias_now(&server);
+                server
+            },
         };
         case.set_machine(&machine.to_json());
         case
@@ -558,42 +682,75 @@ impl Case {
         self.machine()["installed"][name]["explicit"] == Value::Bool(true)
     }
 
-    /// Run one host command against this root, with the log emptied first.
+    /// Run one host command against this root, with the log emptied first: a 1.x host verb's
+    /// name, run as the 2.0 command that keeps its behaviour ([`command_line`]).
     // check-host-safety: refusal — one place, and it appends this scratch root as --root.
     pub fn verb(&self, verb: &str, extra: &[&str]) -> Output {
-        self.verb_by(
-            std::ffi::OsStr::new(env!("CARGO_BIN_EXE_lodi")),
-            verb,
-            extra,
-        )
+        self.verb_env(verb, extra, &[])
     }
 
     /// [`Case::verb`] with more of the child's environment: `LODI_FETCH_REWRITE` pointing at a
-    /// loopback archive (M-Pin).
+    /// loopback archive (M-Pin). Without one, every fetch goes to a closed loopback port.
     // check-host-safety: refusal — one place, and it appends this scratch root as --root.
     pub fn verb_env(&self, verb: &str, extra: &[&str], envs: &[(&str, &str)]) -> Output {
         let _ = fs::remove_file(self.state().join("log"));
         let _ = fs::remove_file(self.state().join("update-saw"));
         let _ = fs::remove_file(self.state().join("private-saw"));
+        let command = self.command(verb, extra, envs);
         let _spawning = spawning();
-        Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .arg("host")
-            .arg(verb)
-            .args(extra)
+        // On a terminal, as a person runs it: a host part with changes asks the first stub
+        // elevator, which runs lodi's root entry unprivileged, as the fake machine allows.
+        // The command is dropped inside, so that no copy of the terminal outlives the child.
+        let (mut output, shown) = fhterminal::on_terminal("", move |stdin, stderr| {
+            let mut command = command;
+            command
+                .stdin(stdin)
+                .stderr(stderr)
+                .output()
+                .expect("lodi runs")
+        });
+        output.stderr = String::from_utf8_lossy(&shown)
+            .replace("\r\n", "\n")
+            .into_bytes();
+        output
+    }
+
+    /// The 2.0 command [`Case::verb_env`] runs, with this case's environment, the may-manage
+    /// marker written and standard output piped; standard input and error are the caller's, so a
+    /// test that holds a run part way (a kill inside the transaction) spawns it on its own
+    /// terminal. Hold [`spawning`] across the spawn.
+    // check-host-safety: refusal — one place, and it appends this scratch root as --root.
+    pub fn command(&self, verb: &str, extra: &[&str], envs: &[(&str, &str)]) -> Command {
+        // The owner agreed once: the "may manage" marker `lodi import` leaves (#705).
+        if !self.root.exists("etc/lodi/may-manage") {
+            self.root
+                .write("etc/lodi/may-manage", "")
+                .chmod("etc/lodi/may-manage", 0o644);
+        }
+        let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
+        command
+            .args(command_line(verb, extra))
             .arg("--root")
             .arg(&self.root.dir)
-            .env("PATH", self.fake_path())
+            .current_dir(&self.base)
+            .env("PATH", self.elevating_path())
             .env("HOME", self.root.path("home"))
+            .env("TERM", "dumb")
             .env("XDG_CONFIG_HOME", self.root.path("home/config"))
             .env("XDG_DATA_HOME", self.root.path("home/data"))
+            .env_remove("XDG_STATE_HOME")
+            .env_remove("LODI_REPO")
+            .env_remove("SUDO_UID")
+            .env_remove("SUDO_GID")
+            .env_remove("DOAS_USER")
             .env("LODI_HOME", self.root.path("lodi-home"))
             .env("LODI_HOST_REQUIRE_ROOT", "1")
+            .env("LODI_FETCH_REWRITE", self.archive_server.rewrite())
+            .env("LODI_FETCH_ATTEMPTS", "1")
+            .env("GIT_CEILING_DIRECTORIES", &self.root.dir)
             .envs(envs.iter().copied())
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
-            .expect("lodi runs")
+            .stdout(Stdio::piped());
+        command
     }
 
     /// Every private source set the last command's `apt-get update` read, in order (M-Pin).
@@ -613,57 +770,32 @@ impl Case {
         self.edit(|m| m["archives"][uri] = json!(dir));
     }
 
-    /// [`Case::verb`] with another `lodi` binary: the build a compatibility golden was recorded
-    /// from (`tests/host_sources.rs`, LD-365).
-    // check-host-safety: refusal — one place, and it appends this scratch root as --root.
-    pub fn verb_by(&self, binary: &std::ffi::OsStr, verb: &str, extra: &[&str]) -> Output {
-        let _ = fs::remove_file(self.state().join("log"));
-        let _ = fs::remove_file(self.state().join("update-saw"));
-        let path = self.fake_path();
-        let _spawning = spawning();
-        Command::new(binary)
-            .arg("host")
-            .arg(verb)
-            .args(extra)
-            .arg("--root")
-            .arg(&self.root.dir)
-            .env("PATH", path)
-            .env("HOME", self.root.path("home"))
-            .env("XDG_CONFIG_HOME", self.root.path("home/config"))
-            .env("XDG_DATA_HOME", self.root.path("home/data"))
-            .env("LODI_HOME", self.root.path("lodi-home"))
-            .env("LODI_HOST_REQUIRE_ROOT", "1")
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
-            .expect("lodi runs")
-    }
-
-    /// `lodi boot confirm` against this root (bv-1), with the log emptied first.
-    // check-host-safety: refusal — one place, and it appends this scratch root as --root.
-    pub fn boot_confirm(&self) -> Output {
-        let _ = fs::remove_file(self.state().join("log"));
-        let _spawning = spawning();
-        Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(["boot", "confirm", "--root"])
-            .arg(&self.root.dir)
-            .env("PATH", self.fake_path())
-            .env("HOME", self.root.path("home"))
-            .env("LODI_HOST_REQUIRE_ROOT", "1")
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
-            .expect("lodi runs")
-    }
-
-    /// `lodi host plan` with more arguments before the `--root` [`Case::verb`] adds.
+    /// `lodi switch --host --dry-run` with more arguments before the `--root` [`Case::verb`]
+    /// adds.
     pub fn plan_with(&self, extra: &[&str]) -> Output {
         self.verb("plan", extra)
     }
 
-    /// The `PATH` a host command of this case runs with: the fake's shims first.
+    /// The `PATH` a host command of this case runs with: the stub elevators, then the fake's
+    /// shims, then the test's own.
+    pub fn elevating_path(&self) -> String {
+        format!(
+            "{}:{}",
+            self.base.join("elevators").display(),
+            self.fake_path()
+        )
+    }
+
+    /// Every stub elevator call, one line each: the elevator's name, then its arguments.
+    pub fn elevator_calls(&self) -> Vec<String> {
+        fs::read_to_string(self.base.join("elevator-calls"))
+            .unwrap_or_default()
+            .lines()
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// The fake's shims, then the test's own `PATH`.
     pub fn fake_path(&self) -> String {
         format!(
             "{}:{}",
@@ -672,8 +804,15 @@ impl Case {
         )
     }
 
+    /// `lodi import`, then its `[host] snapshot` line taken out ([`without_snapshot`]): the
+    /// fake machine offers its own packages, not the recorded dated archive's, so the cases of
+    /// this harness switch the unpinned file; a dated archive is `tests/host_pin*.rs`'s.
     pub fn import(&self) -> Output {
-        self.verb("import", &[])
+        let output = self.verb("import", &[]);
+        if output.status.success() {
+            self.set_manifest(&without_snapshot(&self.manifest()));
+        }
+        output
     }
 
     pub fn plan(&self) -> Output {
@@ -694,12 +833,67 @@ impl Case {
             .collect()
     }
 
+    /// The config `lodi switch` finds: `~/.config/lodi` of the scratch `HOME`.
+    pub fn config(&self) -> PathBuf {
+        self.root.path("home/.config/lodi")
+    }
+
+    /// A file beside the manifest, where its relative paths (`files/...`) point: in the config
+    /// folder.
+    pub fn beside(&self, rel: &str) -> PathBuf {
+        self.config().join(rel)
+    }
+
+    /// Write `bytes` to [`Case::beside`]`(rel)`, its folders made `0755` and the file `0644`.
+    pub fn write_beside(&self, rel: &str, bytes: impl AsRef<[u8]>) -> PathBuf {
+        let file = self.beside(rel);
+        let top = self.config();
+        let mut dir = file.parent().expect("a parent").to_path_buf();
+        fs::create_dir_all(&dir).expect("the folders beside the manifest");
+        while dir.starts_with(&top) {
+            fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).expect("a folder mode");
+            if !dir.pop() {
+                break;
+            }
+        }
+        fs::write(&file, bytes).expect("a file beside the manifest");
+        fs::set_permissions(&file, fs::Permissions::from_mode(0o644)).expect("its mode");
+        file
+    }
+
     pub fn manifest(&self) -> String {
-        self.root.read("etc/lodi/host.toml")
+        fs::read_to_string(self.config().join("host.toml")).unwrap_or_default()
     }
 
     pub fn set_manifest(&self, text: &str) {
-        self.root.write("etc/lodi/host.toml", text);
+        let config = self.config();
+        fs::create_dir_all(&config).expect("the config folder");
+        fs::set_permissions(&config, fs::Permissions::from_mode(0o755)).expect("its mode");
+        let file = config.join("host.toml");
+        fs::write(&file, text).expect("host.toml");
+        fs::set_permissions(&file, fs::Permissions::from_mode(0o644)).expect("its mode");
+    }
+
+    /// Record `pins` as `lodi pin` does (#696): the section of the config's `lodi.lock` for its
+    /// `host.toml`. The bytes written are returned.
+    pub fn set_pins(&self, pins: &lodi::hostscope::pin::PinsLock) -> String {
+        let mut lock = lodi::config::lock::Lock::default();
+        lock.hosts.insert(
+            "host.toml".to_string(),
+            lodi::config::lock::HostSection {
+                distro: pins.distro.clone(),
+                release: pins.release.clone(),
+                arch: pins.arch.clone(),
+                snapshot: pins.snapshot.clone(),
+                pins: pins.pins.clone(),
+                keys: BTreeMap::new(),
+            },
+        );
+        let text = lock.render();
+        let config = self.config();
+        fs::create_dir_all(&config).expect("the config folder");
+        fs::write(config.join("lodi.lock"), &text).expect("lodi.lock");
+        text
     }
 
     /// Take one package's line out of the manifest, as the owner did: the name as a quoted
@@ -765,6 +959,17 @@ pub fn out(output: &Output) -> String {
 
 pub fn err(output: &Output) -> String {
     String::from_utf8_lossy(&output.stderr).into_owned()
+}
+
+/// Whether a `lodi switch` had nothing to do: what it says first on standard error, after the
+/// `source` line of a config fetched from a URL (LD-528).
+pub fn nothing(output: &Output) -> bool {
+    let text = err(output);
+    let mut lines = text.lines().skip_while(|line| line.starts_with("source "));
+    output.status.success()
+        && lines
+            .next()
+            .is_some_and(|l| l.starts_with("nothing to switch"))
 }
 
 /// A command's whole story, for an assertion message.

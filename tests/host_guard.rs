@@ -1,18 +1,22 @@
-//! The host guard of LD-376: with `LODI_HOST_REQUIRE_ROOT=1` in the environment, every `lodi
-//! host` verb given without `--root` is refused before it reads anything, and with `--root DIR`
-//! it behaves exactly as without the variable.
+//! The host guard of LD-376: with `LODI_HOST_REQUIRE_ROOT=1` in the environment, every command
+//! that reaches the host scope (`lodi switch`, `import`, `update`, `pin` and `unpin`) given
+//! without `--root` is refused before it reads anything, and with `--root DIR` it behaves exactly
+//! as without the variable.
 //!
 //! A verb without `--root` is aimed at `/`, and no host code in this repository is ever run
 //! against this machine (`AGENTS.md` §8). So every rootless invocation below runs inside a
 //! `bwrap` sandbox whose `/etc` and `/var` are a scratch fixture and whose every other path is
 //! bound read-only, as uid 0 of an unprivileged user namespace, with no network and a `PATH` that
-//! holds no program. The fixture is armed and says `ID=loud-fixture`: a verb that got past the
-//! guard would read it and say so (or, for `arm`, find it armed and succeed), which is the
+//! holds no program. The fixture carries the may-manage marker, a config in its `HOME`, and says
+//! `ID=loud-fixture`: a command that got past the guard would read it and say so, which is the
 //! failure the refusal is checked against. `strace` then shows that the refused process opened
 //! and examined nothing under the fixture, nor `/` itself.
 //!
-//! Every other invocation carries a scratch `--root` (`tests/support/hostroot.rs`).
+//! Every other invocation carries a scratch `--root` with a fake machine behind it
+//! (`tests/support/fakehost.rs`, LD-514, LD-522).
 
+#[path = "support/fakehost.rs"]
+mod fakehost;
 #[path = "support/hostroot.rs"]
 mod hostroot;
 /// The suite's one wait ceiling, declared once at this binary's root (`tests/support/wait.rs`).
@@ -21,26 +25,35 @@ mod wait;
 
 mod support;
 
+/// The real binary on a pseudo-terminal, for a switch run without `fakehost`'s variable.
+#[allow(clippy::duplicate_mod)]
+#[path = "support/terminal.rs"]
+mod terminal;
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use hostroot::{Root, ids};
+use hostroot::ids;
 
 const VAR: &str = "LODI_HOST_REQUIRE_ROOT";
 const CODE: &str = "E_HOST_ROOT_REQUIRED";
 
-/// Every verb `lodi host` has, with the flag shapes that reach a different code path.
+/// Every command that reaches the host scope, with the flag shapes that reach a different code
+/// path.
 const VERBS: &[&[&str]] = &[
-    &["plan"],
-    &["apply"],
-    &["apply", "--no-update"],
+    &["switch"],
+    &["switch", "--host"],
+    &["switch", "--dry-run"],
+    &["switch", "/tmp/lodi-guard-never-written"],
     &["import"],
-    &["import", "--stdout"],
-    &["import", "--out", "/tmp/lodi-guard-never-written"],
-    &["arm"],
+    &["import", "--yes"],
+    &["import", "--dry-run"],
+    &["update"],
+    &["pin", "bc"],
+    &["unpin", "bc"],
 ];
 
 fn scratch(name: &str) -> PathBuf {
@@ -60,7 +73,8 @@ fn tool(name: &str) -> PathBuf {
         })
 }
 
-/// The loud fixture: an armed Debian-shaped `/etc` that names itself, and a `/var`.
+/// The loud fixture: a Debian-shaped `/etc` with the may-manage marker that names itself, a
+/// `/var`, and a `HOME` whose config declares a file.
 struct Fixture {
     dir: PathBuf,
 }
@@ -69,14 +83,16 @@ impl Fixture {
     fn new(name: &str) -> Fixture {
         let dir = scratch(name);
         for (rel, body) in [
-            ("etc/lodi/host-allowed", ""),
+            ("etc/lodi/may-manage", ""),
             (
                 "etc/os-release",
                 "ID=loud-fixture\nNAME=\"read by a guarded verb\"\n",
             ),
+            ("etc/hostname", "loud\n"),
             (
-                "etc/lodi/host.toml",
-                "[files.\"/etc/loud.conf\"]\ncontent = \"loud\\n\"\n",
+                "home/.config/lodi/host.toml",
+                "[host]\nversion = \"1\"\n\n[system]\nhostname = \"loud\"\n\n\
+                 [files.\"/etc/loud.conf\"]\ncontent = \"loud\\n\"\n",
             ),
             ("var/lib/dpkg/status", ""),
         ] {
@@ -110,7 +126,7 @@ impl Fixture {
         out
     }
 
-    /// `lodi host <args>` with no `--root`, inside the sandbox, optionally under `strace`.
+    /// `lodi <args>` with no `--root`, inside the sandbox, optionally under `strace`.
     fn run(&self, args: &[&str], setting: Option<&str>, trace: bool) -> Output {
         // A fresh tmpfs is `/`, owned by the namespace's uid 0 as a real root is; the fixture is
         // its `/etc` and `/var`; the programs' own files are bound read-only; `/trace` is the one
@@ -124,8 +140,11 @@ impl Fixture {
                 "--gid",
                 "0",
                 "--unshare-net",
+                "--unshare-pid",
             ])
-            .args(["--tmpfs", "/"]);
+            .args(["--tmpfs", "/"])
+            // lodi finds its own binary through `/proc/self/exe`.
+            .args(["--proc", "/proc"]);
         for system in ["/nix", "/usr", "/lib", "/lib64", "/bin", "/sbin"] {
             if Path::new(system).exists() {
                 command.args(["--ro-bind", system, system]);
@@ -147,8 +166,11 @@ impl Fixture {
             .arg("--ro-bind")
             .arg(self.dir.join("empty-path"))
             .arg("/empty-path")
-            .arg("--dir")
+            .arg("--bind")
+            .arg(self.dir.join("home"))
             .arg("/home")
+            // A folder with no project in it: a bare `update` looks for `./lodi.toml` first.
+            .args(["--chdir", "/empty-path"])
             .arg("--die-with-parent")
             .arg("--clearenv")
             .args([
@@ -177,7 +199,6 @@ impl Fixture {
         }
         command
             .arg("/lodi")
-            .arg("host")
             .args(args)
             .output()
             .expect("bwrap runs")
@@ -188,9 +209,8 @@ fn text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).into_owned()
 }
 
-/// G1, the refusal. Without the guard each verb here reaches the fixture: `plan`, `apply` and
-/// `import` read the marker and then the `os-release` that names the fixture, and `arm` finds the
-/// marker in place and succeeds.
+/// G1, the refusal. Without the guard each command here reaches the fixture: a switch and an
+/// import read the config and then the `os-release` that names the fixture.
 #[test]
 fn every_host_verb_without_root_is_refused_before_it_reads_anything() {
     let fixture = Fixture::new("refused");
@@ -223,8 +243,8 @@ fn every_host_verb_without_root_is_refused_before_it_reads_anything() {
 }
 
 /// G1, "before anything is read": the refused process makes no file system call on `/` itself,
-/// on the arming marker or anything else in lodi's directory of the root's `etc`, on the root's
-/// `var/lib`, or on its `os-release`.
+/// on the may-manage marker or anything else in lodi's directory of the root's `etc`, on the
+/// root's `var/lib`, on its `os-release`, or on the config in its `HOME`.
 #[test]
 fn a_refused_verb_opens_no_path_of_the_root() {
     let fixture = Fixture::new("traced");
@@ -246,6 +266,7 @@ fn a_refused_verb_opens_no_path_of_the_root() {
         );
         // The one line that names the arguments is the exec that started the process.
         for line in trace.lines().filter(|line| !line.contains("execve(")) {
+            let line = own_paths_spelled_out(line);
             for touched in [
                 "\"/\"",
                 "\"/etc/lodi",
@@ -254,6 +275,7 @@ fn a_refused_verb_opens_no_path_of_the_root() {
                 "\"/etc/passwd",
                 "\"/etc/group",
                 "\"/tmp/lodi-guard-never-written",
+                "\"/home",
             ] {
                 assert!(
                     !line.contains(touched),
@@ -265,9 +287,33 @@ fn a_refused_verb_opens_no_path_of_the_root() {
     let _ = fs::remove_dir_all(&fixture.dir);
 }
 
+/// `line` with every path below the checkout or the target directory spelled `"<own>/…"`. Before
+/// lodi's `main` runs, the dynamic loader looks for its libraries along the binary's own `RUNPATH`,
+/// and a build in the flake's development shell puts that shell's `$out/lib`, a folder of the
+/// checkout, first there. None of those is a path of the root, but a checkout below `/home` spells
+/// them `"/home…` (LD-541). Every other path, `/home` itself and the root's `HOME` included, is
+/// left as it was.
+fn own_paths_spelled_out(line: &str) -> String {
+    let exe = Path::new(env!("CARGO_BIN_EXE_lodi"));
+    let target = exe
+        .parent()
+        .and_then(Path::parent)
+        .expect("the target directory");
+    let mut line = line.to_string();
+    for dir in [Path::new(env!("CARGO_MANIFEST_DIR")), target] {
+        for spelled in [dir.to_path_buf()]
+            .into_iter()
+            .chain(fs::canonicalize(dir).ok())
+        {
+            line = line.replace(&format!("\"{}/", spelled.display()), "\"<own>/");
+        }
+    }
+    line
+}
+
 /// G1, "the variable unset or not `1` changes nothing": in the same sandbox, with the variable
-/// absent or set to anything but `1`, `plan` goes on to read the fixture exactly as it always
-/// did. This is also the proof that the fixture is loud.
+/// absent or set to anything but `1`, a dry-run import goes on to read the fixture exactly as it
+/// always did. This is also the proof that the fixture is loud.
 #[test]
 fn any_other_setting_is_no_guard_at_all() {
     let fixture = Fixture::new("unset");
@@ -281,7 +327,7 @@ fn any_other_setting_is_no_guard_at_all() {
         Some("1 "),
     ] {
         // check-host-safety: refusal — inside the sandbox, whose `/etc` and `/var` are the fixture.
-        let out = fixture.run(&["plan"], setting, false);
+        let out = fixture.run(&["import", "--dry-run"], setting, false);
         let stderr = text(&out.stderr);
         assert!(
             !stderr.contains(CODE),
@@ -289,7 +335,7 @@ fn any_other_setting_is_no_guard_at_all() {
         );
         assert!(
             stderr.contains("loud-fixture"),
-            "{VAR}={setting:?}: plan read the root as before: {stderr}"
+            "{VAR}={setting:?}: the import read the root as before: {stderr}"
         );
     }
     let _ = fs::remove_dir_all(&fixture.dir);
@@ -298,27 +344,51 @@ fn any_other_setting_is_no_guard_at_all() {
 /// What one run showed: its status, standard output, standard error and the tree it left.
 type Observed = (Option<i32>, String, String, Vec<(String, u64, u32)>);
 
-/// One verb against a fresh scratch root prepared by `prepare`, with the variable set as given.
-/// Returns what the process printed, its status and the tree it left, with the root's own path
-/// spelled `<root>` so that two roots compare.
-fn with_root(name: &str, args: &[&str], setting: Option<&str>, prepare: fn(&Root)) -> Observed {
-    let root = Root::new(name);
-    prepare(&root);
-    let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
-    command.arg("host").args(args).arg("--root").arg(&root.dir);
+/// One command against a fresh fake machine prepared by `prepare`, with the variable set as
+/// given (`fakehost::Case::command` sets it to `1`; it is taken out or replaced here), on a
+/// terminal as a person runs it. Returns what the process printed, its status and the tree it
+/// left, with the root's and the fake's own paths spelled `<root>` and `<fake>` so that two
+/// roots compare.
+fn with_root(
+    name: &str,
+    verb: &str,
+    setting: Option<&str>,
+    prepare: fn(&fakehost::Case),
+) -> Observed {
+    let case = fakehost::Case::new(name, fakehost::Machine::debian());
+    prepare(&case);
+    let mut command = case.command(verb, &[], &[]);
     command.env_remove(VAR);
     if let Some(value) = setting {
         command.env(VAR, value);
     }
-    let out = command.output().expect("lodi runs");
+    if case.root.exists(UNARMED) {
+        // Unarmed: the may-manage marker `command` writes is taken away again.
+        fs::remove_file(case.root.path(UNARMED)).expect("the note");
+        fs::remove_file(case.root.path(lodi::marker::MARKER)).expect("the marker");
+    }
+    let (out, shown) = {
+        let _spawning = fakehost::spawning();
+        terminal::on_terminal("", move |stdin, stderr| {
+            let mut command = command;
+            command
+                .stdin(stdin)
+                .stderr(stderr)
+                .output()
+                .expect("lodi runs")
+        })
+    };
+    let root = &case.root;
     // A journal is named by its moment and a random tag; that name is all that may differ.
     let spell = |s: &[u8]| {
         text(s)
+            .replace("\r\n", "\n")
             .replace(&root.dir.display().to_string(), "<root>")
+            .replace(&case.base().display().to_string(), "<fake>")
             .lines()
             .map(|line| match line.strip_prefix("journal ") {
                 Some(_) => "journal <id>\n".to_string(),
-                None => format!("{line}\n"),
+                None => format!("{}\n", timeless(line)),
             })
             .collect::<String>()
     };
@@ -336,6 +406,9 @@ fn with_root(name: &str, args: &[&str], setting: Option<&str>, prepare: fn(&Root
             // are what compare.
             let (rel, len) = if rel.contains("/journal/") {
                 ("journal-entry".to_string(), 0)
+            } else if rel.contains("/logs/") {
+                // A switch's log is named by its moment too, and says how long it took.
+                ("log-entry".to_string(), 0)
             } else {
                 (rel, if meta.is_dir() { 0 } else { meta.len() })
             };
@@ -346,51 +419,73 @@ fn with_root(name: &str, args: &[&str], setting: Option<&str>, prepare: fn(&Root
         }
     }
     walk(&root.dir, &root.dir, &mut tree);
-    (
-        out.status.code(),
-        spell(&out.stdout),
-        spell(&out.stderr),
-        tree,
-    )
+    (out.status.code(), spell(&out.stdout), spell(&shown), tree)
 }
 
-fn files_manifest(root: &Root) {
-    let (uid, gid) = ids(root);
-    root.debian_with(&format!(
-        "[files.\"/etc/guard.conf\"]\ncontent = \"ok\\n\"\nowner = \"{uid}\"\ngroup = \"{gid}\"\n"
+/// `line` with every duration (`2.4s`, `13s`) spelled `<t>`: how long a step took is all that may differ.
+fn timeless(line: &str) -> String {
+    let mut out = String::new();
+    for word in line.split(' ') {
+        let (number, rest) = word.split_at(
+            word.find(|c: char| !c.is_ascii_digit() && c != '.')
+                .unwrap_or(word.len()),
+        );
+        if !number.is_empty() && rest.starts_with('s') {
+            out.push_str("<t>");
+            out.push_str(&rest[1..]);
+        } else {
+            out.push_str(word);
+        }
+        out.push(' ');
+    }
+    out.pop();
+    out
+}
+
+fn files_manifest(case: &fakehost::Case) {
+    let (uid, gid) = ids(&case.root);
+    case.set_manifest(&format!(
+        "[host]\nversion = \"1\"\n\n[files.\"/etc/guard.conf\"]\ncontent = \"ok\\n\"\n\
+         owner = \"{uid}\"\ngroup = \"{gid}\"\n"
     ));
 }
 
-fn unarmed(root: &Root) {
-    root.debian();
+/// The note [`unarmed`] leaves for [`with_root`], which takes the marker away again after the
+/// command is built.
+const UNARMED: &str = "unarmed";
+
+fn unarmed(case: &fakehost::Case) {
+    files_manifest(case);
+    case.root.write(UNARMED, "");
 }
 
-fn armed_debian(root: &Root) {
-    root.arm().debian();
-}
+fn armed_debian(_: &fakehost::Case) {}
 
-/// G1, "with `--root DIR` the verbs behave exactly as without the variable": each verb, against
-/// two identical scratch roots, prints the same, exits the same and leaves the same tree.
+/// G1, "with `--root DIR` the commands behave exactly as without the variable": each one,
+/// against two identical scratch roots, prints the same, exits the same and leaves the same tree.
 #[test]
 fn with_root_every_verb_behaves_exactly_as_without_the_variable() {
-    type Case = (&'static str, &'static [&'static str], fn(&Root));
+    type Case = (&'static str, &'static str, fn(&fakehost::Case));
     let cases: &[Case] = &[
-        ("plan", &["plan"], files_manifest),
-        ("apply", &["apply"], files_manifest),
-        ("unarmed-plan", &["plan"], unarmed),
-        ("import-stdout", &["import", "--stdout"], armed_debian),
-        ("import-land", &["import"], armed_debian),
-        ("arm", &["arm"], unarmed),
+        ("plan", "plan", files_manifest),
+        ("apply", "apply", files_manifest),
+        ("unarmed-plan", "plan", unarmed),
+        ("import-land", "import", armed_debian),
     ];
-    for (name, args, prepare) in cases {
-        let plain = with_root(&format!("{name}-plain"), args, None, *prepare);
+    for (name, verb, prepare) in cases {
+        let plain = with_root(&format!("guard-{name}-plain"), verb, None, *prepare);
         for setting in ["1", "0"] {
-            let guarded = with_root(&format!("{name}-{setting}"), args, Some(setting), *prepare);
+            let guarded = with_root(
+                &format!("guard-{name}-{setting}"),
+                verb,
+                Some(setting),
+                *prepare,
+            );
             assert_eq!(
                 guarded,
                 plain,
-                "`lodi host {}` with --root under {VAR}={setting} differs from without it",
-                args.join(" ")
+                "`{}` with --root under {VAR}={setting} differs from without it",
+                fakehost::command_line(verb, &[]).join(" ")
             );
         }
     }

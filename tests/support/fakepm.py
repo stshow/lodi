@@ -94,7 +94,8 @@ holds, and `localectl` answers `status`, `list-locales`, `set-locale` and `set-x
 `"os": {"locale": ["LANG=…"], "keymap": "us", "locales": [...]}`; with an `etc/default/keyboard`,
 as Ubuntu's localed, it reads the layout from that file and refuses `set-x11-keymap`. `nft` keeps
 `"os": {"nft": {"FAMILY NAME": "listing"}}`: `list tables`, `list table`, `delete table` and
-`-f FILE`, whose tables it stores as written. `netplan`, `networkctl` and `nmcli` only log;
+`-f FILE`, whose tables it stores as written; with `"os": {"nft_needs_caps": true}` a `list`
+without CAP_NET_ADMIN is refused, as on a real machine. `netplan`, `networkctl` and `nmcli` only log;
 `systemd-run` records the timer it would arm under `"os": {"timers": {}}`, and `systemctl stop`
 of that timer removes it. `ping` answers unless a lodi network file below the root holds the
 string `"os": {"cut": "…"}` names, which is how a test makes a network change cut the machine off.
@@ -1265,6 +1266,20 @@ def main():
     if program == "apt-get" and "-s" in plain:
         # `install -s` is a simulation, its own operation: an entry for the real one never fails it.
         key = f"{key} -s"
+    downloading = (
+        (program == "apt-get" and "--download-only" in plain)
+        or (program == "dnf5" and "--downloadonly" in plain)
+        or (program == "pacman" and plain[:1] != [] and plain[0].startswith("-S")
+            and plain[0].endswith("w"))
+    )
+    if downloading:
+        # A download fills the package cache, which the fake does not keep: it changes nothing,
+        # and fails only where a test names `<key> download` (#694).
+        failure = machine.get("fail", {}).get(f"{key} download")
+        if failure is not None:
+            sys.stderr.write(failure + "\n")
+            return 1
+        return 0
     failure = machine.get("fail", {}).get(key)
     if failure is not None:
         sys.stderr.write(failure + "\n")
@@ -1597,6 +1612,15 @@ def cut_off(root, cut):
     return False
 
 
+def net_admin():
+    """Whether this process holds CAP_NET_ADMIN, as `nft list` needs on a real machine."""
+    with open("/proc/self/status") as status:
+        for line in status:
+            if line.startswith("CapEff:"):
+                return int(line.split()[1], 16) & (1 << 12) != 0
+    return False
+
+
 def nft_file(tables, path):
     """`nft -f FILE`: `table F N`, `delete table F N` and `table F N { ... }`, in order."""
     with open(path, encoding="utf-8") as handle:
@@ -1921,6 +1945,9 @@ def basics(state, machine, program, args):
         system["keymap"] = words[1]
     elif program == "nft":
         tables = system.setdefault("nft", {})
+        if words[0] == "list" and system.get("nft_needs_caps") and not net_admin():
+            sys.stderr.write("Error: Could not process rule: Operation not permitted\n")
+            return 1
         if words[:2] == ["list", "tables"]:
             for name in tables:
                 print(f"table {name}")

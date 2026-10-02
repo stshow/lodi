@@ -1,8 +1,8 @@
 //! Pinning a host's packages to the distribution's dated archives (M-Pin, LD-395).
 //!
 //! The model is the owner's flake model of 2026-09-24: the user-owned host directory is the
-//! flake, `host.toml` declares what is pinned and `pins.lock` beside it records what those pins
-//! resolved to, as `flake.lock` does. `/etc/lodi/host.lock` stays the machine's record of what
+//! flake, `host.toml` declares what is pinned and the config's `lodi.lock` records what those
+//! pins resolved to, as `flake.lock` does. `/etc/lodi/host.lock` stays the machine's record of what
 //! was applied (LD-117) and is never read as a pin.
 //!
 //! - `[host] snapshot` is the file's default pin (D-A): the dated archive at that instant is where
@@ -43,21 +43,6 @@ pub mod fedora;
 pub mod keyring;
 pub mod verbs;
 
-/// The host directory's pin lock, beside `host.toml`.
-pub const FILE: &str = "pins.lock";
-/// The format this build writes and reads.
-pub const FORMAT: &str = "lodi-host-pins/1";
-/// The schema version of [`FORMAT`].
-pub const VERSION: u64 = 1;
-/// The format of a Fedora host's pins (fk-1, LD-434): each record names one exact build, with
-/// fields no earlier build reads. Only a Fedora lock is written in it.
-pub const FEDORA_FORMAT: &str = "lodi-host-pins/2";
-/// The schema version of [`FEDORA_FORMAT`].
-pub const FEDORA_VERSION: u64 = 2;
-/// The registry row `pins.lock` is registered as (`src/schema.rs`).
-pub const ARTIFACT: &str = "host-pins";
-/// The most bytes a `pins.lock` may have before it is refused.
-pub const MAX_BYTES: usize = 1024 * 1024;
 /// Lodi's own state for pinning, below the root (D14): machine state, never the pin.
 pub const STATE: &str = "/var/lib/lodi/host/pin";
 /// The private dated source set one apply stages, uses and removes.
@@ -84,7 +69,7 @@ pub enum Request {
 }
 
 impl Request {
-    /// `date` or `version`, as `pins.lock` records the policy.
+    /// `date` or `version`, as `lodi.lock` records the policy.
     pub fn policy(&self) -> &'static str {
         match self {
             Request::Date(_) => "date",
@@ -111,8 +96,8 @@ pub fn parse_value(name: &str, value: &str) -> Result<Request, Refusal> {
             code: "E_UNSUPPORTED",
             message: format!("`{name} = \"latest\"` is not a pin this build reads"),
             hint: format!(
-                "remove `{name}` from the pin table to track the live archive (`lodi host unpin \
-                 --all` floats every entry); a pin is a version or a date"
+                "remove `{name}` from the pin table to track the live archive (`lodi unpin --all` \
+                 floats every entry); a pin is a version or a date"
             ),
         });
     }
@@ -175,7 +160,7 @@ fn parse_day(value: &str) -> Option<i64> {
 /// One pinned name as the manifest declares it for this machine.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Declared {
-    /// The value as written, which `pins.lock` records as `requested`.
+    /// The value as written, which `lodi.lock` records as `requested`.
     pub requested: String,
     pub request: Request,
 }
@@ -253,22 +238,17 @@ pub fn check_bounds(
     Ok(())
 }
 
-// ----------------------------------------------------------------------------- pins.lock ---
+// ----------------------------------------------------------------------------- lodi.lock ---
 
-/// `pins.lock`: what the host directory's pins resolved to (`lodi-host-pins/1`). It holds no
-/// machine name, user, absolute path, binary version or wall-clock time: the same requests
-/// resolved against the same archives give the same bytes on any machine.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+/// What a host's pins resolved to, in memory: the host section of the config's `lodi.lock`
+/// (`crate::config::lock`) as the plan reads it. 2.0 writes no `pins.lock` and reads none (#710).
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PinsLock {
-    pub version: u64,
-    pub format: String,
     /// The distribution, its release codename and Lodi's architecture name the pins are for.
     pub distro: String,
     pub release: String,
     pub arch: String,
     /// The file-level snapshot, with the digests of the dated index files it resolved.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snapshot: Option<SnapshotRecord>,
     /// Each pinned name's resolution, by name.
     pub pins: BTreeMap<String, PinRecord>,
@@ -321,12 +301,9 @@ pub struct PinRecord {
 }
 
 impl PinsLock {
-    /// An empty lock for this machine: [`FEDORA_FORMAT`] on Fedora, [`FORMAT`] elsewhere.
+    /// An empty lock for this machine.
     pub fn new(distro: &str, release: &str, arch: &str) -> PinsLock {
-        let (version, format) = format_for(distro);
         PinsLock {
-            version,
-            format: format.to_string(),
             distro: distro.to_string(),
             release: release.to_string(),
             arch: arch.to_string(),
@@ -336,67 +313,9 @@ impl PinsLock {
     }
 }
 
-/// The schema version and format a pin lock of `distro` is written in.
-pub fn format_for(distro: &str) -> (u64, &'static str) {
-    if distro == Distro::Fedora.name() {
-        (FEDORA_VERSION, FEDORA_FORMAT)
-    } else {
-        (VERSION, FORMAT)
-    }
-}
-
-/// The bytes of `lock`: JSON, keys sorted, two-space indent, `\n`, one trailing newline. It is a
-/// pure function of its argument, and the only way this build writes the format (the pin verbs
-/// of M-Pin's verbs lane call it).
-pub fn render_lock(lock: &PinsLock) -> String {
-    crate::lock::canonical_json(lock)
-}
-
-/// Parse `bytes` as a `pins.lock` named `shown`. A later format is `E_LOCK_VERSION` naming the
-/// file, decided from the raw JSON before the record is deserialized.
-pub fn parse_lock(bytes: &[u8], shown: &str) -> Result<PinsLock, Diagnostic> {
-    let unreadable = |why: String| {
-        Diagnostic::new(
-            "E_LOCK_VERSION",
-            format!("{shown} is not a pin lock this build reads: {why}"),
-        )
-        .hint("use the lodi that wrote it, or move it aside: a pin it does not record is resolved again")
-    };
-    let raw: serde_json::Value =
-        serde_json::from_slice(bytes).map_err(|e| unreadable(e.to_string()))?;
-    let artifact = crate::schema::artifact(ARTIFACT);
-    let found = crate::schema::version_of(ARTIFACT, &raw);
-    let format = raw.get("format").and_then(serde_json::Value::as_str);
-    let distro = raw.get("distro").and_then(serde_json::Value::as_str);
-    match found {
-        Some(version)
-            if artifact.reads_version(version)
-                && distro.is_some_and(|d| format_for(d) == (version, format.unwrap_or(""))) => {}
-        _ => {
-            return Err(unreadable(format!(
-                "it is {} version {}, and this build reads {FORMAT} ({})",
-                format.unwrap_or("of no format"),
-                found.map_or_else(|| "none".to_string(), |v| v.to_string()),
-                crate::schema::note_for(None)
-            )));
-        }
-    }
-    serde_json::from_value(raw).map_err(|e| unreadable(e.to_string()))
-}
-
-/// Read `pins.lock` from the host directory, once, through W3's trust walk and trust rule
-/// ([`super::source::read_file`]): never through a link, only as a regular file, owned by the
-/// directory's owners and writable by nobody else. `None` when there is none.
-pub fn read_lock(host: &super::source::Host) -> Result<Option<PinsLock>, Diagnostic> {
-    let Some(bytes) = super::source::read_file(host, FILE, MAX_BYTES)? else {
-        return Ok(None);
-    };
-    parse_lock(&bytes, &host.dir.join(FILE).display().to_string()).map(Some)
-}
-
 // ---------------------------------------------------------------------------- resolution ---
 
-/// One pinned name, resolved: from its `pins.lock` record, or in memory by this plan.
+/// One pinned name, resolved: from its `lodi.lock` record, or in memory by this plan.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Resolved {
     pub name: String,
@@ -408,7 +327,7 @@ pub struct Resolved {
     pub repository: String,
     /// The dated archive instant, absent for a declared `[sources]` repository.
     pub snapshot: Option<i64>,
-    /// `pins.lock` records it, with this request.
+    /// `lodi.lock` records it, with this request.
     pub recorded: bool,
     /// A Fedora build's signed Koji copy ([`fedora`]); `None` elsewhere.
     pub source: Option<String>,
@@ -424,7 +343,7 @@ impl Resolved {
         }
     }
 
-    /// The record `pins.lock` would hold for it.
+    /// The record `lodi.lock` would hold for it.
     pub fn record(&self) -> PinRecord {
         if self.source.is_some() {
             return fedora::record(self);
@@ -446,7 +365,7 @@ impl Resolved {
 }
 
 /// The file-level snapshot of a plan: the instant, and the digests of its dated index files when
-/// `pins.lock` records them for this request.
+/// `lodi.lock` records them for this request.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Snapshot {
     pub requested: String,
@@ -462,12 +381,12 @@ pub struct Resolution {
     pub snapshot: Option<Snapshot>,
     pub pins: BTreeMap<String, Resolved>,
     /// The dated index digests this plan fetched, by instant: what an apply checks the index it
-    /// downloads against when `pins.lock` records none.
+    /// downloads against when `lodi.lock` records none.
     pub fetched: BTreeMap<i64, BTreeMap<String, String>>,
 }
 
 impl Resolution {
-    /// The `pins.lock` these resolutions make: what the pin verbs write through [`render_lock`].
+    /// The pins these resolutions make: the host section the pin verbs write to `lodi.lock`.
     pub fn lock(&self, distro: &str, release: &str, arch: &str) -> PinsLock {
         let mut lock = PinsLock::new(distro, release, arch);
         lock.snapshot = self.snapshot.as_ref().map(|snapshot| SnapshotRecord {
@@ -669,7 +588,7 @@ pub fn read_index(
 }
 
 /// The digest of every dated `Release` file of the base at `instant`, read through the verified
-/// fetch and nothing else: what `pins.lock` records for a file-level snapshot (`lodi host pin
+/// fetch and nothing else: what `lodi.lock` records for a file-level snapshot (`lodi pin
 /// --all`, M-Pin's verbs lane), keyed `repository/dists/suite/Release`.
 pub fn index_digests(
     fetcher: &dyn Fetcher,
@@ -1068,7 +987,7 @@ fn source_indexes(fetcher: &dyn Fetcher, cx: &Context) -> Result<Vec<(String, In
 }
 
 /// Whether the machine's release has a per-package interface this build verifies versions
-/// through (`versions_url`, Ubuntu's): where `lodi host versions` lists every published version
+/// through (`versions_url`, Ubuntu's): where `lodi pin NAME` lists every published version
 /// and a version is a pin. Decided from the catalogue, with no request.
 pub fn per_package_interface(cx: &Context) -> Result<bool, Diagnostic> {
     let base = base_of(cx.distro)?;
@@ -1135,7 +1054,7 @@ fn own_pocket(entry: &serde_json::Value) -> bool {
 }
 
 /// Each version of `name` the release's own pockets published, with the instant it was first
-/// published there: what `lodi host versions NAME` lists (LD-397). `None`, with no request, on a
+/// published there: what `lodi pin NAME` lists (LD-397). `None`, with no request, on a
 /// release with no verifiable per-package interface (Debian and Arch, P1).
 pub fn published_versions(
     fetcher: &dyn Fetcher,
@@ -1378,7 +1297,7 @@ fn archive_names(distro: Distro) -> Result<BTreeMap<String, String>, Diagnostic>
 /// - one dated stanza per base repository for each other instant a per-entry pin was resolved
 ///   at, beside them;
 /// - every other enabled stanza of the machine — a declared `[sources]` repository included — as
-///   it is, because the file-level snapshot does not reach it.
+///   it is, because the file-level snapshot does not reach it, but with its `deb` type only.
 ///
 /// Each stanza comes with whether it is dated: only a dated one is rendered with
 /// `Check-Valid-Until: no` ([`super::sourceset::render_pin_set`]), because a dated `Release`
@@ -1410,8 +1329,13 @@ pub fn private_stanzas(
                 "give that repository a keyring file with Signed-By; lodi adds no trust of its own",
             ));
         }
+        // An apply installs binaries: a `deb-src` type is left out, and a stanza with only that
+        // one is not carried at all (LD-534).
+        if !entry.types.iter().any(|t| t == "deb") {
+            continue;
+        }
         let stanza = Stanza {
-            types: entry.types.clone(),
+            types: vec!["deb".to_string()],
             uris: entry.uris.clone(),
             suites: entry.suites.clone(),
             components: entry.components.clone(),
@@ -1551,7 +1475,7 @@ pub fn check_downloaded(
                 return Err(Diagnostic::new(
                     "E_HASH_MISMATCH",
                     format!(
-                        "the dated index {key} at {} that apt downloaded is {}, and pins.lock \
+                        "the dated index {key} at {} that apt downloaded is {}, and lodi.lock \
                          records {want}",
                         format_utc(instant),
                         got.as_deref().unwrap_or("missing")

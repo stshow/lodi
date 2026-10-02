@@ -1,5 +1,5 @@
-//! `lodi home apply` and `lodi home status` (M-0.5 T-3, design calls D5, D6, D7, D13 —
-//! `LD-101`, `LD-102`, `LD-103`, `LD-173`, `LD-174`, `LD-175`; repaired by M-0.5
+//! The home apply of `lodi switch`, and the home's status report (M-0.5 T-3, design calls D5,
+//! D6, D7, D13 — `LD-101`, `LD-102`, `LD-103`, `LD-173`, `LD-174`, `LD-175`; repaired by M-0.5
 //! `validator-repair-1`, `LD-185`, `LD-186`).
 //!
 //! `apply` is the only verb of this scope that changes a file, and it is built so that the
@@ -50,20 +50,21 @@ use crate::fetch::Fetcher;
 use crate::home::backup::{self, BackupIndex, Kind};
 use crate::home::fsops::{self, RelPath, Root};
 use crate::home::manifest::{FileEntry, HomeManifest, load_home_manifest_with};
-use crate::home::plan::{Action, Plan, Step, Verb, look, manifest_warnings, plan_all};
+use crate::home::plan::{Action, Plan, Step, Verb, look, plan_all, program_warnings};
 use crate::home::profile;
 use crate::home::programs::{self, Module};
 use crate::home::services;
 use crate::home::state::{self, HomeState, ManagedFile, mode_text};
 use crate::home::tools;
 use crate::manifest::ManifestErrors;
+use crate::progress::{Event, Silent, Sink};
 use crate::roots::Roots;
 use crate::util::sha256_hex;
 
 /// The mode an apply gives a parent directory it had to create (design call D7).
 pub const DIRECTORY_MODE: u32 = 0o755;
 
-/// `lodi home apply`'s own options.
+/// The home apply's own options.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Options {
     /// Take a drifted path back, keeping the edited bytes in the backup store first.
@@ -152,7 +153,7 @@ struct Loaded {
     index: BackupIndex,
     plan: Plan,
     /// `W_DEPRECATED` for `[files]`, `W_PROGRAM_NOT_FOUND` and `W_SHADOWED`, printed first
-    /// ([`manifest_warnings`]).
+    /// ([`program_warnings`]).
     manifest_warnings: Vec<String>,
     /// Whether `[programs.fish]` renders: the tool profile then gets its fish twin.
     fish: bool,
@@ -182,7 +183,7 @@ fn load(
         overwrite_drift,
     )?;
     plan.services = services::plan(&manifest, &state, &plan.unit_files(), &options.services)?;
-    let manifest_warnings = manifest_warnings(roots, &manifest);
+    let manifest_warnings = program_warnings(roots, &manifest);
     Ok(Loaded {
         fish: manifest.uses_program("fish"),
         hooks: manifest.hooks(),
@@ -264,8 +265,7 @@ fn refuse_drift(plan: &Plan, warnings: &[String]) -> Result<(), Failure> {
     for path in &paths {
         d.notes.push(path.clone());
     }
-    let d =
-        d.hint("run lodi home status, then lodi home apply --overwrite-drift to take them back");
+    let d = d.hint("lodi switch --home --overwrite-drift takes them back");
     Err(Failure::of(warnings.to_vec(), d))
 }
 
@@ -289,17 +289,8 @@ fn preflight(
     Ok((loaded, warnings))
 }
 
-/// `lodi home apply [--overwrite-drift] [--locked]`.
-pub fn apply(
-    roots: &Roots,
-    options: &Options,
-    fetcher: &dyn Fetcher,
-    now: i64,
-) -> Result<Outcome, Failure> {
-    apply_with(roots, options, fetcher, now, programs::registry())
-}
-
-/// [`apply`] with an explicit program-module registry (`manifest::load_home_manifest_with`).
+/// A home apply of the manifest at `roots`, read with an explicit program-module registry
+/// (`manifest::load_home_manifest_with`), and no tool lock: the tests' seam.
 pub fn apply_with(
     roots: &Roots,
     options: &Options,
@@ -307,33 +298,37 @@ pub fn apply_with(
     now: i64,
     registry: &[Module],
 ) -> Result<Outcome, Failure> {
-    apply_loaded(roots, options, fetcher, now, registry, None)
+    apply_loaded(roots, options, fetcher, now, registry, None, &mut Silent)
 }
 
-pub fn apply_preloaded(
+/// The home part of the step list (#694), in the order an apply runs them.
+pub const STEPS: [&str; 3] = ["Tools", "Files", "User services"];
+
+/// [`apply_with`] reporting [`STEPS`] to `sink`: each one begun and finished, and every path
+/// written or removed an item of the files step.
+pub fn apply_reporting(
     roots: &Roots,
-    manifest: &HomeManifest,
-    lock: Option<crate::lock::LockFile>,
-    source: &str,
     options: &Options,
     fetcher: &dyn Fetcher,
     now: i64,
+    registry: &[Module],
+    sink: &mut dyn Sink,
 ) -> Result<Outcome, Failure> {
-    apply_preloaded_to(roots, manifest, lock, None, source, options, fetcher, now)
+    apply_loaded(roots, options, fetcher, now, registry, None, sink)
 }
 
-/// [`apply_preloaded`] whose tool lock is the home's section of its repository's root lock,
-/// `target`, when there is one (LD-416).
+/// The apply of a manifest the caller already read, reporting [`STEPS`] to `sink`: `lodi
+/// switch`'s home part (#695).
 #[allow(clippy::too_many_arguments)]
-pub fn apply_preloaded_to(
+pub fn apply_preloaded_reporting(
     roots: &Roots,
     manifest: &HomeManifest,
     lock: Option<crate::lock::LockFile>,
-    target: Option<&crate::flakelock::HomeTarget>,
     source: &str,
     options: &Options,
     fetcher: &dyn Fetcher,
     now: i64,
+    sink: &mut dyn Sink,
 ) -> Result<Outcome, Failure> {
     apply_loaded(
         roots,
@@ -344,41 +339,27 @@ pub fn apply_preloaded_to(
         Some(Preloaded {
             manifest,
             lock,
-            target,
             source,
         }),
+        sink,
     )
 }
 
 struct Preloaded<'a> {
     manifest: &'a HomeManifest,
     lock: Option<crate::lock::LockFile>,
-    target: Option<&'a crate::flakelock::HomeTarget>,
     source: &'a str,
 }
 
 fn resolve_tools(
-    roots: &Roots,
     tools: crate::tools::ToolSet,
     fetcher: &dyn Fetcher,
     now: i64,
     locked: bool,
     preloaded: Option<&Preloaded<'_>>,
-    notes: &mut Vec<String>,
 ) -> Result<Option<tools::Resolution>, crate::lock::Failure> {
-    match preloaded {
-        Some(preloaded) => tools::resolve_set_with_lock_to(
-            roots,
-            tools,
-            fetcher,
-            now,
-            locked,
-            preloaded.lock.clone(),
-            preloaded.target,
-            notes,
-        ),
-        None => tools::resolve_set(roots, tools, fetcher, now, locked),
-    }
+    let previous = preloaded.and_then(|preloaded| preloaded.lock.clone());
+    tools::resolve_set(tools, fetcher, now, locked, previous)
 }
 
 fn apply_loaded(
@@ -388,6 +369,7 @@ fn apply_loaded(
     now: i64,
     registry: &[Module],
     preloaded: Option<Preloaded<'_>>,
+    sink: &mut dyn Sink,
 ) -> Result<Outcome, Failure> {
     let data = roots.data_root();
     let home = roots.home_root();
@@ -404,16 +386,8 @@ fn apply_loaded(
     // A frozen apply also proves its tool lock is present and fresh before creating the scope
     // directory or its coordination lock. In frozen mode resolution is read-only.
     if options.locked {
-        resolve_tools(
-            roots,
-            first.tools,
-            fetcher,
-            now,
-            true,
-            preloaded.as_ref(),
-            &mut Vec::new(),
-        )
-        .map_err(|failure| tool_failure(Vec::new(), failure))?;
+        resolve_tools(first.tools, fetcher, now, true, preloaded.as_ref())
+            .map_err(|failure| tool_failure(Vec::new(), failure))?;
     }
 
     ensure_scope_dir(&data)?;
@@ -451,17 +425,9 @@ fn apply_loaded(
     // T-4's realization path is the command path here. Resolution happens after both read-only
     // pre-flights and under the home apply lock, then realization roots the complete store set.
     // The profile is built only after the ordinary files have been applied successfully.
-    let mut lock_notes = Vec::new();
-    let resolution = resolve_tools(
-        roots,
-        tool_set,
-        fetcher,
-        now,
-        options.locked,
-        preloaded.as_ref(),
-        &mut lock_notes,
-    )
-    .map_err(|failure| tool_failure(warnings.clone(), failure))?;
+    begin(sink, STEPS[0], None);
+    let resolution = resolve_tools(tool_set, fetcher, now, options.locked, preloaded.as_ref())
+        .map_err(|failure| tool_failure(warnings.clone(), failure))?;
     if let Some(resolution) = &resolution {
         // The host environment's own bin farm has project-scope last-wins semantics. It is an
         // implementation detail here: the home profile below applies D11's first-wins rule and
@@ -469,6 +435,7 @@ fn apply_loaded(
         tools::realize(roots, fetcher, resolution)
             .map_err(|failure| tool_failure(warnings.clone(), failure))?;
     }
+    finish(sink);
 
     // 3 and 4. The work, in the lexicographic order the plan is already in. A path the state
     // already names holds bytes Lodi wrote, so it is never copied into the backup store: the one
@@ -482,7 +449,13 @@ fn apply_loaded(
         .map(|(path, _)| path.clone())
         .collect();
     let mut directories: BTreeSet<String> = state.directories.iter().cloned().collect();
+    let changes = plan
+        .steps
+        .iter()
+        .filter(|step| changed(&step.action))
+        .count();
     let result = (|| -> Result<(), Diagnostic> {
+        begin(sink, STEPS[1], Some(changes));
         services::apply_before(&plan.services)?;
         // Recorded as soon as the restores are done: a declared unit is Lodi's to restore
         // from here on, also when a later step fails.
@@ -574,8 +547,17 @@ fn apply_loaded(
                     state.files.remove(path.as_str());
                 }
             }
+            if changed(&step.action) {
+                sink.event(Event::Item {
+                    name: step.path.clone(),
+                });
+            }
         }
-        services::apply_after(&plan.services, &options.services)
+        finish(sink);
+        begin(sink, STEPS[2], None);
+        services::apply_after(&plan.services, &options.services)?;
+        finish(sink);
+        Ok(())
     })();
 
     let mut profile_notes = Vec::new();
@@ -618,7 +600,6 @@ fn apply_loaded(
         lines
     };
     lines.extend(profile_notes);
-    lines.extend(lock_notes);
     if resolution.is_some() {
         let notice = profile::notice(roots, fish);
         warnings.extend(notice.warnings);
@@ -788,7 +769,6 @@ fn past(verb: Verb) -> &'static str {
         Verb::Seed => "seeded",
         Verb::Adopt => "adopted",
         Verb::Update => "updated",
-        Verb::Replace => "replaced",
         Verb::Restore => "restored",
         Verb::Remove => "removed",
         Verb::Keep => "kept",
@@ -797,7 +777,7 @@ fn past(verb: Verb) -> &'static str {
     }
 }
 
-// ------------------------------------------------------------------------ lodi home status ---
+// ---------------------------------------------------------------------------- the status ---
 
 /// What `status` found at one path.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -835,7 +815,7 @@ const STATES: &[State] = &[
     State::StaleBackup,
 ];
 
-/// One line of `lodi home status`.
+/// One line of the status report.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Row {
     pub state: State,
@@ -860,7 +840,7 @@ impl std::fmt::Display for Row {
     }
 }
 
-/// `lodi home status`: the report, which **writes nothing and always exits 0**.
+/// The status report, which **writes nothing and always exits 0**.
 pub fn status(roots: &Roots) -> Result<Outcome, Failure> {
     status_with(roots, programs::registry())
 }
@@ -889,7 +869,7 @@ fn status_loaded(
     let state = state::read(&data)?;
     let index = backup::read(&data)?;
 
-    let mut warnings = manifest_warnings(roots, &manifest);
+    let mut warnings = program_warnings(roots, &manifest);
     let mut rows: Vec<Row> = Vec::new();
     let paths: BTreeSet<&String> = manifest.files.keys().chain(state.files.keys()).collect();
     for path in paths {
@@ -1024,6 +1004,28 @@ fn summary(rows: &[Row]) -> String {
     }
 }
 
+/// An action that writes or removes a path in the home: an item of the files step.
+fn changed(action: &Action) -> bool {
+    matches!(
+        action,
+        Action::Write(_) | Action::Absent(_) | Action::Restore { .. } | Action::Delete { .. }
+    )
+}
+
+fn begin(sink: &mut dyn Sink, name: &str, expected: Option<usize>) {
+    sink.event(Event::Begin {
+        name: name.to_string(),
+        expected,
+    });
+}
+
+fn finish(sink: &mut dyn Sink) {
+    sink.event(Event::Finish {
+        count: None,
+        detail: None,
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1035,7 +1037,6 @@ mod tests {
             Verb::Seed,
             Verb::Adopt,
             Verb::Update,
-            Verb::Replace,
             Verb::Restore,
             Verb::Remove,
             Verb::Keep,

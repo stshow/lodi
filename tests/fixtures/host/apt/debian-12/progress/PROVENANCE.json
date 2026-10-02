@@ -1,0 +1,40 @@
+{
+  "kind": "lodi-progress-fixture-provenance",
+  "image": "debian-12 20260909-2596 (debian-12-generic-amd64-20260909-2596.qcow2)",
+  "recorded": "2026-10-01",
+  "environment": [
+    "env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "LC_ALL=C LANG=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true",
+    "PAGER=cat <command> >NAME.stdout 2>NAME.stderr; echo $? >NAME.status"
+  ],
+  "commands": {
+    "refresh": "apt-get update",
+    "download": [
+      "apt-get install -y --download-only --no-install-recommends -o",
+      "Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold tree sqlite3"
+    ],
+    "install": [
+      "apt-get install -y --no-install-recommends -o Dpkg::Options::=--force-confdef -o",
+      "Dpkg::Options::=--force-confold tree sqlite3"
+    ],
+    "remove": [
+      "apt-get install -y --no-install-recommends -o Dpkg::Options::=--force-confdef -o",
+      "Dpkg::Options::=--force-confold tree-"
+    ],
+    "download-fail": [
+      "apt-get install -y --download-only --no-install-recommends -o",
+      "Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold",
+      "nosuchpackage-lodi"
+    ]
+  },
+  "notes": [
+    [
+      "Recorded as root via sudo over lodivm ssh without a tty, in a fresh guest (2",
+      "vCPU, 2048 MiB), commands run in the order refresh, download, install, remove"
+    ],
+    "download-fail recorded last, after remove",
+    "No substitutions; tree and sqlite3 were absent on the stock image",
+    "No redactions"
+  ],
+  "wrapping": "a string longer than 80 characters is a list of its lines, joined by spaces"
+}

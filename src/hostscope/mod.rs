@@ -1,9 +1,9 @@
 //! The host scope: `/etc/lodi/host.toml`, the distro's packages and root-owned files, applied in
 //! **one planned, journalled transaction** (`spec/01` §5, ADR-013, OD-15).
 //!
-//! `lodi host plan`, `apply`, `import` and `arm` reach this module, and so do M-Pin's `versions`,
-//! `pin` and `unpin` ([`pin::verbs`], LD-397). Root-owned files and distribution packages both
-//! work end to end, on every distribution the safety gate accepts.
+//! `lodi switch` plans and applies through this module, and `lodi import`, `update`, `pin` and
+//! `unpin` read the machine through it ([`pin::verbs`], LD-397). Root-owned files and
+//! distribution packages both work end to end, on every distribution the safety gate accepts.
 //!
 //! # The safety rule this module makes structural
 //!
@@ -11,16 +11,16 @@
 //! here relies on anyone remembering that:
 //!
 //! - [`safety::Gate::open`] refuses **before it opens anything at all** unless the root carries
-//!   the marker `etc/lodi/host-allowed` — `E_HOST_NOT_ARMED`, exit 9 (design call D1, LD-113).
-//!   The one command that writes that marker is `lodi host arm` ([`arm`]), run deliberately as
-//!   root; nothing else writes it (LD-320).
+//!   its marker — `E_HOST_NOT_ARMED`, exit 9 (design call D1, LD-113): `etc/lodi/may-manage`,
+//!   which only `lodi import` writes once the owner agreed (#705).
 //! - `--root DIR` is a real, documented flag, not a test seam: every test runs against a scratch
 //!   directory it owns, with the same arming rule applied to it (D2, LD-114).
 //! - The package managers are found on `PATH` by bare name and run as argv vectors in a fixed
 //!   non-interactive environment, so a test's own shims are the whole seam (D3, LD-115). There is
 //!   no test-only branch, environment variable or hidden flag anywhere in these paths.
-//! - Lodi never invokes `sudo` or `doas`. A root-owned action without the privilege for it is
-//!   `E_NEED_ROOT`, and the operator runs `sudo lodi host apply` themselves.
+//! - A lodi started as the user gets root for one typed request through [`crate::elevate`],
+//!   which runs lodi's own binary again through `sudo`, `doas` or `run0`. A root-owned action
+//!   that cannot get root is `E_NEED_ROOT`.
 //! - A machine that must never be the root — a development lane, `scripts/gate.sh` — says so
 //!   with [`REQUIRE_ROOT_VAR`]`=1`, and then every host verb without `--root` is
 //!   `E_HOST_ROOT_REQUIRED`, exit 9, before it has resolved, opened or examined any path at all
@@ -32,24 +32,21 @@
 //! Files and packages are both planned and applied. [`pm::backend_for`] is total since M-0.6
 //! T-6 — apt for Debian and Ubuntu, pacman for Arch — so `[packages]` is never refused for want
 //! of a backend and `E_UNSUPPORTED` has left that path; what still carries that code here is an
-//! input this build does not implement, such as a version-qualified package name (OD-15) or
-//! `--unsupported-partial-upgrade` on a family with no such mode. There are no generations, no
-//! `rollback` and no command that claims to undo an apply; an interrupted apply is classified,
-//! and an ambiguous one stops for a human (see [`journal`]).
+//! input this build does not implement, such as a version-qualified package name (OD-15). There
+//! are no generations, no `rollback` and no command that claims to undo an apply; an interrupted
+//! apply is classified, and an ambiguous one stops for a human (see [`journal`]).
 
 pub mod apply;
-pub mod arm;
 pub mod basics;
 pub mod boot;
 pub mod converge;
+pub mod fallback;
 pub mod files;
 pub mod firewall;
 pub mod flake;
-pub mod homepart;
 pub mod import;
 pub mod journal;
 pub mod kernel;
-pub mod landing;
 pub mod lock;
 pub mod manifest;
 pub mod network;
@@ -66,11 +63,9 @@ pub mod services;
 pub mod source;
 pub mod sources;
 pub mod sourceset;
-pub mod trial;
 pub mod users;
 
 use std::fmt;
-use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
 
@@ -83,20 +78,10 @@ pub use safety::{Operation, Options};
 /// exact value `1` sets it; any other value, and its absence, change nothing.
 pub const REQUIRE_ROOT_VAR: &str = "LODI_HOST_REQUIRE_ROOT";
 
-/// The LD-376 guard, as a function of its inputs alone: `verb` is what the operator typed after
-/// `lodi host`, `root` its `--root`, and `setting` the value of [`REQUIRE_ROOT_VAR`]. It reads no
-/// file and no environment, so a refusal happens before the verb has looked at anything.
-pub fn require_root(
-    verb: &str,
-    root: Option<&Path>,
-    setting: Option<&std::ffi::OsStr>,
-) -> Result<(), Diagnostic> {
-    require_root_for(&format!("lodi host {verb}"), root, setting)
-}
-
-/// [`require_root`] for any command that reaches the host scope, named as typed: the host
-/// verbs, and the top-level `lodi plan`, `apply`, `import` and `update` (F-22, LD-416), whether
-/// or not a `SOURCE` was given.
+/// The LD-376 guard, as a function of its inputs alone: `command` is the command that reaches
+/// the host scope, as typed after `lodi`, `root` its `--root`, and `setting` the value of
+/// [`REQUIRE_ROOT_VAR`]. It reads no file and no environment, so a refusal happens before the
+/// command has looked at anything.
 pub fn require_root_for(
     command: &str,
     root: Option<&Path>,
@@ -108,7 +93,7 @@ pub fn require_root_for(
     Err(Diagnostic::new(
         "E_HOST_ROOT_REQUIRED",
         format!(
-            "{REQUIRE_ROOT_VAR}=1 is set, so `{command}` needs --root DIR and was given none; \
+            "{REQUIRE_ROOT_VAR}=1 is set, so `lodi {command}` needs --root DIR and was given none; \
              nothing was read"
         ),
     )
@@ -116,17 +101,6 @@ pub fn require_root_for(
         "this environment never lets a host verb reach this machine: name a scratch root with \
          --root DIR, or run it where {REQUIRE_ROOT_VAR} is not set"
     )))
-}
-
-/// [`require_root`] with the process's own environment: what `main` calls first for every host
-/// verb, before the verb itself runs.
-pub fn guard(verb: &str, options: &Options) -> Result<(), HostError> {
-    require_root(
-        verb,
-        options.root.as_deref(),
-        std::env::var_os(REQUIRE_ROOT_VAR).as_deref(),
-    )
-    .map_err(HostError::from)
 }
 
 /// The most bytes one `[files]` `source` may have (LD-379).
@@ -195,53 +169,23 @@ pub struct Loaded {
     pub lock: Option<lock::HostLock>,
     pub plan: plan::Plan,
     pub input: source::Input,
-    /// The host directory's `pins.lock`, read once with the manifest (M-Pin, P13).
+    /// The host's pins from the config's `lodi.lock`, read once with the manifest (M-Pin, P13).
     pub pins_lock: Option<pin::PinsLock>,
     /// What the first plan resolved of pins, which a re-plan reuses and never resolves again.
     pub pins: plan::Pins,
-    /// The source line of a host read from a git URL, printed first (LD-401).
-    pub source_line: Option<String>,
 }
 
 /// Open the gate, choose and judge the host, and read what the plan acts on — the manifest and
 /// every `source` it declares — once (LD-379).
-fn load(options: &Options, operation: Operation) -> Result<Loaded, HostError> {
-    // A URL's grammar is decided before anything is read or asked (LD-401, U1).
-    let url = match &options.source {
-        Some(named) => remote::parse(named.as_os_str())?,
-        None => None,
-    };
+pub fn load(options: &Options, operation: Operation) -> Result<Loaded, HostError> {
     let gate = safety::Gate::open(options, operation)?;
-    let (host, git, source_line) = match &url {
-        Some(url) => {
-            safety::read_config(&gate.root, safety::LOCK, gate.system_root, gate.euid, 0)?;
-            let record = lock::HostLock::read(&gate.lock_path())?;
-            let fetched = remote::load(&gate, options, url, record.as_ref())?;
-            (fetched.host, Some(fetched.git), Some(fetched.line))
-        }
-        None => (
-            source::select(
-                &gate,
-                options,
-                &privilege::owners(&privilege::System),
-                false,
-            )?,
-            None,
-            None,
-        ),
-    };
+    let owners = privilege::owners(&privilege::System, &gate.root);
+    let host = source::select(&gate, options, &owners, false)?;
     let manifest_path = host.manifest_path();
     let shown = manifest_path.display().to_string();
-    let bytes = source::read_manifest(&gate, &host)?.ok_or_else(|| {
-        let hint = if host.in_place {
-            manifest::import_hint(&gate.root, gate.system_root, &shown)
-        } else {
-            format!(
-                "write one there with `lodi host import {}`, or by hand",
-                host.named.as_deref().unwrap_or(&host.dir).display()
-            )
-        };
-        Diagnostic::new("E_NO_MANIFEST", format!("no host manifest at {shown}")).hint(hint)
+    let bytes = source::read_manifest(&host)?.ok_or_else(|| {
+        Diagnostic::new("E_NO_MANIFEST", format!("no host manifest at {shown}"))
+            .hint("write one there with `lodi import`, or by hand")
     })?;
     let parsed = manifest::from_bytes(&bytes, &shown, &manifest::Context::from_gate(&gate))?;
     let mut sources = source::read_sources(&host, &parsed)?;
@@ -250,20 +194,21 @@ fn load(options: &Options, operation: Operation) -> Result<Loaded, HostError> {
     // A keyring by URL already at its managed path with its digest is read here, so that
     // neither the plan nor the apply asks the network for it (LD-366).
     sources::read_installed(&gate, &parsed, &mut sources);
-    // The host directory's pin lock is read once under the manifest's W3 trust rule (P13): its
-    // section of the repository's root lock, else its own 1.4 `pins.lock` (LD-416).
-    let read = crate::flakelock::read_host(&host, pin::read_lock(&host)?)?;
-    check_locked_keys(&parsed, &read.keys)?;
-    let pins_lock = read.pins;
+    // The pins are the config's `lodi.lock` section; 2.0 reads no `pins.lock` and no 1.x
+    // repository lock (#710).
+    let pins_lock = match &options.config {
+        Some(config) => {
+            check_locked_keys(&parsed, &config.keys)?;
+            config.pins.clone()
+        }
+        None => None,
+    };
     let input = source::Input {
         host,
         manifest: bytes,
         sources,
-        git,
     };
-    let mut loaded = plan_input(gate, input, parsed, options, pins_lock, None)?;
-    loaded.source_line = source_line;
-    Ok(loaded)
+    plan_input(gate, input, parsed, options, pins_lock, None)
 }
 
 /// Q3 (LD-416): a `signed_by_url` key the root lock records must be the key the manifest
@@ -435,10 +380,7 @@ fn plan_input(
         )?,
     };
     // An unrecorded pin's line names the command that records it, for this host (LD-397).
-    pins.record_with = (
-        pin::verbs::sudo_for(gate.system_root, input.host.in_place).to_string(),
-        pin::verbs::selection(options),
-    );
+    pins.record_with = pin::verbs::selection(options);
     let mut plan = plan::build_pinned(
         &gate,
         &parsed,
@@ -446,13 +388,11 @@ fn plan_input(
         &input.host.source,
         existing.as_ref(),
         &digest,
-        options.no_update,
         &pins,
     )?;
-    // The git revision is part of the record: a new one is recorded even when the machine
-    // already is what the manifest says (LD-401).
-    plan.git = input.git.clone();
-    if plan.is_noop() && existing.as_ref().and_then(|l| l.git.as_ref()) != plan.git.as_ref() {
+    // A lock that still records a git source records the folder now, even when the machine
+    // already is what the manifest says.
+    if plan.is_noop() && existing.as_ref().is_some_and(|l| l.git.is_some()) {
         plan.record_changes = true;
     }
     Ok(Loaded {
@@ -463,62 +403,14 @@ fn plan_input(
         input,
         pins_lock,
         pins,
-        source_line: None,
     })
 }
 
-/// The fence of LD-379: the record names the host the last apply or import read, and a bare
-/// apply — which reads `<root>/etc/lodi` — stops when that was another directory, so that an old
-/// manifest left in `/etc/lodi` cannot quietly take the machine back.
-fn fence(host: &source::Host, record: Option<&lock::HostLock>) -> Option<Diagnostic> {
-    let named = record?.source.as_deref()?;
-    if !host.in_place || named == lock::IN_PLACE_SOURCE {
-        return None;
-    }
-    Some(
-        Diagnostic::new(
-            "E_DECLINED",
-            format!(
-                "the last apply or import on this machine read the host at {named}, and a bare \
-                 apply reads {}",
-                host.manifest_path().display()
-            ),
-        )
-        .hint(format!(
-            "apply that host by naming it: sudo lodi host apply {named}; to apply {} instead, \
-             name it the same way: sudo lodi host apply {}",
-            host.dir.display(),
-            lock::IN_PLACE_SOURCE
-        )),
-    )
-}
-
-/// `lodi host plan`: everything the apply would do, and nothing else. Opens the manifest, reads
-/// the machine, writes nothing anywhere.
+/// The host's plan: everything an apply would do, and nothing else. Opens the manifest, reads
+/// the machine, writes nothing anywhere. The host alone: `lodi switch` plans the home part.
 pub fn plan(options: &Options) -> Result<String, HostError> {
-    plan_with_privilege(options, &privilege::System)
-}
-
-/// [`plan`] through a [`privilege::Privilege`]: the home part is planned as the user, after the
-/// same permanent drop an apply makes, so root never reads the user's home (LD-399).
-pub fn plan_with_privilege(
-    options: &Options,
-    privilege: &dyn privilege::Privilege,
-) -> Result<String, HostError> {
     let loaded = load(options, Operation::Plan)?;
-    let home = if options.no_home {
-        None
-    } else {
-        homepart::select(&loaded.gate, &loaded.input.host, privilege)?
-    };
     let mut out = String::new();
-    if let Some(line) = &loaded.source_line {
-        out.push_str(line);
-        out.push('\n');
-    }
-    if let Some(fenced) = fence(&loaded.input.host, loaded.lock.as_ref()) {
-        out.push_str(&format!("a bare apply would refuse: {}\n", fenced.message));
-    }
     if let Some(record) = journal::outstanding(&loaded.gate)? {
         let classification = record.classify_in(&loaded.gate);
         out.push_str(&format!(
@@ -528,31 +420,12 @@ pub fn plan_with_privilege(
         ));
     }
     out.push_str(&loaded.plan.render());
-    if options.no_home {
-        out.push_str("home skipped (--no-home)\n");
-    }
-    if let Some(home) = home {
-        homepart::drop_to_user(privilege, &home.roots)?;
-        let _ = writeln!(out, "home {}", home.name);
-        let context = crate::home::services::Context {
-            fixed_path: loaded.gate.system_root,
-            ..Default::default()
-        };
-        let plan = crate::home::plan::plan_for(&home.roots, &home.manifest, false, &context)?;
-        for line in plan.lines() {
-            let _ = writeln!(out, "{line}");
-        }
-    }
     Ok(out)
 }
 
-/// `lodi host apply`: the plan, written down, then performed.
+/// The host's apply: the plan, written down, then performed, reporting nothing.
 pub fn apply(options: &Options) -> Result<String, HostError> {
-    let mut out = apply_with(options, None)?;
-    if options.no_home {
-        out.push_str("home skipped (--no-home)\n");
-    }
-    Ok(out)
+    apply_with(options, None)
 }
 
 /// [`apply`], with the fetcher a keyring by URL is fetched through; `None` is the one `lodi`
@@ -562,139 +435,25 @@ pub fn apply_with(
     options: &Options,
     fetcher: Option<&dyn crate::fetch::Fetcher>,
 ) -> Result<String, HostError> {
-    apply_with_privilege(options, fetcher, &privilege::System)
+    let first = load(options, Operation::Apply)?;
+    apply_loaded_to(options, fetcher, first, &mut crate::progress::Silent)
 }
 
-pub fn apply_with_privilege(
+/// `lodi switch`'s host part (#695): the host's apply of `loaded`, its steps reported to `sink`.
+pub fn apply_for_switch(
     options: &Options,
-    fetcher: Option<&dyn crate::fetch::Fetcher>,
-    privilege: &dyn privilege::Privilege,
+    loaded: Loaded,
+    sink: &mut dyn crate::progress::Sink,
 ) -> Result<String, HostError> {
-    if options.no_home {
-        return apply_host_with(options, fetcher);
-    }
-    // A URL's tree is fetched once and is the source of both parts; it is never written, so its
-    // home applies only from the lock it carries, checked before the host changes (LD-401, U7).
-    let url = match &options.source {
-        Some(named) => remote::parse(named.as_os_str())?,
-        None => None,
-    };
-    let (home, mut out, system_root) = match &url {
-        Some(_) => {
-            let first = load(options, Operation::Apply)?;
-            let home = homepart::select(&first.gate, &first.input.host, privilege)?;
-            if let Some(home) = &home {
-                homepart::require_lock(home)?;
-            }
-            let system_root = first.gate.system_root;
-            (
-                home,
-                apply_host_loaded(options, fetcher, first)?,
-                system_root,
-            )
-        }
-        None => {
-            let gate = safety::Gate::open(options, Operation::Apply)?;
-            let host = source::select(&gate, options, &privilege::owners(privilege), false)?;
-            let home = homepart::select(&gate, &host, privilege)?;
-            (home, apply_host_with(options, fetcher)?, gate.system_root)
-        }
-    };
-    let Some(home) = home else {
-        return Ok(out);
-    };
-    homepart::drop_to_user(privilege, &home.roots)?;
-    let default_fetcher = crate::fetch::HttpFetcher::from_env()
-        .map_err(|error| Diagnostic::new("E_CONFIG", error))?;
-    let fetcher = fetcher.unwrap_or(&default_fetcher);
-    // The home state names the URL, as the host's record does, and never the cached tree.
-    let (source, locked) = match &url {
-        Some(url) => (url.canonical.clone(), true),
-        None => (home.roots.config().display().to_string(), false),
-    };
-    // A fetched tree is never written: its home's lock is read, never resolved (F-15).
-    let target = if url.is_some() {
-        None
-    } else {
-        home.target.as_ref()
-    };
-    let result = crate::home::apply::apply_preloaded_to(
-        &home.roots,
-        &home.manifest,
-        home.lock,
-        target,
-        &source,
-        &crate::home::apply::Options {
-            locked,
-            services: crate::home::services::Context {
-                fixed_path: system_root,
-                ..Default::default()
-            },
-            ..crate::home::apply::Options::default()
-        },
-        fetcher,
-        crate::util::now_utc(),
-    );
-    match result {
-        Ok(applied) => {
-            let _ = writeln!(out, "home {}", home.name);
-            for line in applied.lines {
-                let _ = writeln!(out, "{line}");
-            }
-            Ok(out)
-        }
-        Err(failure) => {
-            let prefix = format!("lodi: error {}: ", failure.code);
-            let text = failure.text.strip_prefix(&prefix).unwrap_or(&failure.text);
-            let mut diagnostic = Diagnostic::new(
-                failure.code,
-                format!("host applied; home not applied: {text}"),
-            );
-            diagnostic.notes.extend(failure.warnings);
-            Err(HostError {
-                diagnostics: vec![diagnostic],
-                done: out,
-            })
-        }
-    }
+    apply_loaded_to(options, None, loaded, sink)
 }
 
-fn apply_host_with(
-    options: &Options,
-    fetcher: Option<&dyn crate::fetch::Fetcher>,
-) -> Result<String, HostError> {
-    apply_host_loaded(options, fetcher, load(options, Operation::Apply)?)
-}
-
-fn apply_host_loaded(
+fn apply_loaded_to(
     options: &Options,
     fetcher: Option<&dyn crate::fetch::Fetcher>,
     first: Loaded,
+    sink: &mut dyn crate::progress::Sink,
 ) -> Result<String, HostError> {
-    let (line, git, root) = (
-        first.source_line.clone(),
-        first.input.git.clone(),
-        first.gate.root.clone(),
-    );
-    let out = apply_loaded(options, fetcher, first)?;
-    // The lock now names this revision, so every other cached tree goes (F-11).
-    if let Some(git) = &git {
-        remote::prune(&root, git);
-    }
-    Ok(match line {
-        Some(line) => format!("{line}\n{out}"),
-        None => out,
-    })
-}
-
-fn apply_loaded(
-    options: &Options,
-    fetcher: Option<&dyn crate::fetch::Fetcher>,
-    first: Loaded,
-) -> Result<String, HostError> {
-    if let Some(fenced) = fence(&first.input.host, first.lock.as_ref()) {
-        return Err(fenced.into());
-    }
     // Every refusal that can be decided by reading is decided before the apply lock creates the
     // host state directory. This is why unsupported packages, drift and bad ownership leave a
     // pristine root pristine.
@@ -731,9 +490,6 @@ fn apply_loaded(
         first.pins_lock.as_ref(),
         &first.pins,
     )?;
-    if let Some(fenced) = fence(&fresh.input.host, fresh.lock.as_ref()) {
-        return Err(fenced.into());
-    }
     let mut out = String::new();
     if let Some((record, classification)) =
         journal::require_clear(&gate, options.resolved.as_deref())?
@@ -780,6 +536,7 @@ fn apply_loaded(
         &fresh.plan,
         options.resolved.as_deref(),
         fresh.lock.as_ref(),
+        sink,
     )?);
     Ok(out)
 }
@@ -824,7 +581,7 @@ fn fetched(
     Ok(again)
 }
 
-fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
+pub fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
     let drifted = plan.drifted();
     if (drifted.is_empty() && plan.package_drift.is_empty() && plan.pin_drift.is_empty())
         || overwrite
@@ -850,7 +607,7 @@ fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
                 ),
             )
             .hint(
-                "look at the change, then run the apply again with --overwrite-drift to put the \
+                "look at the change, then run lodi switch again with --overwrite-drift to put the \
                  declared keyring and stanza back, or fold the change into the manifest",
             ),
         );
@@ -867,7 +624,8 @@ fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
                 format!("{} was changed since lodi last wrote it", paths.join(", ")),
             )
             .hint(
-                "run the apply again with --overwrite-drift to replace it, or fold the change into the manifest",
+                "run lodi switch again with --overwrite-drift to replace it, or fold the change \
+                 into the manifest",
             ),
         );
     }
@@ -884,7 +642,7 @@ fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
                 ),
             )
             .hint(
-                "declare it in host.toml to keep it, or run the apply again with \
+                "declare it in host.toml to keep it, or run lodi switch again with \
                  --overwrite-drift to remove it",
             ),
         );
@@ -900,7 +658,7 @@ fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
                 ),
             )
             .hint(
-                "run the apply again with --overwrite-drift to put the pinned version back, or \
+                "run lodi switch again with --overwrite-drift to put the pinned version back, or \
                  change the pin in host.toml",
             ),
         );
@@ -911,7 +669,7 @@ fn refuse_drift(plan: &plan::Plan, overwrite: bool) -> Result<(), HostError> {
     })
 }
 
-fn describe(classification: &journal::Classification) -> String {
+pub fn describe(classification: &journal::Classification) -> String {
     match classification {
         journal::Classification::Completed => "complete".to_string(),
         journal::Classification::Incomplete { action, summary } => {
@@ -925,320 +683,70 @@ fn describe(classification: &journal::Classification) -> String {
     }
 }
 
-/// `lodi host import`: read the machine the gate opened and write the manifest a fresh install
-/// could apply (M-Import T-3). It is the command half of [`import`], which landed as a library
-/// with nothing reaching it.
-///
-/// Below the root it opens files for reading only — the arming marker, `etc/os-release`, the
-/// package manager's own answers and the configuration files that manager reports as changed —
-/// takes no apply lock and never writes the arming marker. What it writes depends on the flags
-/// (the owner's decision of 2026-09-22, LD-325, which supersedes forward LD-291's
-/// standard-output default):
-///
-/// - **no flag**: the import lands in place, `<root>/etc/lodi/host.toml` at 0644 and the
-///   captured bytes under `<root>/etc/lodi/files/`, where `lodi host plan` reads them
-///   ([`landing`]). On `/` that needs root (`E_NEED_ROOT`); nothing is applied — the apply
-///   stays a separate, deliberate `sudo lodi host apply`;
-/// - **`--out DIR`**: the same bundle under a directory of the operator's, which needs no
-///   privilege;
-/// - **`--stdout`**: the manifest on standard output and no configuration file captured at all,
-///   because a declaration whose `source` points at a bundle nobody wrote would be a manifest
-///   that cannot apply.
-///
-/// What it leaves out, it says. Every chosen package whose **installed version** did not come
-/// from the distribution's own repositories — from a third-party repository or a PPA, from a
-/// package file installed by hand or a source the machine no longer has, or from no repository
-/// the package manager knows — is named under its class in the emitted `NOT CAPTURED` block and
-/// gets one `W_UNCAPTURED` line on standard error, in the same order. A warning never changes
-/// the exit status: an import that declares nothing at all still exits 0.
-///
-/// Every refusal a destination can carry is decided **before the machine is read**, so an
-/// import that is going to be refused reads nothing: for `--out`, a directory the host scope
-/// itself owns (`<root>/etc/lodi`, `<root>/var/lib/lodi`) is `E_STORE_IO`; for the default, the
-/// privilege and the symbolic links of [`landing::in_place`]. An existing `host.toml` without
-/// `--force` is **reconciled** with the machine ([`reconcile`], LD-378, which supersedes the
-/// `E_EXISTS` that case was until then); `--force` replaces it, and `--dry-run` shows the change
-/// and writes nothing.
-pub fn run_import(options: &Options) -> Result<String, HostError> {
-    run_import_with(options, &privilege::System)
-}
-
-/// [`run_import`] with the privilege it runs with ([`privilege::System`] for the command).
-///
-/// With a positional `SOURCE` (LD-379) the import writes the host directory the source selects
-/// ([`source::select`]), creating `SOURCE/<hostname>/` when it is not there yet, as the owner of
-/// `SOURCE`: under `sudo` it reads the machine as root, writes the baseline into the lock, and
-/// then becomes that owner ([`privilege::writer`]) before it writes anything under `SOURCE`, so
-/// the files are born the user's. Unprivileged, it writes the host directory and no record — the
-/// record is root's — and says so; the next apply writes it.
-pub fn run_import_with(
-    options: &Options,
-    privilege: &dyn privilege::Privilege,
-) -> Result<String, HostError> {
-    let mut gate = safety::Gate::open(options, Operation::Import)?;
-    let host = match &options.source {
-        Some(_) => Some(source::select(
-            &gate,
-            options,
-            &privilege::owners(privilege),
-            true,
-        )?),
-        None => None,
-    };
-    let home_user = if host.is_some() && !options.dry_run && !options.no_home {
-        Some(homepart::selected_user(&gate, privilege)?)
-    } else {
-        None
-    };
-    let out = match (options.stdout, options.out.as_deref(), &host) {
-        (true, _, _) => None,
-        (false, Some(dir), _) => Some(import_destination(&gate, dir)?),
-        (false, None, Some(host)) => Some(host.dir.clone()),
-        (false, None, None) => Some(landing::in_place(&gate, options.force, options.dry_run)?),
-    };
-    let in_place = !options.stdout && options.out.is_none() && host.is_none();
-    // Who writes the record: the import in place always (LD-375), and an import into a host
-    // directory only as root, because the record is root's (LD-379).
-    let privileged = privilege.euid() == 0;
-    let writes_record = in_place || (host.is_some() && privileged);
-    // The import that writes the record keeps what an earlier apply recorded of files, and a
-    // reconcile into a host directory merges from the record's baseline. A record this build
-    // cannot read stops the import here, before the machine is read, as it stops a plan.
-    let previous = if in_place || host.is_some() {
-        safety::read_config(&gate.root, safety::LOCK, gate.system_root, gate.euid, 0)?;
-        lock::HostLock::read(&gate.lock_path())?
-    } else {
-        None
-    };
-    // Whom the bytes under a host directory are written as: its owner, become after the record
-    // is written and before the first byte under it (LD-379).
-    let writer = match &host {
-        Some(host) => {
-            use std::os::unix::fs::MetadataExt;
-            let named = host.named.as_deref().unwrap_or(&host.dir);
-            let meta = fs::symlink_metadata(named).map_err(|e| store_io(named, &e.to_string()))?;
-            privilege::writer(privilege, meta.uid(), meta.gid())
-        }
-        None => None,
-    };
-    let become_writer = |gate: &mut safety::Gate| -> Result<(), HostError> {
-        if let Some((uid, gid)) = writer {
-            privilege.become_user(uid, gid)?;
-            gate.euid = uid;
-            gate.egid = gid;
-        }
-        Ok(())
-    };
-    // An existing manifest is reconciled with the machine, never replaced without --force and
-    // never refused (LD-378, which supersedes that case's E_EXISTS).
-    if let Some(dir) = &out
-        && !options.force
-        && dir.join(landing::MANIFEST).symlink_metadata().is_ok()
-    {
-        let source = match &host {
-            Some(host) => host.source.clone(),
-            None if in_place => lock::IN_PLACE_SOURCE.to_string(),
-            None => dir.display().to_string(),
-        };
-        let mut report = reconcile::run(
-            &mut gate,
-            options,
-            reconcile::Target {
-                dir,
-                source: &source,
-                in_place,
-                writes_record,
-                host: host.as_ref(),
-                previous,
-                become_writer: &become_writer,
-            },
-        )?;
-        if let Some(user) = &home_user {
-            if let Some((uid, gid)) = writer
-                && gate.euid != uid
-            {
-                privilege.become_user(uid, gid)?;
-                gate.euid = uid;
-                gate.egid = gid;
-            }
-            write_import_home(&gate, dir, user, &mut report)?;
-        }
-        return Ok(report);
-    }
-
-    let machine = import::read(&gate)?;
-    // A capture is taken only when there is somewhere for its bytes to travel to.
-    let capture = match out {
-        Some(_) => Some(import::files::capture(&gate)?),
-        None => None,
-    };
-    let text = import::emit::manifest(&machine, &import::Snapshot::now(), capture.as_ref());
-
-    // The same selection the emitter wrote the file from, so that what standard error says and
-    // what the block names can never be two different answers. `select` is a pure function of
-    // readings already in memory: it runs no command and reads no file.
-    let selection = import::baseline::select(&machine);
-    let mut report = String::new();
-    // Packages first, in the order the emitted block names them, then the configuration files:
-    // the file is written top to bottom and so is what is said about it.
-    for warning in selection.warnings(machine.distro) {
-        report.push_str(&warning);
-        report.push('\n');
-    }
-    if let Some(capture) = &capture {
-        for warning in capture.warnings() {
-            report.push_str(&warning);
-            report.push('\n');
-        }
-    }
-    let Some(dir) = out else {
-        report.push_str(&text);
-        return Ok(report);
-    };
-    if options.dry_run {
-        // What would be written, as a diff of what is there now, and nothing written.
-        let path = dir.join(landing::MANIFEST);
-        let before = fs::read_to_string(&path).unwrap_or_default();
-        report.push_str(&reconcile::diff::unified(
-            &path.display().to_string(),
-            &before,
-            &text,
-        ));
-        for file in capture.iter().flat_map(|capture| &capture.captured) {
-            let _ = writeln!(
-                report,
-                "captured: {} sha256:{} (mode {:04o}, {}:{})",
-                file.path,
-                crate::util::sha256_hex(&file.bytes),
-                file.mode,
-                file.owner,
-                file.group
-            );
-        }
-        let _ = writeln!(
-            report,
-            "would write {}: {} package(s) declared; nothing was written (--dry-run)",
-            path.display(),
-            selection.common.len()
-        );
-        return Ok(report);
-    }
-    let mut record = writes_record.then(|| {
-        fresh_record(
-            &gate,
-            &machine,
-            &selection,
-            capture.as_ref(),
-            previous,
-            host.as_ref()
-                .map_or(lock::IN_PLACE_SOURCE, |host| host.source.as_str()),
-        )
-    });
-    if host.is_some() {
-        // Into a host directory: the record first, as root, then the owner of the directory is
-        // who writes every byte under it (LD-379). The adoption copies are root's too, taken
-        // with the record and before the privilege drop (LD-387).
-        if let Some((record, adopted)) = &mut record {
-            for line in originals::adopt(&gate.root, &mut record.files, adopted) {
-                let _ = writeln!(report, "{line}");
-            }
-            apply::materialise_lock(&gate, record)?;
-        }
-        become_writer(&mut gate)?;
-    }
-    if options.out.is_some() || host.is_some() {
-        // Born 0755, never at the umask's mode: the manifest below is written only into a
-        // directory nobody but its owner can write (LD-333), and under Ubuntu's umask 002 a
-        // directory made the default way was refused by the import that made it (LD-343).
-        use std::os::unix::fs::DirBuilderExt;
-        fs::DirBuilder::new()
-            .recursive(true)
-            .mode(0o755)
-            .create(&dir)
-            .map_err(|e| store_io(&dir, &e.to_string()))?;
-    }
-    // The keyrings the commented [sources] blocks name travel with the captured files, so that
-    // they land where the capture lands and `--force` keeps them (LD-367).
-    let bundle = capture
-        .as_ref()
-        .map(|capture| machine.repositories.bundle(capture));
-    let manifest_path = landing::write(&gate, &dir, &text, bundle.as_ref(), options.force)?;
-    if let Some(user) = &home_user {
-        write_import_home(&gate, &dir, user, &mut report)?;
-    }
-    if in_place && let Some((record, adopted)) = &mut record {
-        // Each captured file is adopted where it stands, and its original kept in the store
-        // below /etc/lodi before the record names it (LD-387).
-        for line in originals::adopt(&gate.root, &mut record.files, adopted) {
-            let _ = writeln!(report, "{line}");
-        }
-        apply::materialise_lock(&gate, record)?;
-    }
-    if options.out.is_some() {
-        let _ = writeln!(
-            report,
-            "wrote {}: {} package(s) declared, {} not captured; no file copied from /etc",
-            manifest_path.display(),
-            selection.common.len(),
-            selection.not_captured()
-        );
-    } else {
-        // What landed and that nothing else changed, what to read before going on, and the
-        // command that reads it, which writes nothing (LD-380).
-        let named = host
-            .as_ref()
-            .and_then(|host| host.named.as_deref())
-            .map(|named| format!(" {}", named.display()))
-            .unwrap_or_default();
-        let next = if gate.system_root {
-            format!("sudo lodi host plan{named}")
-        } else {
-            format!("lodi host plan{named} --root {}", gate.root.display())
-        };
-        let _ = writeln!(
-            report,
-            "wrote {}: {} package(s) declared, {} not captured, no file copied from /etc; no \
-             package and no file outside {} changed",
-            manifest_path.display(),
-            selection.common.len(),
-            selection.not_captured(),
-            dir.display()
-        );
-        if host.is_some() && record.is_none() {
-            let _ = writeln!(
-                report,
-                "wrote no record: the record {} is root's; the next \
-                 `sudo lodi host apply{named}` writes it",
-                gate.lock_path().display()
-            );
-        }
-        let _ = writeln!(
-            report,
-            "read it first: NOT CAPTURED lists what was left out and how to declare it"
-        );
-        let _ = writeln!(report, "next: {next} (writes nothing)");
-    }
-    Ok(report)
-}
-
-fn write_import_home(
+/// `lodi import`'s record (2.0, LD-515): [`fresh_record`] of what it captured, over the record
+/// there is, its captured files adopted where they stand, written as root before the config is,
+/// so that the first switch after an edit of the host file applies it. `folder` is the host
+/// file's folder as the person names it; the record names it as a switch from it does.
+/// Returns a line for each original that could not be kept.
+pub fn record_import(
     gate: &safety::Gate,
-    dir: &Path,
-    user: &crate::passwd::User,
-    report: &mut String,
-) -> Result<(), HostError> {
-    let roots = crate::roots::Roots::for_host(
-        gate.root.join(user.home.trim_start_matches('/')),
-        dir.to_path_buf(),
-    );
-    let path = dir
-        .join("home")
-        .join(&user.name)
-        .join(crate::home::import::MANIFEST);
-    let made = crate::home::import::stub_for_host(&roots, &user.name)?;
-    let action = if made { "wrote" } else { "kept" };
-    let _ = writeln!(report, "{action} {}", path.display());
-    Ok(())
+    machine: &import::Machine,
+    capture: &import::files::Capture,
+    folder: &Path,
+) -> Result<Vec<String>, Diagnostic> {
+    let source = record_source(&gate.root, folder);
+    let selection = import::baseline::select(machine);
+    let previous = lock::HostLock::read(&gate.lock_path())?;
+    // An import into another folder leaves the record of the one switched from while that one
+    // still has its host file: else what a switch installed and the import cannot declare (a
+    // vendor's package) or does not (a group) is forgotten, and leaves no more (LD-530).
+    if let Some(other) = previous.as_ref().and_then(|lock| lock.source.as_deref())
+        && other != source
+        && gate
+            .root
+            .join(other.trim_start_matches('/'))
+            .join("host.toml")
+            .is_file()
+    {
+        return Ok(Vec::new());
+    }
+    let base = previous
+        .as_ref()
+        .and_then(|lock| lock.base_for(&source))
+        .map(|base| base.files.clone());
+    let recorded: Vec<String> = previous
+        .iter()
+        .flat_map(|lock| lock.files.keys().cloned())
+        .collect();
+    let (mut record, adopted) =
+        fresh_record(gate, machine, &selection, Some(capture), previous, &source);
+    // A file the record names keeps its place in the base, at its digest on the machine now, as
+    // 1.x's reconcile moved it (LD-519): else the next import has no base for a declared file.
+    if let Some(baseline) = &mut record.baseline {
+        let mut files = base.unwrap_or_default();
+        for path in recorded {
+            let seen = files::inspect(&gate.root, &path, true).ok();
+            if let Some(digest) = seen.and_then(|_| plan::Facts::observe(&gate.root, &path).digest)
+            {
+                files.insert(path, digest);
+            }
+        }
+        files.append(&mut baseline.files);
+        baseline.files = files;
+    }
+    let lines = originals::adopt(&gate.root, &mut record.files, &adopted);
+    apply::materialise_lock(gate, &record)?;
+    Ok(lines)
+}
+
+/// The folder of a host file as a record names it (`lock.source`): itself on `/`, else its path
+/// inside the root `root`.
+pub fn record_source(root: &Path, folder: &Path) -> String {
+    if root == Path::new("/") {
+        folder.display().to_string()
+    } else {
+        format!("/{}", folder.strip_prefix(root).unwrap_or(folder).display())
+    }
 }
 
 /// The record a fresh import writes: what it declared and the machine has, with its holds —
@@ -1344,46 +852,9 @@ fn fresh_record(
     (record, adopted)
 }
 
-/// Where an import's bytes may go, decided before anything is read.
-///
-/// `--out` is resolved against the working directory and through the symbolic links of the
-/// ancestors that exist, so that neither a relative path nor a link can point the bundle into a
-/// directory the host scope owns without this seeing it.
-fn import_destination(
-    gate: &safety::Gate,
-    requested: &Path,
-) -> Result<std::path::PathBuf, HostError> {
-    let resolved = resolve_for_write(requested);
-    for owned in [safety::MANIFEST, safety::STATE] {
-        // `etc/lodi/host.toml` and `var/lib/lodi/host` name a file and a directory inside the two
-        // directories the host scope owns; the parents are what an import may not write into.
-        let Some(dir) = gate.root.join(owned).parent().map(Path::to_path_buf) else {
-            continue;
-        };
-        let dir = resolve_for_write(&dir);
-        if resolved == dir || resolved.starts_with(&dir) {
-            return Err(Diagnostic::new(
-                "E_STORE_IO",
-                format!(
-                    "--out {} is inside {}, which the host scope owns",
-                    requested.display(),
-                    dir.display()
-                ),
-            )
-            .hint(format!(
-                "drop --out: with no flag, lodi host import itself writes {} and the files/ \
-                 beside it; --out names a directory of your own",
-                gate.root.join(safety::MANIFEST).display()
-            ))
-            .into());
-        }
-    }
-    Ok(resolved)
-}
-
 /// An absolute path for something that may not exist yet: the deepest ancestor that does exist
 /// is canonicalized, and the rest is appended to it unchanged.
-fn resolve_for_write(path: &Path) -> std::path::PathBuf {
+pub fn resolve_for_write(path: &Path) -> std::path::PathBuf {
     let absolute = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -1410,32 +881,32 @@ fn resolve_for_write(path: &Path) -> std::path::PathBuf {
     }
 }
 
-fn store_io(path: &Path, detail: &str) -> HostError {
-    Diagnostic::new("E_STORE_IO", format!("{}: {detail}", path.display())).into()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::ffi::OsStr;
 
     #[test]
-    fn the_guard_refuses_only_a_rootless_verb_under_the_exact_setting() {
-        for verb in ["plan", "apply", "import", "arm"] {
-            let refused = require_root(verb, None, Some(OsStr::new("1"))).expect_err(verb);
+    fn the_guard_refuses_only_a_rootless_command_under_the_exact_setting() {
+        for command in ["switch", "import", "update", "pin"] {
+            let refused =
+                require_root_for(command, None, Some(OsStr::new("1"))).expect_err(command);
             assert_eq!(refused.code, "E_HOST_ROOT_REQUIRED");
             assert_eq!(exit_status(refused.code), 9);
-            assert!(refused.message.contains(&format!("`lodi host {verb}`")));
+            assert!(refused.message.contains(&format!("`lodi {command}`")));
             assert!(refused.message.contains("nothing was read"));
             let root = Path::new("/srv/scratch");
             assert_eq!(
-                require_root(verb, Some(root), Some(OsStr::new("1"))),
+                require_root_for(command, Some(root), Some(OsStr::new("1"))),
                 Ok(())
             );
             for other in ["", "0", "true", "yes", " 1", "1 ", "01"] {
-                assert_eq!(require_root(verb, None, Some(OsStr::new(other))), Ok(()));
+                assert_eq!(
+                    require_root_for(command, None, Some(OsStr::new(other))),
+                    Ok(())
+                );
             }
-            assert_eq!(require_root(verb, None, None), Ok(()));
+            assert_eq!(require_root_for(command, None, None), Ok(()));
         }
     }
 }

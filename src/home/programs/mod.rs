@@ -26,7 +26,7 @@
 //! Everything it needs is in its table and in [`RenderEnv`].
 //!
 //! Adding a module is its `pub mod` here, its [`module`] row in [`REGISTRY`] and its
-//! [`Program::STUB`], the commented table `lodi home import` emits for it (§7). This build
+//! [`Program::STUB`], the commented table `lodi import --home` writes for it (§7). This build
 //! ships `bash`, `fish`, `git` and `zsh` (M-Home pa-1) and `alacritty`, `helix`, `kitty`,
 //! `nvim`, `starship` and `tmux` (pb-1); any other `[programs.<name>]` is
 //! `E_UNKNOWN_BLOCK` naming the shipped list. Tests also hand the loader a registry of their own
@@ -162,7 +162,7 @@ pub trait Program: Sized {
     /// unless the module says otherwise.
     const EXECUTABLE: &'static str = Self::NAME;
 
-    /// The commented stub `lodi home import` emits for this module when its executable is on
+    /// The commented stub `lodi import --home` writes for this module when its executable is on
     /// `PATH` (§7), below a `# [programs.<NAME>]` line the importer writes: one line per key the
     /// module reads, each starting `# `, with a fixed example value and never a value taken from
     /// the machine. With the `# ` of every line removed it is a table the module accepts, and
@@ -277,7 +277,7 @@ pub fn header(comment: Comment, module: &str) -> String {
     let c = comment.prefix();
     format!(
         "{c} Managed by lodi from home.toml [programs.{module}]. Edit home.toml, not this file:\n\
-         {c} a hand edit here is drift, and `lodi home apply` stops on it.\n"
+         {c} a hand edit here is drift, and `lodi switch` stops on it.\n"
     )
 }
 
@@ -851,7 +851,7 @@ mod tests {
         assert_eq!(
             header(Comment::Hash, "git"),
             "# Managed by lodi from home.toml [programs.git]. Edit home.toml, not this file:\n\
-             # a hand edit here is drift, and `lodi home apply` stops on it.\n"
+             # a hand edit here is drift, and `lodi switch` stops on it.\n"
         );
         let lua = header(Comment::DoubleDash, "nvim");
         assert!(lua.lines().all(|l| l.starts_with("-- ")), "{lua}");

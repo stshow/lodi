@@ -1,5 +1,5 @@
 # Managed by lodi from home.toml [programs.zsh]. Edit home.toml, not this file:
-# a hand edit here is drift, and `lodi home apply` stops on it.
+# a hand edit here is drift, and `lodi switch` stops on it.
 
 if [ -r "$HOME"/'.local/share/lodi/home-scope/profile.sh' ]; then . "$HOME"/'.local/share/lodi/home-scope/profile.sh'; fi
 export EDITOR='nvim'

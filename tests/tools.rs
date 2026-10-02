@@ -77,6 +77,17 @@ impl Lane {
             .unwrap()
     }
 
+    /// `lodi develop --trust -- true`: the project locks itself first (LD-496), then runs a
+    /// command that does nothing.
+    fn lock(&self) -> Output {
+        self.run(&["develop", "--trust", "--", "/bin/sh", "-c", ":"])
+    }
+
+    /// Record trust in the project's manifest as a yes at the prompt would.
+    fn trust(&self) {
+        record_trust(&self.lodi_home().join("trust.json"), &self.project());
+    }
+
     fn lock_file(&self) -> LockFile {
         let bytes = fs::read(self.project().join("lodi.lock")).unwrap();
         parse_lock(&bytes).expect("the lock parses")
@@ -154,14 +165,20 @@ fn a_manifest_using_every_key_locks_the_host_architectures_pin() {
         ],
     ));
 
-    let o = lane.run(&["lock"]);
+    let o = lane.lock();
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
-
-    // Nothing was asked of the network: an inline declaration is already a pin.
     assert!(
-        lane.server.requests().is_empty(),
-        "locking an inline tool made requests: {:?}",
-        lane.server.requests()
+        err(&o).contains("lodi: wrote lodi.lock (resolved jaq-cli): "),
+        "{}",
+        err(&o)
+    );
+
+    // Nothing but the artifact was asked of the network: an inline declaration is already a
+    // pin, so locking makes no request and entering fetches the one file.
+    assert_eq!(
+        lane.server.requests(),
+        [url("x86_64")],
+        "locking an inline tool made requests"
     );
 
     let lock = lane.lock_file();
@@ -191,18 +208,19 @@ fn a_manifest_using_every_key_locks_the_host_architectures_pin() {
         ])
     );
 
-    // The lock is a fixed point: a second `lodi lock` changes nothing and asks nothing.
+    // The lock is a fixed point: a second entry changes nothing and asks nothing.
+    lane.server.clear();
     let before = fs::read(lane.project().join("lodi.lock")).unwrap();
-    let o = lane.run(&["lock"]);
+    let o = lane.lock();
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert!(!err(&o).contains("wrote lodi.lock"), "{}", err(&o));
     assert_eq!(fs::read(lane.project().join("lodi.lock")).unwrap(), before);
     assert!(lane.server.requests().is_empty());
 
-    // `lodi lock --check` agrees, and the declaration's env reaches the child with
-    // `${self.path}` and `${self.version}` substituted.
-    assert_eq!(lane.run(&["lock", "--check"]).status.code(), Some(0));
-    // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    assert_eq!(lane.run(&["trust"]).status.code(), Some(0));
+    // The declaration's env reaches the child with `${self.path}` and `${self.version}`
+    // substituted. A manifest with tools and no tasks is trusted before its environment is
+    // entered (LD-359).
+    lane.trust();
     let o = lane.run(&["develop", "--", "jaq"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(out(&o).trim(), "x86_64");
@@ -241,19 +259,29 @@ fn an_inline_tool_runs_without_a_single_discovery_request() {
          bin = [\"bin/jaq\"]\n",
         sha256_hex(&bytes)
     ));
-    assert_eq!(lane.run(&["lock"]).status.code(), Some(0));
-    assert!(lane.server.requests().is_empty(), "locking asked upstream");
-
-    // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    assert_eq!(lane.run(&["trust"]).status.code(), Some(0));
-    let o = lane.run(&["develop", "--", "jaq"]);
+    // There is no lock: `develop` writes one, says so in one line, and runs (LD-496).
+    assert!(!lane.project().join("lodi.lock").exists());
+    let o = lane.run(&["develop", "--trust", "--", "jaq"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(out(&o).trim(), "inline-1.7.1");
+    assert_eq!(
+        err(&o)
+            .lines()
+            .filter(|l| l.starts_with("lodi: wrote lodi.lock (resolved jaq): jaq 1.7.1"))
+            .count(),
+        1,
+        "{}",
+        err(&o)
+    );
+    assert_eq!(lane.lock_file().packages["jaq"].version, "1.7.1");
     assert_eq!(
         lane.server.requests(),
         [url],
         "the artifact, and nothing else, was fetched"
     );
+
+    // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
+    lane.trust();
 
     // Warm: the second run downloads nothing at all.
     lane.server.clear();
@@ -368,7 +396,7 @@ fn a_binary_artifact_becomes_an_executable_under_bin() {
          url = \"{url}\"\nsha256 = \"{}\"\nformat = \"binary\"\n",
         sha256_hex(&bytes)
     ));
-    assert_eq!(lane.run(&["lock"]).status.code(), Some(0));
+    assert_eq!(lane.lock().status.code(), Some(0));
     let lock = lane.lock_file();
     let entry = &lock.packages["bare"];
     assert_eq!(entry.artifacts[0].format, "binary");
@@ -379,7 +407,7 @@ fn a_binary_artifact_becomes_an_executable_under_bin() {
     );
 
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    assert_eq!(lane.run(&["trust"]).status.code(), Some(0));
+    lane.trust();
     let o = lane.run(&["develop", "--", "bare"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(out(&o).trim(), "bare-binary 2.3.4");
@@ -453,7 +481,7 @@ fn every_refusal_names_its_code_its_status_and_the_next_step() {
     for (tag, tools, status, code, hint) in cases {
         let lane = Lane::new(&format!("tools-{tag}"), BTreeMap::new());
         lane.write_manifest(&format!("[project]\nname = \"demo\"\n\n{tools}"));
-        let o = lane.run(&["lock"]);
+        let o = lane.lock();
         let text = err(&o);
         assert_eq!(o.status.code(), Some(status), "{tag}: {text}");
         assert!(text.contains(code), "{tag}: {text}");
@@ -484,7 +512,7 @@ fn an_optional_tool_without_a_host_build_is_a_warning_and_nothing_else() {
          [tools.jaq.aarch64]\nurl = \"https://artifacts.test/jaq-arm.tar.gz\"\n\
          sha256 = \"{hex}\"\n"
     ));
-    let o = lane.run(&["lock"]);
+    let o = lane.lock();
     let text = err(&o);
     assert_eq!(o.status.code(), Some(0), "{text}");
     assert!(text.contains("W_OPTIONAL_SKIPPED"), "{text}");
@@ -494,12 +522,13 @@ fn an_optional_tool_without_a_host_build_is_a_warning_and_nothing_else() {
         !lock.packages.contains_key("jaq"),
         "an optional tool with no host build is not locked"
     );
-    // And it stays that way: the lock is not stale because of it.
-    assert_eq!(
-        lane.run(&["lock", "--check"]).status.code(),
-        Some(0),
-        "{text}"
-    );
+    // And it stays that way: the lock is not stale because of it, so the next entry writes
+    // nothing.
+    let before = fs::read(lane.project().join("lodi.lock")).unwrap();
+    let again = lane.lock();
+    assert_eq!(again.status.code(), Some(0), "{}", err(&again));
+    assert!(!err(&again).contains("wrote lodi.lock"), "{}", err(&again));
+    assert_eq!(fs::read(lane.project().join("lodi.lock")).unwrap(), before);
 }
 
 // ------------------------------------------------- (f) the existing locks are untouched ---
@@ -625,7 +654,7 @@ fn the_same_tools_table_parses_the_same_way_outside_a_project_manifest() {
 
 // ------------------------------------ (f) tools on PATH are trusted like task text (LD-359) ---
 
-/// A project whose one tool is a bare binary called `name`, locked; the lane and its bytes.
+/// A project whose one tool is a bare binary called `name`, not locked yet; the lane.
 fn bare_tool(lane_name: &str, name: &str) -> Lane {
     let bytes = format!("#!/bin/sh\necho {name} from the environment\n").into_bytes();
     let url = format!("https://artifacts.test/{name}/{name}-2.3.4");
@@ -635,7 +664,6 @@ fn bare_tool(lane_name: &str, name: &str) -> Lane {
          url = \"{url}\"\nsha256 = \"{}\"\nformat = \"binary\"\n",
         sha256_hex(&bytes)
     ));
-    assert_eq!(lane.run(&["lock"]).status.code(), Some(0));
     lane
 }
 
@@ -651,13 +679,13 @@ fn realized(lane: &Lane) -> Vec<String> {
         .unwrap_or_default()
 }
 
-/// A manifest with tools and no tasks realizes and runs nothing until it is trusted, like one
-/// with task text: `LODI_TRUST=1` authorizes one invocation, `lodi trust` shows the whole
-/// manifest and records it, any change to the file asks again, and a revoked one is refused.
+/// A manifest with tools and no tasks locks, realizes and runs nothing until it is trusted, like
+/// one with task text: `LODI_TRUST=1` authorizes one invocation, a recorded trust lets it in,
+/// and any change to the file asks again. The prompt itself is `tests/spike_host.rs`'s.
 #[test]
 fn a_manifest_with_tools_and_no_tasks_is_trusted_before_it_is_entered() {
     let lane = bare_tool("tools-trust", "bare");
-    let trust_file = lane.base.join("config/lodi/trust.json");
+    let trust_file = lane.lodi_home().join("trust.json");
 
     let o = lane.run(&["develop", "--", "bare"]);
     assert_eq!(o.status.code(), Some(11), "{}", err(&o));
@@ -669,29 +697,24 @@ fn a_manifest_with_tools_and_no_tasks_is_trusted_before_it_is_entered() {
     );
     assert!(lane.server.requests().is_empty(), "something was fetched");
     assert!(realized(&lane).is_empty(), "something was realized");
+    assert!(
+        !lane.project().join("lodi.lock").exists(),
+        "something was locked"
+    );
 
     let once = [("LODI_TRUST", OsString::from("1"))];
     let o = lane.run_with(&["develop", "--", "bare"], &once);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(out(&o).trim(), "bare from the environment");
     assert!(
-        err(&o).contains("LODI_TRUST=1 authorizes this invocation only (manifest sha256:"),
+        err(&o).contains("lodi: trusted for this run only (manifest sha256:"),
         "{}",
         err(&o)
     );
     assert!(!trust_file.exists(), "LODI_TRUST=1 recorded something");
     assert_eq!(lane.run(&["develop", "--", "bare"]).status.code(), Some(11));
 
-    let o = lane.run(&["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
-    let shown = out(&o);
-    assert!(
-        shown.contains("declares no tasks, and tools or a base")
-            && shown.contains("    | [tools.bare]")
-            && shown.contains("manifest hash: sha256:")
-            && shown.contains("outside this authorization"),
-        "{shown}"
-    );
+    lane.trust();
     let o = lane.run(&["develop", "--", "bare"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
 
@@ -707,10 +730,6 @@ fn a_manifest_with_tools_and_no_tasks_is_trusted_before_it_is_entered() {
         "{}",
         err(&o)
     );
-
-    assert_eq!(lane.run(&["trust"]).status.code(), Some(0));
-    assert!(out(&lane.run(&["trust", "--revoke"])).contains("revoked"));
-    assert_eq!(lane.run(&["develop", "--", "bare"]).status.code(), Some(11));
 }
 
 /// What a trust record covers, decided from the manifest alone: task text when there are
@@ -759,7 +778,7 @@ fn host_command(lane: &Lane, name: &str, mode: u32) -> PathBuf {
 #[test]
 fn an_environment_that_shadows_a_host_command_says_so() {
     let lane = bare_tool("tools-shadow", "bare");
-    assert_eq!(lane.run(&["trust"]).status.code(), Some(0));
+    lane.trust();
     let with_dir = |dir: &Path| {
         let mut path = dir.as_os_str().to_os_string();
         path.push(":");
@@ -826,7 +845,8 @@ fn only_an_executable_in_the_environment_shadows_a_host_command() {
 
 /// The spike fixture's lock was written before the catalogue's recipe comments were edited, so
 /// it records each recipe file's old digest. Freshness is decided by what the manifest asks for,
-/// not by that digest: `lodi lock` keeps every entry, rewrites no byte and fetches nothing.
+/// not by that digest: entering keeps every entry, rewrites no byte and fetches nothing to lock.
+/// `PATH` holds no Podman, so the container entry stops right after the lock step.
 #[test]
 fn lock_from_before_the_catalogue_comment_edit_stays_fresh() {
     let spike = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/spike"));
@@ -846,15 +866,14 @@ fn lock_from_before_the_catalogue_comment_edit_stays_fresh() {
             "{label}: the fixture does not predate the edit of {name}.toml"
         );
     }
-    for args in [&["lock"][..], &["lock", "--check"]] {
-        let o = lane.run(args);
-        assert_eq!(o.status.code(), Some(0), "{args:?}: {}", err(&o));
-        assert!(
-            out(&o).starts_with("lodi.lock is up to date: "),
-            "{args:?}: {}",
-            out(&o)
-        );
-    }
+    let empty = lane.base.join("empty-bin");
+    fs::create_dir_all(&empty).unwrap();
+    let o = lane.run_with(
+        &["develop", "--trust", "--", "/bin/sh", "-c", ":"],
+        &[("PATH", empty.into_os_string())],
+    );
+    assert!(!err(&o).contains("wrote lodi.lock"), "{}", err(&o));
+    assert!(!err(&o).contains("E_LOCK"), "{}", err(&o));
     assert_eq!(fs::read(lane.project().join("lodi.lock")).unwrap(), before);
     assert!(
         lane.server.requests().is_empty(),

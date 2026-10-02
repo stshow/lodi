@@ -1,9 +1,8 @@
 //! The import core: a machine's own readings turned into a short, commented, deterministic
 //! `host.toml` (M-Import T-1).
 //!
-//! It is a **library** and nothing else in this build reaches it: `lodi host import` is T-3's,
-//! and until then no command, no flag and no line of `lodi --help` names it. What is here is the
-//! whole of the transformation, in three pieces:
+//! `lodi import` reaches it through the config's import. What is here is the whole of the
+//! transformation, in three pieces:
 //!
 //! - [`read`] takes the readings — [`pm::Backend::observe`], [`pm::Backend::origins`] and the
 //!   read-only [`pm::Backend::survey`] this package added to the seam — and nothing else;
@@ -110,7 +109,7 @@ pub struct Machine {
 ///
 /// Every backend call here is a read. Nothing below this function builds an invocation.
 pub fn read(gate: &Gate) -> Result<Machine, Diagnostic> {
-    let backend = pm::backend_for(gate.distro, &gate.root, false, gate.operation);
+    let backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
     read_with(gate, backend.as_ref())
 }
 

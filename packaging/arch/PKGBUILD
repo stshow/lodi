@@ -13,7 +13,7 @@
 #
 # aarch64 is cross-built on the x86_64 builder and is not tested by this project (§9.3a).
 pkgname=lodi
-pkgver=1.12.2
+pkgver=2.0.0
 pkgrel=1
 pkgdesc="Environment and system manager for Ubuntu, Debian, Arch and Fedora"
 arch=('x86_64' 'aarch64')

@@ -50,8 +50,8 @@ pub fn builtin_base(distro: &str) -> Option<Result<BaseDefinition, Diagnostic>> 
         .map(|(f, text)| parse_base(text, f))
 }
 
-/// Every built-in tool recipe, parsed, sorted by name. `lodi search` and `lodi info` read the
-/// whole catalogue rather than one name, so they take it through here (M-0.4 T-6).
+/// Every built-in tool recipe, parsed, sorted by name. `lodi search` reads the whole catalogue
+/// rather than one name, so it takes it through here (M-0.4 T-6).
 pub fn builtin_recipes() -> Result<Vec<Recipe>, Diagnostic> {
     let mut recipes: Vec<Recipe> = BUILTIN_TOOLS
         .iter()

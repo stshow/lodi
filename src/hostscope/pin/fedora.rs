@@ -3,7 +3,7 @@
 //! Fedora has no dated archive, so a Fedora pin is never a date: it is one build, written as dnf
 //! prints it (`EPOCH:VERSION-RELEASE.ARCH`), and the lock records its name, epoch, version,
 //! release, architecture, the repository that served it, the file's SHA-256 and the HTTPS URL of
-//! Fedora's signed Koji copy of exactly that file. `lodi host pin` resolves a build once: dnf5
+//! Fedora's signed Koji copy of exactly that file. `lodi pin` resolves a build once: dnf5
 //! downloads it from a configured repository, and lodi hashes it and reads its signing key. A
 //! plan and an apply never resolve: a pin the lock does not record is refused.
 //!
@@ -178,7 +178,7 @@ fn from_record(name: &str, record: &PinRecord) -> Result<Resolved, Diagnostic> {
             format!("the lock's record of the fedora pin `{name}` {why}"),
         )
         .hint(format!(
-            "record it again with `lodi host pin {name} --to BUILD`; nothing was changed"
+            "record it again with `lodi pin {name} --to BUILD`; nothing was changed"
         ))
     };
     let (Some(epoch), Some(release), Some(arch), Some(source)) =
@@ -230,7 +230,7 @@ fn no_dates(what: &str) -> Diagnostic {
         format!("{what} is a date, and fedora has no dated archive to pin to"),
     )
     .hint(
-        "pin a build such as \"0:1.10.4-1.fc44.x86_64\"; `lodi host versions NAME` lists the \
+        "pin a build such as \"0:1.10.4-1.fc44.x86_64\"; `lodi pin NAME` lists the \
          builds. Nothing was changed",
     )
 }
@@ -265,8 +265,8 @@ pub fn resolve(
                 ),
             )
             .hint(format!(
-                "record it with `lodi host pin {name} --to {value}` on the repository, then \
-                 commit both files; nothing was changed"
+                "record it with `lodi pin {name} --to {value}` in the config, then commit \
+                 both files; nothing was changed"
             )));
         };
         let resolved = from_record(name, record)?;
@@ -279,7 +279,7 @@ pub fn resolve(
                 ),
             )
             .hint(format!(
-                "record it again with `lodi host pin {name} --to {value}`; nothing was changed"
+                "record it again with `lodi pin {name} --to {value}`; nothing was changed"
             )));
         }
         resolution.pins.insert(name.clone(), resolved);
@@ -399,8 +399,9 @@ fn untrusted(name: &str, build: &str, found: Option<&str>, want: Option<&str>) -
     d.hint("pin a build Fedora signed, or remove the pin")
 }
 
-/// Resolve `name` at `build` for `lodi host pin`: the newest offer that matches, downloaded by
-/// dnf5 from a configured repository, hashed and its signing key read.
+/// Resolve `name` at `build` for `lodi pin`: the newest offer that matches, downloaded by
+/// dnf5 from a configured repository, hashed and its signing key read; else Fedora's signed Koji
+/// copy of that build, found through Koji's index of its signed copies.
 pub fn lookup(
     root: &Path,
     operation: crate::hostscope::safety::Operation,
@@ -409,19 +410,32 @@ pub fn lookup(
 ) -> Result<Resolved, Diagnostic> {
     let downloads = Downloads::new()?;
     let dnf = crate::hostscope::pm::dnf::Dnf::new(root, operation).with_home(&downloads.0);
-    let offer = dnf
-        .offers(name)?
-        .into_iter()
-        .find(|offer| build.matches(&offer.build))
-        .ok_or_else(|| unavailable(name, &build.full(), "no configured repository"))?;
-    let nevra = format!("{name}-{}", offer.build.full());
-    let file = file_name(name, &offer.build);
-    let bytes = dnf
-        .download(&nevra, &downloads.0, &file)?
-        .ok_or_else(|| unavailable(name, &offer.build.full(), "no configured repository"))?;
-    let key =
-        signing_key(&bytes).ok_or_else(|| untrusted(name, &offer.build.full(), None, None))?;
-    let short = key[key.len().saturating_sub(8)..].to_ascii_lowercase();
+    let offers = dnf.offers(name)?;
+    let found = match offers.iter().find(|offer| build.matches(&offer.build)) {
+        Some(offer) => {
+            let nevra = format!("{name}-{}", offer.build.full());
+            let file = file_name(name, &offer.build);
+            dnf.download(&nevra, &downloads.0, &file)?
+                .map(|bytes| (offer.clone(), bytes, None))
+        }
+        None => None,
+    };
+    let (offer, bytes, key) = match found {
+        Some(found) => found,
+        None => {
+            let fetcher = crate::fetch::HttpFetcher::from_env()
+                .map_err(|error| Diagnostic::new("E_CONFIG", error))?;
+            from_koji(&fetcher, name, build, &offers)?
+        }
+    };
+    let key = match key {
+        Some(key) => key,
+        None => {
+            let key = signing_key(&bytes)
+                .ok_or_else(|| untrusted(name, &offer.build.full(), None, None))?;
+            key[key.len().saturating_sub(8)..].to_ascii_lowercase()
+        }
+    };
     let full = offer.build.full();
     Ok(Resolved {
         name: name.to_string(),
@@ -429,12 +443,97 @@ pub fn lookup(
         policy: "version",
         version: full,
         sha256: format!("sha256:{}", crate::util::sha256_hex(&bytes)),
-        filename: file,
+        filename: file_name(name, &offer.build),
         repository: offer.repository.clone(),
         snapshot: None,
         recorded: false,
-        source: Some(koji_url(&offer.source_name, name, &offer.build, &short)),
+        source: Some(koji_url(&offer.source_name, name, &offer.build, &key)),
     })
+}
+
+/// The signing keys Koji's index of a build's signed copies lists, oldest first: the first is
+/// the key of the release the build was made for, later ones re-signed it for newer releases.
+fn koji_keys(index: &str) -> Vec<String> {
+    let mut keys: Vec<(String, String)> = Vec::new();
+    for line in index.lines() {
+        let Some((_, rest)) = line.split_once("<a href=\"") else {
+            continue;
+        };
+        let Some((key, after)) = rest.split_once("/\"") else {
+            continue;
+        };
+        let after = after
+            .rsplit_once("</a>")
+            .map_or("", |(_, tail)| tail.trim());
+        if url_key(&format!("/data/signed/{key}/")) == Some(key) {
+            keys.push((after.to_string(), key.to_string()));
+        }
+    }
+    keys.sort();
+    keys.into_iter().map(|(_, key)| key).collect()
+}
+
+/// A build no configured repository serves, from Fedora's signed Koji copy (#712): the source
+/// package and architecture the repositories give this name, else the name itself and each
+/// architecture; each key Koji lists, oldest first, until a copy signed by that key is found.
+fn from_koji(
+    fetcher: &dyn Fetcher,
+    name: &str,
+    build: &Build,
+    offers: &[Offer],
+) -> Result<(Offer, Vec<u8>, Option<String>), Diagnostic> {
+    let neither = "neither a configured repository nor Fedora's signed Koji copy";
+    let source_name = offers
+        .first()
+        .map_or_else(|| name.to_string(), |offer| offer.source_name.clone());
+    let index = format!(
+        "{KOJI}/{source_name}/{}/{}/data/signed/",
+        build.version, build.release
+    );
+    let listed = match fetcher.get(&index) {
+        Ok(body) => String::from_utf8_lossy(&body).into_owned(),
+        Err(e) if matches!(e.status(), Some(403 | 404 | 410)) => {
+            return Err(unavailable(name, &build.full(), neither));
+        }
+        Err(FetchError::NotFound(_)) => return Err(unavailable(name, &build.full(), neither)),
+        Err(e) => return Err(crate::debian::base::repo_error(e)),
+    };
+    let arches: Vec<String> = match &build.arch {
+        Some(arch) => vec![arch.clone()],
+        None => ARCHES.iter().map(ToString::to_string).collect(),
+    };
+    for key in koji_keys(&listed) {
+        for arch in &arches {
+            let exact = Build {
+                arch: Some(arch.clone()),
+                ..build.clone()
+            };
+            let bytes = match fetcher.get(&koji_url(&source_name, name, &exact, &key)) {
+                Ok(body) if body.len() <= MAX_FILE => body,
+                Ok(_) => continue,
+                Err(e) if matches!(e.status(), Some(403 | 404 | 410)) => continue,
+                Err(FetchError::NotFound(_)) => continue,
+                Err(e) => return Err(crate::debian::base::repo_error(e)),
+            };
+            let signed =
+                signing_key(&bytes).is_some_and(|found| found.to_ascii_lowercase().ends_with(&key));
+            if !signed {
+                return Err(untrusted(
+                    name,
+                    &exact.full(),
+                    signing_key(&bytes).as_deref(),
+                    Some(&key),
+                ));
+            }
+            let offer = Offer {
+                build: exact,
+                repository: "koji".to_string(),
+                source_name: source_name.clone(),
+            };
+            return Ok((offer, bytes, Some(key)));
+        }
+    }
+    Err(unavailable(name, &build.full(), neither))
 }
 
 // ----------------------------------------------------------------------------- the apply ---
@@ -538,7 +637,7 @@ pub fn stage(
     Ok(path)
 }
 
-/// `lodi host versions NAME` on Fedora: every build the configured repositories offer, newest
+/// `lodi pin NAME` on Fedora: every build the configured repositories offer, newest
 /// first, with the installed, the pinned and the latest marked, then one line to copy.
 pub fn listing(
     offers: &[Offer],
@@ -619,6 +718,18 @@ mod tests {
         }
         assert_eq!(read("unsigned-pv-1.10.4-1.fc44.x86_64.rpm"), None);
         assert_eq!(signing_key(b"not a package"), None);
+    }
+
+    #[test]
+    fn koji_lists_a_builds_keys_oldest_first() {
+        let index = "<pre><img src=\"/icons/back.gif\" alt=\"[PARENTDIR]\"> <a href=\"/packages/\
+                     less/691/2.fc44/data/\">Parent Directory</a>   -\n\
+                     <img src=\"/icons/folder.gif\" alt=\"[DIR]\"> <a href=\"f577861e/\">\
+                     f577861e/</a>   2026-01-31 01:04    -\n\
+                     <img src=\"/icons/folder.gif\" alt=\"[DIR]\"> <a href=\"6d9f90a6/\">\
+                     6d9f90a6/</a>   2026-01-27 18:10    -\n<hr></pre>\n";
+        assert_eq!(koji_keys(index), vec!["6d9f90a6", "f577861e"]);
+        assert!(koji_keys("<a href=\"../\">x</a>\n<a href=\"ABCDEF12/\">y</a>").is_empty());
     }
 
     #[test]

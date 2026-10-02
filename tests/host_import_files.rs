@@ -179,7 +179,7 @@ impl Case {
             fixtures.display()
         );
         let root = Root::new(&format!("import-files-{name}"));
-        root.arm();
+        root.may_manage();
         root.write(
             "etc/os-release",
             &fs::read_to_string(fixtures_root().join(distro).join("os-release"))
@@ -666,7 +666,7 @@ fn pacman_reads_its_own_verdict_and_the_capture_honours_it() {
         case.root.write(path, body).chmod(path, 0o644);
     }
     let gate = case.gate();
-    let backend = pm::backend_for(gate.distro, &gate.root, false, gate.operation);
+    let backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
     let tracked = {
         let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
         backend.conffiles().expect("pacman -Qii is read")

@@ -1,8 +1,8 @@
-# kubectl for [tools] kubectl. This recipe says where to look; it lists no version. `lodi lock`
-# reads the one-line stable-release file upstream publishes, so only the current stable
-# version is discoverable: `latest` resolves, a constraint on an older line finds none.
-# Upstream publishes a bare executable, installed as `bin/kubectl`, and a `.sha256` file
-# holding its bare digest beside it.
+# kubectl for [tools] kubectl. This recipe says where to look; it lists no version. `lodi update`
+# reads the one-line stable-release file upstream publishes, so only the current stable version is
+# discoverable: `latest` resolves, a constraint on an older line finds none. Upstream publishes a
+# bare executable, installed as `bin/kubectl`, and a `.sha256` file holding its bare digest beside
+# it.
 [recipe]
 name        = "kubectl"
 description = "The Kubernetes command-line tool"

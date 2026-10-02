@@ -15,8 +15,8 @@
 //!   variable of the caller's reaches a package manager, an apply never stops on a prompt, and
 //!   no locale changes a tool's output.
 //!
-//! Lodi invokes no `sudo` and no `doas`: the operator runs `sudo lodi host apply` (roadmap §0.6,
-//! `spec/10` §6's `system { sudo = … }` is not read by this build, design call D12).
+//! A package manager runs in a process that is already root: [`crate::elevate`] gives a lodi
+//! started as the user one (`spec/10` §6's `system { sudo = … }` is not read, design call D12).
 //!
 //! # Where the two families differ, and how the plan learns it
 //!
@@ -43,6 +43,7 @@ use std::process::Command;
 use std::time::Duration;
 
 use crate::diag::Diagnostic;
+use crate::progress::{Event, Sink, Stream, pump, read_lines};
 
 use super::safety::{Distro, Operation, PackageManager};
 
@@ -416,8 +417,7 @@ const DNF: Shape = Shape {
 impl Shape {
     /// The shape of the family that serves this distribution.
     ///
-    /// It is deliberately readable without building a backend: the safety gate asks whether a
-    /// root has a partial-upgrade mode before it has resolved a single program on `PATH`.
+    /// It is deliberately readable without building a backend.
     pub fn of(distro: Distro) -> Shape {
         match distro {
             Distro::Debian | Distro::Ubuntu => APT,
@@ -649,33 +649,36 @@ pub trait Backend {
     /// empty vector means the database is clean; anything else makes an interrupted transaction
     /// **ambiguous**, and Lodi never repairs it itself.
     fn unclean(&self) -> Result<Vec<String>, Diagnostic>;
+
+    /// The package a line of this family's output names, if any: the step list counts these.
+    fn item(&self, _line: &str) -> Option<String> {
+        None
+    }
+
+    /// The download-only form of one of this family's transaction invocations, which fetches
+    /// what it would install into the package cache and changes nothing else (#694).
+    fn download(&self, _transaction: &Invocation) -> Option<Invocation> {
+        None
+    }
 }
 
 /// The `match` on the distribution: `apt` for Debian and Ubuntu (T-4), `pacman` for Arch (T-5).
 ///
-/// `partial` is the `--unsupported-partial-upgrade` flag of design call D10. It reaches the
-/// backend and nothing else: it changes which transaction Arch builds and has no meaning for a
-/// family with no partial-upgrade mode, which is why [`super::safety::Gate::open`] refuses it
-/// there before a plan is derived at all.
-///
 /// The `match` is **total** since M-0.6 T-6 converged the two lanes: every distribution the
 /// safety gate accepts has an arm, so there is no "no backend" answer to give and no `Option` to
 /// unwrap. A `[packages]` declaration is therefore never refused for want of a backend on any
-/// machine this build runs on, and `E_UNSUPPORTED` has left that path entirely; what remains of
-/// that code here is the family with no partial-upgrade mode, which
-/// [`super::safety::Gate::open`] refuses before a plan is derived at all.
+/// machine this build runs on, and `E_UNSUPPORTED` has left that path entirely.
 ///
 /// `operation` is the command being run. A backend uses it for one thing: the hint of an
 /// `E_NO_RUNTIME` names that command, so a plan or an import is never told to "run the apply".
 pub fn backend_for(
     distro: Distro,
     root: &std::path::Path,
-    partial: bool,
     operation: Operation,
 ) -> Box<dyn Backend> {
     match distro {
         Distro::Debian | Distro::Ubuntu => Box::new(apt::Apt::new(distro, root, operation)),
-        Distro::Arch => Box::new(pacman::Pacman::new(root, partial, operation)),
+        Distro::Arch => Box::new(pacman::Pacman::new(root, operation)),
         Distro::Fedora => Box::new(dnf::Dnf::new(root, operation)),
     }
 }
@@ -685,23 +688,78 @@ pub fn backend_for(
 /// `E_APPLY` (exit 8) is the right code for every failure here: the apply stopped in the middle
 /// of a transaction it had already written down, which is exactly what that status means.
 pub fn run(invocation: &Invocation) -> Result<(), Diagnostic> {
-    let output = invocation
+    run_reporting(invocation, &mut crate::progress::Silent, &|_| None)
+}
+
+/// [`run`], read line by line while it runs (#694): the command and every line of both streams
+/// go to `sink`, each line `items` recognises becomes an item, and the sink ticks while the
+/// process is quiet. The exit status and the `E_APPLY` diagnostic are [`run`]'s.
+pub fn run_reporting(
+    invocation: &Invocation,
+    sink: &mut dyn Sink,
+    items: &dyn Fn(&str) -> Option<String>,
+) -> Result<(), Diagnostic> {
+    use std::process::Stdio;
+    sink.event(Event::Command {
+        line: invocation.command_line(),
+    });
+    let mut child = invocation
         .command()
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(|e| spawn_failed(invocation, &e.to_string()))?;
-    if output.status.success() {
+    let (send, lines) = std::sync::mpsc::channel();
+    let readers = [
+        child
+            .stdout
+            .take()
+            .map(|out| read_lines(out, Stream::Stdout, send.clone())),
+        child
+            .stderr
+            .take()
+            .map(|err| read_lines(err, Stream::Stderr, send)),
+    ];
+    let mut kept: [Vec<String>; 2] = [Vec::new(), Vec::new()];
+    pump(&lines, sink, |(stream, line), sink| {
+        let kept = &mut kept[usize::from(stream == Stream::Stderr)];
+        if !line.trim().is_empty() {
+            if kept.len() == TAIL {
+                kept.remove(0);
+            }
+            kept.push(line.clone());
+        }
+        let item = items(&line);
+        sink.event(Event::Output { stream, line });
+        if let Some(name) = item {
+            sink.event(Event::Item { name });
+        }
+    });
+    for reader in readers.into_iter().flatten() {
+        let _ = reader.join();
+    }
+    let status = child
+        .wait()
+        .map_err(|e| spawn_failed(invocation, &e.to_string()))?;
+    if status.success() {
         return Ok(());
     }
+    let [stdout, stderr] = kept;
+    let quoted = if stderr.is_empty() { stdout } else { stderr };
     Err(Diagnostic::new(
         "E_APPLY",
         format!(
             "`{}` exited {}: {}",
             invocation.command_line(),
-            output
-                .status
+            status
                 .code()
                 .map_or_else(|| "on a signal".to_string(), |c| c.to_string()),
-            tail(&output.stderr, &output.stdout)
+            if quoted.is_empty() {
+                "it printed nothing".to_string()
+            } else {
+                quoted.join("; ")
+            }
         ),
     ))
 }
@@ -717,7 +775,7 @@ pub fn capture(invocation: &Invocation) -> Result<String, Diagnostic> {
 ///
 /// `pacman -Q…` exits 1 when its query matches no package, and on a stock machine that is the
 /// ordinary answer to "which packages came from no repository you know" — M-Import T-5 found
-/// `lodi host import` stopping at `E_APPLY` on every fresh Arch guest for exactly that reason
+/// `lodi import` stopping at `E_APPLY` on every fresh Arch guest for exactly that reason
 /// (LD-301). The tolerance is that one shape and nothing wider: exit status 1, nothing on
 /// standard output and nothing on standard error. A query that fails for a reason the tool
 /// explains, or with any other status, is still `E_APPLY`.
@@ -766,6 +824,9 @@ fn spawn_failed(invocation: &Invocation, error: &str) -> Diagnostic {
     .hint("the package manager was resolved on PATH when the command started")
 }
 
+/// How many of a failing tool's last lines its diagnostic quotes.
+const TAIL: usize = 5;
+
 /// The last lines a failing tool printed: its standard error when it said anything there, and
 /// otherwise its standard output, bounded so that a message stays a message.
 fn tail(stderr: &[u8], stdout: &[u8]) -> String {
@@ -775,7 +836,7 @@ fn tail(stderr: &[u8], stdout: &[u8]) -> String {
         stdout
     });
     let lines: Vec<&str> = text.lines().filter(|l| !l.trim().is_empty()).collect();
-    let kept: Vec<&str> = lines.iter().rev().take(5).rev().copied().collect();
+    let kept: Vec<&str> = lines.iter().rev().take(TAIL).rev().copied().collect();
     if kept.is_empty() {
         "it printed nothing".to_string()
     } else {
@@ -819,7 +880,7 @@ mod tests {
     fn every_distribution_the_gate_accepts_has_an_arm() {
         let root = Path::new("/nonexistent-root");
         for distro in [Distro::Debian, Distro::Ubuntu, Distro::Arch, Distro::Fedora] {
-            let backend = backend_for(distro, root, false, Operation::Plan);
+            let backend = backend_for(distro, root, Operation::Plan);
             assert_eq!(backend.distro(), distro);
         }
     }
@@ -863,7 +924,7 @@ mod tests {
         // The trait's defaults and the shape table say the same thing, which is what keeps a
         // plan built from the shape from asking a backend for an action it does not have.
         let root = Path::new("/nonexistent-root");
-        let apt = backend_for(Distro::Debian, root, false, Operation::Plan);
+        let apt = backend_for(Distro::Debian, root, Operation::Plan);
         assert!(!Shape::of(Distro::Debian).removals_are_a_second_action);
         assert!(apt.removal(&["zip".to_string()]).unwrap().is_empty());
     }

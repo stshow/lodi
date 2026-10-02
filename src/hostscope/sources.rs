@@ -461,13 +461,11 @@ impl Refresh {
 /// Plan every declared source and every source the lock still records, in name order, each as
 /// one action. Every keyring's digest and framing is checked before anything else, so a mismatch
 /// stops `plan` and `apply` alike before anything is read below the root or written (S5).
-#[allow(clippy::too_many_arguments)]
 pub fn plan(
     gate: &Gate,
     manifest: &HostManifest,
     keyrings: &BTreeMap<String, Vec<u8>>,
     lock: Option<&HostLock>,
-    no_update: bool,
     actions: &mut Vec<Action>,
     warnings: &mut Vec<String>,
 ) -> Result<Refresh, Diagnostic> {
@@ -554,16 +552,6 @@ pub fn plan(
             refresh.departing.push((name.clone(), uris));
         }
         actions.push(action);
-    }
-    if no_update && refresh.forced() {
-        for action in actions.iter_mut() {
-            if let Kind::Source(step) = &mut action.kind
-                && step.changing()
-            {
-                step.changes
-                    .push("index not refreshed: --no-update".to_string());
-            }
-        }
     }
     Ok(refresh)
 }
@@ -1036,7 +1024,7 @@ pub fn put_back(gate: &Gate, taken: &Taken) -> Result<(), Diagnostic> {
         return Err(Diagnostic::new(
             "E_APPLY",
             format!(
-                "{} is not what this apply left there, so it was not put back",
+                "{} is not what this switch left there, so it was not put back",
                 file.path
             ),
         ));
@@ -1213,7 +1201,7 @@ fn fetch_failed(name: &str, error: FetchError) -> Diagnostic {
     };
     Diagnostic::new(code, format!("[sources.{name}] signed_by_url: {error}")).hint(
         "the keyring could not be fetched, and nothing was written: no keyring, no stanza, no \
-         journal, no lock. Fix the cause and run the apply again",
+         journal, no lock. Fix the cause and run lodi switch again",
     )
 }
 

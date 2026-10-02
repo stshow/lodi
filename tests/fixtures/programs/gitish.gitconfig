@@ -1,5 +1,5 @@
 # Managed by lodi from home.toml [programs.gitish]. Edit home.toml, not this file:
-# a hand edit here is drift, and `lodi home apply` stops on it.
+# a hand edit here is drift, and `lodi switch` stops on it.
 
 [alias]
 	lg = "log --graph\tall"

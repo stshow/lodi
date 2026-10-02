@@ -2,18 +2,16 @@
 //! it writes, the versions it reads, and the field that records which Lodi wrote it (M-1.0 T-1,
 //! design calls D1, D3, D4, D5, D15).
 //!
-//! "Lodi reads every schema it has ever written, or refuses naming the version that can" is a
-//! property of the whole tree, so it is stated in **one** place. [`ARTIFACTS`] is a closed table
-//! with one row per file; `tests/schema.rs` reads `src/**/*.rs`, collects every type that derives
+//! "lodi reads every schema version 2.0 has written, or refuses naming the file" is a property
+//! of the whole tree, so it is stated in **one** place. [`ARTIFACTS`] is a closed table with one
+//! row per file; `tests/schema.rs` reads `src/**/*.rs`, collects every type that derives
 //! `Serialize`, and fails when one is not named by a row, so a new on-disk artifact cannot be
 //! added without registering it (design call D4).
 //!
-//! No schema version is bumped at 1.0 (D1) and the locks keep the historical `format` string
-//! `lodi-spike-lock/1` (D2): what 1.0 owes its users is not a new number but a survivable one.
-//! Where a row's file lacked a numeric version or a writer field it is **added**, behind
-//! `#[serde(default)]` on the typed records, so a file an earlier release wrote still reads (D5);
-//! `tests/fixtures/schemas/<version>/` holds real artifacts written by each released version and
-//! is what proves it (D15).
+//! 2.0 reads no 1.x record (#688, #710): each row reads exactly the one version it writes. A row
+//! whose format 2.0 changed took a version above any 1.x one, so a 1.x file at the same path is
+//! refused by its version; a row whose format did not change kept its number. The 2.0.0 specimens
+//! are recorded under `tests/fixtures/schemas/` by the release procedure (D15).
 //!
 //! Nothing here upgrades a file on read. A file outside its artifact's read-set is refused with
 //! that artifact's own code, before the rest of it is deserialized (D18).
@@ -106,17 +104,6 @@ pub const ARTIFACTS: &[Artifact] = &[
         shares: None,
     },
     Artifact {
-        kind: "home-lock",
-        path: "lodi/home.lock",
-        root: "the configuration root",
-        writes: 1,
-        reads: &[1],
-        version_field: "version",
-        writer_field: "generatedBy",
-        types: &[],
-        shares: Some("project-lock"),
-    },
-    Artifact {
         kind: "shell-lock",
         path: "cache/shell/<h32>.lock",
         root: "the store root",
@@ -142,7 +129,7 @@ pub const ARTIFACTS: &[Artifact] = &[
     },
     Artifact {
         // A cache, like `api-cache`: what an archive offers for one name, used for a day by
-        // `lodi host versions` (M-Pin D11); an entry this build does not read is fetched again.
+        // `lodi pin NAME` (M-Pin D11); an entry this build does not read is fetched again.
         kind: "versions-cache",
         path: "cache/versions/<distro>/<name>.json",
         root: "the store root",
@@ -160,10 +147,9 @@ pub const ARTIFACTS: &[Artifact] = &[
         kind: "home-state",
         path: "home-scope/state.json",
         root: "the data root",
-        // Version 4 only for a record that names a user service or managed lingering (hc-1,
-        // LD-427); a home without `[services]` is written as version 3, unchanged.
-        writes: 4,
-        reads: &[1, 2, 3, 4],
+        // 2.0's own version, above every 1.x one (#710).
+        writes: 5,
+        reads: &[5],
         version_field: "version",
         writer_field: "lodiVersion",
         types: &[
@@ -211,12 +197,9 @@ pub const ARTIFACTS: &[Artifact] = &[
         kind: "host-lock",
         path: "etc/lodi/host.lock",
         root: "the host root",
-        // Version 5 only for a record that holds an OS basic (sd-1, LD-420), else version 4 only
-        // for a record that names a declared service (sc-1, LD-418) or managed accounts or groups
-        // (su-1, LD-419), else version 3 only for a record of a host read from a git URL; a
-        // directory's record is written as version 2, unchanged (LD-401).
-        writes: 5,
-        reads: &[1, 2, 3, 4, 5],
+        // 2.0's own version, above every 1.x one (#710).
+        writes: 6,
+        reads: &[6],
         version_field: "version",
         writer_field: "generatedBy",
         types: &[
@@ -230,43 +213,22 @@ pub const ARTIFACTS: &[Artifact] = &[
         shares: None,
     },
     Artifact {
-        // The host directory's pin lock (M-Pin, LD-395): beside `host.toml`, user-owned and
-        // committable. It deliberately records no writer, so that the same pins resolved by two
-        // builds on two machines give the same bytes; a refusal says it names none.
-        kind: "host-pins",
-        path: "<host directory>/pins.lock",
-        root: "the host directory",
-        // Version 2 only for a Fedora host, whose records name one exact build (fk-1, LD-434);
-        // every other host's lock is written as version 1, unchanged.
-        writes: 2,
-        reads: &[1, 2],
+        // The config's one lock in 2.0 (#705, LD-503): host and home sections keyed by their
+        // manifest's path from the config root; a host section's pins are `hostscope::pin`'s
+        // records. It records no writer, so equal inputs give equal bytes on any machine.
+        kind: "config-lock",
+        path: "<config>/lodi.lock",
+        root: "the config root",
+        writes: 1,
+        reads: &[1],
         version_field: "version",
         writer_field: "generatedBy",
         types: &[
+            "config::lock::HomeSection",
+            "config::lock::HostSection",
+            "config::lock::Lock",
             "hostscope::pin::PinRecord",
-            "hostscope::pin::PinsLock",
             "hostscope::pin::SnapshotRecord",
-        ],
-        shares: None,
-    },
-    Artifact {
-        // The repository's one lock (M-Flake F-23, LD-416): at the root a `SOURCE` names, user-
-        // owned and committable. Host sections are 1.4's `pins.lock` bodies and home sections
-        // 1.4's `home.lock` bodies, moved in unchanged. Like `pins.lock` it records no writer of
-        // its own, so that equal inputs give equal bytes on any machine.
-        kind: "repository-lock",
-        path: "<repository>/lodi.lock",
-        root: "the repository",
-        // Version 2 only when it holds a Fedora host (fk-1, LD-434); a lock with none is written
-        // as version 1, byte for byte as before.
-        writes: 2,
-        reads: &[1, 2],
-        version_field: "version",
-        writer_field: "generatedBy",
-        types: &[
-            "flakelock::HomeSection",
-            "flakelock::HostSection",
-            "flakelock::RootLock",
         ],
         shares: None,
     },
@@ -328,14 +290,14 @@ pub const ARTIFACTS: &[Artifact] = &[
         kind: "store-layout",
         path: ".layout.json",
         root: "the store root",
-        writes: 1,
-        reads: &[1],
+        writes: 2,
+        reads: &[2],
         // The store's layout version *is* this document's schema version: the marker records
         // what shape the store is and nothing else, so a second number could only disagree with
-        // the first one (M-1.0 T-2, design call D7). It is therefore the one row whose read-set
-        // is also the set of store layouts this build works with, and the one artifact where a
-        // version *below* the read-set is migrated — once, additively, under the exclusive store
-        // lock — rather than refused (`src/layout.rs`; every other row obeys D18 unchanged).
+        // the first one (design call D7). It is therefore the one row whose read-set is also the
+        // set of store layouts this build works with, and the one artifact where a version
+        // *below* the read-set is neither read nor refused: 2.0 starts that store fresh
+        // (`src/layout.rs`; every other row obeys D18 unchanged).
         version_field: "layout",
         writer_field: "lodiVersion",
         types: &["layout::Marker"],
@@ -343,8 +305,8 @@ pub const ARTIFACTS: &[Artifact] = &[
     },
     Artifact {
         kind: "trust-store",
-        path: "lodi/trust.json",
-        root: "the configuration root",
+        path: "trust.json",
+        root: "the store root",
         writes: 1,
         reads: &[1],
         version_field: "version",

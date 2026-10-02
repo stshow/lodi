@@ -216,7 +216,7 @@ pub fn is_dir(root: &Root, rel: &RelPath) -> bool {
 
 /// Whether anything is at `path` — a file, a directory, a symbolic link, a dangling one included
 /// — asked of `lstat` alone: nothing is opened or followed, and nothing is written. What
-/// `lodi home import` knows about a file of the user's (LD-341).
+/// `lodi import --home` knows about a file of the user's (LD-341).
 pub fn lexists(path: &Path) -> bool {
     fs::symlink_metadata(path).is_ok()
 }
@@ -301,7 +301,7 @@ pub fn is_file(root: &Root, rel: &RelPath) -> Result<bool, Diagnostic> {
     }
 }
 
-/// Create the root directory itself when it is not there yet, as `lodi home import` does for a
+/// Create the root directory itself when it is not there yet, as `lodi import --home` does for
 /// configuration root no command has written before. An existing root is left as it is: the
 /// root is trusted as the environment gave it.
 pub fn mkdir_root(root: &Root) -> Result<(), Diagnostic> {

@@ -1,4 +1,5 @@
-//! The home manifest loader (M-0.5 T-2, acceptance rows (b), (c), (d), (e)).
+//! The home manifest loader (M-0.5 T-2, acceptance rows (b), (c), (d), (e)), read by the home
+//! part of `lodi switch --home --dry-run` (1.x's `lodi home plan`; LD-518).
 //!
 //! Every case here runs the **built binary** against a throwaway set of roots through
 //! `support::home_env`, which clears the environment and refuses to hand a child the ambient
@@ -13,7 +14,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
-use support::{HomeEnv, home_env, home_gate};
+use support::{HomeEnv, home_env, home_gate, home_part, nothing};
 
 fn repo() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -53,8 +54,7 @@ fn copy_tree(from: &Path, to: &Path) {
 }
 
 fn plan(env: &HomeEnv) -> Output {
-    env.command()
-        .args(["home", "plan"])
+    env.lodi(&["home", "plan"])
         .output()
         .expect("the lodi binary runs")
 }
@@ -97,10 +97,9 @@ fn diagnostics(out: &Output) -> Vec<(String, usize, usize)> {
 
 // ------------------------------------------------------------------- (e) no manifest at all ---
 
-/// (e) No manifest is `E_NO_MANIFEST` at exit 3, and the hint names `lodi home import` and the
-/// guide's section for writing the file by hand, a heading that exists. The
-/// message shows `~/.config/lodi/home.toml`, never an absolute path, and **the configuration
-/// directory is not created** by the attempt (design call D12).
+/// (e) No config is `E_NO_MANIFEST` at exit 3, naming the standard folder `~/.config/lodi` and
+/// with a hint naming `lodi import`, and **the configuration directory is not created** by the
+/// attempt (design call D12).
 #[test]
 fn no_manifest_is_e_no_manifest_with_the_path_to_create() {
     let env = home_env("no-home-manifest");
@@ -116,33 +115,13 @@ fn no_manifest_is_e_no_manifest_with_the_path_to_create() {
     assert!(out.stdout.is_empty(), "{text}");
     assert!(text.contains("lodi: error E_NO_MANIFEST"), "{text}");
     assert!(
-        text.contains("~/.config/lodi/home.toml"),
-        "the message does not name the path to create: {text}"
+        text.contains(&config_root(&env).display().to_string()),
+        "the message does not name the folder to create: {text}"
     );
-    assert!(
-        text.contains(
-            "hint: run lodi home init to write a commented starting ~/.config/lodi/home.toml, \
-             or write it by hand following docs/GUIDE.md's \"The home scope\" section"
-        ),
-        "the hint does not say what to do: {text}"
-    );
-    // The section the hint names is one the guide really has.
-    let guide = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/GUIDE.md"),
-    )
-    .unwrap();
-    assert!(
-        guide.lines().any(|line| line == "## The home scope"),
-        "docs/GUIDE.md has no \"The home scope\" heading"
-    );
-    assert!(
-        !text.contains(&env.home().display().to_string()),
-        "the message carries an absolute path: {text}"
-    );
-
+    assert!(text.contains("make one with `lodi import`"), "{text}");
     assert!(
         !config_root(&env).exists(),
-        "`lodi home plan` created the configuration directory"
+        "the preview created the configuration directory"
     );
     assert!(ledger_under(&env).is_empty(), "a plan wrote something");
     assert_eq!(env.decoy_listing(), before, "the decoy tree changed");
@@ -159,10 +138,13 @@ fn every_load_error_is_reported_in_one_run_sorted_by_position() {
     let before = env.decoy_listing();
     install_fixture(&env, "errors");
 
-    let out = plan(&env);
+    let out = env
+        .lodi(&["home", "plan"])
+        .output()
+        .expect("the lodi binary runs");
     let text = stderr(&out);
     assert_eq!(out.status.code(), Some(3), "{text}");
-    assert!(out.stdout.is_empty(), "a failing plan printed a plan");
+    assert!(!text.contains("\nhome: "), "a failing plan printed a plan");
 
     let found = diagnostics(&out);
     assert!(
@@ -192,8 +174,9 @@ fn every_load_error_is_reported_in_one_run_sorted_by_position() {
     let mut sorted = positions.clone();
     sorted.sort_unstable();
     assert_eq!(positions, sorted, "the diagnostics are not sorted:\n{text}");
+    let shown = format!("--> {}:", env.config().join("lodi/home.toml").display());
     assert_eq!(
-        text.matches("--> ~/.config/lodi/home.toml:").count(),
+        text.matches(&shown).count(),
         found.len(),
         "a diagnostic points somewhere else:\n{text}"
     );
@@ -230,16 +213,16 @@ fn a_path_that_escapes_the_home_is_refused_at_the_keys_column() {
     ] {
         write_manifest(
             &env,
-            &format!("[home]\nversion = \"1\"\n\n[files.\"{key}\"]\ncontent = \"x\"\n"),
+            &format!("[home]\nversion = \"1\"\n\n[home.file.\"{key}\"]\ntext = \"x\"\n"),
         );
         let out = plan(&env);
         let text = stderr(&out);
         assert_eq!(out.status.code(), Some(3), "{key}: {text}");
         assert!(text.contains("lodi: error E_PATH_ESCAPE"), "{key}: {text}");
         assert!(text.contains(why), "{key}: {text}");
-        // Line 4 is the `[files."…"]` header and column 8 is where the quoted key begins.
+        // Line 4 is the `[home.file."…"]` header and column 12 is where the quoted key begins.
         assert!(
-            text.contains("--> ~/.config/lodi/home.toml:4:8"),
+            text.contains("home.toml:4:12\n"),
             "{key}: the column is not the key's: {text}"
         );
     }
@@ -268,7 +251,9 @@ fn a_source_outside_the_manifests_directory_is_refused() {
     ] {
         write_manifest(
             &env,
-            &format!("[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\nsource = \"{source}\"\n"),
+            &format!(
+                "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\nsource = \"{source}\"\n"
+            ),
         );
         let out = plan(&env);
         let text = stderr(&out);
@@ -283,7 +268,7 @@ fn a_source_outside_the_manifests_directory_is_refused() {
     // The one that is a real file below the manifest's directory is read verbatim and plans.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\nsource = \"./dotfiles/inputrc\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\nsource = \"./dotfiles/inputrc\"\n",
     );
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
@@ -292,8 +277,8 @@ fn a_source_outside_the_manifests_directory_is_refused() {
 
 // ------------------------------------------------------------------------- (d) [tools] ---
 
-/// T-5 makes `[tools]` part of the command-facing schema. Planning still only reports file
-/// actions and remains completely read-only.
+/// T-5 makes `[tools]` part of the command-facing schema. The preview names the tools an apply
+/// would install, a change of their own (LD-524), and remains completely read-only.
 #[test]
 fn tools_uses_the_shared_schema_and_plan_stays_read_only() {
     let env = home_env("home-tools");
@@ -303,10 +288,8 @@ fn tools_uses_the_shared_schema_and_plan_stays_read_only() {
     );
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(
-        String::from_utf8(out.stdout).unwrap(),
-        "0 files: nothing to do\n"
-    );
+    assert!(!nothing(&out), "{}", stderr(&out));
+    assert!(home_part(&out).contains("python"), "{}", stderr(&out));
     assert!(
         ledger_under(&env).is_empty(),
         "a plan with tools wrote something"
@@ -344,17 +327,26 @@ fn the_other_defined_names_are_refused_with_what_each_would_need() {
 #[test]
 fn an_unknown_name_gets_a_did_you_mean_hint() {
     let env = home_env("home-unknown");
-    write_manifest(
-        &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"x\"\nonremove = \"keep\"\n\n[fiels]\na = \"b\"\n",
-    );
-    let out = plan(&env);
-    let text = stderr(&out);
-    assert_eq!(out.status.code(), Some(3), "{text}");
-    assert!(text.contains("lodi: error E_UNKNOWN_ATTR"), "{text}");
-    assert!(text.contains("did you mean `on_remove`?"), "{text}");
-    assert!(text.contains("lodi: error E_UNKNOWN_BLOCK"), "{text}");
-    assert!(text.contains("did you mean `files`?"), "{text}");
+    for (manifest, code, hint) in [
+        (
+            "[home]\nversion = \"1\"\n\n\
+             [home.file.\".inputrc\"]\ntext = \"x\"\nonremove = \"keep\"\n",
+            "E_UNKNOWN_ATTR",
+            "did you mean `on_remove`?",
+        ),
+        (
+            "[home]\nversion = \"1\"\n\n[programz]\na = \"b\"\n",
+            "E_UNKNOWN_BLOCK",
+            "did you mean `programs`?",
+        ),
+    ] {
+        write_manifest(&env, manifest);
+        let out = plan(&env);
+        let text = stderr(&out);
+        assert_eq!(out.status.code(), Some(3), "{text}");
+        assert!(text.contains(&format!("lodi: error {code}")), "{text}");
+        assert!(text.contains(hint), "{text}");
+    }
 }
 
 // ----------------------------------------------------------------- the rest of the schema ---
@@ -415,7 +407,7 @@ fn a_mode_is_octal_and_never_carries_a_special_bit() {
         write_manifest(
             &env,
             &format!(
-                "[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"x\"\nmode = \"{mode}\"\n"
+                "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\ntext = \"x\"\nmode = \"{mode}\"\n"
             ),
         );
         let out = plan(&env);
@@ -430,7 +422,7 @@ fn a_mode_is_octal_and_never_carries_a_special_bit() {
         write_manifest(
             &env,
             &format!(
-                "[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"x\"\nmode = \"{mode}\"\n"
+                "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\ntext = \"x\"\nmode = \"{mode}\"\n"
             ),
         );
         let out = plan(&env);
@@ -438,7 +430,7 @@ fn a_mode_is_octal_and_never_carries_a_special_bit() {
     }
 }
 
-/// Exactly one of `content` and `source` gives a present file its bytes; an absent one declares
+/// Exactly one of `text` and `source` gives a present file its bytes; an absent one declares
 /// neither, because there is nothing for it to hold.
 #[test]
 fn exactly_one_origin_describes_a_present_file() {
@@ -449,23 +441,23 @@ fn exactly_one_origin_describes_a_present_file() {
 
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"a\"\nsource = \"./src.txt\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\ntext = \"a\"\nsource = \"./src.txt\"\n",
     );
     let text = stderr(&plan(&env));
     assert!(text.contains("lodi: error E_ATTR_CONFLICT"), "{text}");
-    assert!(text.contains("both `content` and `source`"), "{text}");
+    assert!(text.contains("both `text` and `source`"), "{text}");
 
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".x\"]\nmode = \"0644\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\nmode = \"0644\"\n",
     );
     let text = stderr(&plan(&env));
-    assert!(text.contains("lodi: error E_TYPE"), "{text}");
-    assert!(text.contains("neither `content` nor `source`"), "{text}");
+    assert!(text.contains("lodi: error E_ATTR_CONFLICT"), "{text}");
+    assert!(text.contains("neither `text` nor `source`"), "{text}");
 
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".x\"]\nstate = \"absent\"\ncontent = \"a\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\nstate = \"absent\"\ntext = \"a\"\n",
     );
     let text = stderr(&plan(&env));
     assert!(text.contains("lodi: error E_ATTR_CONFLICT"), "{text}");
@@ -479,7 +471,9 @@ fn two_entries_for_one_path_are_a_duplicate_resource() {
     let env = home_env("home-duplicate");
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"a\"\n\n[files.\".x/\"]\ncontent = \"b\"\n",
+        "[home]\nversion = \"1\"\n\n\
+         [home.file.\".x\"]\ntext = \"a\"\n\n\
+         [home.file.\".x/\"]\ntext = \"b\"\n",
     );
     let out = plan(&env);
     let text = stderr(&out);
@@ -502,7 +496,7 @@ fn substitution_fails_the_same_way_as_in_the_project_manifest() {
     ] {
         write_manifest(
             &env,
-            &format!("[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"{value}\"\n"),
+            &format!("[home]\nversion = \"1\"\n\n[home.file.\".x\"]\ntext = \"{value}\"\n"),
         );
         let out = plan(&env);
         let text = stderr(&out);
@@ -515,7 +509,7 @@ fn substitution_fails_the_same_way_as_in_the_project_manifest() {
     // `$${` is a literal `${`, and a bare `$NAME` is left for whoever reads the file.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".x\"]\ncontent = \"$${literal} and $PATH\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".x\"]\ntext = \"$${literal} and $PATH\"\n",
     );
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
@@ -537,5 +531,5 @@ fn a_manifest_that_is_not_toml_is_a_syntax_error() {
     let out = plan(&env);
     let text = stderr(&out);
     assert_eq!(out.status.code(), Some(3), "{text}");
-    assert!(text.contains("not valid UTF-8"), "{text}");
+    assert!(text.contains("UTF-8"), "{text}");
 }

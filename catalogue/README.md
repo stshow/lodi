@@ -12,18 +12,18 @@ Write a tool name in `lodi.toml`:
 ripgrep = "latest"
 ```
 
-Then lock the project:
+Then open the project:
 
 ```sh
-lodi lock
+lodi develop
 ```
 
-`lodi lock` reads the recipe `catalogue/tools/ripgrep.toml`. It asks GitHub which versions
-exist and picks the newest one your constraint allows. It writes the exact download URL, the
-file's SHA-256 and the recipe's digest into `lodi.lock`.
+`lodi develop` locks the project first. It reads the recipe `catalogue/tools/ripgrep.toml`. It
+asks GitHub which versions exist and picks the newest one your constraint allows. It writes the
+exact download URL, the file's SHA-256 and the recipe's digest into `lodi.lock`.
 
-`lodi develop` then downloads that URL and checks the bytes against the digest. A file that does
-not match is never used. The lock alone decides the version, so a second machine with the same
+It then downloads that URL and checks the bytes against the digest. A file that does not match
+is never used. The lock alone decides the version, so a second machine with the same
 lock gets the same bytes.
 
 A recipe answers one question: where does this tool publish its releases, and how do you check
@@ -34,12 +34,10 @@ licence header of its own.
 
 ## A recipe, key by key
 
-This is `catalogue/tools/ripgrep.toml` in full. It uses `github_releases`, the most common
-strategy:
+This is `catalogue/tools/ripgrep.toml` without its opening comment. It uses `github_releases`,
+the most common strategy:
 
 ```toml
-# ripgrep for [tools] ripgrep. This recipe says where to look; it lists no
-# version. `lodi lock` discovers versions from the tags of the newest GitHub releases.
 [recipe]
 name        = "ripgrep"
 description = "Recursively search directories for a regex pattern, fast"
@@ -62,7 +60,7 @@ path = ["."]
 
 - **`[recipe] name`** is the name you write in a manifest. It must equal the file name without
   `.toml`.
-- **`description`** and **`homepage`** are what `lodi search` and `lodi info` print. Both are
+- **`description`** and **`homepage`** are what `lodi search` prints. Both are
   required, and the homepage uses HTTPS.
 - **`[versions] strategy`** says how lodi finds versions. Each strategy has its own keys, listed
   in [Version strategies](#version-strategies).
@@ -114,7 +112,7 @@ path = ["bin"]
   `latest` works, and an older release is not found.
 - **`[asset] url`** is rendered with that version, because `text_index` supplies no URL.
 - **`checksum_sidecar = ".sha256"`** takes the digest from the file at the asset's URL plus
-  `.sha256`. `lodi lock` fetches only that small file. `lodi develop` stops with an error if the
+  `.sha256`. Locking fetches only that small file. `lodi develop` stops with an error if the
   download does not match it.
 - **`format = "binary"`**: the download is the program itself, installed as `bin/kubectl`.
 
@@ -343,10 +341,11 @@ current version.
    cargo test --locked --test catalogue
    ```
 
-3. Lock a project that uses it, and look at the new entry in `lodi.lock`:
+3. In the folder of a project that uses it, update the lock and look at the new entry in
+   `lodi.lock`:
 
    ```sh
-   lodi lock
+   lodi update
    ```
 
 A recipe that uses an existing strategy needs no other change. A new strategy is lodi code,
@@ -355,11 +354,11 @@ and it is added to the table above in the same change.
 ## A recipe of your own
 
 Install a tool lodi does not carry, such as `kubectl-convert`. Write its recipe in the `recipes/`
-folder at the root of your lodi repository, the folder you apply with `sudo lodi apply ~/lodi`. It
+folder of your config: `~/.config/lodi` by default, a path you typed before, or `LODI_REPO`. It
 has the format above:
 
 ```toml
-# ~/lodi/recipes/kubectl-convert.toml
+# ~/.config/lodi/recipes/kubectl-convert.toml
 [recipe]
 name        = "kubectl-convert"
 description = "Convert Kubernetes manifests between API versions"
@@ -380,12 +379,14 @@ bin  = ["bin/kubectl-convert"]
 path = ["bin"]
 ```
 
-Name it in a home's `[tools]` as `kubectl-convert = "latest"`, then apply the repository. The home's
-user gets `kubectl-convert` on `PATH`. Run in `~/lodi`, `lodi info kubectl-convert` names your file
-on its `recipe:` line.
+Name it in your `home.toml` under `[tools]` as `kubectl-convert = "latest"`, then run
+`lodi switch`. You get `kubectl-convert` on `PATH`.
 
-- **Where.** Only `recipes/NAME.toml` at the root of the repository you apply, plan or update. A
-  project reads it with `LODI_REPO=~/lodi`. With no repository, only the built-in recipes are used.
+- **Where.** Only `recipes/NAME.toml` at the root of your config. No other folder is read. With
+  no config, only the built-in recipes are used.
+- **Which config.** `switch`, `update`, `pin` and `unpin` read the config they act on.
+  `develop`, `run`, `shell` and `search` never look for a config, and use the built-in recipes
+  only.
 - **What.** Regular files named `NAME.toml`, with `NAME` a package name. A link, a folder or
   another name is skipped with `W_RECIPE_SKIPPED`.
 - **Checks.** Your recipe is checked as the built-in ones are: HTTPS URLs only, and no version

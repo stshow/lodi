@@ -106,8 +106,8 @@ fn a_relative_root_variable_is_refused_rather_than_ignored() {
 }
 
 /// (b) The binary itself, run with `HOME` removed and nothing else in its environment, fails
-/// with `E_CONFIG` at exit 3 rather than resolving a real account's home. `lodi trust` is the
-/// verb that needs a configuration directory in this build.
+/// with `E_CONFIG` at exit 3 rather than resolving a real account's home. `lodi develop`'s trust
+/// check is what needs a configuration directory here.
 #[test]
 fn the_binary_with_no_home_at_all_refuses_rather_than_resolving() {
     let env = support::home_env("no-home");
@@ -121,11 +121,11 @@ fn the_binary_with_no_home_at_all_refuses_rather_than_resolving() {
             .status()
             .unwrap()
             .success(),
-        "lodi init writes the manifest lodi trust then reads"
+        "lodi init writes the manifest lodi develop then reads"
     );
 
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .arg("trust")
+        .args(["develop", "--", "true"])
         .current_dir(&project)
         .env_clear()
         .env("PATH", "/usr/bin:/bin")
@@ -723,7 +723,8 @@ fn the_apply_lock_goes_through_fsops_and_stays_under_the_data_root() {
     );
 }
 
-/// The whole of T-3 under the four proofs at once: a real `lodi home apply` that creates files,
+/// The whole of T-3 under the four proofs at once: a real `lodi switch --home` (1.x's
+/// `lodi home apply`, #699) that creates files,
 /// backs one up, drifts, refuses, takes the path back and then restores an original. Every line
 /// its ledger gained is under the scratch roots, the decoy tree is untouched, and nothing the run
 /// created sits outside the home root and the data root.
@@ -737,28 +738,31 @@ fn an_apply_records_every_write_and_stays_inside_the_roots() {
     let config = env.config().join("lodi");
     fs::create_dir_all(&config).unwrap();
     let manifest = |text: &str| fs::write(config.join("home.toml"), text).unwrap();
-    let run = |args: &[&str]| env.command().args(args).output().unwrap();
+    let run = |args: &[&str]| env.lodi(args).output().unwrap();
+    let (switch, preview) = (["switch", "--home"], ["switch", "--home", "--dry-run"]);
 
     manifest(
         "[home]\nversion = \"1\"\n\n\
-         [files.\".config/git/ignore\"]\ncontent = \".lodi/\\n\"\n\n\
-         [files.\".inputrc\"]\ncontent = \"lodi\\n\"\nmode = \"0600\"\non_remove = \"restore\"\n",
+         [home.file.\".config/git/ignore\"]\ntext = \".lodi/\\n\"\n\n\
+         [home.file.\".inputrc\"]\ntext = \"lodi\\n\"\nmode = \"0600\"\non_remove = \"restore\"\n",
     );
     fs::write(env.home().join(".inputrc"), "the user's own\n").unwrap();
-    assert_eq!(run(&["home", "apply"]).status.code(), Some(0));
+    assert_eq!(run(&switch).status.code(), Some(0));
 
     // Drift, a refusal, and a confirmed take-back.
     fs::write(env.home().join(".inputrc"), "edited\n").unwrap();
-    assert_eq!(run(&["home", "apply"]).status.code(), Some(8));
-    assert_eq!(run(&["home", "status"]).status.code(), Some(0));
+    assert_eq!(run(&switch).status.code(), Some(8));
+    assert_eq!(run(&preview).status.code(), Some(0));
     assert_eq!(
-        run(&["home", "apply", "--overwrite-drift"]).status.code(),
+        run(&["switch", "--home", "--overwrite-drift"])
+            .status
+            .code(),
         Some(0)
     );
 
     // The entry disappears, so the user's original comes back.
     manifest("[home]\nversion = \"1\"\n");
-    assert_eq!(run(&["home", "apply"]).status.code(), Some(0));
+    assert_eq!(run(&switch).status.code(), Some(0));
     assert_eq!(
         fs::read_to_string(env.home().join(".inputrc")).unwrap(),
         "the user's own\n",
@@ -807,9 +811,13 @@ fn an_apply_records_every_write_and_stays_inside_the_roots() {
         );
     }
 
-    // 5. The lock exists, and it is where the constant says.
+    // 5. The lock exists, and it is where the constant says: under the data root `LODI_HOME`
+    // names (#700 story 19).
     assert!(
-        env.data().join("lodi").join("home-scope/.lock").is_file(),
+        env.data()
+            .join("lodi")
+            .join(lodi::home::state::LOCK_FILE)
+            .is_file(),
         "the apply lock is not under the data root"
     );
 
@@ -835,45 +843,33 @@ mod hostroot;
 #[path = "support/wait.rs"]
 mod wait;
 
-/// H3, the combined mode (LD-399): a combined host apply with a home in the host directory writes
-/// the home through `src/home/fsops.rs` alone, and every write its ledger records is below the
-/// user's passwd home: none in the host directory, none under the decoy `HOME`.
+/// H3, the combined mode (LD-399): a switch of a config with a host and a home writes the home
+/// through `src/home/fsops.rs` alone, and every write its ledger records is below the person's
+/// home (`HOME`; the home part is the person's own, LD-498) or its `LODI_HOME`: none in the
+/// config inside it.
 #[test]
 fn h3_a_combined_apply_writes_the_home_through_fsops_alone() {
     // Its own ledger, not the gate's: the gate's test holds every line of that one to its root.
     support::home_gate();
     let case = fakehost::Case::new("h3-combined-ledger", fakehost::Machine::debian());
-    let (uid, gid) = hostroot::ids(&case.root);
-    case.root.write("etc/hostname", "box\n");
-    case.root.write(
-        "etc/passwd",
-        &format!("sample:x:{uid}:{gid}::/people/sample:/bin/sh\n"),
-    );
-    case.root.write(
-        "hosts/box/host.toml",
-        "[host]\nversion = \"1\"\ndistro = \"debian\"\n",
-    );
-    case.root.write(
-        &["hosts", "box", "home", "sample", "home.toml"].join("/"),
+    case.set_manifest("[host]\nversion = \"1\"\ndistro = \"debian\"\n");
+    case.write_beside(
+        "home.toml",
         "[home]\nversion = \"1\"\n\n[home.file.\"note\"]\ntext = \"home\\n\"\n\n\
          [home.xdg_config.\"demo/app\"]\ntext = \"owned\\n\"\n",
     );
-    fs::create_dir_all(case.root.path("people/sample")).unwrap();
-    fs::write(case.root.path("people/sample/note"), "before\n").unwrap();
-    let hosts = case.root.path("hosts").display().to_string();
+    let home = case.root.path("home");
+    fs::write(home.join("note"), "before\n").unwrap();
     let ledger = case.root.path("ledger.tsv");
     let named = ledger.display().to_string();
-    let applied = case.verb_env("apply", &[&hosts], &[("LODI_FS_LEDGER", &named)]);
+    let applied = case.verb_env("switch", &[], &[("LODI_FS_LEDGER", &named)]);
     assert_eq!(
         applied.status.code(),
         Some(0),
         "{}",
         fakehost::story(&applied)
     );
-    assert_eq!(
-        fs::read_to_string(case.root.path("people/sample/note")).unwrap(),
-        "home\n"
-    );
+    assert_eq!(fs::read_to_string(home.join("note")).unwrap(), "home\n");
     let text = fs::read_to_string(&ledger).unwrap_or_default();
     let mine: Vec<(&str, PathBuf)> = text
         .lines()
@@ -884,10 +880,12 @@ fn h3_a_combined_apply_writes_the_home_through_fsops_alone() {
         !mine.is_empty(),
         "the combined apply recorded no home write"
     );
+    let data = case.root.path("lodi-home");
     for (op, path) in &mine {
         assert!(
-            path.starts_with(case.root.path("people/sample")),
-            "the ledger records {op} {} outside the passwd home",
+            (path.starts_with(&home) || path.starts_with(&data))
+                && !path.starts_with(case.config()),
+            "the ledger records {op} {} outside the home, or in the config",
             path.display()
         );
     }

@@ -5,14 +5,14 @@
 //! with a separate root schema, which happens to fail the same way for the same input because it
 //! copies that module's `Validator` idiom. Every problem in a file is reported in one run, sorted
 //! by position, each with its file, line, column and a hint (`spec/01` §7). Loading writes
-//! nothing and runs nothing: `content` and `source` are data here.
+//! nothing and runs nothing: `text` and `source` are data here.
 //!
 //! ```toml
 //! [home]
 //! version = "1"
 //!
-//! [files.".config/git/ignore"]
-//! content = """
+//! [home.file.".config/git/ignore"]
+//! text = """
 //! .lodi/
 //! """
 //! mode      = "0644"       # three or four octal digits, default "0644"
@@ -20,23 +20,21 @@
 //! backup    = true
 //! on_remove = "restore"    # restore | delete | keep
 //!
-//! [files.".inputrc"]
+//! [home.file.".inputrc"]
 //! source = "./dotfiles/inputrc"
 //! ```
 //!
-//! The key of `[files."<path>"]` is a [`RelPath`] below the **home** root, so a path that could
+//! The key of `[home.file."<path>"]` is a [`RelPath`] below the **home** root, so a path that could
 //! leave it is `E_PATH_ESCAPE` at the key's column, before anything is planned. `source` is a
 //! [`RelPath`] below the directory the manifest itself lives in and is read verbatim at load
 //! time, through [`crate::home::fsops`], so a symbolic link on the way to it is refused there
 //! too.
 //!
-//! **M-Home (1.1)** adds `[home.file."<path>"]` and `[home.xdg_config."<path>"]`
-//! (`docs/design/HOME_PROGRAMS.md` §3.2) and `[programs.<name>]` (§3.1). All four kinds —
-//! `[files]`, the two `[home.*]` tables and every file a program module renders — become the one
-//! [`FileEntry`] type in one map, so a path declared twice anywhere is `E_DUP_RESOURCE`. `[files]`
-//! stays an exact alias of `[home.file]` with `content` for `text` (LD-323); the one difference
-//! beyond the key's name is that an entry declaring neither keeps 1.0's `E_TYPE`, so a 1.0
-//! manifest is refused exactly as 1.0 refused it. A `source` that names a directory expands at
+//! `[home.xdg_config."<path>"]` (`docs/design/HOME_PROGRAMS.md` §3.2) and `[programs.<name>]`
+//! (§3.1) sit beside it. All three kinds — the two `[home.*]` tables and every file a program
+//! module renders — become the one [`FileEntry`] type in one map, so a path declared twice
+//! anywhere is `E_DUP_RESOURCE`. 1.x's `[files]` table is refused as an unknown table from 2.0
+//! (#710). A `source` that names a directory expands at
 //! load time into one entry per regular file below it. `state = "seed"` writes a file once, when
 //! nothing is at the path, and never compares or rewrites it afterwards.
 //!
@@ -80,7 +78,7 @@ const PROGRAM_MODE: u32 = 0o644;
 const SPECIAL_BITS: u32 = 0o7000;
 
 const TOP_LEVEL: &[&str] = &[
-    "home", "files", "programs", "vars", "inputs", "modules", "tools", "services",
+    "home", "programs", "vars", "inputs", "modules", "tools", "services",
 ];
 /// The keys of one `[services."<unit>"]` table (hc-1, LD-427).
 const SERVICE_KEYS: &[&str] = &["enable", "linger", "unit"];
@@ -94,29 +92,6 @@ const HOME_KEYS: &[&str] = &[
     "registries",
     "file",
     "xdg_config",
-];
-const FILE_KEYS: &[&str] = &[
-    "content",
-    "source",
-    "mode",
-    "executable",
-    "state",
-    "backup",
-    "on_remove",
-    "enable",
-];
-/// The names M-Home (1.1) added to the lists above and to `state`, and `services` (1.12). A
-/// manifest that uses none of them is a 1.0 manifest, and its hints list and suggest from 1.0's
-/// names only, so it is refused byte for byte as 1.0 refused it (`docs/design/HOME_PROGRAMS.md`
-/// §10 I10).
-const ADDED_IN_1_1: &[&str] = &[
-    "programs",
-    "file",
-    "xdg_config",
-    "executable",
-    "enable",
-    "seed",
-    "services",
 ];
 const HOME_FILE_KEYS: &[&str] = &[
     "text",
@@ -164,7 +139,7 @@ impl OnRemove {
 /// reads the manifest's inputs again.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Origin {
-    /// `content = "…"`, verbatim.
+    /// `text = "…"`, verbatim.
     Content,
     /// `source = "./…"`, relative to the manifest's own directory, read verbatim. For a file
     /// expanded from a directory `source`, the file below it.
@@ -173,7 +148,7 @@ pub enum Origin {
     Program(String),
 }
 
-/// One `[files."<path>"]` entry, validated.
+/// One `[home.file."<path>"]` entry, validated.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileEntry {
     pub path: RelPath,
@@ -186,8 +161,8 @@ pub struct FileEntry {
     pub state: FileState,
     pub backup: bool,
     pub on_remove: OnRemove,
-    /// The table that declared it, as the plan and a duplicate report name it: `files`,
-    /// `home.file`, `home.xdg_config` or `programs.<name>`.
+    /// The table that declared it, as the plan and a duplicate report name it: `home.file`,
+    /// `home.xdg_config` or `programs.<name>`.
     pub table: String,
 }
 
@@ -220,9 +195,6 @@ pub struct HomeManifest {
     pub files: BTreeMap<String, FileEntry>,
     /// The program modules that render, sorted by name.
     pub programs: Vec<ProgramUse>,
-    /// Whether the manifest writes the 1.0 `[files]` table, however many entries it has: from
-    /// 1.2 it prints one `W_DEPRECATED` line per run (decision D5, LD-324).
-    pub files_table: bool,
     /// `[services."<unit>"]`: each user unit and whether it is wanted enabled and running
     /// (hc-1, LD-427). An inline `unit` is one more entry of `files`.
     pub services: BTreeMap<String, bool>,
@@ -268,7 +240,7 @@ pub(crate) fn load_home_manifest_with_tools(roots: &Roots) -> Result<HomeManifes
 }
 
 /// Where `home.toml` lives: the configuration root, and the manifest's path inside it.
-/// `lodi home plan` reads it here and `lodi home init` writes it here, through this one
+/// `lodi switch` reads it here and `lodi import --home` writes it here, through this one
 /// function, so the two can never name different places (LD-325).
 pub fn location(roots: &Roots) -> (Root, RelPath) {
     (
@@ -312,8 +284,8 @@ fn load_home_manifest_inner(
                 format!("there is no home manifest at {file}"),
             )
             .hint(format!(
-                "run lodi home init to write a commented starting {file}, or write it by hand \
-                 following docs/GUIDE.md's \"The home scope\" section"
+                "run lodi import --home to write a commented starting {file}, or write it by hand \
+                 following docs/guide/manage-your-home.md"
             ))));
         }
         Err(e) => {
@@ -401,20 +373,16 @@ impl HostSource<'_> {
     }
 }
 
+/// `env` is where the modules render for: [`RenderEnv::of`] the person's roots for `lodi
+/// switch`, so that a shadowing file and a shell's rc line name the real home.
 pub fn parse_home_manifest_host_bytes(
     bytes: &[u8],
     file: &str,
     base: &Root,
+    env: &RenderEnv,
     source: HostSource<'_>,
 ) -> Result<HomeManifest, ManifestErrors> {
-    parse_home_manifest_bytes_inner(
-        bytes,
-        file,
-        base,
-        &RenderEnv::placeholder(),
-        programs::registry(),
-        Some(source),
-    )
+    parse_home_manifest_bytes_inner(bytes, file, base, env, programs::registry(), Some(source))
 }
 
 pub(crate) fn parse_home_manifest_bytes_with_tools(
@@ -510,7 +478,6 @@ fn parse_home_manifest_in_with(
         env,
         registry,
         host_source: source,
-        legacy: !uses_1_1(doc.as_table()),
         diagnostics: Vec::new(),
     };
     let manifest = v.root(doc.as_table());
@@ -562,31 +529,6 @@ fn kind(item: &Item) -> &'static str {
     }
 }
 
-/// Whether a manifest uses a name of [`ADDED_IN_1_1`]: a `[programs]` table, `[home.file]` or
-/// `[home.xdg_config]`, `executable` or `enable` in a `[files]` entry, or `state = "seed"`.
-fn uses_1_1(doc: &toml_edit::Table) -> bool {
-    let has = |table: Option<&dyn toml_edit::TableLike>, keys: &[&str]| {
-        table.is_some_and(|t| keys.iter().any(|k| t.contains_key(k)))
-    };
-    let files = doc.get("files").and_then(Item::as_table_like);
-    doc.contains_key("programs")
-        || doc.contains_key("services")
-        || has(
-            doc.get("home").and_then(Item::as_table_like),
-            &["file", "xdg_config"],
-        )
-        || files.is_some_and(|files| {
-            files.iter().any(|(_, entry)| {
-                let entry = entry.as_table_like();
-                has(entry, &["executable", "enable"])
-                    || entry
-                        .and_then(|e| e.get("state"))
-                        .and_then(Item::as_str)
-                        .is_some_and(|state| state == "seed")
-            })
-        })
-}
-
 fn suggestion(key: &str, known: &[&str]) -> Option<String> {
     known
         .iter()
@@ -603,35 +545,7 @@ struct Validator<'t, 'h> {
     env: &'t RenderEnv,
     registry: &'t [Module],
     host_source: Option<HostSource<'h>>,
-    /// A 1.0 manifest ([`uses_1_1`] is false): hints name 1.0's names only.
-    legacy: bool,
     diagnostics: Vec<Diagnostic>,
-}
-
-/// The two spellings of one file table (LD-323).
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Flavor {
-    /// `[files]`: `content`, and 1.0's `E_TYPE` for an entry that declares neither it nor
-    /// `source`.
-    Files,
-    /// `[home.file]` and `[home.xdg_config]`: `text`, and `E_ATTR_CONFLICT` for neither.
-    Home,
-}
-
-impl Flavor {
-    fn text_key(self) -> &'static str {
-        match self {
-            Flavor::Files => "content",
-            Flavor::Home => "text",
-        }
-    }
-
-    fn keys(self) -> &'static [&'static str] {
-        match self {
-            Flavor::Files => FILE_KEYS,
-            Flavor::Home => HOME_FILE_KEYS,
-        }
-    }
 }
 
 impl tools::Sink for Validator<'_, '_> {
@@ -696,8 +610,7 @@ impl Validator<'_, '_> {
             ("E_UNKNOWN_ATTR", "key")
         };
         let message = format!("unknown {what} `{}` in {place}", entry.key);
-        let known = self.hinted(known);
-        let hint = match suggestion(entry.key, &known) {
+        let hint = match suggestion(entry.key, known) {
             Some(near) => format!("did you mean `{near}`?"),
             None => format!("valid names: {}", known.join(", ")),
         };
@@ -754,19 +667,10 @@ impl Validator<'_, '_> {
         self.error_hint(
             "E_TYPE",
             format!("`{}` in {place} is \"{value}\"", entry.key),
-            format!("it must be one of: {}", self.hinted(allowed).join(", ")),
+            format!("it must be one of: {}", allowed.join(", ")),
             Self::span_of(entry),
         );
         None
-    }
-
-    /// The names a hint may list or suggest: all of them, or 1.0's for a 1.0 manifest.
-    fn hinted<'k>(&self, known: &[&'k str]) -> Vec<&'k str> {
-        known
-            .iter()
-            .copied()
-            .filter(|name| !(self.legacy && ADDED_IN_1_1.contains(name)))
-            .collect()
     }
 
     /// `spec/01` §1.3, as [`crate::manifest`] applies it: `$${` is a literal `${`; a bare `$NAME`
@@ -834,7 +738,6 @@ impl Validator<'_, '_> {
             tools: BTreeMap::new(),
             files: BTreeMap::new(),
             programs: Vec::new(),
-            files_table: false,
             services: BTreeMap::new(),
             linger: false,
         };
@@ -847,12 +750,12 @@ impl Validator<'_, '_> {
                         self.home(t, &mut manifest);
                     }
                 }
-                "files" => {
-                    manifest.files_table = true;
-                    if let Some(t) = self.table(&entry, place) {
-                        self.files(t, &mut manifest);
-                    }
-                }
+                "files" => self.error_hint(
+                    "E_UNKNOWN_BLOCK",
+                    format!("unknown table `files` in {place}"),
+                    "declare each file in [home.file] instead, with `text` for `content`".into(),
+                    entry.key_span.clone(),
+                ),
                 // Read after the loop: a shell module includes the tools only when `[tools]`
                 // declares one (§5), whatever order the manifest writes the two tables in.
                 "programs" => programs = Some(entry),
@@ -1000,37 +903,6 @@ impl Validator<'_, '_> {
         manifest.files.insert(path, file);
     }
 
-    fn files(&mut self, table: &dyn toml_edit::TableLike, manifest: &mut HomeManifest) {
-        for entry in entries(table) {
-            // A trailing `/` is not part of a path, so `bin` and `bin/` are one resource and the
-            // second is a duplicate rather than a second file.
-            let key = entry.key.strip_suffix('/').unwrap_or(entry.key);
-            let path = match RelPath::new(key) {
-                Ok(path) => path,
-                Err(d) => {
-                    self.push(d, entry.key_span.clone());
-                    continue;
-                }
-            };
-            let place = format!("[files.\"{}\"]", entry.key);
-            if manifest
-                .files
-                .get(path.as_str())
-                .is_some_and(|f| f.table == "files")
-            {
-                self.add(manifest, placeholder(path, "files"), entry.key_span.clone());
-                continue;
-            }
-            let Some(t) = self.table(&entry, "[files]") else {
-                continue;
-            };
-            let span = entry.key_span.clone();
-            for file in self.file(t, path, &place, span.clone(), Flavor::Files, "files") {
-                self.add(manifest, file, span.clone());
-            }
-        }
-    }
-
     /// `[home.file]` (`prefix` is `None`) or `[home.xdg_config]` (`prefix` is the XDG
     /// configuration directory relative to the home directory, possibly empty).
     fn home_files(
@@ -1066,7 +938,7 @@ impl Validator<'_, '_> {
                 continue;
             };
             let span = entry.key_span.clone();
-            for file in self.file(t, path, &place, span.clone(), Flavor::Home, name) {
+            for file in self.file(t, path, &place, span.clone(), name) {
                 self.add(manifest, file, span.clone());
             }
         }
@@ -1153,14 +1025,12 @@ impl Validator<'_, '_> {
 
     /// One file table's entry: zero entries when it is disabled or wrong, one entry, or — for a
     /// `[home.file]` whose `source` is a directory — one entry per regular file below it.
-    #[allow(clippy::too_many_arguments)]
     fn file(
         &mut self,
         table: &dyn toml_edit::TableLike,
         path: RelPath,
         place: &str,
         key_span: Option<Range<usize>>,
-        flavor: Flavor,
         table_name: &str,
     ) -> Vec<FileEntry> {
         let mut content: Option<(String, Option<Range<usize>>)> = None;
@@ -1178,7 +1048,7 @@ impl Validator<'_, '_> {
         let mut enable = true;
         for entry in entries(table) {
             match entry.key {
-                key if key == flavor.text_key() => {
+                "text" => {
                     declared = true;
                     if let Some(text) = self.string(&entry, place) {
                         content = Some((text, Self::span_of(&entry)));
@@ -1225,7 +1095,7 @@ impl Validator<'_, '_> {
                         enable = value;
                     }
                 }
-                _ => self.unknown(&entry, place, flavor.keys()),
+                _ => self.unknown(&entry, place, HOME_FILE_KEYS),
             }
         }
         if let Some((value, span)) = executable {
@@ -1247,15 +1117,8 @@ impl Validator<'_, '_> {
             FileState::Seed => OnRemove::Keep,
             _ => OnRemove::Restore,
         });
-        let Some(origins) = self.origin(
-            content,
-            source,
-            declared,
-            state,
-            place,
-            key_span.clone(),
-            flavor,
-        ) else {
+        let Some(origins) = self.origin(content, source, declared, state, place, key_span.clone())
+        else {
             return Vec::new();
         };
         if !enable {
@@ -1301,7 +1164,7 @@ impl Validator<'_, '_> {
     /// Exactly one of the text key and `source` describes a present file; an absent one
     /// declares neither, because there is nothing for it to hold. Each result is the path below
     /// a directory `source` (`None` for the declared path itself), the origin and the bytes.
-    #[allow(clippy::too_many_arguments, clippy::type_complexity)]
+    #[allow(clippy::type_complexity)]
     fn origin(
         &mut self,
         content: Option<(String, Option<Range<usize>>)>,
@@ -1310,9 +1173,7 @@ impl Validator<'_, '_> {
         state: FileState,
         place: &str,
         key_span: Option<Range<usize>>,
-        flavor: Flavor,
     ) -> Option<Vec<(Option<String>, Origin, Vec<u8>)>> {
-        let text_key = flavor.text_key();
         if state == FileState::Absent {
             if !declared {
                 return Some(vec![(None, Origin::Content, Vec::new())]);
@@ -1321,10 +1182,9 @@ impl Validator<'_, '_> {
                 self.error_hint(
                     "E_ATTR_CONFLICT",
                     format!("{place} is `state = \"absent\"` and still declares its content"),
-                    format!(
-                        "an absent file holds nothing: drop `{text_key}` and `source`, or make \
-                         the entry present"
-                    ),
+                    "an absent file holds nothing: drop `text` and `source`, or make the entry \
+                     present"
+                        .into(),
                     span,
                 );
             }
@@ -1336,7 +1196,7 @@ impl Validator<'_, '_> {
             (Some(_), Some((_, span))) => {
                 self.error_hint(
                     "E_ATTR_CONFLICT",
-                    format!("{place} declares both `{text_key}` and `source`"),
+                    format!("{place} declares both `text` and `source`"),
                     "a file's bytes come from one of them; delete the other".into(),
                     span,
                 );
@@ -1344,16 +1204,10 @@ impl Validator<'_, '_> {
             }
             (None, None) if declared => None,
             (None, None) => {
-                let code = match flavor {
-                    Flavor::Files => "E_TYPE",
-                    Flavor::Home => "E_ATTR_CONFLICT",
-                };
                 self.error_hint(
-                    code,
-                    format!("{place} declares neither `{text_key}` nor `source`"),
-                    format!(
-                        "give the file its bytes with `{text_key}`, or name a file with `source`"
-                    ),
+                    "E_ATTR_CONFLICT",
+                    format!("{place} declares neither `text` nor `source`"),
+                    "give the file its bytes with `text`, or name a file with `source`".into(),
                     key_span,
                 );
                 None

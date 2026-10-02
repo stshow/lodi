@@ -110,7 +110,7 @@ fn numeric(version: &str) -> Vec<u64> {
     version.split('.').map(|p| p.parse().unwrap()).collect()
 }
 
-/// What `lodi lock` must pin for `name` at `latest`, from the fixture alone.
+/// What locking must pin for `name` at `latest`, from the fixture alone.
 struct Expected {
     version: String,
     url: String,
@@ -366,12 +366,12 @@ fn home_apply_installs_gh_from_its_built_in_recipe() {
     )
     .unwrap();
 
+    // A home whose only change is a tool is switched (LD-524).
     let apply = env
-        .command()
+        .lodi(&["home", "apply"])
         .env_remove("LODI_HOME")
         .env("XDG_DATA_HOME", env.home().join(".local/share"))
         .env("LODI_FETCH_REWRITE", server.rewrite())
-        .args(["home", "apply"])
         .output()
         .unwrap();
     assert_eq!(apply.status.code(), Some(0), "{}", err(&apply));
@@ -385,8 +385,7 @@ fn home_apply_installs_gh_from_its_built_in_recipe() {
     );
     assert_eq!(server.count(&want.url), 1, "{:?}", server.requests());
     let lock: serde_json::Value =
-        serde_json::from_slice(&fs::read(config.join(lodi::lock::HOME_LOCK_FILE)).unwrap())
-            .unwrap();
+        serde_json::from_slice(&fs::read(config.join("lodi.lock")).unwrap()).unwrap();
     let text = lock.to_string();
     assert!(text.contains(&want.url), "{text}");
     assert!(
@@ -441,16 +440,28 @@ fn search_lists_the_thirty_built_in_tools_offline() {
                 .output()
                 .unwrap();
             assert_eq!(o.status.code(), Some(0), "{name}: {}", err(&o));
+            // The exact name shows that recipe's details first (LD-496), then the other
+            // matches without it.
             let text = out(&o);
-            assert!(text.starts_with("catalogue\n"), "{name}: {text}");
-            let row = text
-                .lines()
-                .find(|l| l.split_whitespace().next() == Some(name))
-                .unwrap_or_else(|| panic!("{name} is not listed: {text}"));
-            assert!(row.contains(&recipe.description), "{name}: {row}");
-            assert!(row.contains(&recipe.homepage), "{name}: {row}");
-            for listed in text.lines().skip(1).filter(|l| l.starts_with("  ")) {
+            assert!(text.starts_with(&format!("{name}\n")), "{name}: {text}");
+            let field = |key: &str| {
+                text.lines()
+                    .find(|l| l.trim_start().starts_with(key))
+                    .unwrap_or_else(|| panic!("{name}: no {key} line: {text}"))
+                    .to_string()
+            };
+            assert!(
+                field("description:").contains(&recipe.description),
+                "{name}: {text}"
+            );
+            assert!(
+                field("homepage:").contains(&recipe.homepage),
+                "{name}: {text}"
+            );
+            let rows = text.lines().skip_while(|l| *l != "catalogue").skip(1);
+            for listed in rows.filter(|l| l.starts_with("  ")) {
                 let listed = listed.split_whitespace().next().unwrap();
+                assert_ne!(listed, *name, "{name} is listed twice: {text}");
                 assert!(all.contains(&listed), "{name}: {listed} is not a built-in");
             }
         }
@@ -462,7 +473,7 @@ fn search_lists_the_thirty_built_in_tools_offline() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// 3. `lodi lock` pins each new tool from its recorded fixture
+// 3. `lodi develop` pins each new tool from its recorded fixture
 
 #[test]
 fn each_new_recipe_locks_from_its_recorded_fixture() {
@@ -474,8 +485,13 @@ fn each_new_recipe_locks_from_its_recorded_fixture() {
         want.insert(name, e);
     }
     let project = Project::new("batch-lock", &tools_manifest(&NEW), files);
-    let o = project.run(&["lock"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    // `develop` locks first (LD-496); the artifacts are not served, so entering then stops.
+    let o = project.run(&["develop", "--", "/bin/sh", "-c", ":"]);
+    assert!(
+        err(&o).contains("lodi: wrote lodi.lock (resolved "),
+        "{}",
+        err(&o)
+    );
 
     let lock = project.lock();
     for name in NEW {
@@ -488,15 +504,27 @@ fn each_new_recipe_locks_from_its_recorded_fixture() {
         assert_eq!(entry["artifacts"].as_array().unwrap().len(), 1, "{name}");
     }
     // One digest source each: sixteen API pages and two index-and-sidecar pairs, and not one
-    // artifact downloaded to lock.
+    // artifact downloaded to lock: every artifact request comes after the lock's.
     let requests = project.server.requests();
-    let api = requests
+    assert!(requests.len() >= 16 + 4, "{requests:?}");
+    let (locking, _) = requests.split_at(16 + 4);
+    let api = locking
         .iter()
         .filter(|u| u.starts_with("https://api.github.com/"));
     assert_eq!(api.count(), 16, "{requests:?}");
-    assert_eq!(requests.len(), 16 + 4, "{requests:?}");
     for e in want.values() {
-        assert!(!requests.contains(&e.url), "{} was downloaded", e.url);
+        assert!(
+            !locking.contains(&e.url),
+            "{} was downloaded to lock",
+            e.url
+        );
+    }
+    let artifacts: Vec<&String> = want.values().map(|e| &e.url).collect();
+    for later in &requests[16 + 4..] {
+        assert!(
+            artifacts.contains(&later),
+            "{later} was asked after locking"
+        );
     }
 
     // neovim's newest releases carry the moving `stable` and `nightly` tags; neither is pinned.
@@ -561,8 +589,6 @@ fn a_missing_or_wrong_digest_publishes_nothing() {
     files.extend(expected("kubectl").files);
     files.insert(expected("kubectl").url, kubectl_bytes);
     let project = Project::new("batch-refusals", &tools_manifest(&["helm"]), files);
-    let o = project.run(&["lock"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     let o = project.run(&["develop", "--", "helm", "version"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     let lock_before = project.lock_bytes();
@@ -587,15 +613,10 @@ fn a_missing_or_wrong_digest_publishes_nothing() {
         }
         fs::write(project.dir().join("lodi.toml"), manifest).unwrap();
         project.server.clear();
-        // The lock refuses the tool; develop, which never resolves, then refuses the stale lock.
-        for (args, code) in [
-            (&["lock"][..], code),
-            (&["develop", "--", "helm", "version"], "E_LOCK_STALE"),
-        ] {
-            let o = project.run(args);
-            assert_ne!(o.status.code(), Some(0), "{args:?} {manifest}");
-            assert!(err(&o).contains(code), "{args:?} {code}: {}", err(&o));
-        }
+        // `develop` locks first and refuses the tool, so nothing is realized or run.
+        let o = project.run(&["develop", "--", "helm", "version"]);
+        assert_ne!(o.status.code(), Some(0), "{manifest}");
+        assert!(err(&o).contains(code), "{code}: {}", err(&o));
         assert_eq!(project.lock_bytes(), lock_before, "the lock changed");
         assert_eq!(project.entries(), entries_before, "the store changed");
         let requests = project.server.requests();
@@ -651,16 +672,15 @@ fn a_missing_or_wrong_digest_publishes_nothing() {
         with("kubectl = \"latest\"\n"),
     )
     .unwrap();
-    let o = project.run(&["lock"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    let o = project.run(&["develop", "--", "kubectl", "version", "--client"]);
+    assert_eq!(o.status.code(), Some(5), "{}", err(&o));
+    assert!(err(&o).contains("E_HASH_MISMATCH"), "{}", err(&o));
+    assert!(err(&o).contains("(resolved kubectl)"), "{}", err(&o));
     let locked = project.lock();
     assert_eq!(
         locked["packages"]["helm"],
         serde_json::from_slice::<serde_json::Value>(&lock_before).unwrap()["packages"]["helm"]
     );
-    let o = project.run(&["develop", "--", "kubectl", "version", "--client"]);
-    assert_eq!(o.status.code(), Some(5), "{}", err(&o));
-    assert!(err(&o).contains("E_HASH_MISMATCH"), "{}", err(&o));
     assert_eq!(
         project.entries(),
         entries_before,
@@ -737,13 +757,16 @@ fn locks_from_before_the_batch_stay_byte_identical() {
         let recorded = fs::read(fixture.join("lodi.lock")).unwrap();
         fs::write(project.dir().join("lodi.lock"), &recorded).unwrap();
 
-        let check = project.run(&["lock", "--check"]);
-        assert_eq!(check.status.code(), Some(0), "{name}: {}", err(&check));
         let mut args = vec!["develop", "--"];
         args.extend(&command);
         let ran = project.run(&args);
         assert_eq!(ran.status.code(), Some(0), "{name}: {}", err(&ran));
         assert_eq!(out(&ran), printed, "{name}");
+        assert!(
+            !err(&ran).contains("wrote lodi.lock"),
+            "{name}: {}",
+            err(&ran)
+        );
         assert_eq!(
             project.lock_bytes(),
             recorded,

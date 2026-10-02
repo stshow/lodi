@@ -191,7 +191,7 @@ fn a_second_apply_against_a_held_root_lock_is_refused_and_never_waits() {
         );
         assert!(
             // check-host-safety: refusal — what follows is a product message, not a command.
-            said.contains("another lodi host apply holds"),
+            said.contains("another lodi switch holds"),
             "{which} apply did not name the lock: {said}"
         );
     }

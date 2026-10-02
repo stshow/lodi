@@ -18,12 +18,9 @@
 //! Any step that fails puts the ESP's files and the boot order back, so the machine boots as it
 //! did. Nothing is uninstalled: the earlier loader stays on the ESP and in the firmware.
 //!
-//! A switch to the declared loader boots once as a trial first (bv-1, LD-425): the earlier
-//! loader stays first in `BootOrder`, the new one right after it, and `BootNext` has the firmware
-//! start the new one once. `lodi boot confirm` in that boot puts it first, the earlier one right
-//! after it; without it, the next start is the earlier loader. A switch back because `[boot]` is
-//! gone is not a trial, and forgets one that waits. Under systemd-boot a change of the command
-//! line is tried once too ([`super::trial`]).
+//! A switch is the default from the next boot (LD-491): nothing starts once and nothing waits
+//! to be confirmed. Under systemd-boot a change of the command line is the default at once too,
+//! with the entry before it kept as the fallback ([`super::fallback`]).
 //!
 //! The timeout and the default entry are lodi's lines, each after a marker line of its own, in
 //! the declared loader's file: `loader/loader.conf` on the ESP, or for GRUB lodi's drop-in
@@ -39,9 +36,9 @@ use crate::diag::Diagnostic;
 use super::basics::{BasicAction, Change, Step, Tool, Write};
 use super::lock::{BasicRecord, HostLock};
 use super::manifest::{Boot, HostManifest, Loader};
+use super::plan::Unread;
 use super::pm::{self, Invocation};
 use super::safety::{Distro, Gate};
-use super::trial::{self, Status};
 
 /// The record's keys: the loader with the one it replaced, and each setting as lodi wrote it.
 pub const LOADER_KEY: &str = "boot.loader";
@@ -60,8 +57,6 @@ const CMDLINE: &str = "/etc/kernel/cmdline";
 const INSTALL_CONF: &str = "/etc/kernel/install.conf";
 const GRUB_DROP_IN: &str = "/etc/default/grub.d/99-lodi-boot.cfg";
 const MARK: &str = "# lodi: host.toml [boot]";
-/// A switch waiting for `lodi boot confirm` (bv-1, LD-425), inside the root.
-const SWITCH_STATE: &str = "/var/lib/lodi/host/boot-trial-loader";
 
 /// What an apply does for one `[boot]` line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -85,86 +80,6 @@ pub struct Switch {
     kernels: Vec<(String, String)>,
     /// GRUB's configuration, when GRUB is switched to.
     mkconfig: Option<Invocation>,
-    /// The new loader starts once, by `BootNext`, and comes first only once it is confirmed
-    /// (bv-1); a switch back to the distribution's loader is not a trial.
-    trial: bool,
-}
-
-/// A switch the firmware tries once (bv-1, LD-425): the loader it tries, the one it came from,
-/// the entry that starts the new one, and the boot that set it.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SwitchTrial {
-    to: Loader,
-    from: Loader,
-    entry: u16,
-    boot_id: String,
-}
-
-impl SwitchTrial {
-    pub fn read(gate: &Gate) -> Option<SwitchTrial> {
-        let text = String::from_utf8(super::basics::read(gate, SWITCH_STATE)?).ok()?;
-        let field = |name: &str| {
-            text.lines()
-                .find_map(|line| line.strip_prefix(name)?.strip_prefix('='))
-        };
-        Some(SwitchTrial {
-            to: Loader::parse(field("loader")?)?,
-            from: Loader::parse(field("from")?)?,
-            entry: u16::from_str_radix(field("entry")?, 16).ok()?,
-            boot_id: field("boot_id").unwrap_or_default().to_string(),
-        })
-    }
-
-    /// The trial boot is the one the firmware started from the new loader's entry.
-    pub fn status(&self, gate: &Gate) -> Status {
-        let current = var(&gate.root, "BootCurrent")
-            .and_then(|data| data.get(4..6).map(|b| u16::from_le_bytes([b[0], b[1]])));
-        let same = trial::boot_id(gate) == self.boot_id;
-        if same {
-            Status::Pending
-        } else if current == Some(self.entry) {
-            Status::Running
-        } else {
-            Status::Reverted
-        }
-    }
-
-    /// What is tried: `FROM -> TO`.
-    pub fn what(&self) -> String {
-        format!("{} -> {}", self.from.name(), self.to.name())
-    }
-
-    pub fn note(&self, status: Status) -> String {
-        format!("= loader {} ({})", self.what(), trial::why(status))
-    }
-
-    /// In the trial boot: the new loader first, the earlier one right after it.
-    pub fn confirm(&self, gate: &Gate) -> Result<String, Diagnostic> {
-        let efibootmgr = Tool::find(gate, "efibootmgr", "[boot] loader")?;
-        let fw = Firmware::read(gate)?;
-        let second = entry_for(gate, &efibootmgr, &fw.esp, self.from)?;
-        set_order(gate, &efibootmgr, self.entry, second)?;
-        if nvram(&gate.root).0.first() != Some(&self.entry) {
-            return Err(no_loader(format!(
-                "the firmware does not start {} first",
-                self.to.name()
-            )));
-        }
-        super::basics::apply_write(gate, &forget(SWITCH_STATE))?;
-        Ok(format!(
-            "~ loader {} (the default from now on)\nconfirmed; {} stays as the fallback entry\n",
-            self.to.name(),
-            self.from.name()
-        ))
-    }
-}
-
-fn forget(path: &str) -> Write {
-    Write {
-        path: path.to_string(),
-        bytes: None,
-        mode: 0o600,
-    }
 }
 
 /// `first`, then `second`, then the rest of the boot order as it was.
@@ -312,6 +227,29 @@ fn no_loader(what: String) -> Diagnostic {
     )
 }
 
+/// What [`plan`] names an unread ESP by, and every `[boot]` action's key with it: the actions
+/// the root run plans from the ESP.
+pub const UNREAD: &str = "boot";
+
+/// The `[boot]` actions' keys.
+pub const KEYS: [&str; 4] = ["loader", "timeout", "default", "cmdline"];
+
+/// The first ESP place there whose `EFI` folder this process may not look at, when no place
+/// before it is open: a UEFI machine's ESP mounted root-only.
+fn closed_esp(gate: &Gate) -> Option<&'static str> {
+    if !gate.root.join("sys/firmware/efi").is_dir() {
+        return None;
+    }
+    for dir in ["efi", "boot/efi", "boot"] {
+        match std::fs::metadata(gate.root.join(dir).join("EFI")) {
+            Ok(meta) if meta.is_dir() => return None,
+            Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied => return Some(dir),
+            _ => {}
+        }
+    }
+    None
+}
+
 impl Firmware {
     fn read(gate: &Gate) -> Result<Firmware, Diagnostic> {
         if !gate.root.join("sys/firmware/efi").is_dir() {
@@ -421,16 +359,12 @@ fn kernels(gate: &Gate) -> Vec<(String, String)> {
 
 /// The command line systemd-boot's entries get: the machine's own, from `/etc/kernel/cmdline`
 /// or else the running kernel's, without the parameters lodi added before (those the lock
-/// records, and those a trial that waits found confirmed), and then the declared ones.
+/// records), and then the declared ones.
 fn command_line(gate: &Gate, manifest: &HostManifest, lock: Option<&HostLock>) -> String {
-    let confirmed = trial::Trial::read(gate)
-        .and_then(|trial| trial.confirmed().map(str::to_string))
-        .unwrap_or_default();
     let before: Vec<String> = lock
         .and_then(|lock| lock.basics.get(super::kernel::PARAMETERS_KEY))
         .map(|record| record.value.clone())
         .into_iter()
-        .chain([confirmed])
         .flat_map(|words| {
             words
                 .split_whitespace()
@@ -507,7 +441,6 @@ fn switch(
     to: Loader,
     manifest: &HostManifest,
     lock: Option<&HostLock>,
-    trial: bool,
 ) -> Result<BasicAction, Diagnostic> {
     // The earlier loader is the fallback: it must be there before anything changes.
     let fallback = loader_file(&gate.root, &fw.esp, from).ok_or_else(|| {
@@ -521,12 +454,7 @@ fn switch(
     let mut steps = Vec::new();
     let mut invocations = Vec::new();
     if !names.is_empty() {
-        let backend = pm::backend_for(
-            gate.distro,
-            &gate.root,
-            gate.partial_upgrade,
-            gate.operation,
-        );
+        let backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
         if pm::Shape::of(gate.distro).refresh_is_an_action {
             invocations.extend(backend.refresh()?);
         }
@@ -577,19 +505,10 @@ fn switch(
             mkconfig = Some(invocation);
         }
     }
-    if trial {
-        steps.push(format!(
-            "a trial boot: {} once, by BootNext; {} stays first until confirmed, then the \
-             fallback entry {fallback}",
-            to.name(),
-            from.name()
-        ));
-    } else {
-        steps.push(format!(
-            "{} stays as the fallback entry {fallback}",
-            from.name()
-        ));
-    }
+    steps.push(format!(
+        "the default from the next boot; {} stays as the fallback entry {fallback}",
+        from.name()
+    ));
     Ok(BasicAction {
         key: "loader",
         change: Change::Set,
@@ -603,7 +522,6 @@ fn switch(
             writes,
             kernels: kernels_found,
             mkconfig,
-            trial,
         })))),
     })
 }
@@ -667,7 +585,7 @@ fn with_setting(text: &str, key: &str, line: Option<&str>) -> String {
 /// left as they are, and both taken out once `[boot]` is gone.
 fn settings(
     gate: &Gate,
-    fw: &Firmware,
+    esp: &str,
     declared: Option<&Boot>,
     out: &mut Vec<BasicAction>,
 ) -> Result<(), Diagnostic> {
@@ -675,7 +593,7 @@ fn settings(
         if declared.is_some_and(|boot| boot.loader != loader) {
             continue;
         }
-        let (path, owned) = settings_file(gate, &fw.esp, loader);
+        let (path, owned) = settings_file(gate, esp, loader);
         let text = super::basics::read(gate, &path)
             .map(|bytes| String::from_utf8_lossy(&bytes).into_owned());
         let wanted = [
@@ -722,6 +640,87 @@ fn settings(
     Ok(())
 }
 
+/// The plan of a person who may not read the ESP (`umask=0077`): which loader starts the
+/// machine, and systemd-boot's settings, the root run reads (#709). What the record says lodi
+/// last set is taken as what the ESP holds (#695). GRUB's settings are outside the ESP, so they
+/// are planned as the root run will plan them.
+fn closed(
+    gate: &Gate,
+    esp: &str,
+    declared: Option<&Boot>,
+    lock: Option<&HostLock>,
+    out: &mut Vec<BasicAction>,
+    record: &mut BTreeMap<String, BasicRecord>,
+    unread: &mut Vec<Unread>,
+) -> Result<(), Diagnostic> {
+    let recorded = |key: &str| lock.and_then(|lock| lock.basics.get(key)).map(|r| &r.value);
+    unread.push(Unread {
+        action: UNREAD.to_string(),
+        shown: format!("/{esp}"),
+    });
+    let read_by_root = |what: &str| format!("{what} is read by the root run");
+    let Some(boot) = declared else {
+        out.push(BasicAction {
+            key: "loader",
+            change: Change::Set,
+            what: "as recorded".into(),
+            detail: read_by_root(&format!("/{esp}")),
+            step: Step::None,
+        });
+        return Ok(());
+    };
+    let was = lock.and_then(|lock| lock.basics.get(LOADER_KEY));
+    let was = was.and_then(|r| r.was.clone());
+    let mut keep = |key: &str, value: String, was: Option<String>| {
+        record.insert(key.to_string(), BasicRecord { value, was });
+    };
+    keep(
+        LOADER_KEY,
+        boot.loader.name().into(),
+        Some(was.unwrap_or_else(|| boot.loader.name().into())),
+    );
+    let timeout = boot.timeout.map(|n| n.to_string());
+    let wanted = [
+        ("timeout", TIMEOUT_KEY, timeout),
+        ("default", DEFAULT_KEY, boot.default.clone()),
+    ];
+    for (_, at, want) in &wanted {
+        if let Some(value) = want {
+            keep(at, value.clone(), None);
+        }
+    }
+    if recorded(LOADER_KEY).map(String::as_str) != Some(boot.loader.name()) {
+        out.push(BasicAction {
+            key: "loader",
+            change: Change::Set,
+            what: format!("{} as declared", boot.loader.name()),
+            detail: read_by_root(&format!("/{esp}")),
+            step: Step::None,
+        });
+    }
+    if boot.loader == Loader::Grub {
+        return settings(gate, esp, declared, out);
+    }
+    let (path, _) = settings_file(gate, esp, boot.loader);
+    for (key, at, want) in wanted {
+        let have = recorded(at).cloned();
+        let (change, what) = match (have, want) {
+            (None, Some(want)) => (Change::Add, want),
+            (Some(have), None) => (Change::Remove, have),
+            (Some(have), Some(want)) if have != want => (Change::Set, format!("{have} -> {want}")),
+            _ => continue,
+        };
+        out.push(BasicAction {
+            key,
+            change,
+            what,
+            detail: read_by_root(&path),
+            step: Step::None,
+        });
+    }
+    Ok(())
+}
+
 /// Plan the loader, then its settings, then systemd-boot's command line.
 pub fn plan(
     gate: &Gate,
@@ -729,21 +728,21 @@ pub fn plan(
     lock: Option<&HostLock>,
     out: &mut Vec<BasicAction>,
     record: &mut BTreeMap<String, BasicRecord>,
-    notes: &mut Vec<String>,
+    unread: &mut Vec<Unread>,
 ) -> Result<(), Diagnostic> {
     let recorded = |key: &str| lock.and_then(|lock| lock.basics.get(key));
     let declared = manifest.boot.as_ref();
-    let tried = SwitchTrial::read(gate).map(|trial| {
-        let status = trial.status(gate);
-        (trial, status)
-    });
     if declared.is_none()
-        && tried.is_none()
         && [LOADER_KEY, TIMEOUT_KEY, DEFAULT_KEY]
             .iter()
             .all(|k| recorded(k).is_none())
     {
         return Ok(());
+    }
+    if gate.euid != 0
+        && let Some(esp) = closed_esp(gate)
+    {
+        return closed(gate, esp, declared, lock, out, record, unread);
     }
     let fw = Firmware::read(gate)?;
     let current = in_use(&gate.root, &fw)
@@ -765,54 +764,16 @@ pub fn plan(
             keep(DEFAULT_KEY, default.clone(), None);
         }
     }
-    // A switch to the declared loader boots once as a trial first (bv-1): while it waits, or
-    // is the running boot, the plan says so; once it reverted, the switch is tried again.
-    let waiting = match &tried {
-        Some((trial, status)) if declared.is_some_and(|b| b.loader == trial.to) => {
-            notes.push(trial.note(*status));
-            *status != Status::Reverted
-        }
-        _ => false,
-    };
-    if current != target && !waiting {
-        let trial = declared.is_some();
-        out.push(switch(gate, &fw, current, target, manifest, lock, trial)?);
-        if trial {
-            let what = format!("{} -> {}", current.name(), target.name());
-            notes.push(format!("= loader {what} ({})", trial::why(Status::Pending)));
-        }
+    if current != target {
+        out.push(switch(gate, &fw, current, target, manifest, lock)?);
     }
-    // A trial of a loader no longer declared goes, and the firmware's one-shot with it.
-    if let Some((trial, status)) = tried.filter(|(t, _)| declared.is_none_or(|b| b.loader != t.to))
-    {
-        let mut run = Vec::new();
-        if status == Status::Pending && var(&gate.root, "BootNext").is_some() {
-            let efibootmgr = Tool::find(gate, "efibootmgr", "[boot] loader")?;
-            run.push(efibootmgr.invocation(&["--delete-bootnext"]));
-        }
-        out.push(BasicAction {
-            key: "loader",
-            change: Change::Remove,
-            what: format!("trial {}", trial.what()),
-            detail: format!("{} stays first", trial.from.name()),
-            step: Step::Trial {
-                writes: vec![forget(SWITCH_STATE)],
-                run,
-                after: Vec::new(),
-            },
-        });
-    }
-    settings(gate, &fw, declared, out)?;
-    // systemd-boot's command line, once it is in use; a switch writes it itself. A change boots
-    // once as a trial first (bv-1); taking the parameters out is not a trial (B3).
+    settings(gate, &fw.esp, declared, out)?;
+    // systemd-boot's command line, once it is in use; a switch writes it itself.
     if current == target && declared.is_some_and(|b| b.loader == Loader::SystemdBoot) {
         let want = command_line(gate, manifest, lock);
         let have = super::basics::read(gate, CMDLINE).unwrap_or_default();
         if have != want.as_bytes() {
-            let recorded = recorded(super::kernel::PARAMETERS_KEY)
-                .map(|record| record.value.as_str())
-                .unwrap_or_default();
-            out.extend(cmdline(gate, &fw.esp, manifest, recorded, &want, notes)?);
+            out.push(cmdline(gate, &fw.esp, &want)?);
         }
     }
     Ok(())
@@ -831,61 +792,29 @@ pub fn kernel_installs(gate: &Gate) -> Result<Vec<Invocation>, Diagnostic> {
         .collect())
 }
 
-/// systemd-boot's command line `want` in place of the one its entries boot.
-fn cmdline(
-    gate: &Gate,
-    esp: &str,
-    manifest: &HostManifest,
-    recorded: &str,
-    want: &str,
-    notes: &mut Vec<String>,
-) -> Result<Option<BasicAction>, Diagnostic> {
-    let parameters = manifest.kernel.parameters.join(" ");
-    let what = want.trim_end().to_string();
-    if parameters.is_empty() {
-        let then = kernel_installs(gate)?;
-        let detail = std::iter::once(CMDLINE.to_string())
-            .chain(then.iter().map(Invocation::command_line))
-            .chain([format!("the entry before it as {}", trial::KNOWN_GOOD)])
-            .collect::<Vec<_>>()
-            .join("; ");
-        let step = trial::sd_new_default(gate, esp, want, true, then)?;
-        return Ok(Some(BasicAction {
-            key: "cmdline",
-            change: Change::Set,
-            what,
-            detail,
-            step,
-        }));
-    }
-    let tried = trial::Trial::read(gate)
-        .filter(trial::Trial::is_systemd_boot)
-        .map(|trial| {
-            let status = trial.status(gate);
-            (trial, status)
-        });
-    if let Some((trial, status)) = &tried {
-        if trial.tries_cmdline(want) || *status == Status::Reverted {
-            notes.push(trial.note(*status));
-        }
-        if trial.tries_cmdline(want) && *status != Status::Reverted {
-            return Ok(None);
-        }
-    }
-    // What the default boots: a waiting trial's own record of it, else the lock's.
-    let confirmed = match &tried {
-        Some((trial, _)) => trial.confirmed().unwrap_or_default().to_string(),
-        None => recorded.to_string(),
-    };
-    let (detail, step, trial) = trial::sd_trial(gate, esp, want, &parameters, &confirmed)?;
-    notes.push(trial.note(Status::Pending));
-    Ok(Some(BasicAction {
+/// systemd-boot's command line `want` in place of the one its entries boot: the default from the
+/// next boot, the entry before it kept as the fallback.
+fn cmdline(gate: &Gate, esp: &str, want: &str) -> Result<BasicAction, Diagnostic> {
+    let then = kernel_installs(gate)?;
+    let calls = then.iter().map(Invocation::command_line);
+    let (step, replaced) = super::fallback::sd_new_default(gate, esp, want, then.clone())?;
+    let name = format!("{}.conf", super::fallback::KNOWN_GOOD);
+    let detail = [
+        "the default from the next boot".to_string(),
+        CMDLINE.to_string(),
+    ]
+    .into_iter()
+    .chain(calls)
+    .chain([super::fallback::kept(&name, replaced)])
+    .collect::<Vec<_>>()
+    .join("; ");
+    Ok(BasicAction {
         key: "cmdline",
         change: Change::Set,
-        what,
+        what: want.trim_end().to_string(),
         detail,
         step,
-    }))
+    })
 }
 
 /// Carry out one `[boot]` stage.
@@ -1083,41 +1012,14 @@ fn perform_switch(gate: &Gate, switch: &Switch) -> Result<(), Diagnostic> {
         })?;
         let first = entry_for(gate, &efibootmgr, &switch.esp, switch.to)?;
         let second = entry_for(gate, &efibootmgr, &switch.esp, switch.from)?;
-        if !switch.trial {
-            set_order(gate, &efibootmgr, first, second)?;
-            if nvram(&gate.root).0.first() != Some(&first) {
-                return Err(no_loader(format!(
-                    "the firmware does not start {} first",
-                    switch.to.name()
-                )));
-            }
-            return Ok(());
-        }
-        // The trial (bv-1): the earlier loader stays first, and the new one starts once.
-        set_order(gate, &efibootmgr, second, first)?;
-        let number = format!("{first:04X}");
-        pm::run(&efibootmgr.invocation(&["--bootnext", &number]))?;
-        let next = var(&gate.root, "BootNext").and_then(|d| d.get(4..6).map(words));
-        if nvram(&gate.root).0.first() != Some(&second) || next != Some(vec![first]) {
+        set_order(gate, &efibootmgr, first, second)?;
+        if nvram(&gate.root).0.first() != Some(&first) {
             return Err(no_loader(format!(
-                "the firmware does not start {} once, next",
+                "the firmware does not start {} first",
                 switch.to.name()
             )));
         }
-        let state = format!(
-            "loader={}\nfrom={}\nentry={number}\nboot_id={}\n",
-            switch.to.name(),
-            switch.from.name(),
-            trial::boot_id(gate)
-        );
-        super::basics::apply_write(
-            gate,
-            &Write {
-                path: SWITCH_STATE.to_string(),
-                bytes: Some(state.into_bytes()),
-                mode: 0o600,
-            },
-        )
+        Ok(())
     })();
     let Err(mut error) = done else {
         return Ok(());
@@ -1132,9 +1034,6 @@ fn perform_switch(gate: &Gate, switch: &Switch) -> Result<(), Diagnostic> {
         };
     }
     if let Ok(efibootmgr) = Tool::find(gate, "efibootmgr", "[boot] loader") {
-        if switch.trial && var(&gate.root, "BootNext").is_some() {
-            restored &= pm::run(&efibootmgr.invocation(&["--delete-bootnext"])).is_ok();
-        }
         for entry in nvram(&gate.root).1 {
             if !entries.iter().any(|kept| kept.number == entry.number) {
                 let number = format!("{:04X}", entry.number);

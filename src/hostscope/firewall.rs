@@ -18,9 +18,10 @@ use std::collections::BTreeMap;
 use crate::diag::Diagnostic;
 use crate::util::sha256_hex;
 
-use super::basics::{BasicAction, Change, Step, Tool, Write};
+use super::basics::{BasicAction, Change, Listing, Step, Tool, Write};
 use super::lock::{BasicRecord, HostLock};
 use super::manifest::{Firewall, HostManifest};
+use super::plan::Unread;
 use super::safety::Gate;
 use super::services::Systemctl;
 
@@ -80,6 +81,7 @@ pub fn plan(
     gate: &Gate,
     manifest: &HostManifest,
     lock: Option<&HostLock>,
+    unread: &mut Vec<Unread>,
 ) -> Result<Planned, Diagnostic> {
     let declared = manifest.firewall.as_ref();
     let recorded = lock.and_then(|lock| lock.basics.get("firewall"));
@@ -108,7 +110,20 @@ pub fn plan(
         }
     }
     let nft = Tool::find(gate, "nft", "[firewall]")?;
-    let listing = nft.read(&["list", "table", "inet", "lodi"])?;
+    // Only CAP_NET_ADMIN may list the table: as the person, the root run lists it (#709).
+    let mut denied = false;
+    let listing = match nft.list(&["list", "table", "inet", "lodi"])? {
+        Listing::Text(text) => Some(text),
+        Listing::Nothing => None,
+        Listing::Denied => {
+            denied = true;
+            unread.push(Unread {
+                action: "firewall".to_string(),
+                shown: format!("table {TABLE}"),
+            });
+            None
+        }
+    };
     let script_now = super::basics::read(gate, SCRIPT);
     let unit_now = super::basics::read(gate, UNIT);
     let script_path = gate.root.join(&SCRIPT[1..]).display().to_string();
@@ -145,7 +160,14 @@ pub fn plan(
     let enabled = systemctl
         .observe(UNIT_NAME)?
         .is_some_and(|(state, _)| state == "enabled");
-    let same = listing.as_deref().and_then(listed_digest) == Some(digest.as_str())
+    // A listing only root may make is taken as the table lodi last loaded, which the record
+    // names (#695); the root run lists it again before it loads one.
+    let listed = match &listing {
+        Some(text) => listed_digest(text),
+        None if denied => recorded.and_then(|r| r.value.strip_prefix("sha256:")),
+        None => None,
+    };
+    let same = listed == Some(digest.as_str())
         && script_now.as_deref() == Some(text.as_bytes())
         && unit_now.as_deref() == Some(unit_text.as_bytes())
         && enabled;

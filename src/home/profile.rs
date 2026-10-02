@@ -72,7 +72,9 @@ fn empty_bin(roots: &Roots) -> Result<Vec<String>, Diagnostic> {
                 "E_STORE_IO",
                 "the generated profile bin directory contains a non-UTF-8 file name",
             )
-            .hint("remove that entry from Lodi's profile bin directory and apply again"));
+            .hint(
+                "remove that entry from Lodi's profile bin directory and run lodi switch again",
+            ));
         };
         if kind.is_dir() {
             return Err(Diagnostic::new(

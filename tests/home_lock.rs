@@ -1,4 +1,4 @@
-//! M-0.5 T-4: `<config>/home.lock` uses the project lock schema, pins only `[tools]`, and a
+//! M-0.5 T-4: a home's tool lock uses the project lock schema, pins only `[tools]`, and a
 //! locked stale request changes nothing. All roots are below `CARGO_TARGET_TMPDIR`.
 
 mod support;
@@ -56,30 +56,29 @@ fn write_manifest(roots: &Roots, text: &str) {
 }
 
 #[test]
-fn resolution_writes_the_shared_canonical_schema_and_reuses_it_byte_for_byte() {
+fn resolution_gives_the_shared_canonical_schema_writes_no_home_lock_and_reuses_it() {
     let env = support::home_env("home-lock-canonical");
     let roots = roots(&env);
     let fetcher = MapFetcher::default();
     write_manifest(&roots, &inline("1.0.0", b"first\n"));
 
-    let first = tools::resolve(&roots, &fetcher, 0, false)
+    let first = tools::resolve(&roots, &fetcher, 0, false, None)
         .unwrap()
         .expect("a tool set resolves");
-    assert!(first.wrote_lock);
     assert_eq!(first.resolved, ["demo"]);
-    let path = roots.config().join(HOME_LOCK_FILE);
-    let bytes = fs::read(&path).unwrap();
-    let parsed = lock::parse_lock(&bytes).unwrap();
+    // The lock is the config's `lodi.lock` section, never a `home.lock` (LD-528).
+    assert!(!roots.config().join(HOME_LOCK_FILE).exists());
+    let bytes = first.lock.to_canonical_json();
+    let parsed = lock::parse_lock(bytes.as_bytes()).unwrap();
     assert_eq!(parsed.version, LOCK_VERSION);
-    assert_eq!(bytes, parsed.to_canonical_json().as_bytes());
-    assert!(bytes.ends_with(b"\n"));
+    assert_eq!(bytes, parsed.to_canonical_json());
+    assert!(bytes.ends_with('\n'));
 
-    let second = tools::resolve(&roots, &fetcher, 1, false)
+    let second = tools::resolve(&roots, &fetcher, 1, false, Some(first.lock.clone()))
         .unwrap()
         .expect("the same tool set stays resolved");
-    assert!(!second.wrote_lock);
     assert!(second.resolved.is_empty());
-    assert_eq!(fs::read(&path).unwrap(), bytes);
+    assert_eq!(second.lock, first.lock);
     assert!(
         fetcher.requests().is_empty(),
         "inline pins need no discovery"
@@ -94,19 +93,21 @@ fn files_do_not_participate_in_the_home_lock_identity() {
     let tool = inline("1.0.0", b"first\n");
     write_manifest(
         &roots,
-        &format!("{tool}\n[files.\"note\"]\ncontent = \"one\"\n"),
+        &format!("{tool}\n[home.file.\"note\"]\ntext = \"one\"\n"),
     );
-    tools::resolve(&roots, &fetcher, 0, false).unwrap();
-    let path = roots.config().join(HOME_LOCK_FILE);
-    let before = fs::read(&path).unwrap();
+    let first = tools::resolve(&roots, &fetcher, 0, false, None)
+        .unwrap()
+        .unwrap();
 
     write_manifest(
         &roots,
-        &format!("{tool}\n[files.\"note\"]\ncontent = \"two\"\n"),
+        &format!("{tool}\n[home.file.\"note\"]\ntext = \"two\"\n"),
     );
-    let outcome = tools::resolve(&roots, &fetcher, 1, false).unwrap().unwrap();
-    assert!(!outcome.wrote_lock);
-    assert_eq!(fs::read(path).unwrap(), before);
+    let outcome = tools::resolve(&roots, &fetcher, 1, false, Some(first.lock.clone()))
+        .unwrap()
+        .unwrap();
+    assert!(outcome.resolved.is_empty());
+    assert_eq!(outcome.lock, first.lock);
 }
 
 #[test]
@@ -116,11 +117,11 @@ fn locked_stale_tools_are_exit_10_with_the_required_hint_and_no_write() {
     let roots = roots(&env);
     let fetcher = MapFetcher::default();
     write_manifest(&roots, &inline("1.0.0", b"first\n"));
-    tools::resolve(&roots, &fetcher, 0, false).unwrap();
+    let first = tools::resolve(&roots, &fetcher, 0, false, None)
+        .unwrap()
+        .unwrap();
 
     write_manifest(&roots, &inline("2.0.0", b"second\n"));
-    let lock_path = roots.config().join(HOME_LOCK_FILE);
-    let lock_before = fs::read(&lock_path).unwrap();
     let listing_before = support::listing(env.root());
     let ledger_before: Vec<_> = gate
         .ledger_lines()
@@ -128,15 +129,19 @@ fn locked_stale_tools_are_exit_10_with_the_required_hint_and_no_write() {
         .filter(|(_, path)| path.starts_with(env.root()))
         .collect();
 
-    let failure = tools::resolve(&roots, &fetcher, 1, true).unwrap_err();
+    let failure = tools::resolve(&roots, &fetcher, 1, true, Some(first.lock)).unwrap_err();
     assert_eq!(failure.exit_status, 10);
     assert_eq!(failure.codes(), ["E_LOCK_STALE"]);
     let text = failure.to_string();
     assert!(
-        text.contains("hint: run lodi home apply without --locked to re-resolve"),
+        text.contains("hint: run lodi update to re-resolve it"),
         "{text}"
     );
-    assert_eq!(fs::read(lock_path).unwrap(), lock_before);
+    // The home's lock is its section of the config's lodi.lock; 2.0 has no home.lock.
+    assert!(
+        text.contains("the home's section of lodi.lock") && !text.contains(HOME_LOCK_FILE),
+        "{text}"
+    );
     assert_eq!(support::listing(env.root()), listing_before);
     assert_eq!(
         gate.ledger_lines()
@@ -149,38 +154,17 @@ fn locked_stale_tools_are_exit_10_with_the_required_hint_and_no_write() {
 }
 
 #[test]
-fn a_newer_home_lock_uses_the_shared_lock_version_refusal() {
-    let env = support::home_env("home-lock-version");
-    let roots = roots(&env);
-    let fetcher = MapFetcher::default();
-    write_manifest(&roots, &inline("1.0.0", b"first\n"));
-    let lock_path = roots.config().join(HOME_LOCK_FILE);
-    let bytes = format!("{{\"version\":{}}}\n", LOCK_VERSION + 1);
-    fs::write(&lock_path, &bytes).unwrap();
-
-    let failure = tools::resolve(&roots, &fetcher, 0, false).unwrap_err();
-    assert_eq!(
-        failure.exit_status,
-        lodi::diag::exit_status("E_LOCK_VERSION")
-    );
-    assert_eq!(failure.codes(), ["E_LOCK_VERSION"]);
-    assert!(failure.to_string().contains(HOME_LOCK_FILE));
-    assert_eq!(fs::read_to_string(lock_path).unwrap(), bytes);
-    assert!(fetcher.requests().is_empty());
-}
-
-#[test]
 fn a_manifest_without_tools_needs_and_produces_no_lock() {
     let env = support::home_env("home-lock-none");
     let roots = roots(&env);
     let fetcher = MapFetcher::default();
     write_manifest(
         &roots,
-        "[home]\nversion = \"1\"\n\n[files.\"note\"]\ncontent = \"only files\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\"note\"]\ntext = \"only files\"\n",
     );
 
     assert!(
-        tools::resolve(&roots, &fetcher, 0, false)
+        tools::resolve(&roots, &fetcher, 0, false, None)
             .unwrap()
             .is_none()
     );

@@ -1,7 +1,7 @@
-# helm for [tools] helm. This recipe says where to look; it lists no version. `lodi lock`
-# reads the one-line latest-version file upstream publishes, so only the current version is
-# discoverable: `latest` resolves, a constraint on an older line finds none. Each archive has
-# a `.sha256` file holding its bare digest beside it.
+# helm for [tools] helm. This recipe says where to look; it lists no version. `lodi update` reads
+# the one-line latest-version file upstream publishes, so only the current version is discoverable:
+# `latest` resolves, a constraint on an older line finds none. Each archive has a `.sha256` file
+# holding its bare digest beside it.
 [recipe]
 name        = "helm"
 description = "The package manager for Kubernetes"

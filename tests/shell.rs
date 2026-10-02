@@ -357,8 +357,7 @@ fn develop_with_no_command_enters_an_interactive_shell_and_returns_its_status() 
     let server = Server::for_tools(&tools);
     let rewrite = server.rewrite();
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    let o = user.run(&project, &["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    record_trust(&user.lodi_home().join("trust.json"), &project);
 
     let o = user.shell_with(
         &project,

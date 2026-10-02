@@ -457,17 +457,17 @@ impl Store {
         })
     }
 
-    /// [`Store::open`] for a command that will **write** into the store: the store's layout is
-    /// brought to [`crate::layout::CURRENT`] once, before any entry is realized (M-1.0 T-2).
+    /// [`Store::open`] for a command that will **write** into the store: a store without the
+    /// 2.0 marker is given it once, before any entry is realized, and is never migrated.
     ///
-    /// This is the only place [`crate::layout::migrate`] is called from. The layout is read
+    /// This is the only place [`crate::layout::start`] is called from. The layout is read
     /// **before** [`Store::open`] creates a directory, so a store written by a newer Lodi is
     /// `E_STORE_VERSION` without this build having opened or written anything below it (design
-    /// call D8). A read-only command uses [`Store::open`] and never migrates.
+    /// call D8). A read-only command uses [`Store::open`] and never writes the marker.
     pub fn open_for_write(home: &Path) -> Result<Store, Diagnostic> {
         crate::layout::read(home)?;
         let store = Store::open(home)?;
-        crate::layout::migrate(&store)?;
+        crate::layout::start(&store)?;
         Ok(store)
     }
 

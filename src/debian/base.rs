@@ -58,7 +58,7 @@ pub struct LockedRootfs {
     /// Lowercase hex SHA-256 of the layer.
     pub sha256: String,
     /// The layer's size when the pin states one (the OCI manifest does; a checksum file
-    /// does not, and `lodi lock` downloads nothing to measure it).
+    /// does not, and locking downloads nothing to measure it).
     pub size: Option<u64>,
     pub format: String,
     /// `builtin:debian.toml`, `builtin:ubuntu.toml`.
@@ -95,7 +95,7 @@ pub struct LockedRepository {
     pub indexes: Vec<LockedIndex>,
 }
 
-/// Everything `lodi lock` records about a container base.
+/// Everything a lock records about a container base.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LockedBase {
     pub distro: String,

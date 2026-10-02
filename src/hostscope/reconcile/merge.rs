@@ -182,7 +182,7 @@ fn packages(base: &Baseline, ours: &Ours, theirs: &Theirs, out: &mut Outcome) {
                 out.conflicts.push(format!(
                     "{W_RECONCILE}: package {name} was installed by hand, and host.toml keeps it \
                      off this machine (absent, or a remove list); host.toml is kept, and the next \
-                     apply removes it"
+                     switch removes it"
                 ));
             } else {
                 // Installed outside Lodi from the distribution, or marked explicit by hand.

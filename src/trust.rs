@@ -17,8 +17,9 @@
 //! text executes or sources (a `Makefile`, a script in the project, anything on disk or
 //! downloaded), and what a declared tool does when it runs, are outside the boundary.
 //!
-//! Trust is recorded in `$XDG_CONFIG_HOME/lodi/trust.json` (default `~/.config/lodi`), keyed by
-//! the manifest's absolute path. It is local runtime state and holds that path.
+//! Trust is recorded in `trust.json` in lodi's data folder (`$LODI_HOME`, by default
+//! `~/.local/share/lodi`), never in the config folder `lodi import` writes (#702 story 33), keyed
+//! by the manifest's absolute path. It is local runtime state and holds that path.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -202,12 +203,14 @@ pub struct TrustStore {
 }
 
 impl TrustStore {
-    /// `$XDG_CONFIG_HOME/lodi/trust.json`, else `$HOME/.config/lodi/trust.json`. The variables
-    /// are the ones `crate::roots::capture` read; this precedence is its `trust_dir`
-    /// projection, unchanged since S-3 (`LD-184`).
+    /// `trust.json` at the store's root ([`crate::roots::EnvRoots::store_root`]).
     pub fn from_env() -> Result<TrustStore, Diagnostic> {
         Ok(TrustStore {
-            path: crate::roots::capture().trust_dir()?.join("trust.json"),
+            // With no root at all, the stop is the config's, as every other home path's is.
+            path: crate::roots::capture()
+                .store_root()
+                .map_err(|d| Diagnostic::new("E_CONFIG", d.message))?
+                .join("trust.json"),
         })
     }
 
@@ -322,13 +325,6 @@ impl TrustStore {
             f.entries.insert(key(manifest_path), entry);
         })?;
         Ok(Some(hash))
-    }
-
-    /// Remove any trust recorded for the manifest at `manifest_path`; whether there was one.
-    pub fn revoke(&self, manifest_path: &Path) -> Result<bool, Diagnostic> {
-        let mut removed = false;
-        self.update(|f| removed = f.entries.remove(&key(manifest_path)).is_some())?;
-        Ok(removed)
     }
 }
 

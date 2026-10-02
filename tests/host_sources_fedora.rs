@@ -22,7 +22,7 @@ use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
-use fakehost::{Case, Machine, Pkg, err, out, story};
+use fakehost::{Case, Machine, Pkg, err, nothing, story};
 use lodi::util::sha256_hex;
 
 const REPO: &str = "etc/yum.repos.d/lodi-lodigate.repo";
@@ -68,9 +68,7 @@ fn case(name: &str) -> Case {
 /// The manifest: one `[sources.lodigate]` over `keys` (the key file is written with `bytes`),
 /// and `packages` to install.
 fn declare(case: &Case, bytes: &[u8], keys: &str, packages: &[&str]) {
-    let file = case.root.path("etc/lodi/files/lodigate.asc");
-    fs::create_dir_all(file.parent().unwrap()).unwrap();
-    fs::write(&file, bytes).unwrap();
+    case.write_beside("files/lodigate.asc", bytes);
     let names: Vec<String> = packages.iter().map(|p| format!("\"{p}\"")).collect();
     case.set_manifest(&format!(
         "[host]\nversion = \"1\"\ndistro = \"fedora\"\npackages = \"managed\"\n\n\
@@ -84,8 +82,9 @@ fn sha(bytes: &[u8]) -> String {
     sha256_hex(bytes)
 }
 
-/// Every regular file below the root, with its bytes' digest and its change time: what "nothing
-/// changed" is checked against.
+/// Every regular file of the machine below the root, with its bytes' digest and its change
+/// time: what "nothing changed" is checked against. The scratch `HOME` holding the config (whose
+/// `lodi.lock` a switch fills first) and the harness's "may manage" marker are not the machine.
 fn census(case: &Case) -> Vec<(String, String)> {
     fn visit(base: &Path, dir: &Path, out: &mut Vec<(String, String)>) {
         let Ok(entries) = fs::read_dir(dir) else {
@@ -93,6 +92,9 @@ fn census(case: &Case) -> Vec<(String, String)> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if path == base.join("home") || path == base.join("etc/lodi/may-manage") {
+                continue;
+            }
             let meta = fs::symlink_metadata(&path).unwrap();
             if meta.is_dir() {
                 visit(base, &path, out);
@@ -142,7 +144,7 @@ fn a_declared_repository_is_added_with_its_verified_key() {
     // The plan names the repository first, then the refresh of that repository alone.
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan).replace(&format!(" --installroot={}", case.root.dir.display()), "");
+    let text = err(&plan).replace(&format!(" --installroot={}", case.root.dir.display()), "");
     let lines: Vec<&str> = text.lines().collect();
     assert_eq!(
         lines[0],
@@ -204,7 +206,7 @@ fn a_declared_repository_is_added_with_its_verified_key() {
     );
     // Fedora's own repository and key are untouched, and a second apply has nothing to do.
     assert!(case.root.read(OWN_REPO).starts_with("[fedora]\n"));
-    assert_eq!(case.apply(&[]).stdout, b"nothing to do\n");
+    assert!(nothing(&case.apply(&[])));
 
     // A machine whose index is stale, or was never fetched, gets the one full refresh instead:
     // it covers the declared repository too, and Fedora's own are not left without a cache.
@@ -222,7 +224,7 @@ fn a_declared_repository_is_added_with_its_verified_key() {
         &["lodigate-hello"],
     );
     let plan = stale.plan();
-    let text = out(&plan).replace(&format!(" --installroot={}", stale.root.dir.display()), "");
+    let text = err(&plan).replace(&format!(" --installroot={}", stale.root.dir.display()), "");
     assert_eq!(
         text.lines().nth(1),
         Some("~ index (dnf5 --refresh makecache)"),
@@ -286,8 +288,7 @@ fn an_unsafe_or_duplicate_repository_is_refused_before_any_change() {
     }
 
     // A plain http:// address, in place of the https:// one.
-    let file = case.root.path("etc/lodi/files/lodigate.asc");
-    fs::write(&file, &bytes).unwrap();
+    case.write_beside("files/lodigate.asc", &bytes);
     case.set_manifest(
         &case
             .manifest()
@@ -463,7 +464,7 @@ fn import_writes_third_party_repositories_as_commented_sources() {
     assert!(
         manifest.contains(&format!(
             "# uris = [\"https://vendor.example.invalid/f44/\"]\n\
-             # signed_by = \"files/etc/pki/rpm-gpg/lodi-vendor.asc\"\n\
+             # signed_by = \"files/host/etc/pki/rpm-gpg/lodi-vendor.asc\"\n\
              # signed_by_sha256 = \"{}\"\n",
             sha(&vendor_key)
         )),
@@ -472,11 +473,7 @@ fn import_writes_third_party_repositories_as_commented_sources() {
     assert!(manifest.contains("# #   vendor-tool\n"), "{manifest}");
     // The key travels beside the manifest, at the path the block names.
     assert_eq!(
-        fs::read(
-            case.root
-                .path("etc/lodi/files/etc/pki/rpm-gpg/lodi-vendor.asc")
-        )
-        .unwrap(),
+        fs::read(case.beside("files/host/etc/pki/rpm-gpg/lodi-vendor.asc")).unwrap(),
         vendor_key
     );
     // Fedora's own repository is counted, never written; the unsafe one is named with its reason.
@@ -499,13 +496,10 @@ fn import_writes_third_party_repositories_as_commented_sources() {
         "a disabled repository: {manifest}"
     );
 
-    // A second import writes the same bytes.
-    let again = case.verb("import", &["--force"]);
+    // Importing again merges nothing into the file it wrote: the same bytes.
+    let again = case.verb("import", &[]);
     assert!(again.status.success(), "{}", story(&again));
     assert_eq!(case.manifest(), manifest);
-    let stdout = case.verb("import", &["--stdout"]);
-    let stdout_again = case.verb("import", &["--stdout"]);
-    assert_eq!(out(&stdout), out(&stdout_again));
 }
 
 #[test]
@@ -531,7 +525,7 @@ fn removing_the_block_removes_the_repository_and_key() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).starts_with("- source lodigate (repo: remove /etc/yum.repos.d/lodi-lodigate.repo, key: remove /etc/pki/rpm-gpg/lodi-lodigate.asc)\n"),
+        err(&plan).starts_with("- source lodigate (repo: remove /etc/yum.repos.d/lodi-lodigate.repo, key: remove /etc/pki/rpm-gpg/lodi-lodigate.asc)\n"),
         "{}",
         story(&plan)
     );
@@ -551,5 +545,5 @@ fn removing_the_block_removes_the_repository_and_key() {
         !files.to_string().contains("lodi-lodigate"),
         "the lock records neither file: {files}"
     );
-    assert_eq!(case.apply(&[]).stdout, b"nothing to do\n");
+    assert!(nothing(&case.apply(&[])));
 }

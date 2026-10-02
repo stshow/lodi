@@ -1,4 +1,4 @@
-//! M-0.4 T-6: `lodi search` and `lodi info`, run as the real binary.
+//! M-0.4 T-6: `lodi search`, run as the real binary, with what `lodi info` showed (LD-496).
 //!
 //! Every child here runs with a cleared environment, an empty `PATH` and a `LODI_HOME` that may
 //! not even exist. The proof that neither command makes a request (design call D12) is in **two
@@ -255,144 +255,6 @@ fn a_query_with_no_match_is_exit_zero() {
     fs::remove_dir_all(&root).unwrap();
 }
 
-// ----------------------------------------------------------------------------- lodi info ---
-
-/// Acceptance (d): the tools, their constraints, their locked versions and `lock: fresh`; and
-/// after the manifest is edited, `lock: stale` with the label that changed — exit 0 for both,
-/// because reporting the staleness is the command's job (design call D17).
-#[test]
-fn info_reports_the_project_and_the_lock_state() {
-    let root = scratch("info-project");
-    let project = root.join("project");
-    let home = root.join("home");
-    let python = Tool::python("3.12.11");
-    let text = manifest(std::slice::from_ref(&python), "");
-    write_project(&project, &text, &[python]);
-    let before = listing(&root);
-
-    let fresh = lodi_in(&project, &home, &["info"]);
-    assert_eq!(fresh.status.code(), Some(0), "{}", stderr(&fresh));
-    let out = stdout(&fresh);
-    assert!(out.contains("project: demo"), "{out}");
-    assert!(out.contains("mode:    host tools"), "{out}");
-    assert!(out.contains("python"), "{out}");
-    assert!(out.contains("3.12"), "the constraint is shown: {out}");
-    assert!(
-        out.contains("3.12.11"),
-        "the locked version is shown: {out}"
-    );
-    assert!(out.contains("art-"), "the store entry is shown: {out}");
-    assert!(out.contains("lock:    fresh"), "{out}");
-
-    fs::write(project.join("lodi.toml"), text.replace("3.12", "3.11")).unwrap();
-    let stale = lodi_in(&project, &home, &["info"]);
-    assert_eq!(stale.status.code(), Some(0), "a stale lock is not an error");
-    let out = stdout(&stale);
-    assert!(out.contains("lock:    stale"), "{out}");
-    assert!(
-        out.contains("python: locked for `3.12`, the manifest asks for `3.11`"),
-        "the changed label is named: {out}"
-    );
-
-    fs::write(project.join("lodi.toml"), &text).unwrap();
-    fs::remove_file(project.join("lodi.lock")).unwrap();
-    let missing = lodi_in(&project, &home, &["info"]);
-    assert_eq!(missing.status.code(), Some(0));
-    assert!(
-        stdout(&missing).contains("lock:    missing"),
-        "{}",
-        stdout(&missing)
-    );
-
-    // `info` writes nothing: the lock this test removed is the only difference.
-    let mut expected = before.clone();
-    expected.retain(|p| !p.ends_with("lodi.lock"));
-    assert_eq!(listing(&root), expected, "lodi info wrote a file");
-    fs::remove_dir_all(&root).unwrap();
-}
-
-/// An inline `[tools]` declaration (M-0.4 T-2's contract) is a project's own pin, not a
-/// catalogue recipe: `lodi info` reports it like any other row, and `lodi info NAME` for it is
-/// still `E_NO_RECIPE`, because there is no recipe to print.
-#[test]
-fn info_reports_an_inline_tool_but_has_no_recipe_for_it() {
-    let root = scratch("info-inline");
-    let project = root.join("project");
-    let home = root.join("home");
-    let text = manifest(
-        &[],
-        "jaq = { url = \"https://example.invalid/jaq\", sha256 = \"\
-         0000000000000000000000000000000000000000000000000000000000000000\", \
-         version = \"1.7.1\", format = \"binary\" }\n",
-    );
-    fs::create_dir_all(&project).unwrap();
-    fs::write(project.join("lodi.toml"), &text).unwrap();
-    let before = listing(&root);
-
-    let out = lodi_in(&project, &home, &["info"]);
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let shown = stdout(&out);
-    assert!(shown.contains("jaq"), "the inline tool is a row: {shown}");
-    assert!(shown.contains("1.7.1"), "with what it pins: {shown}");
-    assert!(shown.contains("lock:    missing"), "{shown}");
-    assert!(
-        !shown.contains("no recipe"),
-        "an inline tool needs no recipe: {shown}"
-    );
-
-    let no_recipe = lodi_in(&project, &home, &["info", "jaq"]);
-    assert_eq!(no_recipe.status.code(), Some(4), "{}", stdout(&no_recipe));
-    assert!(
-        stderr(&no_recipe).contains("E_NO_RECIPE"),
-        "{}",
-        stderr(&no_recipe)
-    );
-
-    assert_eq!(listing(&root), before, "lodi info wrote a file");
-    fs::remove_dir_all(&root).unwrap();
-}
-
-/// A `[tools]` name the catalogue has no recipe for is annotated in `lodi info`'s row, with the
-/// nearest names `lodi lock` would give, offline and at exit 0: `lodi info` reports, and the
-/// refusal is `lodi lock`'s. A name that resembles nothing gets the whole catalogue, as there.
-#[test]
-fn info_names_a_tool_the_catalogue_has_no_recipe_for() {
-    let root = scratch("info-no-recipe");
-    let project = root.join("project");
-    let home = root.join("home");
-    fs::create_dir_all(&project).unwrap();
-    fs::write(
-        project.join("lodi.toml"),
-        "[project]\nname = \"typo\"\n\n[tools]\npyhton = \"3.12\"\nzzzzzzzzzz = \"1\"\n\
-         python = \"3.12\"\n",
-    )
-    .unwrap();
-    let before = listing(&root);
-    let out = lodi_in(&project, &home, &["info"]);
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let rows: Vec<String> = stdout(&out).lines().map(str::to_owned).collect();
-    let row = |label: &str| {
-        rows.iter()
-            .find(|r| r.trim_start().starts_with(&format!("{label} ")))
-            .unwrap_or_else(|| panic!("no row for {label}: {rows:?}"))
-            .clone()
-    };
-    assert!(
-        row("pyhton").ends_with("(no recipe `pyhton` in the catalogue; nearest names: python)"),
-        "{rows:?}"
-    );
-    let all = lodi::catalogue::builtin_tool_names().join(", ");
-    assert!(
-        row("zzzzzzzzzz").ends_with(&format!(
-            "(no recipe `zzzzzzzzzz` in the catalogue; nearest names: {all})"
-        )),
-        "{rows:?}"
-    );
-    assert!(!row("python").contains("no recipe"), "{rows:?}");
-    assert_eq!(listing(&root), before, "lodi info wrote a file");
-    fs::remove_dir_all(&root).unwrap();
-}
-
 /// `W_NO_INDEX` is printed only where the user can act on it: when the distro half is asked for
 /// by name (`--distro`), or when the lock names a container base whose index is missing. A
 /// catalogue search with no lock, or in a host-tool project, prints none. Neither changes the
@@ -412,7 +274,7 @@ fn the_missing_index_is_noted_only_where_it_can_be_acted_on() {
     assert_eq!(asked.status.code(), Some(0), "{}", stderr(&asked));
     assert!(stderr(&asked).contains("W_NO_INDEX"), "{}", stderr(&asked));
     assert!(
-        stderr(&asked).contains("run `lodi lock`"),
+        stderr(&asked).contains("`lodi develop` writes it"),
         "{}",
         stderr(&asked)
     );
@@ -462,122 +324,122 @@ fn the_missing_index_is_noted_only_where_it_can_be_acted_on() {
     fs::remove_dir_all(&root).unwrap();
 }
 
-/// A container project: the base and its snapshot, and the packages it asks for.
-#[test]
-fn info_names_the_base_of_a_container_project() {
-    let root = scratch("info-container");
-    let project = root.join("project");
-    let home = root.join("home");
-    container_project(&project, &home);
-    let out = lodi_in(&project, &home, &["info"]);
-    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let text = stdout(&out);
-    assert!(text.contains("mode:    container"), "{text}");
-    assert!(
-        text.contains("base:    debian bookworm snapshot 2026-09-18T00:00:00Z"),
-        "{text}"
-    );
-    assert!(text.contains("cowsay"), "{text}");
-    assert!(text.contains("lock:    fresh"), "{text}");
-    fs::remove_dir_all(&root).unwrap();
+// --------------------------------------------------------------- an exact recipe name ---
+
+/// The rows of the catalogue half that name `name`, by their first word.
+fn rows_named(text: &str, name: &str) -> usize {
+    text.lines()
+        .filter(|line| line.starts_with("  ") && line.split_whitespace().next() == Some(name))
+        .count()
 }
 
-/// Acceptance (e): no manifest is `E_NO_MANIFEST` (3), and an unknown tool is `E_NO_RECIPE` (4)
-/// with the nearest names. Acceptance (f): `lodi info python` in an empty directory with no
-/// lock prints the recipe and exits 0.
+/// A query that is a recipe's name, ignoring case, shows that recipe's details first (what
+/// `lodi info TOOL` printed, LD-496), then the other matches without it. A partial name shows
+/// no details. `--registry` keeps them and `--distro` never shows them. Offline, writing
+/// nothing, with no lock in an empty directory and so nothing `locked:`.
 #[test]
-fn info_needs_a_manifest_but_a_recipe_is_a_property_of_the_binary() {
-    let root = scratch("info-errors");
+fn an_exact_recipe_name_shows_its_details_first() {
+    let root = scratch("search-exact");
     let empty = root.join("empty");
     let home = root.join("home");
     fs::create_dir_all(&empty).unwrap();
 
-    let none = lodi_in(&empty, &home, &["info"]);
-    assert_eq!(none.status.code(), Some(3), "{}", stderr(&none));
-    assert!(stderr(&none).contains("E_NO_MANIFEST"), "{}", stderr(&none));
+    for query in ["python", "PYTHON", "Python"] {
+        let out = lodi_in(&empty, &home, &["search", query]);
+        assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+        let text = stdout(&out);
+        let lines: Vec<&str> = text.lines().collect();
+        assert_eq!(lines.first(), Some(&"python"), "{text}");
+        let keys: Vec<&str> = lines[1..]
+            .iter()
+            .take_while(|line| line.starts_with("  "))
+            .filter_map(|line| line.split_whitespace().next())
+            .collect();
+        assert_eq!(
+            keys,
+            [
+                "description:",
+                "homepage:",
+                "strategy:",
+                "upstream:",
+                "bin:",
+                "path:",
+                "recipe:"
+            ],
+            "{text}"
+        );
+        assert!(
+            text.contains("  recipe:       python.toml (sha256:"),
+            "the recipe file and its hash: {text}"
+        );
+        assert!(!text.contains("locked:"), "{text}");
+        assert!(!text.contains("replaces:"), "{text}");
+        assert_eq!(rows_named(&text, "python"), 0, "{text}");
+        assert_eq!(stderr(&out), "");
+    }
 
-    let unknown = lodi_in(&empty, &home, &["info", "not-a-tool"]);
-    assert_eq!(unknown.status.code(), Some(4), "{}", stderr(&unknown));
-    let text = stderr(&unknown);
-    assert!(text.contains("E_NO_RECIPE"), "{text}");
-    assert!(text.contains("nearest names"), "{text}");
-    assert!(text.contains("python"), "{text}");
+    let partial = lodi_in(&empty, &home, &["search", "pytho"]);
+    let text = stdout(&partial);
+    assert!(text.starts_with("catalogue\n"), "{text}");
+    assert!(!text.contains("recipe:"), "{text}");
+    assert_eq!(rows_named(&text, "python"), 1, "{text}");
 
-    let typo = lodi_in(&empty, &home, &["info", "pyhton"]);
-    assert_eq!(typo.status.code(), Some(4));
+    let registry = lodi_in(&empty, &home, &["search", "--registry", "nodejs"]);
     assert!(
-        stderr(&typo).contains("did you mean python?"),
+        stdout(&registry).starts_with("nodejs\n"),
         "{}",
-        stderr(&typo)
+        stdout(&registry)
     );
 
-    let recipe = lodi_in(&empty, &home, &["info", "python"]);
-    assert_eq!(recipe.status.code(), Some(0), "{}", stderr(&recipe));
-    let text = stdout(&recipe);
-    for expected in [
-        "description:",
-        "homepage:",
-        "strategy:",
-        "upstream:",
-        "bin:",
-        "path:",
-        "recipe:",
-    ] {
-        assert!(text.contains(expected), "{expected} is missing: {text}");
-    }
+    let container = root.join("container");
+    container_project(&container, &home);
+    let distro = lodi_in(&container, &home, &["search", "--distro", "python"]);
+    assert_eq!(distro.status.code(), Some(0), "{}", stderr(&distro));
+    assert!(!stdout(&distro).contains("recipe:"), "{}", stdout(&distro));
     assert!(
-        !text.contains("locked:"),
-        "there is no lock here, so nothing is locked: {text}"
+        stdout(&distro).contains("python3-minimal"),
+        "{}",
+        stdout(&distro)
     );
-    assert_eq!(
-        listing(&empty),
-        Vec::<String>::new(),
-        "lodi info wrote a file"
-    );
-    assert!(!home.exists(), "lodi info created the store");
 
-    // Every flag is a usage error: there is no `--json`. `info --help` is the command's help
-    // since LD-360, answered before anything is read, so it writes nothing either.
-    let out = lodi_in(&empty, &home, &["info", "--help"]);
-    assert_eq!(out.status.code(), Some(0));
     assert_eq!(
         listing(&empty),
         Vec::<String>::new(),
-        "info --help wrote a file"
+        "lodi search wrote a file"
     );
-    assert!(!home.exists(), "info --help created the store");
-    for args in [&["info", "--json"][..], &["info", "python", "nodejs"]] {
-        let out = lodi_in(&empty, &home, args);
-        assert_eq!(out.status.code(), Some(2), "{args:?}");
-    }
     fs::remove_dir_all(&root).unwrap();
 }
 
-/// `lodi info TOOL` adds what this project locked for that label, and only then.
+/// The details add what the current directory's lock pinned for that recipe, and only for it.
 #[test]
-fn info_tool_adds_the_lock_of_the_current_directory() {
-    let root = scratch("info-tool-lock");
+fn an_exact_recipe_name_adds_what_the_project_locked() {
+    let root = scratch("search-exact-lock");
     let project = root.join("project");
     let home = root.join("home");
     let python = Tool::python("3.12.11");
     let text = manifest(std::slice::from_ref(&python), "");
     write_project(&project, &text, &[python]);
-    let out = lodi_in(&project, &home, &["info", "python"]);
+    let before = listing(&root);
+    let out = lodi_in(&project, &home, &["search", "python"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let text = stdout(&out);
-    assert!(text.contains("locked:"), "{text}");
-    assert!(text.contains("3.12.11"), "{text}");
-    assert!(text.contains("art-"), "{text}");
-    assert!(text.contains("sha256:"), "{text}");
-    // A recipe the project does not lock keeps the catalogue half alone.
-    let other = lodi_in(&project, &home, &["info", "ripgrep"]);
+    for expected in ["locked:", "3.12.11", "art-", "sha256:"] {
+        assert!(text.contains(expected), "{expected}: {text}");
+    }
+    let other = lodi_in(&project, &home, &["search", "ripgrep"]);
     assert_eq!(other.status.code(), Some(0), "{}", stderr(&other));
+    assert!(
+        stdout(&other).starts_with("ripgrep\n"),
+        "{}",
+        stdout(&other)
+    );
     assert!(!stdout(&other).contains("locked:"), "{}", stdout(&other));
+    assert_eq!(listing(&root), before, "lodi search wrote a file");
     fs::remove_dir_all(&root).unwrap();
 }
 
 /// The recording half of the request proof, over every form this milestone ships: five
-/// invocations — both commands, every scope, a manifest and a lock present and the cache
+/// invocations — every scope and an exact recipe name, a manifest and a lock present and the cache
 /// warm — against a **listening** loopback server, whose request log is asserted empty after
 /// each one. The closed-port half is `lodi_in`, which the rest of this file uses; this test
 /// does not use it, because a count of zero needs something that was listening.
@@ -592,8 +454,7 @@ fn neither_command_makes_a_request_in_any_form() {
         &["search", "python"][..],
         &["search", "--registry", "python"],
         &["search", "--distro", "python"],
-        &["info"],
-        &["info", "python"],
+        &["search", "PYTHON"],
     ] {
         let out = Command::new(env!("CARGO_BIN_EXE_lodi"))
             .args(args)

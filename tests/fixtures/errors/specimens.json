@@ -67,16 +67,9 @@
     "notes": []
   },
   {
-    "code": "E_BOOT_TRIAL",
-    "exit": 7,
-    "hint": "   = hint: an apply that changes the boot sets one; nothing was changed",
-    "message": "lodi: error E_BOOT_TRIAL: no trial boot waits for a confirmation",
-    "notes": []
-  },
-  {
     "code": "E_BUILD_UNAVAILABLE",
     "exit": 5,
-    "hint": "   = hint: no other build is used: run `lodi lock` again to pin one it serves",
+    "hint": "   = hint: no other build is used: run `lodi update` to pin one it serves",
     "message": "lodi: error E_BUILD_UNAVAILABLE: jq-0:1.8.1-2.fc44.x86_64 is not served any more",
     "notes": [
       "   = locked at https://repo.test/fedora/Packages/j/jq-1.8.1-2.fc44.x86_64.rpm"
@@ -85,7 +78,7 @@
   {
     "code": "E_CLOSURE_DRIFT",
     "exit": 6,
-    "hint": "   = hint: the lock is not changed by entering; re-lock deliberately with `lodi lock`",
+    "hint": "   = hint: entering never changes the lock; run `lodi update` to resolve it again",
     "message": "lodi: error E_CLOSURE_DRIFT: the installed packages differ from the lock's closure (1 differences); the image was discarded",
     "notes": [
       "   =   missing: zlib1g 1:1.2.13.dfsg-1"
@@ -101,17 +94,18 @@
   {
     "code": "E_DECLINED",
     "exit": 11,
-    "hint": "   = hint: run the apply again with --overwrite-drift to replace it, or fold the change into the manifest",
+    "hint": "   = hint: run lodi switch again with --overwrite-drift to replace it, or fold the change into the manifest",
     "message": "lodi: error E_DECLINED: /etc/drift.conf was changed since lodi last wrote it",
     "notes": []
   },
   {
     "code": "E_DRIFT",
     "exit": 8,
-    "hint": "   = hint: run lodi home status, then lodi home apply --overwrite-drift to take them back",
-    "message": "lodi: error E_DRIFT: 1 managed file has changed since lodi wrote it; nothing was applied",
+    "hint": "   = hint: lodi switch --home --overwrite-drift takes them back",
+    "message": "lodi: error E_DRIFT: your home part was not applied: 1 managed file has changed since lodi wrote it; nothing was applied",
     "notes": [
-      "   = .inputrc"
+      "   = .inputrc",
+      "   = the host part, if it had changes, was applied and is kept"
     ]
   },
   {
@@ -179,15 +173,15 @@
   {
     "code": "E_HOST_MISMATCH",
     "exit": 3,
-    "hint": "   = hint: apply this manifest on a ubuntu machine, or change the assertion to `debian`",
+    "hint": "   = hint: use this host.toml on a ubuntu machine, or change the assertion to `debian`",
     "message": "lodi: error E_HOST_MISMATCH: host.toml asserts `[host] distro = \"ubuntu\"`, but this root is `debian`",
     "notes": []
   },
   {
     "code": "E_HOST_NOT_ARMED",
     "exit": 9,
-    "hint": "   = hint: arm this root once: lodi host arm --root <tmp>/host-cat-unarmed-pid (it writes <tmp>/host-cat-unarmed-pid/etc/lodi/host-allowed, an empty file)",
-    "message": "lodi: error E_HOST_NOT_ARMED: <tmp>/host-cat-unarmed-pid is not armed for the host scope: <tmp>/host-cat-unarmed-pid/etc/lodi/host-allowed does not exist",
+    "hint": "   = hint: run `lodi import` once, and answer yes to managing this host; `lodi switch --home` works without it",
+    "message": "lodi: error E_HOST_NOT_ARMED: lodi may not manage <tmp>/host-cat-unarmed-pid yet: <tmp>/host-cat-unarmed-pid/etc/lodi/may-manage is missing or not trusted",
     "notes": []
   },
   {
@@ -204,7 +198,7 @@
     "code": "E_HOST_ROOT_REQUIRED",
     "exit": 9,
     "hint": "   = hint: this environment never lets a host verb reach this machine: name a scratch root with --root DIR, or run it where LODI_HOST_REQUIRE_ROOT is not set",
-    "message": "lodi: error E_HOST_ROOT_REQUIRED: LODI_HOST_REQUIRE_ROOT=1 is set, so `lodi host plan` needs --root DIR and was given none; nothing was read",
+    "message": "lodi: error E_HOST_ROOT_REQUIRED: LODI_HOST_REQUIRE_ROOT=1 is set, so `lodi switch` needs --root DIR and was given none; nothing was read",
     "notes": []
   },
   {
@@ -258,7 +252,7 @@
   {
     "code": "E_LOCK_STALE",
     "exit": 10,
-    "hint": "   = hint: run `lodi lock`",
+    "hint": "   = hint: `lodi develop` and `lodi run` resolve what changed",
     "message": "lodi: error E_LOCK_STALE: lodi.lock is out of date with the manifest",
     "notes": [
       "   = python 3.12",
@@ -268,7 +262,7 @@
   {
     "code": "E_LOCK_VERSION",
     "exit": 4,
-    "hint": "   = hint: use the lodi that wrote it, or run `lodi lock` with this one",
+    "hint": "   = hint: use the lodi that wrote it; this lodi never replaces it",
     "message": "lodi: error E_LOCK_VERSION: lodi.lock has lock version 9; this lodi reads version 1",
     "notes": [
       "   = this file does not record which lodi wrote it"
@@ -300,7 +294,7 @@
   {
     "code": "E_NETWORK_ROLLED_BACK",
     "exit": 8,
-    "hint": "   = hint: the earlier network configuration is back; fix [network], apply again",
+    "hint": "   = hint: the earlier network configuration is back; fix [network] and run lodi switch again",
     "message": "lodi: error E_NETWORK_ROLLED_BACK: 192.168.77.1: no answer in 1 s; nothing kept",
     "notes": []
   },
@@ -322,7 +316,7 @@
     "code": "E_NO_MANIFEST",
     "exit": 3,
     "hint": "   = hint: run `lodi init` to create one",
-    "message": "lodi: error E_NO_MANIFEST: no manifest at ./lodi.toml",
+    "message": "lodi: error E_NO_MANIFEST: no manifest at <tmp>/errors-catalogue-nm/lodi.toml",
     "notes": []
   },
   {
@@ -335,10 +329,10 @@
   {
     "code": "E_NO_RECIPE",
     "exit": 4,
-    "hint": "   = hint: did you mean python?",
+    "hint": "   = hint: nearest names: python; there is no fallback and nothing is guessed",
     "message": "lodi: error E_NO_RECIPE: no recipe for tool `pyton` in the built-in catalogue",
     "notes": [
-      "   = hint: a recipe of your own goes in recipes/pyton.toml at your lodi repository's root"
+      "   = hint: a recipe of your own goes in recipes/pyton.toml at your config's root"
     ]
   },
   {
@@ -370,7 +364,7 @@
     "code": "E_PIN_UNSATISFIABLE",
     "exit": 4,
     "hint": "   = hint: nothing was installed or removed; 2024b-0+deb12u9 of tzdata is missing from debian at 2025-03-01T00:00:00Z: pin a version or a date its repository offers, or remove the pin",
-    "message": "lodi: error E_PIN_UNSATISFIABLE: `tzdata` is pinned to 2024b-0+deb12u9 from debian at 2025-03-01T00:00:00Z, and the source set this apply reads does not offer that version",
+    "message": "lodi: error E_PIN_UNSATISFIABLE: `tzdata` is pinned to 2024b-0+deb12u9 from debian at 2025-03-01T00:00:00Z, and the source set this switch reads does not offer that version",
     "notes": []
   },
   {
@@ -466,7 +460,7 @@
     "code": "E_STORE_VERSION",
     "exit": 6,
     "hint": "   = hint: install a newer lodi to use this store; nothing in it was read, changed or removed",
-    "message": "lodi: error E_STORE_VERSION: the store at <tmp>/errors-catalogue-store-version has layout version 99; this lodi knows layout version 1",
+    "message": "lodi: error E_STORE_VERSION: the store at <tmp>/errors-catalogue-store-version has layout version 99; this lodi knows layout version 2",
     "notes": [
       "   = written by lodi 99.0.0"
     ]
@@ -497,7 +491,7 @@
   {
     "code": "E_TRUST_REQUIRED",
     "exit": 11,
-    "hint": "   = hint: run `lodi trust` to review and record it, or set LODI_TRUST=1 for one invocation",
+    "hint": "   = hint: pass --trust to allow it for this run",
     "message": "lodi: error E_TRUST_REQUIRED: <tmp>/errors-catalogue-trust/lodi.toml declares task text that has not been trusted; nothing was realized or run",
     "notes": []
   },

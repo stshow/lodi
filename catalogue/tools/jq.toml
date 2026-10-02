@@ -1,5 +1,5 @@
-# jq for [tools] jq. This recipe says where to look; it lists no version.
-# `lodi lock` discovers versions from the tags of the newest GitHub releases.
+# jq for [tools] jq. This recipe says where to look; it lists no version. `lodi update` discovers
+# versions from the tags of the newest GitHub releases.
 #
 # jqlang publishes the Linux build as a **bare executable**, not an archive, so this is the
 # catalogue's first `format = "binary"` recipe: the downloaded file is the program and is

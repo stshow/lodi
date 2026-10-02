@@ -59,7 +59,7 @@ pub const TAKEN_ALONG: &str = "needed by nothing once the rest is removed";
 pub const BASELINE: &str = "baseline; not removed";
 pub const REPLACED: &str = "taken off by the package manager to install what the manifest declares";
 
-/// The code `lodi host plan` and `apply` print, without `packages` under `[host]`, for each
+/// The code `lodi switch` prints for the host part, without `packages` under `[host]`, for each
 /// explicitly installed distribution package the manifest does not declare.
 pub const W_UNDECLARED: &str = "W_UNDECLARED";
 
@@ -202,8 +202,8 @@ pub fn undeclared(
         .map(|name| {
             format!(
                 "{W_UNDECLARED}: {name} is explicitly installed and host.toml does not declare \
-                 it, so apply leaves it; add packages = \"exact\" under [host] to have apply \
-                 remove what host.toml does not declare, or declare {name}"
+                 it, so lodi switch leaves it; add packages = \"exact\" under [host] to have \
+                 lodi switch remove what host.toml does not declare, or declare {name}"
             )
         })
         .collect())

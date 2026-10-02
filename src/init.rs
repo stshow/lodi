@@ -6,8 +6,8 @@
 //! downloads nothing, installs nothing, runs nothing, and never creates `.lodi/` itself — only
 //! the ignore line that keeps it out of version control.
 //!
-//! The manifest it writes is the smallest one the *next two* commands accept: `lodi lock`
-//! resolves it and `lodi develop` enters it with no manual edit (D2). Its exact bytes are
+//! The manifest it writes is the smallest one the *next* command accepts: `lodi develop` locks
+//! it and enters it with no manual edit (D2, LD-496). Its exact bytes are
 //! committed as `tests/fixtures/init/*.toml`, and `tests/init.rs` compares what this module
 //! writes against them, so the template cannot drift from what the tests prove.
 
@@ -126,7 +126,7 @@ pub fn resolve_name(root: &Path, requested: Option<&str>) -> Result<String, Diag
 pub fn template(name: &str, base: Option<&Base>) -> String {
     let mut out = String::new();
     out.push_str(
-        "# lodi.toml: this project's environment, written by `lodi init`. `lodi lock` pins\n\
+        "# lodi.toml: this project's environment, written by `lodi init`. `lodi develop` pins\n\
          # what it asks for in ./lodi.lock, and `lodi develop -- COMMAND` runs a command in it.\n\
          \n\
          # The project's name. `version` is the format of this file, and \"1\" is the only one.\n\
@@ -144,7 +144,7 @@ pub fn template(name: &str, base: Option<&Base>) -> String {
              distro = \"{}\"\n\
              release = \"{}\"\n\
              \n\
-             # Distribution packages to install in that image. `lodi lock` pins each one and all\n\
+             # Distribution packages to install in that image. lodi.lock pins each one and all\n\
              # it depends on, and the image is rebuilt when this list changes.\n\
              [packages]\n\
              common = []\n",
@@ -158,7 +158,7 @@ pub fn template(name: &str, base: Option<&Base>) -> String {
          [tools]\n\
          {DEFAULT_TOOL} = \"{DEFAULT_TOOL_CONSTRAINT}\"\n\
          \n\
-         # Tasks run with /bin/sh -c in that environment, and only after `lodi trust`:\n\
+         # Tasks run with /bin/sh -c in that environment, once you allow them on first use:\n\
          #   lodi run versions\n\
          # [tasks.versions]\n\
          # run = \"python3 --version\"\n\
@@ -307,7 +307,7 @@ pub fn init(root: &Path, options: &Options) -> Result<Vec<String>, Failure> {
             printed.push(format!("added {IGNORE_LINE} to {}", display(&ignore_path)));
         }
     }
-    printed.push("next: lodi lock".to_string());
+    printed.push("next: lodi develop".to_string());
     Ok(printed)
 }
 

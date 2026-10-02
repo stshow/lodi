@@ -5,7 +5,7 @@
 #
 # This is a starting point, not a backup. It does not carry anything installed from
 # third-party repositories, foreign and hand-built packages, snaps and flatpaks, data,
-# services, users, or package versions: an apply installs a missing package at what
+# services, users, or package versions: a switch installs a missing package at what
 # the dated archive at the snapshot below offers. A third-party apt repository this machine
 # installed from is written as a commented [sources] block, to take on purpose. No
 # file is copied from /etc: a changed configuration file is named at the end, with the
@@ -16,15 +16,15 @@
 [host]
 version = "1"
 distro = "debian"
-# packages = "exact": an apply makes this machine's packages what this file declares, plus
+# packages = "exact": a switch makes this machine's packages what this file declares, plus
 # the distribution's own base system. A package whose line you delete is removed by the next
-# apply, and one a declared package still needs is kept as a dependency; each is named in the
-# plan with the reason. A package installed by hand since lodi last recorded this machine is
-# not removed unless the apply is given --overwrite-drift. "managed" removes only what lodi
+# switch, and one a declared package still needs is kept as a dependency; each is named in the
+# preview with the reason. A package installed by hand since lodi last recorded this machine is
+# not removed unless the switch is given --overwrite-drift. "managed" removes only what lodi
 # recorded installing.
 packages = "exact"
-min_lodi_version = ">=1.4.0"
-# An apply installs a missing package from the dated archive at this instant, UTC;
+min_lodi_version = ">=2.0.0"
+# A switch installs a missing package from the dated archive at this instant, UTC;
 # remove the line and it installs from the live archive instead.
 snapshot = "2026-09-21T00:00:00Z"
 
@@ -44,23 +44,23 @@ hold = [
 
 # Lines lodi did not write, and what each one would do if you did:
 #
-#   mark_auto = ["NAME"]  an apply marks NAME automatically installed, so that
+#   mark_auto = ["NAME"]  a switch marks NAME automatically installed, so that
 #                         removing whatever pulled it in removes NAME with it.
-#   optional  = ["NAME"]  an apply that finds no such package in the index leaves
+#   optional  = ["NAME"]  a switch that finds no such package in the index leaves
 #                         NAME out and carries on, rather than stopping.
-#   absent    = ["NAME"]  an apply removes NAME wherever it finds it installed.
+#   absent    = ["NAME"]  a switch removes NAME wherever it finds it installed.
 #
 # packages = "exact" under [host] is why a line taken out of this list is a package
-# taken off the machine: the next apply removes it, and says so.
+# taken off the machine: the next switch removes it, and says so.
 
-# The machine's own settings. An apply sets each one that differs, and leaves a
+# The machine's own settings. A switch sets each one that differs, and leaves a
 # line you take out as it is.
 [system]
 hostname = "a-machine-that-was-read"
 
 # Tables lodi does not read off a machine, to write on purpose:
 # [services]
-# "ssh.service" = true          # enabled and started; false disables and stops it
+# "ssh.service" = "enabled"     # enabled and started; "disabled" stops it
 # [firewall]
 # allow = ["22/tcp"]             # lodi's own nftables table; the rest is dropped
 # [network]
@@ -71,7 +71,7 @@ hostname = "a-machine-that-was-read"
 # NOT CAPTURED
 #
 # 0 package(s) installed and chosen on this machine are NOT declared above,
-# because an apply of this file on a fresh debian machine could not install them:
+# because a switch of this file on a fresh debian machine could not install them:
 #   0 from a repository that is not debian's own
 #   0 installed from a package file, or from a source this machine no longer has
 #   0 from no repository this package manager knows

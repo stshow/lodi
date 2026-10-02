@@ -29,7 +29,7 @@ fn stderr(output: &Output) -> String {
 fn version_prints_name_and_version() {
     let output = lodi(&["--version"]);
     assert!(output.status.success());
-    assert_eq!(stdout(&output), "lodi 1.12.2\n");
+    assert_eq!(stdout(&output), "lodi 2.0.0\n");
     assert!(output.stderr.is_empty());
 }
 
@@ -42,7 +42,7 @@ fn help_succeeds_and_advertises_only_working_commands() {
     assert_eq!(
         whole.lines().next(),
         Some(
-            "lodi 1.12.2 \u{2014} environment and system manager for Ubuntu, Debian, Arch and Fedora"
+            "lodi 2.0.0 \u{2014} environment and system manager for Ubuntu, Debian, Arch and Fedora"
         )
     );
     // Since LD-463 each command's usage and details are in its own help: read them all.
@@ -56,8 +56,7 @@ fn help_succeeds_and_advertises_only_working_commands() {
     assert!(!text.contains("M-Spike"));
     assert!(text.contains("--version") && text.contains("--help"));
     assert!(text.contains("lodi init [--name NAME] [--base DISTRO[:RELEASE]] [--force]"));
-    assert!(text.contains("lodi lock ") && text.contains("lodi lock --check"));
-    assert!(text.contains("lodi develop [--no-nest] [-- COMMAND"));
+    assert!(text.contains("lodi develop [--no-nest] [--trust] [-- COMMAND"));
     assert!(text.contains("lodi shell [--no-nest] TOOL[@CONSTRAINT]..."));
     assert!(text.contains("lodi shell [--no-nest] --base DISTRO[:RELEASE] PACKAGE..."));
     // M-Arch-Base T-6: both `--base` surfaces name the bases this build writes, in one order
@@ -74,26 +73,18 @@ fn help_succeeds_and_advertises_only_working_commands() {
         text.contains("as it is for debian and ubuntu"),
         "the trust model is one statement for the three bases: {text}"
     );
-    assert!(text.contains("lodi run [--no-nest] TASK") && text.contains("lodi trust"));
+    assert!(text.contains("lodi run [--no-nest] [--trust] TASK"));
+    // LD-496: develop and run lock and ask by themselves, and search shows a recipe's details.
+    for removed in ["lodi lock", "lodi trust", "lodi info"] {
+        assert!(!text.contains(removed), "help names {removed}");
+    }
     assert!(text.contains("lodi gc [--dry-run] [--keep-days N] [--images] [-v]"));
-    // M-0.5 names `plan` (T-2), and since T-3 `apply` and `status`; M-Import T-4 adds `import`,
-    // and LD-382 its name `init`, which starts the scope. There is no `lodi home restore`.
-    assert!(text.contains("lodi home init [--out DIR | --stdout] [--force]"));
-    assert!(text.contains("lodi home import [--out DIR | --stdout] [--force]"));
-    assert!(text.contains("lodi home plan"));
-    assert!(text.contains("lodi home apply [--overwrite-drift] [--locked]"));
-    assert!(text.contains("lodi home status"));
-    assert!(
-        !text.contains("lodi home restore"),
-        "help advertises lodi home restore"
-    );
-    assert!(text.contains("lodi host plan [--root DIR]"));
-    assert!(text.contains("lodi host apply [--root DIR]"));
-    assert!(text.contains("--resolved JOURNAL-ID"));
-    assert!(!text.contains("lodi host status"));
-    // M-0.4 T-6: the two browse commands, and no `--json` and no `lodi registry` beside them.
+    // The 1.x host and home verbs went in 2.0 (#699): `lodi switch --home` is the home's.
+    assert!(!text.contains("lodi home"), "help names a home verb");
+    assert!(!text.contains("lodi host"), "help names a host verb");
+    assert!(text.contains("lodi switch --home"));
+    // M-0.4 T-6: the browse command, and no `--json` and no `lodi registry` beside it.
     assert!(text.contains("lodi search [--registry | --distro] QUERY"));
-    assert!(text.contains("lodi info [TOOL]"));
     for absent in ["--json", "lodi registry", "lodi doctor"] {
         assert!(!text.contains(absent), "help advertises {absent}");
     }
@@ -101,12 +92,26 @@ fn help_succeeds_and_advertises_only_working_commands() {
     assert!(text.contains("rootless Podman container for a [container] manifest"));
     assert!(text.contains("lodi never installs Podman"));
     assert!(!text.contains("lodi check"), "help advertises lodi check");
-    // The top-level verbs of a repository (DONE D2, LD-416).
-    for verb in ["import", "plan", "apply", "update"] {
+    // The host and home commands (#700).
+    assert!(
+        text.contains("lodi import [PATH] [--home]"),
+        "help lacks lodi import"
+    );
+    // `lodi plan` and `lodi apply` went in 2.0 (#699).
+    for verb in ["plan", "apply"] {
         assert!(
-            text.contains(&format!("lodi {verb} [SOURCE]")),
-            "help lacks lodi {verb}"
+            !text.contains(&format!("lodi {verb} ")),
+            "help names lodi {verb}"
         );
+    }
+    for usage in [
+        "lodi update [PATH]",
+        "lodi pin PKG [--to V]",
+        "lodi pin --all [--to DATE]",
+        "lodi unpin PKG",
+        "lodi unpin --all",
+    ] {
+        assert!(text.contains(usage), "help lacks {usage}");
     }
 }
 
@@ -150,18 +155,21 @@ fn unimplemented_forms_of_develop_run_and_trust_fail_with_usage_status() {
         &["gc", "--keep-days", "1.5"],
         &["gc", "--keep-days", "week"],
         &["gc", "store"],
-        &["trust", "--list"],
+        // `lodi lock`, `lodi trust` and `lodi info` are gone (LD-496); since #699 each stops
+        // naming its replacement, which `tests/old_names.rs` holds.
+        &["develop", "--trust", "--trust"],
+        &["develop", "--trust", "true"],
+        &["run", "--trust"],
+        &["run", "--no-nest", "--trust", "--no-nest", "build"],
         &["init", "--name"],
         // M-0.4 T-6: `lodi search` needs exactly one query and at most one scope, and there is
-        // no `--json` in 0.4 (design call D14). `lodi info` takes nothing or one tool name.
+        // no `--json` in 0.4 (design call D14).
         &["search"],
         &["search", "--registry"],
         &["search", "--registry", "--distro", "python"],
         &["search", "--json", "python"],
         &["search", "python", "nodejs"],
         &["search", "--frobnicate", "python"],
-        &["info", "--json"],
-        &["info", "python", "nodejs"],
     ] {
         let output = lodi(args);
         assert_eq!(output.status.code(), Some(2), "{args:?}");
@@ -171,14 +179,15 @@ fn unimplemented_forms_of_develop_run_and_trust_fail_with_usage_status() {
 }
 
 #[test]
-fn develop_run_and_trust_without_a_manifest_are_manifest_errors() {
+fn develop_and_run_without_a_manifest_are_manifest_errors() {
     let empty = support::scratch("cli-nomanifest");
     for args in [
         &["develop", "--", "true"][..],
         // The interactive entry needs a manifest too, and says so before it opens a shell.
         &["develop"],
         &["run", "build"],
-        &["trust"],
+        &["develop", "--trust", "--", "true"],
+        &["run", "--trust", "--no-nest", "build"],
         // A task's arguments and a command after `--` are the child's, never a help request
         // (LD-360): these reach the manifest exactly as they did.
         &["run", "build", "--help"],
@@ -207,62 +216,6 @@ fn undocumented_aliases_fail_with_usage_status() {
     );
 }
 
-/// A refused argument after a `home` verb is named in the message, not only the verb (1.0.1):
-/// `lodi home plan extra` used to say `'home plan'`. Every case is refused while parsing, before
-/// anything reads a home, so none of them touches one.
-#[test]
-fn home_usage_errors_name_the_refused_argument() {
-    for (args, named) in [
-        (&["home", "plan", "extra", "more"][..], "'home plan more'"),
-        (&["home", "plan", "--json", "x"], "'home plan --json'"),
-        (&["home", "status", "extra", "more"], "'home status more'"),
-        (
-            &["home", "import", "--force", "--frobnicate"],
-            "'home import --frobnicate'",
-        ),
-        (
-            &["home", "apply", "--locked", "--locked"],
-            "'home apply --locked'",
-        ),
-    ] {
-        let output = lodi(args);
-        let text = stderr(&output);
-        assert_eq!(output.status.code(), Some(2), "{args:?}: {text}");
-        assert!(output.stdout.is_empty(), "{args:?}");
-        assert!(text.contains("unsupported"), "{args:?}: {text}");
-        assert!(
-            text.contains(named),
-            "{args:?} does not name {named}: {text}"
-        );
-        assert!(
-            !text.contains("E_"),
-            "{args:?}: a usage error carries no code: {text}"
-        );
-    }
-}
-
-#[test]
-fn lock_refuses_unknown_options_and_a_missing_manifest() {
-    for args in [&["lock", "--frozen"][..], &["lock", "--check", "extra"]] {
-        let output = lodi(args);
-        assert_eq!(output.status.code(), Some(2), "{args:?}");
-        assert!(stderr(&output).contains("unsupported"), "{args:?}");
-    }
-    let empty = support::scratch("cli-empty");
-    for args in [&["lock"][..], &["lock", "--check"]] {
-        let output = Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(args)
-            .current_dir(&empty)
-            .output()
-            .unwrap();
-        assert_eq!(output.status.code(), Some(3), "{args:?}");
-        assert!(
-            stderr(&output).contains("lodi: error E_NO_MANIFEST"),
-            "{args:?}"
-        );
-    }
-}
-
 /// `lodi gc` with no store at all: the one thing it can say, exit 0, and not a byte written.
 /// This is also where "never run `podman` when $LODI_HOME holds no `img-` record" is cheapest
 /// to see: `PATH` is emptied, so a `podman` anywhere would fail loudly instead of being found.
@@ -288,16 +241,22 @@ fn gc_on_a_store_that_is_not_there_collects_nothing_and_succeeds() {
     }
 }
 
-/// A bare `lodi` orients (LD-380): the scope lines of `lodi --help`'s opening, on standard
-/// output, at exit 0 — until 1.1.1 it was `no command given` at exit 2.
+/// The opening of `lodi --help`: the lines after the banner and its blank line, up to the next
+/// blank line.
+fn opening(help: &str) -> Vec<&str> {
+    help.lines().skip(2).take_while(|l| !l.is_empty()).collect()
+}
+
+/// A bare `lodi` orients (LD-380): the opening of `lodi --help`, on standard output, at exit 0.
 #[test]
-fn no_arguments_prints_the_scopes() {
+fn no_arguments_prints_the_opening_of_the_help() {
     let output = lodi(&[]);
     assert_eq!(output.status.code(), Some(0));
     assert!(output.stderr.is_empty(), "{}", stderr(&output));
     let help = stdout(&lodi(&["--help"]));
-    let scopes: Vec<&str> = help.lines().skip(2).take(6).collect();
-    assert_eq!(stdout(&output), format!("{}\n", scopes.join("\n")));
+    let opening = opening(&help);
+    assert!(opening.len() >= 3, "{help}");
+    assert_eq!(stdout(&output), format!("{}\n", opening.join("\n")));
 }
 
 // ------------------------------------------------------------ a project in a scratch home ---
@@ -357,25 +316,33 @@ const EMPTY: &str = "[project]\nname = \"empty\"\n";
 const TASKS: &str = "[project]\nname = \"tasks\"\n\n[tasks.hi]\nrun = \"echo hi\"\n\n\
                      [tasks.also]\nrun = \"echo also\"\n";
 
-/// A lock with nothing to resolve says so, with no parenthesis around an empty list of what
-/// was resolved; the second run finds it fresh and says that.
+/// A command run in the environment that does nothing, on any machine.
+const NOTHING: &[&str] = &["develop", "--", "/bin/sh", "-c", ":"];
+
+/// A lock with nothing to resolve says so on standard error, with no parenthesis around an
+/// empty list of what was resolved; the second run finds it fresh and says nothing of it.
 #[test]
 fn a_lock_with_nothing_to_resolve_names_no_empty_parenthesis() {
     let project = Project::new("cli-nothing-to-lock", EMPTY);
-    let wrote = project.run(&["lock"]);
+    let wrote = project.run(NOTHING);
     assert_eq!(wrote.status.code(), Some(0), "{}", stderr(&wrote));
-    assert_eq!(stdout(&wrote), "wrote lodi.lock: nothing to lock\n");
+    assert!(wrote.stdout.is_empty(), "{}", stdout(&wrote));
+    assert!(
+        stderr(&wrote).starts_with("lodi: wrote lodi.lock: nothing to lock\n"),
+        "{}",
+        stderr(&wrote)
+    );
     assert!(project.path("lodi.lock").is_file());
-    let again = project.run(&["lock"]);
+    let again = project.run(NOTHING);
     assert_eq!(again.status.code(), Some(0), "{}", stderr(&again));
-    assert_eq!(stdout(&again), "lodi.lock is up to date: nothing to lock\n");
+    assert!(!stderr(&again).contains("lodi.lock"), "{}", stderr(&again));
 }
 
 /// `lodi run` with a name the manifest has no task for is a usage error the moment the manifest
-/// is read: before the lock is looked at and before the trust gate, in the `lodi: error` shape,
+/// is read: before the trust gate and before anything is locked, in the `lodi: error` shape,
 /// with the tasks there are as its note.
 #[test]
-fn an_unknown_task_is_reported_before_the_lock_and_the_trust_gate() {
+fn an_unknown_task_is_reported_before_the_trust_gate_and_the_lock() {
     let unknown = "lodi: error: lodi.toml has no task `nope`\n   = its tasks: also, hi\n";
     let project = Project::new("cli-unknown-task", TASKS);
     // No lock and no trust record: the name is still what is reported.
@@ -383,21 +350,14 @@ fn an_unknown_task_is_reported_before_the_lock_and_the_trust_gate() {
     assert_eq!(first.status.code(), Some(2), "{}", stderr(&first));
     assert_eq!(stderr(&first), unknown);
     assert!(first.stdout.is_empty());
-    // A known task in the same project meets the lock first, so the order above is the rule
-    // and not an accident of this project.
-    let known = project.run(&["run", "hi"]);
-    assert_eq!(known.status.code(), Some(10), "{}", stderr(&known));
-    assert!(
-        stderr(&known).contains("E_LOCK_STALE"),
-        "{}",
-        stderr(&known)
-    );
-
-    // With a fresh lock and still no trust record, the same.
-    assert_eq!(project.run(&["lock"]).status.code(), Some(0));
-    let second = project.run(&["run", "nope"]);
-    assert_eq!(second.status.code(), Some(2), "{}", stderr(&second));
-    assert_eq!(stderr(&second), unknown);
+    assert!(!project.path("lodi.lock").exists());
+    // `--trust` allows the text, and the unknown name is still the error, with nothing locked.
+    let allowed = project.run(&["run", "--trust", "nope"]);
+    assert_eq!(allowed.status.code(), Some(2), "{}", stderr(&allowed));
+    assert_eq!(stderr(&allowed), unknown);
+    assert!(!project.path("lodi.lock").exists());
+    // A known task in the same project meets the trust gate next, so the order above is the
+    // rule and not an accident of this project; still nothing is locked.
     let untrusted = project.run(&["run", "hi"]);
     assert_eq!(untrusted.status.code(), Some(11), "{}", stderr(&untrusted));
     assert!(
@@ -405,6 +365,12 @@ fn an_unknown_task_is_reported_before_the_lock_and_the_trust_gate() {
         "{}",
         stderr(&untrusted)
     );
+    assert!(!project.path("lodi.lock").exists());
+    // Allowed for one run, it locks and runs.
+    let ran = project.run(&["run", "--trust", "hi"]);
+    assert_eq!(ran.status.code(), Some(0), "{}", stderr(&ran));
+    assert_eq!(stdout(&ran), "hi\n");
+    assert!(project.path("lodi.lock").is_file());
 
     // A manifest with no tasks at all says that.
     let bare = Project::new("cli-no-tasks", EMPTY);
@@ -414,78 +380,6 @@ fn an_unknown_task_is_reported_before_the_lock_and_the_trust_gate() {
         stderr(&none),
         "lodi: error: lodi.toml has no task `nope`\n   = it declares no tasks\n"
     );
-}
-
-/// A pseudo-terminal's two ends: the controlling side, kept open while the other is in use, and
-/// the terminal a child reads as its standard input.
-fn terminal() -> (fs::File, fs::File) {
-    use std::ffi::CStr;
-    use std::os::fd::FromRawFd;
-    use std::os::unix::fs::OpenOptionsExt;
-    // SAFETY: the POSIX pseudo-terminal calls on a descriptor this function owns; the name
-    // buffer is large enough for any `/dev/pts/N` and is NUL-terminated by `ptsname_r`.
-    unsafe {
-        let master = libc::posix_openpt(libc::O_RDWR | libc::O_NOCTTY);
-        assert!(master >= 0, "a pseudo-terminal is available");
-        let controller = fs::File::from_raw_fd(master);
-        assert_eq!(libc::grantpt(master), 0);
-        assert_eq!(libc::unlockpt(master), 0);
-        let mut name = [0 as libc::c_char; 128];
-        assert_eq!(libc::ptsname_r(master, name.as_mut_ptr(), name.len()), 0);
-        let path = CStr::from_ptr(name.as_ptr()).to_str().unwrap().to_owned();
-        let terminal = fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .custom_flags(libc::O_NOCTTY)
-            .open(path)
-            .expect("the terminal end opens");
-        (controller, terminal)
-    }
-}
-
-/// `lodi trust` with standard input not a terminal records trust exactly as before and says, on
-/// standard error, that it did so without a prompt; the record is real, because the task then
-/// runs. With a terminal as standard input nothing is added.
-#[test]
-fn trust_without_a_terminal_says_it_was_recorded_without_a_prompt() {
-    let project = Project::new("cli-trust-no-terminal", TASKS);
-    assert_eq!(project.run(&["lock"]).status.code(), Some(0));
-    let trusted = project.run(&["trust"]);
-    assert_eq!(trusted.status.code(), Some(0), "{}", stderr(&trusted));
-    assert_eq!(
-        stderr(&trusted),
-        "lodi: trust was recorded without a prompt because standard input is not a terminal\n"
-    );
-    assert!(
-        stdout(&trusted).ends_with("trusted.\n"),
-        "{}",
-        stdout(&trusted)
-    );
-    let ran = project.run(&["run", "hi"]);
-    assert_eq!(ran.status.code(), Some(0), "{}", stderr(&ran));
-    assert_eq!(stdout(&ran), "hi\n");
-    // Revoking records nothing, so it says nothing of a prompt.
-    let revoked = project.run(&["trust", "--revoke"]);
-    assert_eq!(revoked.status.code(), Some(0), "{}", stderr(&revoked));
-    assert!(revoked.stderr.is_empty(), "{}", stderr(&revoked));
-
-    // A terminal on standard input: the output is what it always was, and trust is recorded.
-    let (_controller, tty) = terminal();
-    let on_terminal = project
-        .command(&["trust"])
-        .stdin(Stdio::from(tty))
-        .output()
-        .expect("the lodi binary runs");
-    assert_eq!(
-        on_terminal.status.code(),
-        Some(0),
-        "{}",
-        stderr(&on_terminal)
-    );
-    assert!(on_terminal.stderr.is_empty(), "{}", stderr(&on_terminal));
-    assert!(stdout(&on_terminal).ends_with("trusted.\n"));
-    let ran = project.run(&["run", "hi"]);
-    assert_eq!(ran.status.code(), Some(0), "{}", stderr(&ran));
 }
 
 /// Start `lodi develop -- COMMAND…` in a process group of its own, and wait until Lodi's child
@@ -522,7 +416,7 @@ fn develop_until_running(project: &Project, command: &[&str], comm: &str) -> std
 #[test]
 fn an_interrupt_reports_the_status_of_the_command_it_reached() {
     let project = Project::new("cli-develop-signals", EMPTY);
-    assert_eq!(project.run(&["lock"]).status.code(), Some(0));
+    assert_eq!(project.run(NOTHING).status.code(), Some(0));
 
     // The process group, as a terminal delivers it.
     let mut group = develop_until_running(&project, &["sleep", "60"], "sleep");
@@ -543,10 +437,10 @@ fn an_interrupt_reports_the_status_of_the_command_it_reached() {
     assert_eq!(alone.wait().unwrap().code(), Some(7));
 }
 
-/// M-1.0 T-8: no command and no flag is deprecated — the one row of the committed table from 1.2
-/// is the home manifest's `[files]` (D5) — so the warning the dispatch itself can print appears
-/// nowhere a user reads — not in `--help`, which is the inventory, and not on either stream of an
-/// ordinary invocation. `tests/surface.rs` holds the mechanism behind it.
+/// M-1.0 T-8: no command and no flag is deprecated — a row of the committed table can only name
+/// a manifest table — so the warning the dispatch itself can print appears nowhere a user reads:
+/// not in `--help`, which is the inventory, and not on either stream of an ordinary invocation.
+/// `tests/surface.rs` holds the mechanism behind it.
 #[test]
 fn no_command_is_deprecated_and_help_never_names_the_warning() {
     for args in [&["--help"][..], &["--version"], &["frobnicate"]] {
@@ -595,16 +489,12 @@ fn help_subjects(whole: &str) -> Vec<String> {
 }
 
 /// LD-360 (U1): help at every level. For every command and scope `lodi --help` lists,
-/// `lodi SUBJECT --help`, `lodi SUBJECT -h`, `lodi help SUBJECT` and `lodi -h SUBJECT` — and a
-/// bare `lodi home` and `lodi host` — print the same help on standard output and exit 0: since
+/// `lodi SUBJECT --help`, `lodi SUBJECT -h`, `lodi help SUBJECT` and `lodi -h SUBJECT` print
+/// the same help on standard output and exit 0: since
 /// LD-463 a one-line summary, then the usage lines of the subject. `lodi help` and `lodi -h`
-/// print the whole text. A host form carries a scratch `--root` that nothing ever reads,
-/// because help is answered before anything is.
+/// print the whole text.
 #[test]
 fn help_is_printed_at_every_level() {
-    // A path in a fresh scratch directory that nothing makes: help never opens it.
-    let root = support::scratch("cli-help").join("root");
-    let root = root.to_string_lossy().into_owned();
     let whole = lodi(&["--help"]);
     assert!(whole.status.success());
     let whole = stdout(&whole);
@@ -612,38 +502,10 @@ fn help_is_printed_at_every_level() {
     assert_eq!(
         subjects,
         [
-            "import",
-            "plan",
-            "apply",
-            "update",
-            "host",
-            "host arm",
-            "host import",
-            "host plan",
-            "host apply",
-            "host versions",
-            "host pin",
-            "host unpin",
-            "boot",
-            "boot confirm",
-            "home",
-            "home init",
-            "home import",
-            "home plan",
-            "home apply",
-            "home status",
-            "init",
-            "lock",
-            "develop",
-            "run",
-            "trust",
-            "info",
-            "shell",
-            "search",
-            "gc",
-            "help",
+            "import", "switch", "update", "pin", "unpin", "init", "develop", "run", "shell",
+            "search", "gc", "help",
         ],
-        "every command and scope of the help text is covered here"
+        "the help lists exactly the eleven commands of 2.0, then help (#699)"
     );
     for form in [&["help"][..], &["-h"], &["help", "--help"]] {
         let out = lodi(form);
@@ -668,14 +530,6 @@ fn help_is_printed_at_every_level() {
                 vec!["-h", "help"],
             ];
         }
-        if words == ["home"] || words == ["host"] {
-            forms.push(words.clone());
-        }
-        if words[0] == "host" {
-            for form in forms.iter_mut().filter(|f| f.len() > 1) {
-                form.extend(["--root", root.as_str()]);
-            }
-        }
         let mut first: Option<String> = None;
         for form in &forms {
             let out = lodi(form);
@@ -693,17 +547,13 @@ fn help_is_printed_at_every_level() {
                     .any(|l| l == usage || l.starts_with(&format!("{usage} "))),
                 "{form:?}: {text}"
             );
-            assert!(text.len() < whole.len(), "{form:?} printed the whole text");
+            assert_ne!(text, whole, "{form:?} printed the whole text");
             match &first {
                 None => first = Some(text),
                 Some(same) => assert_eq!(&text, same, "{form:?}"),
             }
         }
     }
-    assert!(
-        !std::path::Path::new(&root).exists(),
-        "a help request opened its --root"
-    );
 }
 
 /// A help request about nothing that exists is refused, and a `--help` beside an unknown command
@@ -713,10 +563,7 @@ fn help_is_printed_at_every_level() {
 fn help_about_nothing_that_exists_is_a_usage_error() {
     for (args, named) in [
         (&["help", "frobnicate"][..], "'help frobnicate'"),
-        (&["help", "home", "frobnicate"], "'help home frobnicate'"),
         (&["frobnicate", "--help"], "'frobnicate'"),
-        (&["home", "frobnicate", "-h"], "'home frobnicate'"),
-        (&["home", "--"], "'home --'"),
     ] {
         let out = lodi(args);
         assert_eq!(out.status.code(), Some(2), "{args:?}");
@@ -727,40 +574,24 @@ fn help_about_nothing_that_exists_is_a_usage_error() {
     }
 }
 
-/// U13, as LD-380 left it: `lodi --help` opens with the three scopes, whose first command is
-/// the README quick start's first `lodi` command, then shows examples and the command groups
-/// (LD-463).
+/// U13 for 2.0 (#700): `lodi --help` opens with where to start, whose commands are
+/// `lodi import`, `lodi switch` and `lodi init` in that order, then shows examples and the
+/// command groups, and ends with a link to the reference.
 #[test]
 fn help_opens_with_where_to_start() {
     let text = stdout(&lodi(&["--help"]));
     let lines: Vec<&str> = text.lines().collect();
     assert_eq!(lines[1], "");
-    assert!(lines[2].starts_with("Three independent scopes."), "{text}");
-    assert!(
-        lines[2..8].iter().all(|l| !l.is_empty()) && lines[8].is_empty(),
-        "{text}"
-    );
-    let readme =
-        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md")).unwrap();
-    // A command is a quoted span with `lodi` as one of its words; the README's are its inline
-    // code spans. The opening's are its aligned columns.
-    let runs_lodi = |span: &&str| span.split_whitespace().any(|w| w == "lodi");
-    let quick = &readme[readme.find("## Quick start").unwrap()..];
-    let first = quick
-        .lines()
-        .find_map(|l| l.split('`').skip(1).step_by(2).find(runs_lodi))
-        .unwrap();
-    assert!(
-        first.ends_with(" host arm"),
-        "the quick start begins by arming: {first}"
-    );
-    // The first command the opening names is that step.
-    let named = lines[3]
-        .split("  ")
-        .map(str::trim)
-        .find(|column| runs_lodi(column));
-    assert_eq!(named, Some(first), "{}", lines[3]);
-    let headers: Vec<&str> = lines[9..]
+    let named: Vec<String> = opening(&text)
+        .iter()
+        .filter_map(|line| {
+            let words: Vec<&str> = line.split_whitespace().collect();
+            let at = words.iter().position(|w| *w == "lodi")?;
+            Some(format!("lodi {}", words.get(at + 1)?))
+        })
+        .collect();
+    assert_eq!(named, ["lodi import", "lodi switch", "lodi init"], "{text}");
+    let headers: Vec<&str> = lines[2 + opening(&text).len()..]
         .iter()
         .filter(|l| !l.starts_with(' ') && l.ends_with(':'))
         .copied()
@@ -772,4 +603,95 @@ fn help_opens_with_where_to_start() {
             "Commands ('lodi help COMMAND' shows one with its examples):",
         ]
     );
+    let last = lines.last().copied().unwrap_or_default();
+    assert!(
+        last.contains("https://") && last.ends_with("docs/CLI.md"),
+        "--help does not end with the reference: {last}"
+    );
+}
+
+/// The command groups of `lodi --help` (#700): the host and home first, then projects, then
+/// help. Each group line is a label, `lodi`, and the commands.
+#[test]
+fn help_groups_the_host_and_home_then_projects() {
+    let text = stdout(&lodi(&["--help"]));
+    let groups: Vec<(String, Vec<String>)> = text
+        .split("\nCommands (")
+        .nth(1)
+        .expect("--help has a Commands header")
+        .lines()
+        .skip(1)
+        .take_while(|l| l.starts_with("  "))
+        .map(|line| {
+            let (label, list) = line.split_once(" lodi ").expect("a group lists commands");
+            let words = list
+                .split(", ")
+                .map(|item| {
+                    item.split_whitespace()
+                        .next()
+                        .unwrap_or_default()
+                        .to_string()
+                })
+                .filter(|w| !w.starts_with('-'))
+                .collect();
+            (label.trim().to_string(), words)
+        })
+        .collect();
+    let want = [
+        (
+            "host and home",
+            &["import", "switch", "update", "pin", "unpin"][..],
+        ),
+        (
+            "projects",
+            &["init", "develop", "run", "shell", "search", "gc"],
+        ),
+        ("help", &["help"]),
+    ];
+    let want: Vec<(String, Vec<String>)> = want
+        .iter()
+        .map(|(l, w)| (l.to_string(), w.iter().map(|s| s.to_string()).collect()))
+        .collect();
+    assert_eq!(groups, want, "{text}");
+}
+
+/// No help text names a command the help does not list (#700): every `lodi WORD` in
+/// `lodi --help` and in each command's help is a listed command or a flag, so no removed 1.x
+/// name is taught. The negative control: an unknown name is caught.
+#[test]
+fn no_help_names_a_command_it_does_not_list() {
+    let whole = stdout(&lodi(&["--help"]));
+    let listed = help_subjects(&whole);
+    // A command is `lodi` at the start of a line or a column, after `sudo`, or in quotes;
+    // prose such as "allowed lodi to manage it" is not one.
+    let named = |text: &str| -> Vec<String> {
+        let mut out = Vec::new();
+        for line in text.lines() {
+            for (at, _) in line.match_indices("lodi ") {
+                let before = &line[..at];
+                let starts = before.trim().is_empty()
+                    || before.ends_with("  ")
+                    || before.ends_with("sudo ")
+                    || before.ends_with(['`', '\'']);
+                let word: String = line[at + 5..]
+                    .chars()
+                    .take_while(|c| c.is_ascii_lowercase())
+                    .collect();
+                if starts && !word.is_empty() {
+                    out.push(word);
+                }
+            }
+        }
+        out
+    };
+    let mut texts = vec![whole.clone()];
+    for subject in &listed {
+        texts.push(stdout(&lodi(&["help", subject])));
+    }
+    for text in &texts {
+        for word in named(text) {
+            assert!(listed.contains(&word), "help names `lodi {word}`:\n{text}");
+        }
+    }
+    assert_eq!(named("run `lodi frobnicate` now"), ["frobnicate"]);
 }

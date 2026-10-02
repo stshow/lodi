@@ -2,9 +2,8 @@
 //!
 //! `AGENTS.md` §8 (LD-45) forbids running host-scope code against the machine an agent works on,
 //! "not even a dry run". This module is what makes that structural rather than remembered
-//! (M-0.6 design call D1, LD-113): a root is looked at only when it carries the marker file
-//! `etc/lodi/host-allowed`, which only `lodi host arm`, run as root, writes (LD-320, which
-//! supersedes forward LD-113's "no subcommand writes it").
+//! (M-0.6 design call D1, LD-113): a root is looked at only when it carries the "may manage"
+//! marker ([`crate::marker`], #705), which `lodi import` writes when the person says yes.
 //!
 //! The order is fixed, and each step is refused before the next is attempted:
 //!
@@ -14,30 +13,19 @@
 //! 2. **arming**: the root, `<root>/etc` and `<root>/etc/lodi` must each be a directory, not a
 //!    symbolic link, that nobody but their owner can write — owned by root on `/`, by the
 //!    invoking user under a `--root` — or the root is refused with `E_PATH_ESCAPE` (exit 3,
-//!    LD-357); then `<root>/etc/lodi/host-allowed`, a regular file reached without following a
-//!    symlink, owned by uid 0 and neither group- nor world-writable when the root is `/`, owned
-//!    by the invoking user under a `--root`; anything else, absence included, is
-//!    `E_HOST_NOT_ARMED` (exit 9). The manifest and the host lock in that directory are later
-//!    read under the same rule ([`read_config`]);
+//!    LD-357); then the marker, a regular file under the same rule; anything else, absence
+//!    included, is `E_HOST_NOT_ARMED` (exit 9). The host lock in that directory is later read
+//!    under the same rule ([`read_config`]);
 //! 3. **supported distribution**: `<root>/etc/os-release`'s `ID` (or `ID_LIKE`) must be `debian`,
 //!    `ubuntu` or `arch`, or its `ID` alone `fedora` (LD-432: a distribution that is only *like*
 //!    Fedora is not Fedora); anything else is `E_UNSUPPORTED` (exit 3) naming the four. A root
 //!    booted from an ostree deployment (`<root>/run/ostree-booted`: Fedora Silverblue and every
-//!    other rpm-ostree system) is `E_HOST_OSTREE` (exit 3) before anything else is read. The
+//!    other rpm-ostree system) is `E_HOST_OSTREE` (exit 3) before anything else is read, the
+//!    arming of step 2 and the hostname included ([`check_ostree`], LD-528). The
 //!    `[host] distro` assertion is checked against this once the manifest is parsed
-//!    ([`OsRelease::assert_distro`], `E_HOST_MISMATCH`, exit 3). Knowing the distribution is
-//!    also what lets this step decide whether a flag means anything here:
-//!    `--unsupported-partial-upgrade` is Arch's (design call D10), and a distribution whose
-//!    package manager has no such mode refuses it with `E_UNSUPPORTED` (exit 3) rather than
-//!    accepting a flag it would ignore;
-//!    3b. **an import's destination**: an `--out` inside a directory the host scope itself owns
-//!    is refused before a byte is read (`E_STORE_IO`, exit 6); the default destination,
-//!    `<root>/etc/lodi`, needs euid 0 on `/` (`E_NEED_ROOT`, exit 9) and no symbolic link on the
-//!    way (LD-325); and an existing `host.toml` without `--force` is `E_EXISTS` (exit 3). None
-//!    is decided in this module — [`super::run_import`] and [`super::landing`] do it — but all
-//!    happen before the machine is read, so a refused import reads nothing;
-//! 4. **privilege**: an apply on the root `/` needs euid 0 (`E_NEED_ROOT`, exit 9). Lodi invokes
-//!    no `sudo` and no `doas`: the operator runs `sudo lodi host apply`;
+//!    ([`OsRelease::assert_distro`], `E_HOST_MISMATCH`, exit 3);
+//! 4. **privilege**: an apply on the root `/` needs euid 0 (`E_NEED_ROOT`, exit 9); a lodi
+//!    started as the user gets it through [`crate::elevate`];
 //! 5. **package manager**: the distribution's tools are resolved by bare name (design call D3,
 //!    LD-115) — on the root `/` against the fixed [`FIXED_PATH`] and never the caller's `PATH`,
 //!    under a `--root` through the caller's `PATH` (LD-357) — and a program found is run only if
@@ -55,8 +43,6 @@ use std::path::{Path, PathBuf};
 
 use crate::diag::Diagnostic;
 
-/// The marker that arms a root, relative to it. Only `lodi host arm` writes it (LD-320).
-pub const MARKER: &str = "etc/lodi/host-allowed";
 /// The host manifest, relative to the root.
 pub const MANIFEST: &str = "etc/lodi/host.toml";
 /// The host lock, relative to the root: a record of what was applied, not a pin (LD-117).
@@ -68,23 +54,41 @@ pub const SUPPORTED: &[&str] = &["debian", "ubuntu", "arch", "fedora"];
 /// The file an ostree deployment's boot leaves, relative to the root (LD-432).
 pub const OSTREE_BOOTED: &str = "run/ostree-booted";
 
+/// An ostree deployment is not a machine a package manager changes in place: its packages are
+/// layered with rpm-ostree, which lodi does not drive (LD-432). `E_HOST_OSTREE` (exit 3) when
+/// `root` was booted from one, said before anything else of the host is read (LD-528).
+pub fn check_ostree(root: &Path) -> Result<(), Diagnostic> {
+    let ostree = root.join(OSTREE_BOOTED);
+    if fs::symlink_metadata(&ostree).is_err() {
+        return Ok(());
+    }
+    let mut refusal = Diagnostic::new(
+        "E_HOST_OSTREE",
+        format!("{} runs from rpm-ostree", root.display()),
+    );
+    refusal.notes.push(format!("found: {}", ostree.display()));
+    refusal
+        .notes
+        .push("lodi does not manage an rpm-ostree system, such as Silverblue".into());
+    Err(refusal.hint("rpm-ostree layers its packages, not dnf; nothing was read or changed"))
+}
+
 /// What the entry point is doing. `plan` and `import` need no privilege and take no lock; only
 /// `apply` changes the machine, so only `apply` reaches steps 4 and 6 below.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation {
     Plan,
     Apply,
-    /// `lodi host import` (M-Import T-3): a read of the machine, through the whole of the arming
-    /// and supported-distribution gate and none of the rest of it. The read needs no privilege
-    /// and takes no apply lock, so an import never blocks or is blocked by an apply; landing
-    /// the result in `/etc/lodi` does need root, and [`super::landing`] decides that (LD-325).
+    /// `lodi import`: a read of the machine, through the supported-distribution gate and none
+    /// of the rest of it. The read needs no privilege and takes no apply lock, so an import
+    /// never blocks or is blocked by an apply.
     Import,
-    /// `lodi host versions NAME` (M-Pin, LD-397): a read of the machine and of the archive,
+    /// `lodi pin NAME` with no `--to` (M-Pin, LD-397): a read of the machine and of the archive,
     /// through the import's gate.
     Versions,
-    /// `lodi host pin` and `lodi host unpin` (M-Pin, LD-397): they read the machine as the
-    /// import does and write only the host directory, under its own advisory lock; they take no
-    /// apply lock and need root only where the host directory is root's.
+    /// `lodi pin` and `lodi unpin` (M-Pin, LD-397): they read the machine as the import does
+    /// and write only the config, under its own advisory lock; they take no apply lock and need
+    /// root only where the config is root's.
     Pin,
     Unpin,
     /// `lodi update` (LD-448, LD-416): the pin verbs' gate, writing the repository's root lock.
@@ -92,14 +96,14 @@ pub enum Operation {
 }
 
 impl Operation {
+    /// The command a hint tells the person to run again (LD-523). A plan is `lodi switch` too:
+    /// `switch` plans as the person before it applies, `--dry-run` or not.
     pub fn command(self) -> &'static str {
         match self {
-            Operation::Plan => "lodi host plan",
-            Operation::Apply => "lodi host apply",
-            Operation::Import => "lodi host import",
-            Operation::Versions => "lodi host versions",
-            Operation::Pin => "lodi host pin",
-            Operation::Unpin => "lodi host unpin",
+            Operation::Plan | Operation::Apply => "lodi switch",
+            Operation::Import => "lodi import",
+            Operation::Versions | Operation::Pin => "lodi pin",
+            Operation::Unpin => "lodi unpin",
             Operation::Update => "lodi update",
         }
     }
@@ -116,46 +120,24 @@ pub struct Options {
     /// The positional `SOURCE` of `plan`, `apply` and `import` (LD-379): a host directory, or a
     /// directory of hosts one of which is chosen by hostname. `None` is `<root>/etc/lodi`.
     pub source: Option<PathBuf>,
-    /// `--host NAME`: the host of a directory of hosts to use instead of the hostname (LD-379).
-    pub host: Option<String>,
-    /// `--ref NAME` of a URL `SOURCE`: the branch or tag to resolve instead of `HEAD` (LD-401).
-    pub git_ref: Option<String>,
-    /// `--rev COMMIT` of a URL `SOURCE`: the commit to apply, by its 40 hexadecimal digits.
-    pub rev: Option<String>,
-    /// `--refresh` of a URL `SOURCE`: resolve the ref again instead of using the locked commit.
-    pub refresh: bool,
     /// `--resolved JOURNAL-ID`: the operator declares an ambiguous journal resolved (LD-118).
     pub resolved: Option<String>,
     /// `--overwrite-drift`: the confirmation ADR-013 requires before drift is overwritten
     /// (LD-120).
     pub overwrite_drift: bool,
-    /// `--no-update`: do not refresh the distribution's index as part of this apply.
-    pub no_update: bool,
-    /// `--no-home`: act on the host alone without inspecting its home directory.
-    pub no_home: bool,
-    /// `--out DIR`: where `lodi host import` writes the manifest and the bundle beside it.
-    /// `None` is the import that lands in `<root>/etc/lodi` itself (LD-325).
-    pub out: Option<PathBuf>,
-    /// `--stdout`: `lodi host import` prints the manifest and captures no configuration file.
-    /// It and `--out` are a usage error together.
-    pub stdout: bool,
-    /// `--force`: replace an existing `host.toml` and the `files/` beside it, as `lodi init
-    /// --force` replaces a project manifest. Without it an existing file is reconciled (LD-378).
-    pub force: bool,
-    /// `--dry-run`: `lodi host import` prints what it would change in an existing manifest — the
-    /// unified diff and the captured paths with their digests — and writes nothing (LD-378).
-    pub dry_run: bool,
-    /// `--unsupported-partial-upgrade`: install on Arch **without** upgrading the machine
-    /// (design call D10). Arch does not support that state, which is why the flag says so in its
-    /// own name, why it is the only way to reach the mode, and why a distribution with no
-    /// partial-upgrade mode refuses it at step 3a below rather than ignoring it.
-    pub unsupported_partial_upgrade: bool,
     /// The package `NAME` of `versions`, `pin` and `unpin` (M-Pin, LD-397).
     pub name: Option<String>,
-    /// `--to VERSION|DATE` of `pin`: what to pin to; `None` is the installed version, or now.
-    pub to: Option<String>,
-    /// `--all` of `pin` and `unpin`: the file-level snapshot instead of one name.
-    pub all: bool,
+    /// `lodi switch`'s host part of a 2.0 config (#695): the "may manage" marker of #705 is
+    /// the arming check, and the pins are the config's `lodi.lock` section, never a 1.x file.
+    pub config: Option<ConfigPins>,
+}
+
+/// A 2.0 config host's section of `lodi.lock`, as the host part reads it (#695).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ConfigPins {
+    pub pins: Option<super::pin::PinsLock>,
+    /// Each `signed_by_url` key's locked `sha256:` digest, by source name.
+    pub keys: std::collections::BTreeMap<String, String>,
 }
 
 /// The distributions this build manages, as `spec/01` §5 names them.
@@ -268,7 +250,7 @@ impl OsRelease {
             format!("{file} asserts `[host] distro = \"{declared}\"`, but this root is `{actual}`"),
         )
         .hint(format!(
-            "apply this manifest on a {declared} machine, or change the assertion to `{actual}`"
+            "use this host.toml on a {declared} machine, or change the assertion to `{actual}`"
         )))
     }
 }
@@ -401,8 +383,6 @@ pub struct Gate {
     pub euid: u32,
     pub egid: u32,
     pub operation: Operation,
-    /// `--unsupported-partial-upgrade`, carried to the package backend and nowhere else.
-    pub partial_upgrade: bool,
     /// Held for the whole apply; `None` for a plan, which takes no lock.
     pub lock: Option<ApplyLock>,
 }
@@ -436,6 +416,21 @@ impl Gate {
 
     /// Run the gate in order. Nothing below the root is opened until arming has passed.
     pub fn open(options: &Options, operation: Operation) -> Result<Gate, Diagnostic> {
+        Gate::open_with(options, operation, true)
+    }
+
+    /// [`Gate::open`] without the "may manage" marker: `lodi import` (#693) reads the host
+    /// before any marker exists. The folders the marker would be reached through are still
+    /// judged.
+    pub fn open_for_import(options: &Options) -> Result<Gate, Diagnostic> {
+        Gate::open_with(options, Operation::Import, false)
+    }
+
+    fn open_with(
+        options: &Options,
+        operation: Operation,
+        needs_marker: bool,
+    ) -> Result<Gate, Diagnostic> {
         let requested = options
             .root
             .clone()
@@ -455,70 +450,18 @@ impl Gate {
             return Err(missing);
         }
 
-        // 2. Arming, before anything else below the root is opened.
-        check_marker(&root, system_root, euid)?;
+        // 2. An ostree deployment, before whether lodi may manage it (LD-528).
+        check_ostree(&root)?;
 
-        // 2b. An ostree deployment is not a machine a package manager changes in place: its
-        //    packages are layered with rpm-ostree, which lodi does not drive (LD-432).
-        let ostree = root.join(OSTREE_BOOTED);
-        if fs::symlink_metadata(&ostree).is_ok() {
-            let mut refusal = Diagnostic::new(
-                "E_HOST_OSTREE",
-                format!("{} runs from rpm-ostree", root.display()),
-            );
-            refusal.notes.push(format!("found: {}", ostree.display()));
-            refusal
-                .notes
-                .push("lodi does not manage an rpm-ostree system, such as Silverblue".into());
-            return Err(refusal
-                .hint("rpm-ostree layers its packages, not dnf; nothing was read or changed"));
+        // 2b. The "may manage" marker, before anything else below the root is opened.
+        if needs_marker {
+            check_may_manage(&root, system_root, euid)?;
+        } else {
+            check_config_dirs(&root, system_root, euid)?;
         }
 
         // 3. A distribution this build manages.
-        let os_path = root.join("etc/os-release");
-        let text = fs::read_to_string(&os_path).map_err(|e| {
-            Diagnostic::new(
-                "E_UNSUPPORTED",
-                format!("cannot read {}: {e}", os_path.display()),
-            )
-            .hint(format!(
-                "the host scope manages {} and identifies a root by its os-release",
-                SUPPORTED.join(", ")
-            ))
-        })?;
-        let os = OsRelease::parse(&text);
-        let distro = os.distro().ok_or_else(|| {
-            Diagnostic::new(
-                "E_UNSUPPORTED",
-                format!(
-                    "{} says ID={}, which this build does not manage",
-                    os_path.display(),
-                    if os.id.is_empty() { "(unset)" } else { &os.id }
-                ),
-            )
-            .hint(format!(
-                "the host scope manages {}; nothing was read or changed",
-                SUPPORTED.join(", ")
-            ))
-        })?;
-
-        // 3a. A flag that has no meaning for this distribution is refused, never ignored. It is
-        //     checked here, before the manifest is opened, so that a root with no `[packages]`
-        //     table at all still says that the flag means nothing to it.
-        if options.unsupported_partial_upgrade && !super::pm::Shape::of(distro).has_partial_upgrade
-        {
-            return Err(Diagnostic::new(
-                "E_UNSUPPORTED",
-                format!(
-                    "--unsupported-partial-upgrade is an arch option, and this root is `{}`",
-                    distro.name()
-                ),
-            )
-            .hint(
-                "drop the flag: on this distribution installing without upgrading the machine \
-                 is the ordinary, supported thing, and lodi already does it",
-            ));
-        }
+        let (os, distro) = read_distro(&root)?;
 
         // 4. Privilege. An apply on `/` is a root action; under a `--root` the invoking user's
         //    own privilege is what bounds it, action by action.
@@ -527,7 +470,7 @@ impl Gate {
                 "E_NEED_ROOT",
                 "applying to / changes root-owned files and distribution packages".to_string(),
             )
-            .hint("run it as root: sudo lodi host apply"));
+            .hint("run `lodi switch`, which asks for root to apply the host part"));
         }
 
         // 5. The package manager, by bare name, from a trusted place.
@@ -542,15 +485,44 @@ impl Gate {
             euid,
             egid,
             operation,
-            partial_upgrade: options.unsupported_partial_upgrade,
             lock: None,
         })
     }
 }
 
+/// Step 3: the distribution `root` is, from its `etc/os-release`, when this build manages it.
+pub fn read_distro(root: &Path) -> Result<(OsRelease, Distro), Diagnostic> {
+    let os_path = root.join("etc/os-release");
+    let text = fs::read_to_string(&os_path).map_err(|e| {
+        Diagnostic::new(
+            "E_UNSUPPORTED",
+            format!("cannot read {}: {e}", os_path.display()),
+        )
+        .hint(format!(
+            "the host scope manages {} and identifies a root by its os-release",
+            SUPPORTED.join(", ")
+        ))
+    })?;
+    let os = OsRelease::parse(&text);
+    let distro = os.distro().ok_or_else(|| {
+        Diagnostic::new(
+            "E_UNSUPPORTED",
+            format!(
+                "{} says ID={}, which this build does not manage",
+                os_path.display(),
+                if os.id.is_empty() { "(unset)" } else { &os.id }
+            ),
+        )
+        .hint(format!(
+            "the host scope manages {}; nothing was read or changed",
+            SUPPORTED.join(", ")
+        ))
+    })?;
+    Ok((os, distro))
+}
+
 /// Step 1b: the refusal for a root that is not there at all, or `None` when something is at
-/// that name — whatever it is, the arming step judges it. `lodi host arm --root` refuses a
-/// root that is not a directory with the same code (`E_STORE_IO`).
+/// that name — whatever it is, the marker step judges it.
 pub fn missing_root(root: &Path) -> Option<Diagnostic> {
     match fs::symlink_metadata(root) {
         Err(e) if e.kind() == io::ErrorKind::NotFound => Some(
@@ -572,24 +544,6 @@ pub fn current_egid() -> u32 {
     unsafe { libc::getegid() }
 }
 
-/// The hint every `E_HOST_NOT_ARMED` carries: the one command that arms the root in question,
-/// run once and deliberately (LD-320). Nothing else — no install, plan, apply or import — arms it.
-pub fn arm_command(root: &Path, system_root: bool) -> String {
-    let marker = root.join(MARKER);
-    if system_root {
-        format!(
-            "arm this machine once, as root: sudo lodi host arm (it writes {}, an empty file)",
-            marker.display()
-        )
-    } else {
-        format!(
-            "arm this root once: lodi host arm --root {} (it writes {}, an empty file)",
-            root.display(),
-            marker.display()
-        )
-    }
-}
-
 /// The refusal for a directory holding the host scope's configuration — the root, `etc` or
 /// `etc/lodi` — that someone other than its owner could write, or that is not a directory.
 fn untrusted_config_dir(dir: &Path, why: &str) -> Diagnostic {
@@ -606,9 +560,9 @@ fn untrusted_config_dir(dir: &Path, why: &str) -> Diagnostic {
 
 /// Step 2, first half: the root, `<root>/etc` and `<root>/etc/lodi` — every directory the marker,
 /// the manifest and the lock are reached through — are directories, not symbolic links, owned
-/// by the trusted owner and neither group- nor world-writable ([`super::files::untrusted_directory`]).
-/// A component that is not there ends the walk: the marker check then says the root is not
-/// armed.
+/// by the trusted owner and neither group- nor world-writable
+/// ([`super::files::untrusted_directory`]). A component that is not there ends the walk: the
+/// marker check then says lodi may not manage the root.
 fn check_config_dirs(root: &Path, system_root: bool, euid: u32) -> Result<(), Diagnostic> {
     let trusted = super::files::trusted_owner(system_root, euid);
     let mut dir = root.to_path_buf();
@@ -725,54 +679,14 @@ pub fn read_config(
     Ok(Some(bytes))
 }
 
-/// Step 2. Every failure of the marker itself carries the same code and the same hint, so that
-/// the refusal never says more about a root than that it is not armed.
-fn check_marker(root: &Path, system_root: bool, euid: u32) -> Result<(), Diagnostic> {
+/// Step 2 for a 2.0 config (#695): the "may manage" marker of #705, which `lodi import`
+/// writes once the owner agreed. A 1.x `host-allowed` never counts (#688).
+fn check_may_manage(root: &Path, system_root: bool, euid: u32) -> Result<(), Diagnostic> {
     check_config_dirs(root, system_root, euid)?;
-    let marker = root.join(MARKER);
-    let refuse = |why: String| {
-        Err(Diagnostic::new(
-            "E_HOST_NOT_ARMED",
-            format!("{} is not armed for the host scope: {why}", root.display()),
-        )
-        .hint(arm_command(root, system_root)))
-    };
-    let meta = match fs::symlink_metadata(&marker) {
-        Ok(meta) => meta,
-        Err(e) if e.kind() == io::ErrorKind::NotFound => {
-            return refuse(format!("{} does not exist", marker.display()));
-        }
-        Err(e) => return refuse(format!("{}: {e}", marker.display())),
-    };
-    if !meta.is_file() {
-        return refuse(format!(
-            "{} is not a regular file (a symlink is never followed here)",
-            marker.display()
-        ));
+    match crate::marker::may_manage(root, euid) {
+        true => Ok(()),
+        false => Err(crate::marker::refusal(root)),
     }
-    let mode = meta.permissions().mode() & 0o7777;
-    if system_root {
-        if meta.uid() != 0 {
-            return refuse(format!(
-                "{} is owned by uid {}, not by root",
-                marker.display(),
-                meta.uid()
-            ));
-        }
-        if mode & 0o022 != 0 {
-            return refuse(format!(
-                "{} is mode {mode:04o}: group- or world-writable",
-                marker.display()
-            ));
-        }
-    } else if meta.uid() != euid {
-        return refuse(format!(
-            "{} is owned by uid {}, not by the invoking user (uid {euid})",
-            marker.display(),
-            meta.uid()
-        ));
-    }
-    Ok(())
 }
 
 /// Step 5: resolve each program the distribution needs by bare name ([`resolve_program`]).
@@ -854,23 +768,23 @@ pub fn which(name: &str, path: &std::ffi::OsStr) -> Option<PathBuf> {
 /// Step 6: the apply lock, taken exclusively and never waited on.
 fn take_apply_lock(root: &Path) -> Result<ApplyLock, Diagnostic> {
     let dir =
-        super::files::ensure_dir_trusted(root, &format!("/{STATE}"), 0o700).map_err(|error| {
+        super::files::ensure_dir_trusted(root, &format!("/{STATE}"), 0o755).map_err(|error| {
             Diagnostic::new("E_SYSTEM_BUSY", error.message)
-                .hint("the host scope keeps its journals and its apply lock there")
+                .hint("the host scope keeps its journals and the lock lodi switch takes there")
         })?;
-    let _ = fs::set_permissions(&dir, fs::Permissions::from_mode(0o700));
+    let _ = fs::set_permissions(&dir, fs::Permissions::from_mode(0o755));
     let path = dir.join(".lock");
     super::files::inspect_trusted(root, &format!("/{STATE}/.lock"), false).map_err(|error| {
         Diagnostic::new("E_SYSTEM_BUSY", error.message)
-            .hint("the host apply lock must be a regular file below the selected root")
+            .hint("the lock lodi switch takes must be a regular file below the selected root")
     })?;
     match ApplyLock::try_take(&path) {
         Ok(Some(lock)) => Ok(lock),
         Ok(None) => Err(Diagnostic::new(
             "E_SYSTEM_BUSY",
-            format!("another lodi host apply holds {}", path.display()),
+            format!("another lodi switch holds {}", path.display()),
         )
-        .hint("wait for it to finish, then run `lodi host apply` again")),
+        .hint("wait for it to finish, then run `lodi switch` again")),
         Err(e) => Err(Diagnostic::new(
             "E_SYSTEM_BUSY",
             format!("cannot take {}: {e}", path.display()),
@@ -960,21 +874,5 @@ mod tests {
         assert_eq!(untrusted_config(1000, 0o100600, false, 1000), None);
         assert!(untrusted_config(0, 0o100644, false, 1000).is_some());
         assert!(untrusted_config(1000, 0o100660, false, 1000).is_some());
-    }
-
-    #[test]
-    fn the_arm_hint_names_the_marker_of_the_root_it_refused() {
-        let hint = arm_command(Path::new("/srv/scratch"), false);
-        assert!(
-            hint.contains("/srv/scratch/etc/lodi/host-allowed"),
-            "{hint}"
-        );
-        assert!(
-            hint.contains("lodi host arm --root /srv/scratch "),
-            "{hint}"
-        );
-        assert!(hint.contains("an empty file"), "{hint}");
-        assert!(!hint.contains("sudo"), "{hint}");
-        assert!(arm_command(Path::new("/"), true).contains("sudo lodi host arm "));
     }
 }

@@ -516,7 +516,7 @@ fn locks_ubuntu_noble_pinned_and_chained_to_its_release_files() {
         !requests
             .iter()
             .any(|u| u.ends_with(".deb") || u.ends_with(".tar.gz")),
-        "lodi lock downloaded an artifact: {requests:?}"
+        "locking downloaded an artifact: {requests:?}"
     );
 }
 
@@ -944,9 +944,14 @@ fn another_ubuntu_release_is_unsupported_and_asks_for_nothing() {
         );
 
         // And through the binary, with no network configured at all: exit status 3.
+        // `develop` locks first, so the refusal is its own (LD-496).
         let out = Command::new(lodi_binary())
-            .arg("lock")
+            .args(["develop", "--trust", "--", "true"])
             .current_dir(&dir)
+            .env_clear()
+            .env("PATH", "")
+            .env("HOME", dir.join("home"))
+            .env("XDG_CONFIG_HOME", dir.join("config"))
             .env("LODI_HOME", dir.join("lodi-home"))
             .output()
             .expect("the binary runs");

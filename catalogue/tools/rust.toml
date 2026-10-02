@@ -1,6 +1,6 @@
-# Upstream Rust for [tools] rust. This recipe says where to look; it lists no
-# version. `lodi lock` discovers the stable channel's version from the channel manifest, and
-# each component tarball is verified against its own .sha256 sidecar. No install script is run.
+# Upstream Rust for [tools] rust. This recipe says where to look; it lists no version. `lodi update`
+# discovers the stable channel's version from the channel manifest, and each component tarball is
+# verified against its own .sha256 sidecar. No install script is run.
 [recipe]
 name        = "rust"
 description = "The Rust toolchain: rustc, cargo and the standard library"

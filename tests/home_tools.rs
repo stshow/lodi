@@ -137,7 +137,9 @@ fn home_and_project_realization_produce_the_same_entry_names() {
     .unwrap();
 
     write_home(&roots, &format!("[home]\nversion = \"1\"\n\n{block}"));
-    let resolution = tools::resolve(&roots, &fetcher, 0, false).unwrap().unwrap();
+    let resolution = tools::resolve(&roots, &fetcher, 0, false, None)
+        .unwrap()
+        .unwrap();
     let realized = tools::realize(&roots, &fetcher, &resolution).unwrap();
 
     assert_eq!(entry_names(&project_store_path), entry_names(roots.data()));
@@ -160,13 +162,14 @@ fn command_facing_reports_accept_tools_and_write_nothing() {
     write_home(&roots, &text);
     let before = support::listing(env.root());
 
-    for args in [&["home", "plan"][..], &["home", "status"][..]] {
-        let out = env.command().args(args).output().unwrap();
-        let stderr = String::from_utf8_lossy(&out.stderr);
-        assert_eq!(out.status.code(), Some(0), "{args:?}: {stderr}");
-    }
+    // `lodi switch --home --dry-run`, 1.x's `home plan` and `home status` (LD-518).
+    let out = env.lodi(&["home", "plan"]).output().unwrap();
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(0), "{stderr}");
     assert_eq!(support::listing(env.root()), before);
     assert!(!roots.config().join(lock::HOME_LOCK_FILE).exists());
+    assert!(!roots.config().join("lodi.lock").exists());
+    assert!(!env.share().join("lodi").join(tools::HOME_GC_ROOT).exists());
     assert!(!roots.data().join(tools::HOME_GC_ROOT).exists());
 }
 
@@ -184,7 +187,9 @@ fn live_home_tool_resolves_realizes_and_is_rooted() {
         "[home]\nversion = \"1\"\n\n[tools]\njq = \"latest\"\n",
     );
     let fetcher = HttpFetcher::from_env().unwrap();
-    let resolution = tools::resolve(&roots, &fetcher, 0, false).unwrap().unwrap();
+    let resolution = tools::resolve(&roots, &fetcher, 0, false, None)
+        .unwrap()
+        .unwrap();
     let realized = tools::realize(&roots, &fetcher, &resolution).unwrap();
     let store = Store::open(roots.data()).unwrap();
     assert!(

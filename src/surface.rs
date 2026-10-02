@@ -1,29 +1,23 @@
 //! The deprecation table of the published CLI surface, and the resolver that reads it.
 //!
-//! `docs/CLI.md` writes the 1.x promise down: a command or a flag published at 1.0 is stable for
-//! 1.x, new ones may be added, and an existing one is **removed only after at least one minor
-//! version in which using it prints `W_DEPRECATED`** (design `spec/10-cli` §8). That sentence
-//! needed a mechanism rather than good intentions, and this module is it.
+//! `docs/CLI.md` writes the promise down: a command or a flag is **removed only after at least
+//! one minor version in which using it prints `W_DEPRECATED`** (design `spec/10-cli` §8). This
+//! module is the mechanism behind that sentence.
 //!
 //! It has no command of its own and reads nothing:
 //!
-//! - [`DEPRECATIONS`] is the committed table. It was empty at 1.0 and 1.1 — an empty table was
-//!   the whole point of the seam, not an oversight: a resolver with no entries is not an
-//!   unreachable command, the same shape M-0.6 T-1 landed the package-manager `match` with no
-//!   arms in (M-1.0 design call D13). From 1.2 it has one row, the home manifest's `[files]`
-//!   table (decision D5, LD-324), and still no command or flag.
+//! - [`DEPRECATIONS`] is the committed table. It may be empty: a resolver with no entries is a
+//!   seam, not an unreachable command.
 //! - A surface is either typed on the command line (`home status`, `init --force`) or a table of
 //!   a manifest, written ``home.toml `[files]` `` ([`Deprecation::manifest`]).
 //! - [`deprecation`] answers for **the table it is given** and a surface typed on the command
 //!   line, so the test supplies its own table. It returns `None` for a surface with no entry, and
-//!   a [`Warning`] for one with an entry. [`manifest_deprecation`] answers the same way for a
-//!   table of a manifest a command has read.
+//!   a [`Warning`] for one with an entry.
 //!
 //! A warning is a line on standard error and nothing else: it never changes an exit status
 //! (`docs/ERRORS.md`, "Warnings are not in this table and never change the exit status").
 //! `src/main.rs` prints a command-line surface's line in exactly one place, before the dispatch
-//! runs; the home scope prints a manifest table's line with the other warnings of the manifest it
-//! loaded (`crate::home::plan::manifest_warnings`), once per run.
+//! runs.
 
 use std::ffi::OsString;
 use std::fmt;
@@ -73,18 +67,11 @@ fn in_manifest(surface: &str) -> Option<(&str, &str)> {
     (file.ends_with(".toml") && !file.contains(' ') && !table.is_empty()).then_some((file, table))
 }
 
-/// The committed table. Nothing was deprecated at 1.0 or 1.1; from 1.2 the one row is the home
-/// manifest's `[files]` table (decision D5, LD-324), an exact alias of `[home.file]` through 1.x.
-/// No command and no flag is deprecated.
+/// The committed table. Nothing is deprecated.
 ///
 /// A row is added here and to `docs/CLI.md`'s deprecation table in the same change, and nowhere
 /// else — those two places are the whole table (M-1.0 T-8).
-pub const DEPRECATIONS: &[Deprecation] = &[Deprecation {
-    surface: "home.toml `[files]`",
-    announced_in: "1.2",
-    removable_in: "2.0",
-    replacement: "`[home.file]` (rename `content` to `text`)",
-}];
+pub const DEPRECATIONS: &[Deprecation] = &[];
 
 /// A `W_DEPRECATED` line, ready to print on standard error.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -175,14 +162,6 @@ pub fn deprecation(table: &[Deprecation], surface: &str) -> Option<Warning> {
     Some(warning(entry))
 }
 
-/// The `W_DEPRECATED` line for the table `name` (as written, `[files]`) of the manifest `file`
-/// (`home.toml`), or `None` when `table` has no entry for it. The caller asks once per run, for a
-/// manifest it has read and found the table in.
-pub fn manifest_deprecation(table: &[Deprecation], file: &str, name: &str) -> Option<Warning> {
-    let entry = table.iter().find(|d| d.manifest() == Some((file, name)))?;
-    Some(warning(entry))
-}
-
 fn warning(entry: &Deprecation) -> Warning {
     Warning {
         code: W_DEPRECATED,
@@ -199,8 +178,7 @@ mod tests {
 
     /// (d) of M-1.0 T-8: every row of the committed table is well formed — a surface, two
     /// different versions, and the announcement strictly before the removal, because the promise
-    /// is one whole minor version of warning. From 1.2 its one row is a manifest table (D5), so
-    /// no command and no flag is deprecated.
+    /// is one whole minor version of warning. No command and no flag is deprecated.
     #[test]
     fn the_committed_table_is_well_formed_and_deprecates_no_command() {
         let version = |v: &str| -> (u32, u32) {
@@ -232,54 +210,5 @@ mod tests {
         // No command-line surface answers, the manifest row's own spelling included.
         assert_eq!(deprecation(DEPRECATIONS, "init"), None);
         assert_eq!(deprecation(DEPRECATIONS, "home.toml `[files]`"), None);
-    }
-
-    /// D5 (LD-324): the manifest row renders the manifest form of the line, and only for the
-    /// file and table it names.
-    #[test]
-    fn the_files_table_of_home_toml_renders_the_manifest_form() {
-        let line = manifest_deprecation(DEPRECATIONS, "home.toml", "[files]")
-            .expect("the D5 row resolves")
-            .to_string();
-        assert_eq!(
-            line,
-            "lodi: warning W_DEPRECATED: `[files]` in home.toml is deprecated since 1.2 and may \
-             be removed in 2.0; use `[home.file]` (rename `content` to `text`)"
-        );
-        for (file, name) in [
-            ("home.toml", "[home.file]"),
-            ("home.toml", "files"),
-            ("host.toml", "[files]"),
-            ("lodi.toml", "[files]"),
-        ] {
-            assert_eq!(
-                manifest_deprecation(DEPRECATIONS, file, name),
-                None,
-                "{file} {name}"
-            );
-        }
-        let no_replacement = Deprecation {
-            surface: "lodi.toml `[old]`",
-            announced_in: "1.3",
-            removable_in: "2.0",
-            replacement: "",
-        };
-        assert_eq!(no_replacement.manifest(), Some(("lodi.toml", "[old]")));
-        assert_eq!(
-            manifest_deprecation(&[no_replacement], "lodi.toml", "[old]")
-                .unwrap()
-                .to_string(),
-            "lodi: warning W_DEPRECATED: `[old]` in lodi.toml is deprecated since 1.3 and may be \
-             removed in 2.0; there is no replacement"
-        );
-        // A command-line surface is not a manifest table, however it is spelled.
-        for typed in [
-            "home status",
-            "init --force",
-            "home.toml",
-            "home.toml [files]",
-        ] {
-            assert_eq!(in_manifest(typed), None, "{typed}");
-        }
     }
 }

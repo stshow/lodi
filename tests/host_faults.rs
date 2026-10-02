@@ -516,7 +516,7 @@ fn a_package_manager_that_vanished_after_the_gate_is_the_runtime_code_and_journa
     fs::create_dir_all(&state).expect("the shim state");
     write_pacman(&bin, &state);
     let (uid, gid) = ids(&root);
-    root.arm().arch();
+    root.may_manage().arch();
     // A synchronised database, so that the plan can report the index age of a real machine.
     root.write("var/lib/pacman/sync/extra.db", "recorded database\n");
     root.write(

@@ -34,20 +34,31 @@ pub struct Context {
 }
 
 impl Context {
-    /// The context of a root the safety gate has already identified.
-    pub fn from_gate(gate: &super::safety::Gate) -> Context {
+    /// A Linux machine's context, for this build of lodi.
+    pub fn new(arch: &str, distro: &str, release: &str, codename: &str) -> Context {
         Context {
-            arch: gate.arch().to_string(),
+            arch: arch.to_string(),
             os: "linux".to_string(),
-            distro: gate.distro.name().to_string(),
-            release: if gate.os.version_id.is_empty() {
-                "rolling".to_string()
-            } else {
-                gate.os.version_id.clone()
-            },
-            codename: gate.os.codename.clone(),
+            distro: distro.to_string(),
+            release: release.to_string(),
+            codename: codename.to_string(),
             lodi_version: env!("CARGO_PKG_VERSION").to_string(),
         }
+    }
+
+    /// The context of `distro` as its `os-release` says: the release is the version, or
+    /// `rolling` where it has none (Arch).
+    pub fn of(arch: &str, distro: super::safety::Distro, os: &super::safety::OsRelease) -> Context {
+        let release = match os.version_id.is_empty() {
+            true => "rolling",
+            false => &os.version_id,
+        };
+        Context::new(arch, distro.name(), release, &os.codename)
+    }
+
+    /// The context of a root the safety gate has already identified.
+    pub fn from_gate(gate: &super::safety::Gate) -> Context {
+        Context::of(gate.arch(), gate.distro, &gate.os)
     }
 }
 
@@ -250,7 +261,7 @@ pub struct Host {
     pub min_lodi_version: String,
     /// The instant the machine this file was generated from was read, `YYYY-MM-DDTHH:MM:SSZ`.
     ///
-    /// `lodi host import` writes it (the owner's decision of 2026-09-22, which supersedes design
+    /// `lodi import` writes it (the owner's decision of 2026-09-22, which supersedes design
     /// call D10 forward); a hand-written manifest may carry it or leave it out. **Nothing in
     /// this build acts on it**: no package is pinned to it, no plan reads it and no apply
     /// behaves differently for its presence. It is recorded now so that the pinning milestone
@@ -518,45 +529,6 @@ const DEFERRED_CAUSE: &str = "remove the table: lodi manages the packages, packa
 /// The version that may add `[inputs]` and `[modules]` (design call D12, LD-124).
 const MODULES_VERSION: &str = "1.0";
 
-/// Read and validate the host manifest `<root>/etc/lodi/host.toml`, returning it with the bytes
-/// it was parsed from, so that the digest a plan records is of exactly those bytes.
-///
-/// The file is read the way the arming marker is judged ([`super::safety::read_config`], LD-357):
-/// never through a symbolic link, only as a regular file, owned by root on `/` — by the invoking
-/// user under a `--root` — and writable by nobody else.
-///
-/// An absent manifest is `E_NO_MANIFEST`, and its hint is the command that writes one in place:
-/// `lodi host import`, which lands `host.toml` in the root's `etc/lodi` ([`import_hint`]).
-pub fn load(
-    root: &Path,
-    system_root: bool,
-    euid: u32,
-    ctx: &Context,
-) -> Result<(HostManifest, Vec<u8>), ManifestErrors> {
-    let path = root.join(super::safety::MANIFEST);
-    let file = path.display().to_string();
-    let fail = |d: Diagnostic| ManifestErrors {
-        diagnostics: vec![d],
-    };
-    let bytes = match super::safety::read_config(
-        root,
-        super::safety::MANIFEST,
-        system_root,
-        euid,
-        MAX_MANIFEST_BYTES,
-    ) {
-        Ok(Some(bytes)) => bytes,
-        Ok(None) => {
-            return Err(fail(
-                Diagnostic::new("E_NO_MANIFEST", format!("no host manifest at {file}"))
-                    .hint(import_hint(root, system_root, &file)),
-            ));
-        }
-        Err(d) => return Err(fail(d)),
-    };
-    from_bytes(&bytes, &file, ctx).map(|manifest| (manifest, bytes))
-}
-
 /// Validate a host manifest already read into memory (LD-379): its size, its encoding, then its
 /// text. `file` names it in diagnostics.
 pub fn from_bytes(bytes: &[u8], file: &str, ctx: &Context) -> Result<HostManifest, ManifestErrors> {
@@ -579,21 +551,6 @@ pub fn from_bytes(bytes: &[u8], file: &str, ctx: &Context) -> Result<HostManifes
             "host manifest is not valid UTF-8",
         ))),
     }
-}
-
-/// The hint of a missing host manifest: `lodi host import` writes `file` in place from what the
-/// root has installed — as root on `/`, and as the invoking user under a `--root`, where no
-/// privilege is involved and none is suggested.
-pub fn import_hint(root: &Path, system_root: bool, file: &str) -> String {
-    let command = if system_root {
-        "sudo lodi host import".to_string()
-    } else {
-        format!("lodi host import --root {}", root.display())
-    };
-    format!(
-        "write one from what this root has installed with `{command}` (it writes {file}), or \
-         write it by hand"
-    )
 }
 
 /// Validate host-manifest text; `file` names the source in diagnostics.
@@ -2477,7 +2434,7 @@ impl Validator<'_> {
                     "E_ATTR_CONFLICT",
                     format!("{place} declares {what}"),
                     "a source names its keyring exactly once: `signed_by`, a file under the \
-                     manifest's directory, or `signed_by_url`, an https:// URL the apply fetches"
+                     manifest's directory, or `signed_by_url`, an https:// URL lodi switch fetches"
                         .into(),
                     entry.key_span.clone(),
                 );

@@ -1,0 +1,26 @@
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 637 KiB. Need to download 0 B.
+After this operation, 1 MiB extra will be used (install 1 MiB, remove 0 B).
+[1/2] tmux-0:3.7c-1.fc44.x86_64         100% |   0.0   B/s |   0.0   B |  00m00s
+>>> Already downloaded
+[2/2] libutempter-0:1.2.1-20.fc44.x86_6 100% |   0.0   B/s |   0.0   B |  00m00s
+>>> Already downloaded
+--------------------------------------------------------------------------------
+[2/2] Total                             100% |   0.0   B/s |   0.0   B |  00m00s
+Running transaction
+Importing OpenPGP key 0x6D9F90A6:
+ UserID     : "Fedora (44) <redacted>"
+ Fingerprint: 36F612DCF27F7D1A48A835E4DBFCF71C6D9F90A6
+ From       : file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-44-x86_64
+The key was successfully imported.
+[1/4] Verify package files              100% | 400.0   B/s |   2.0   B |  00m00s
+[2/4] Prepare transaction               100% |   7.0   B/s |   2.0   B |  00m00s
+>>> Running sysusers scriptlet: libutempter-0:1.2.1-20.fc44.x86_64
+>>> Finished sysusers scriptlet: libutempter-0:1.2.1-20.fc44.x86_64
+>>> Scriptlet output:
+>>> Creating group 'utempter' with GID 35.
+>>> 
+[3/4] Installing libutempter-0:1.2.1-20 100% | 446.6 KiB/s |  51.4 KiB |  00m00s
+[4/4] Installing tmux-0:3.7c-1.fc44.x86 100% |   1.3 MiB/s |   1.4 MiB |  00m01s
+Complete!

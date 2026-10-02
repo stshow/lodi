@@ -29,8 +29,6 @@ pub struct Resolution {
     pub plan: host::Plan,
     /// Labels whose pins were freshly resolved. Empty means the existing lock was reused.
     pub resolved: Vec<String>,
-    /// Whether this call changed `home.lock`.
-    pub wrote_lock: bool,
 }
 
 /// What realizing a home tool set produced.
@@ -81,37 +79,17 @@ fn stale(tools: &ToolSet, lock: &LockFile) -> Vec<String> {
     stale
 }
 
-/// Resolve the tool section once and pin it beside `home.toml`.
-///
-/// With `locked`, a missing or changed lock is
-/// `E_LOCK_STALE` at exit 10 and nothing is written. A manifest without `[tools]` needs no lock;
-/// an unlocked call removes a valid obsolete one, while a newer or invalid file is preserved and
-/// refused rather than overwritten.
+/// Resolve the tool section of the home manifest at `roots` over `previous`, the lock the
+/// caller read ([`resolve_set`]).
 pub fn resolve(
     roots: &Roots,
     fetcher: &dyn Fetcher,
     now: i64,
     locked: bool,
+    previous: Option<LockFile>,
 ) -> Result<Option<Resolution>, Failure> {
     let manifest = manifest::load_home_manifest_with_tools(roots).map_err(failure)?;
-    resolve_set(roots, manifest.tools, fetcher, now, locked)
-}
-
-/// [`resolve`] for a tool set already loaded: what `lodi home apply` calls with the `[tools]` of
-/// the manifest its pre-flight read, so the manifest is read once per plan.
-pub fn resolve_set(
-    roots: &Roots,
-    tools: ToolSet,
-    fetcher: &dyn Fetcher,
-    now: i64,
-    locked: bool,
-) -> Result<Option<Resolution>, Failure> {
-    let previous = match home_lock::read(roots) {
-        Ok(lock) => Some(lock),
-        Err(LockProblem::Missing) => None,
-        Err(problem) => return Err(Failure::one(home_lock::diagnostic(&problem))),
-    };
-    resolve_set_with_lock(roots, tools, fetcher, now, locked, previous)
+    resolve_set(manifest.tools, fetcher, now, locked, previous)
 }
 
 /// What `--locked` refuses of `previous` for `tools`: a lock where no tool is declared, a lock the
@@ -134,58 +112,20 @@ pub fn locked_refusal(tools: &ToolSet, previous: Option<&LockFile>) -> Option<Lo
     }
 }
 
-pub fn resolve_set_with_lock(
-    roots: &Roots,
+/// Resolve `tools` over `previous`, the lock the caller read: `previous` checked, kept when it is
+/// current, else resolved again in memory. Nothing is written: the config's `lodi.lock` is its
+/// callers' (LD-528).
+pub fn resolve_set(
     tools: ToolSet,
     fetcher: &dyn Fetcher,
     now: i64,
     locked: bool,
     previous: Option<LockFile>,
 ) -> Result<Option<Resolution>, Failure> {
-    resolve_set_with_lock_to(
-        roots,
-        tools,
-        fetcher,
-        now,
-        locked,
-        previous,
-        None,
-        &mut Vec::new(),
-    )
-}
-
-/// [`resolve_set_with_lock`] writing the lock to `target`, the home's section of its
-/// repository's root lock, when there is one (LD-416), instead of `home.lock` beside the
-/// manifest. The root lock's lines — each 1.4 lock it moved in, and the lock itself — are added
-/// to `notes`.
-#[allow(clippy::too_many_arguments)]
-pub fn resolve_set_with_lock_to(
-    roots: &Roots,
-    tools: ToolSet,
-    fetcher: &dyn Fetcher,
-    now: i64,
-    locked: bool,
-    previous: Option<LockFile>,
-    target: Option<&crate::flakelock::HomeTarget>,
-    notes: &mut Vec<String>,
-) -> Result<Option<Resolution>, Failure> {
-    let write = |lock: Option<&LockFile>, notes: &mut Vec<String>| -> Result<(), Failure> {
-        match (target, lock) {
-            (Some(target), lock) => {
-                notes.extend(target.write(lock).map_err(Failure::one)?);
-                Ok(())
-            }
-            (None, Some(lock)) => home_lock::write(roots, lock).map_err(Failure::one),
-            (None, None) => home_lock::remove(roots).map_err(Failure::one),
-        }
-    };
     if locked && let Some(problem) = locked_refusal(&tools, previous.as_ref()) {
         return Err(Failure::one(home_lock::diagnostic(&problem)));
     }
     if tools.is_empty() {
-        if previous.is_some() {
-            write(None, notes)?;
-        }
         return Ok(None);
     }
 
@@ -197,7 +137,6 @@ pub fn resolve_set_with_lock_to(
             lock: lock.clone(),
             plan,
             resolved: Vec::new(),
-            wrote_lock: false,
         }));
     }
 
@@ -210,13 +149,32 @@ pub fn resolve_set_with_lock_to(
         now,
     )?;
     let plan = host::plan_for(&input, &lock, "host", None).map_err(Failure::one)?;
-    write(Some(&lock), notes)?;
     Ok(Some(Resolution {
         lock,
         plan,
         resolved,
-        wrote_lock: true,
     }))
+}
+
+/// Whether the store's home root and the generated profile already hold the set `lock` pins
+/// for `tools` (none when there are no tools): when not, an apply installs or removes tools, a
+/// change of its own (LD-524). Read only; an unreadable root is a change.
+pub fn current(roots: &Roots, tools: &ToolSet, lock: Option<&LockFile>) -> bool {
+    let entries = std::fs::read(roots.data().join(HOME_GC_ROOT))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
+        .and_then(|value| serde_json::from_value::<Vec<String>>(value["entries"].clone()).ok());
+    let profile = roots.data().join(crate::home::profile::PROFILE_SH).exists();
+    let lock = lock.filter(|_| !tools.is_empty());
+    let Some(lock) = lock else {
+        return !profile && entries.is_none_or(|entries| entries.is_empty());
+    };
+    let Ok(plan) = host::plan_for(&project(tools.clone()), lock, "host", None) else {
+        return false;
+    };
+    let mut want = vec![plan.env_name()];
+    want.extend(plan.arts.iter().map(|(_, name)| name.clone()));
+    profile && entries.as_ref() == Some(&want)
 }
 
 /// The tool lock `tools` needs, written nowhere: `previous` when it is fresh for them, else a

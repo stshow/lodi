@@ -26,6 +26,7 @@ use crate::diag::Diagnostic;
 use super::basics::{self, BasicAction, Change, Step, Tool, Write};
 use super::lock::{BasicRecord, HostLock};
 use super::manifest::{HostManifest, Interface, Network};
+use super::plan::Unread;
 use super::pm::{self, Invocation};
 use super::safety::Gate;
 use super::services::Systemctl;
@@ -277,6 +278,7 @@ pub fn plan(
     gate: &Gate,
     manifest: &HostManifest,
     lock: Option<&HostLock>,
+    unread: &mut Vec<Unread>,
 ) -> Result<Planned, Diagnostic> {
     let declared = manifest.network.as_ref();
     let recorded: Vec<String> = lock
@@ -314,7 +316,8 @@ pub fn plan(
     let mut writes = Vec::new();
     let mut fresh = true;
     for (path, name) in owned {
-        let now = basics::read(gate, &path);
+        // netplan's and NetworkManager's files are 0600: as the person, the root run reads them.
+        let now = basics::read_noting(gate, &path, "network", unread);
         fresh &= now.is_none();
         let want = desired.get(&path).map(|(text, _)| text.as_bytes().to_vec());
         if now != want {
@@ -499,8 +502,9 @@ pub fn perform(gate: &Gate, stage: &Stage) -> Result<(), Diagnostic> {
         Ok(()) => format!("{}: no answer in {} s", stage.target, stage.within),
     };
     Err(
-        Diagnostic::new("E_NETWORK_ROLLED_BACK", format!("{why}; nothing kept"))
-            .hint("the earlier network configuration is back; fix [network], apply again"),
+        Diagnostic::new("E_NETWORK_ROLLED_BACK", format!("{why}; nothing kept")).hint(
+            "the earlier network configuration is back; fix [network] and run lodi switch again",
+        ),
     )
 }
 

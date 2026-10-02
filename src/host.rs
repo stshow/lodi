@@ -4,23 +4,24 @@
 //! The lifecycle of one invocation, in order:
 //!
 //! 1. load `./lodi.toml` (hooks, modules and every other unsupported feature are refused here,
-//!    exit 3); a `lodi run` task it does not declare is the usage error at once (exit 2); require
-//!    a fresh `./lodi.lock` exactly as `lodi lock --check` does (exit 10);
-//! 2. the trust gate: a manifest with task text runs and realizes nothing until that text is
-//!    trusted, and one without tasks that declares tools or a base until the manifest is
-//!    ([`crate::trust`], LD-359; exit 11); a `[container]` manifest continues in
-//!    [`crate::container`] from here;
-//! 3. the activation identity `(envhash, project root, profile, runtime)` is compared with the
+//!    exit 3); a `lodi run` task it does not declare is the usage error at once (exit 2);
+//! 2. the trust gate: a manifest with task text locks, realizes and runs nothing until that text
+//!    is trusted, and one without tasks that declares tools or a base until the manifest is
+//!    ([`crate::trust`], LD-359; exit 11), asked on a terminal (LD-496);
+//! 3. the lock: a missing `./lodi.lock` is written, and a missing, stale or dropped entry is
+//!    resolved alone while every fresh one is kept ([`lock::lock_project`], LD-496); a
+//!    `[container]` manifest continues in [`crate::container`] from here;
+//! 4. the activation identity `(envhash, project root, profile, runtime)` is compared with the
 //!    one the caller is already in (ADR-015): the same identity is re-entered idempotently
 //!    (nothing is realized, stacked or re-run); a different host identity is stacked in the
 //!    child with `W_NESTED`, or refused with `--no-nest` (`E_NESTED`); another runtime is
 //!    refused (`E_NESTED`);
-//! 4. realization: every tool's `art-` entry and the `env-` entry, under the shared store lock;
+//! 5. realization: every tool's `art-` entry and the `env-` entry, under the shared store lock;
 //!    the environment's `bin` names that an executable on the caller's `PATH` also has are
 //!    reported with `W_SHADOWS_HOST`, because they run in place of those host commands (LD-359);
-//! 5. a live-session root `gcroots/sessions/<pid>` names the entries while the child runs and is
+//! 6. a live-session root `gcroots/sessions/<pid>` names the entries while the child runs and is
 //!    removed when it exits (roots of processes that died are pruned on the next entry);
-//! 6. the child runs with the changed environment; Lodi waits, forwards `SIGTERM`/`SIGHUP`, and
+//! 7. the child runs with the changed environment; Lodi waits, forwards `SIGTERM`/`SIGHUP`, and
 //!    exits with the child's status (`128 + n` when it was killed by signal `n`). `SIGINT` and
 //!    `SIGQUIT` are not forwarded: a terminal sends them to the whole foreground process group,
 //!    so the child already has them, and one sent to Lodi alone leaves the child to its own end.
@@ -43,7 +44,7 @@ use serde_json::json;
 
 use crate::diag::Diagnostic;
 use crate::fetch::Fetcher;
-use crate::lock::{self, Failure, LockFile, MANIFEST_FILE, canonical_json};
+use crate::lock::{self, Failure, LockFile, MANIFEST_FILE, Outcome, canonical_json};
 use crate::manifest::ProjectManifest;
 use crate::store::{self, Report, Store};
 use crate::trust::{Status, Subject, TrustStore};
@@ -67,7 +68,7 @@ pub enum Action {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Options {
     pub no_nest: bool,
-    /// `LODI_TRUST=1`: authorize this invocation's task text, or manifest (LD-359), without
+    /// `--trust` or `LODI_TRUST=1`: authorize this run's task text, or manifest (LD-359), without
     /// recording it.
     pub trust_once: bool,
     /// Ask on the terminal when that is not trusted (only when stdin and stderr are TTYs).
@@ -588,14 +589,14 @@ pub fn trust_gate(
             _ => "script text",
         };
         eprintln!(
-            "lodi: LODI_TRUST=1 authorizes this invocation only ({what} {hash}); {}",
+            "lodi: trusted for this run only ({what} {hash}); {}",
             subject.boundary()
         );
         return Ok(());
     }
     if options.interactive {
         eprintln!("{}", subject.describe(&manifest_path));
-        eprint!("Trust this {noun} and continue? [y/N] ");
+        eprint!("Allow this {noun} to run? [y/N] ");
         let _ = io::stderr().flush();
         let mut answer = String::new();
         let _ = io::stdin().lock().read_line(&mut answer);
@@ -605,7 +606,7 @@ pub fn trust_gate(
         }
         return Err(fail(Diagnostic::new(
             "E_DECLINED",
-            format!("the {noun} was not trusted; nothing was realized or run"),
+            format!("the {noun} was not trusted; nothing was locked, realized or run"),
         )));
     }
     let declares = match subject {
@@ -625,7 +626,7 @@ pub fn trust_gate(
                 }
             ),
         )
-        .hint("run `lodi trust` to review and record it, or set LODI_TRUST=1 for one invocation"),
+        .hint("pass --trust to allow it for this run"),
     ))
 }
 
@@ -676,27 +677,6 @@ pub fn unknown_task(manifest: &ProjectManifest, task: &str) -> String {
     format!("lodi: error: {MANIFEST_FILE} has no task `{task}`\n   = {tasks}")
 }
 
-/// The one hint of an `E_LOCK_STALE` that `lodi develop` or `lodi run` meets: the lock's own
-/// "run `lodi lock`" says, in its place, that these commands never resolve by themselves. A lock
-/// that cannot be read keeps its instruction to remove it ("remove lodi.lock and run `lodi lock`
-/// first; …"). A diagnostic with any other hint keeps it, so every diagnostic still carries
-/// exactly one.
-fn develop_hint(d: &mut Diagnostic) {
-    const LOCK_HINT: &str = "run `lodi lock`";
-    if d.code != "E_LOCK_STALE" {
-        return;
-    }
-    for note in &mut d.notes {
-        let Some(hint) = note.strip_prefix("hint: ") else {
-            continue;
-        };
-        let hint = hint.strip_suffix(" to resolve again").unwrap_or(hint);
-        if hint.ends_with(LOCK_HINT) {
-            *note = format!("hint: {hint} first; develop and run never resolve");
-        }
-    }
-}
-
 /// `lodi develop -- …` and `lodi run …` for the project in `root` (the current directory).
 /// Returns the exit status to report.
 pub fn enter(
@@ -713,20 +693,16 @@ pub fn enter(
     })?;
     let (manifest, _) = lock::load_manifest(&root)?;
     // An unknown task name is known as soon as the manifest is read, so it is reported before
-    // the lock or the trust gate could fail for a command that would not run anyway.
+    // trust is asked or anything is locked for a command that would not run anyway.
     if let Action::Run { task, .. } = action
         && !manifest.tasks.contains_key(task)
     {
         eprintln!("{}", unknown_task(&manifest, task));
         return Ok(crate::diag::EXIT_USAGE);
     }
-    let lock = lock::frozen(&root).map_err(|mut f| {
-        for d in &mut f.diagnostics {
-            develop_hint(d);
-        }
-        f
-    })?;
+    // Trust comes first: locking fetches metadata from what the manifest declares (LD-496).
     trust_gate(&root, &manifest, options)?;
+    let lock = lock_by_itself(&root, fetcher)?;
     let argv = match argv_of(action, &manifest) {
         // `lodi develop` with no `-- COMMAND` is the interactive entry (`spec/10-cli` §3, D3,
         // LD-48): the project's own environment with a shell in it instead of a command.
@@ -739,6 +715,18 @@ pub fn enter(
         return crate::container::enter(&root, &manifest, &lock, &argv, options, fetcher);
     }
     enter_host(&root, &manifest, &lock, &argv, options, fetcher)
+}
+
+/// The project's lock, written first when it is missing or lacks an entry (LD-496): one line on
+/// standard error names what was locked, so standard output stays the command's.
+fn lock_by_itself(root: &Path, fetcher: &dyn Fetcher) -> Result<LockFile, Failure> {
+    match lock::lock_project(root, fetcher, crate::util::now_utc())? {
+        Outcome::UpToDate(lock) => Ok(lock),
+        Outcome::Written { lock, resolved } => {
+            eprintln!("lodi: {}", lock::wrote(&lock, &resolved));
+            Ok(lock)
+        }
+    }
 }
 
 /// The host-tool half of [`enter`], and of [`crate::shell`]'s host mode: realize the plan of
@@ -821,49 +809,6 @@ pub fn enter_host(
     let _ = fs::remove_file(&root_file);
     Ok(status)
 }
-
-/// `lodi trust [--revoke]` for the project in `root`: show the task text, or for a manifest
-/// without tasks that declares tools or a base the whole manifest (LD-359), with its hash and the
-/// authorization boundary, and record (or remove) trust.
-pub fn trust_command(root: &Path, revoke: bool) -> Result<String, Failure> {
-    let root = root.canonicalize().map_err(|e| {
-        fail(Diagnostic::new(
-            "E_NO_MANIFEST",
-            format!("{}: {e}", root.display()),
-        ))
-    })?;
-    let (manifest, _) = lock::load_manifest(&root)?;
-    let manifest_path = root.join(MANIFEST_FILE);
-    let store = TrustStore::from_env().map_err(fail)?;
-    if revoke {
-        let removed = store.revoke(&manifest_path).map_err(fail)?;
-        return Ok(if removed {
-            format!("revoked trust for {}", manifest_path.display())
-        } else {
-            format!("{} was not trusted", manifest_path.display())
-        });
-    }
-    let subject = trust_subject(&manifest_path, &manifest)?;
-    if store
-        .trust(&manifest_path, &subject)
-        .map_err(fail)?
-        .is_none()
-    {
-        return Ok(format!(
-            "{} declares no task text, tools or base; there is nothing to trust",
-            manifest_path.display()
-        ));
-    }
-    if !io::stdin().is_terminal() {
-        eprintln!("{}", NO_PROMPT_NOTE);
-    }
-    Ok(format!("{}\ntrusted.", subject.describe(&manifest_path)))
-}
-
-/// What `lodi trust` says on standard error when it recorded trust while standard input was not
-/// a terminal: nobody can have been asked, so the output says the record was made without it.
-pub const NO_PROMPT_NOTE: &str =
-    "lodi: trust was recorded without a prompt because standard input is not a terminal";
 
 /// Whether stdin and stderr are both terminals (the trust prompt is only asked then).
 pub fn interactive() -> bool {

@@ -1,5 +1,5 @@
-# actionlint for [tools] actionlint. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
+# actionlint for [tools] actionlint. This recipe says where to look; it lists no version.
+# `lodi update` discovers versions from the tags of the newest GitHub releases.
 [recipe]
 name        = "actionlint"
 description = "A static checker for GitHub Actions workflow files"

@@ -1,0 +1,6 @@
+Updating and loading repositories:
+ Fedora 44 openh264 (From Cisco) - x86_ 100% |   2.3 KiB/s |   5.3 KiB |  00m02s
+>>> Curl error (35): SSL connect error for https://mirrors.fedoraproject.org/metalink?repo=fedora-cisco-openh264-44&arch=x86_64 [Recv failure: Connection reset by peer] - https://mirrors.fedoraproject.org/metalink?repo=fedora-cisco-openh264-44&arch=x86_64
+ Fedora 44 - x86_64 - Updates           100% |   4.2 MiB/s |  11.9 MiB |  00m03s
+ Fedora 44 - x86_64                     100% |  11.2 MiB/s |  36.5 MiB |  00m03s
+Repositories loaded.

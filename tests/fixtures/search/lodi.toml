@@ -1,5 +1,5 @@
 # The container project `tests/search.rs` searches in. It pins the same snapshot as
-# `lodi.lock` beside it, so `lodi info` reports the lock as fresh until a test edits it.
+# `lodi.lock` beside it, so `lodi search` names the index the lock pins.
 [project]
 version = "1"
 name = "search-fixture"

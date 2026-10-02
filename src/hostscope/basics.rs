@@ -24,6 +24,7 @@ use crate::diag::Diagnostic;
 
 use super::lock::{BasicRecord, HostLock};
 use super::manifest::HostManifest;
+use super::plan::Unread;
 use super::pm::{self, Invocation, noninteractive_env};
 use super::safety::{self, Gate};
 
@@ -72,11 +73,11 @@ pub enum Step {
     Network(Box<super::network::Stage>),
     /// A loader switch or one of its settings ([`super::boot::perform`]).
     Boot(Box<super::boot::Stage>),
-    /// A trial boot entry change ([`super::trial::perform`]): write, run, then write `after`.
-    Trial {
+    /// A new default boot entry, with its fallback ([`super::fallback::perform`]): write, then
+    /// run the loader's tools.
+    Entry {
         writes: Vec<Write>,
         run: Vec<Invocation>,
-        after: Vec<Write>,
     },
 }
 
@@ -124,7 +125,7 @@ impl BasicAction {
             Step::Run { first, then, .. } => first.iter().chain(then).collect(),
             Step::Network(stage) => stage.invocations(),
             Step::Boot(stage) => stage.invocations(),
-            Step::Trial { run, .. } => run.iter().collect(),
+            Step::Entry { run, .. } => run.iter().collect(),
         }
     }
 }
@@ -149,7 +150,7 @@ impl Tool {
                 ),
             )
             .hint(
-                "install the package that ships it, apply that, then apply again; nothing was \
+                "install the package that ships it, then run lodi switch again; nothing was \
                  changed",
             )
         })
@@ -194,6 +195,34 @@ impl Tool {
     }
 }
 
+/// What a listing gave: its text, nothing, or a refusal for want of privilege.
+pub enum Listing {
+    Text(String),
+    Nothing,
+    /// "Operation not permitted", as `nft` says to a process without CAP_NET_ADMIN (#709).
+    Denied,
+}
+
+impl Tool {
+    /// [`Tool::read`], telling a refusal for want of privilege from an empty answer.
+    pub fn list(&self, args: &[&str]) -> Result<Listing, Diagnostic> {
+        let invocation = self.invocation(args);
+        let output = invocation.command().output().map_err(|e| {
+            Diagnostic::new(
+                "E_APPLY",
+                format!("cannot run {}: {e}", invocation.path.display()),
+            )
+        })?;
+        Ok(if output.status.success() {
+            Listing::Text(String::from_utf8_lossy(&output.stdout).into_owned())
+        } else if String::from_utf8_lossy(&output.stderr).contains("Operation not permitted") {
+            Listing::Denied
+        } else {
+            Listing::Nothing
+        })
+    }
+}
+
 /// Plan every basic, in apply order: the `[system]` four, the kernel's settings
 /// ([`super::kernel`]), the loader ([`super::boot`]), the firewall, the network. Returns the
 /// record a converged apply writes.
@@ -202,14 +231,14 @@ pub fn plan(
     manifest: &HostManifest,
     lock: Option<&HostLock>,
     out: &mut Vec<BasicAction>,
-    notes: &mut Vec<String>,
+    unread: &mut Vec<Unread>,
 ) -> Result<BTreeMap<String, BasicRecord>, Diagnostic> {
     let mut record = BTreeMap::new();
     plan_system(gate, manifest, lock, out, &mut record)?;
-    super::kernel::plan(gate, manifest, lock, out, &mut record, notes)?;
-    super::boot::plan(gate, manifest, lock, out, &mut record, notes)?;
+    super::kernel::plan(gate, manifest, lock, out, &mut record)?;
+    super::boot::plan(gate, manifest, lock, out, &mut record, unread)?;
     for part in [super::firewall::plan, super::network::plan] {
-        if let Some((action, kept)) = part(gate, manifest, lock)? {
+        if let Some((action, kept)) = part(gate, manifest, lock, unread)? {
             if let Some(kept) = kept {
                 record.insert(action.key.to_string(), kept);
             }
@@ -585,7 +614,7 @@ pub fn perform(gate: &Gate, action: &BasicAction) -> Result<(), Diagnostic> {
         }
         Step::Network(stage) => super::network::perform(gate, stage),
         Step::Boot(stage) => super::boot::perform(gate, stage),
-        Step::Trial { .. } => super::trial::perform(gate, &action.step),
+        Step::Entry { .. } => super::fallback::perform(gate, &action.step),
     }
 }
 
@@ -603,4 +632,25 @@ pub fn apply_write(gate: &Gate, write: &Write) -> Result<(), Diagnostic> {
 /// The bytes of one of lodi's own files as the machine has it, or `None`.
 pub fn read(gate: &Gate, path: &str) -> Option<Vec<u8>> {
     std::fs::read(gate.root.join(&path[1..])).ok()
+}
+
+/// [`read`], noting in `unread` for `action` a file there that this process may not read.
+pub fn read_noting(
+    gate: &Gate,
+    path: &str,
+    action: &str,
+    unread: &mut Vec<Unread>,
+) -> Option<Vec<u8>> {
+    match std::fs::read(gate.root.join(&path[1..])) {
+        Ok(bytes) => Some(bytes),
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::PermissionDenied {
+                unread.push(Unread {
+                    action: action.to_string(),
+                    shown: path.to_string(),
+                });
+            }
+            None
+        }
+    }
 }

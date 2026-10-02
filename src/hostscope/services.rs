@@ -275,6 +275,6 @@ pub fn recheck<'a>(
     }
     Err(unknown(
         &problems,
-        "the packages this apply installed stay, and no service changed",
+        "the packages this switch installed stay, and no service changed",
     ))
 }

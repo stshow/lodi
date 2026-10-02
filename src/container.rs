@@ -550,7 +550,7 @@ fn verify_closure(podman: &Podman, tag: &str, base: &BaseEntry) -> Result<(), Di
     for line in shown {
         d.notes.push(format!("  {line}"));
     }
-    Err(d.hint("the lock is not changed by entering; re-lock deliberately with `lodi lock`"))
+    Err(d.hint("entering never changes the lock; run `lodi update` to resolve it again"))
 }
 
 /// The rootfs format of a released OCI image archive (`release_image`, LD-435).
@@ -712,7 +712,7 @@ fn unavailable_build(p: &ClosureEntry, url: &str, d: Diagnostic) -> Diagnostic {
         ),
     );
     d.notes.push(format!("locked at {url}"));
-    d.hint("no other build is used: run `lodi lock` again to pin one it serves")
+    d.hint("no other build is used: run `lodi update` to pin one it serves")
 }
 
 /// Remove temporary base images left by builds whose process no longer exists.

@@ -8,7 +8,7 @@ mod support;
 #[path = "support/wait.rs"]
 mod wait;
 
-use fakehost::{Case, Machine, Pkg, out, story};
+use fakehost::{Case, Machine, Pkg, story};
 use lodi::fetch::{HttpFetcher, parse_rewrites};
 use lodi::hostscope::pin::{self, Context, Declared, Request};
 use lodi::hostscope::safety::Distro;
@@ -103,13 +103,55 @@ fn per_entry_pin_installs_verified_archive_file_with_lodi_only_hold() {
     );
     let requests = server.requests().len();
     let after = case.verb_env("apply", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]);
-    assert_eq!(after.status.code(), Some(0), "{}", story(&after));
-    assert!(out(&after).contains("nothing to do"), "{}", story(&after));
+    assert!(fakehost::nothing(&after), "{}", story(&after));
     assert_eq!(
         server.requests().len(),
         requests,
         "a settled Arch pin makes zero requests"
     );
+}
+
+/// A pin taken out of host.toml (a `git revert`) releases the lodi-only hold it made: the plan
+/// says so, the record no longer holds it, nothing on the machine ever held it, and the next
+/// switch has nothing to do (#712).
+#[test]
+fn removing_an_arch_pin_releases_its_lodi_only_hold_and_the_plan_says_so() {
+    let server = support::Server::start(fixture_urls());
+    let case = Case::new(
+        "arch-pin-release",
+        Machine::arch().offering(Pkg::new("tree")),
+    );
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/host/pin/archive/archive.archlinux.org/repos/2026/09/01");
+    for repo in ["core", "extra"] {
+        case.archive(
+            &format!("https://archive.archlinux.org/repos/2026/09/01/{repo}/os/x86_64/"),
+            &fixture.join(format!("{repo}/os/x86_64")),
+        );
+    }
+    let host = "[host]\nversion = \"1\"\ndistro = \"arch\"\n\n[packages]\ncommon = [\"tree\"]\n";
+    case.set_manifest(&format!("{host}\n[packages.pin]\ntree = \"2026-09-01\"\n"));
+    let rewrite = [("LODI_FETCH_REWRITE", server.rewrite())];
+    let env: Vec<(&str, &str)> = rewrite.iter().map(|(k, v)| (*k, v.as_str())).collect();
+    let pinned = case.verb_env("apply", &[], &env);
+    assert_eq!(pinned.status.code(), Some(0), "{}", story(&pinned));
+    assert_eq!(case.lock()["packages"]["tree"]["held"], true);
+
+    case.set_manifest(host);
+    let plan = case.verb_env("plan", &[], &env);
+    assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
+    assert!(
+        fakehost::err(&plan).contains("~ package tree (unhold"),
+        "{}",
+        story(&plan)
+    );
+    let apply = case.verb_env("apply", &[], &env);
+    assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
+    assert_eq!(case.lock()["packages"]["tree"]["held"], false);
+    assert_eq!(case.machine()["installed"]["tree"]["version"], "2.3.2-1");
+    assert!(!case.root.exists("etc/pacman.conf"));
+    let after = case.verb_env("apply", &[], &env);
+    assert!(fakehost::nothing(&after), "{}", story(&after));
 }
 
 #[test]
@@ -205,7 +247,14 @@ fn a_dated_arch_sync_that_timed_out_is_tried_again() {
         "arch-sync-timeout",
         &["Connection timed out after 10001 milliseconds"],
     );
-    let apply = case.verb_env("apply", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]);
+    let apply = case.verb_env(
+        "apply",
+        &[],
+        &[
+            ("LODI_FETCH_REWRITE", &server.rewrite()),
+            ("LODI_FETCH_ATTEMPTS", "2"),
+        ],
+    );
     assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
     assert_eq!(case.machine()["installed"]["tree"]["version"], "2.3.2-1");
     assert_eq!(dated_syncs(&case), 2, "{:?}", case.log());
@@ -265,7 +314,7 @@ fn interrupted_arch_stage_is_the_next_applies_journalled_first_action() {
         .write("var/lib/lodi/host/pin/stage/left-behind", "partial\n");
     let plan = case.verb_env("plan", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]);
     assert!(
-        out(&plan).contains("remove the pin stage an interrupted apply left"),
+        fakehost::err(&plan).contains("remove the pin stage an interrupted apply left"),
         "{}",
         story(&plan)
     );
@@ -368,8 +417,8 @@ fn an_arch_apply_never_writes_host_directory_or_pacman_configuration() {
         "etc/pacman.d/mirrorlist",
         "Server = https://mirror.example/\n",
     );
-    let source = case.root.path("hosts/arch");
-    case.root.write("hosts/arch/host.toml", "[host]\nversion = \"1\"\ndistro = \"arch\"\n\n[packages]\ncommon = [\"tree\"]\n\n[packages.pin]\ntree = \"2026-09-01\"\n");
+    let source = case.config();
+    case.set_manifest("[host]\nversion = \"1\"\ndistro = \"arch\"\n\n[packages]\ncommon = [\"tree\"]\n\n[packages.pin]\ntree = \"2026-09-01\"\n");
     let census = |dir: &Path| -> Vec<(String, Vec<u8>, std::time::SystemTime)> {
         let mut entries = Vec::new();
         for entry in std::fs::read_dir(dir).unwrap() {
@@ -404,17 +453,12 @@ fn an_arch_apply_never_writes_host_directory_or_pacman_configuration() {
             )
         })
         .collect();
-    let applied = case.verb_env(
-        "apply",
-        &[source.to_str().unwrap()],
-        &[("LODI_FETCH_REWRITE", &server.rewrite())],
-    );
+    let applied = case.verb_env("apply", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]);
     assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
-    assert_eq!(
-        census(&source),
-        before_host,
-        "the host directory is a read-only input"
-    );
+    // The switch fills the config's missing `lodi.lock` first (LD-498); nothing else changes.
+    let mut after_host = census(&source);
+    after_host.retain(|(path, _, _)| !path.ends_with("/lodi.lock"));
+    assert_eq!(after_host, before_host, "the config is a read-only input");
     let after_config: Vec<_> = config
         .iter()
         .map(|path| {
@@ -494,10 +538,10 @@ fn recorded_arch_db_digests_are_checked_against_the_sync_before_any_install() {
         case.archive(&format!("https://archive.archlinux.org/repos/2026/09/01/{repo}/os/x86_64/"),
             &Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("tests/fixtures/host/pin/archive/archive.archlinux.org/repos/2026/09/01/{repo}/os/x86_64")));
     }
-    case.root
-        .write("etc/lodi/pins.lock", &pin::render_lock(&lock));
     case.edit(|m| m["pin_corrupt_db"] = true.into());
     case.set_manifest("[host]\nversion = \"1\"\ndistro = \"arch\"\nsnapshot = \"2026-09-01T00:00:00Z\"\n\n[packages]\ncommon = [\"tree\"]\n\n[packages.pin]\ntree = \"2026-09-01\"\n");
+    // The pins as `lodi pin` recorded them: the host's section of the config's `lodi.lock`.
+    let recorded = case.set_pins(&lock);
     let prior = server.requests().len();
     let plan = case.verb_env("plan", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]);
     assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
@@ -515,8 +559,8 @@ fn recorded_arch_db_digests_are_checked_against_the_sync_before_any_install() {
     );
     assert!(!case.installed().contains("tree"));
     assert_eq!(
-        case.root.read("etc/lodi/pins.lock"),
-        pin::render_lock(&lock),
+        std::fs::read_to_string(case.config().join("lodi.lock")).unwrap(),
+        recorded,
         "the host pin is never rewritten"
     );
 }
@@ -603,8 +647,7 @@ fn arch_snapshot_install_reads_dated_databases_and_syncs_through_pin_conf() {
         "snapshot is not a local-file pin: {log:?}"
     );
     let second = case.apply(&[]);
-    assert_eq!(second.status.code(), Some(0), "{}", story(&second));
-    assert!(out(&second).contains("nothing to do"), "{}", story(&second));
+    assert!(fakehost::nothing(&second), "{}", story(&second));
 }
 
 #[test]
@@ -616,8 +659,12 @@ fn arch_snapshot_plan_uses_a_dated_conf_without_inert_note() {
     case.set_manifest("[host]\nversion = \"1\"\ndistro = \"arch\"\nsnapshot = \"2026-09-01T00:00:00Z\"\n\n[packages]\ncommon = [\"tree\"]\n");
     let plan = case.plan();
     assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
-    assert!(!out(&plan).contains("inert"), "{}", story(&plan));
-    assert!(out(&plan).contains("+ package tree"), "{}", story(&plan));
+    assert!(!fakehost::err(&plan).contains("inert"), "{}", story(&plan));
+    assert!(
+        fakehost::err(&plan).contains("+ package tree"),
+        "{}",
+        story(&plan)
+    );
 }
 
 #[test]
@@ -747,45 +794,6 @@ fn resolved_arch_lock(server: &support::Server) -> pin::PinsLock {
     )
     .unwrap();
     lock
-}
-
-#[test]
-fn child_renders_arch_pins_lock() {
-    if !hostroot::is_child() {
-        return;
-    }
-    let server = support::Server::start(fixture_urls());
-    print!(
-        "<<<ARCH-PINS\n{}ARCH-PINS>>>\n",
-        pin::render_lock(&resolved_arch_lock(&server))
-    );
-}
-
-#[test]
-fn arch_pins_lock_is_byte_identical_from_two_processes() {
-    let rendered: Vec<String> = (0..2)
-        .map(|_| hostroot::spawn("child_renders_arch_pins_lock", &[]))
-        .map(|child| {
-            let output = child.wait_with_output().unwrap();
-            assert!(output.status.success(), "{}", story(&output));
-            let text = String::from_utf8_lossy(&output.stdout);
-            text.split_once("<<<ARCH-PINS\n")
-                .unwrap()
-                .1
-                .split_once("ARCH-PINS>>>")
-                .unwrap()
-                .0
-                .to_string()
-        })
-        .collect();
-    assert_eq!(rendered[0], rendered[1]);
-    assert!(rendered[0].contains("\"core.db\""), "{}", rendered[0]);
-    assert!(rendered[0].contains("\"extra.db\""), "{}", rendered[0]);
-    assert!(
-        rendered[0].contains("tree-2.3.2-1-x86_64.pkg.tar.zst"),
-        "{}",
-        rendered[0]
-    );
 }
 
 #[test]

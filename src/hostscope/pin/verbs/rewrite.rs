@@ -167,7 +167,7 @@ pub fn set_snapshot(text: &str, value: Option<&str>) -> Result<Edit, Diagnostic>
     Ok(finish(text, doc))
 }
 
-/// `lodi host unpin --all`: remove `[host] snapshot`, `[packages.pin]` and every
+/// `lodi unpin --all`: remove `[host] snapshot`, `[packages.pin]` and every
 /// `[packages.<distro>.pin]`, and nothing else.
 pub fn float_all(text: &str) -> Result<Edit, Diagnostic> {
     let mut doc = parse(text)?;
@@ -200,7 +200,7 @@ fn finish(text: &str, doc: DocumentMut) -> Edit {
     }
 }
 
-/// The instant `lodi host pin --all` sets when it is given no `--to`, as the import writes it:
+/// The instant `lodi pin --all` sets when it is given no `--to`, as the import writes it:
 /// the last UTC day that has ended. Arch publishes a day only then (LD-381); a dated apt index
 /// of a more recent instant can still change after it is read, so its digest would not replay
 /// (LD-444).

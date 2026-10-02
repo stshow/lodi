@@ -27,6 +27,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
+use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -141,7 +142,7 @@ impl Journal {
         let dir = super::files::ensure_dir_trusted(
             &gate.root,
             &format!("/{}/journal", super::safety::STATE),
-            0o700,
+            0o755,
         )?;
         let started = now_utc();
         let entries = entries(plan);
@@ -183,9 +184,12 @@ impl Journal {
             actions: entries,
         };
         let path = dir.join(format!("{id}.json"));
+        // Readable by everyone, as its folder is, so that a preview as the person sees an
+        // outstanding journal without root (LD-492, #709).
         let mut file = fs::OpenOptions::new()
             .create_new(true)
             .append(true)
+            .mode(0o644)
             .open(&path)
             .map_err(|e| io_error(&path, e))?;
         let line = serde_json::to_string(&header).map_err(|e| {
@@ -576,12 +580,7 @@ impl Record {
             summary: entry.summary.clone(),
             detail,
         };
-        let backend = super::pm::backend_for(
-            gate.distro,
-            &gate.root,
-            gate.partial_upgrade,
-            gate.operation,
-        );
+        let backend = super::pm::backend_for(gate.distro, &gate.root, gate.operation);
         let Ok(observed) = backend.observe() else {
             return ambiguous(Ambiguity::Condition(
                 "the package database could not be read".to_string(),
@@ -734,7 +733,7 @@ pub fn read(path: &Path) -> Result<Record, Diagnostic> {
                 path.display()
             ),
         )
-        .hint("a journal is written by `lodi host apply`; do not edit one by hand")
+        .hint("a journal is written by `lodi switch`; do not edit one by hand")
     };
     // The header's schema version is decided from the raw JSON before the header is
     // deserialized (M-1.0 T-1, design calls D3, D18).
@@ -877,8 +876,8 @@ pub fn require_clear(
                     ),
                 )
                 .hint(format!(
-                    "read {} and, once {subject} is what you want it to be, run the apply again \
-                     with --resolved {}",
+                    "read {} and, once {subject} is what you want it to be, run lodi switch \
+                     again with --resolved {}",
                     record.path.display(),
                     record.id
                 )));
@@ -886,11 +885,12 @@ pub fn require_clear(
             None => {
                 return Err(Diagnostic::new(
                     "E_JOURNAL_AMBIGUOUS",
-                    format!("the last apply stopped at action {action} ({summary}) and {found}"),
+                    format!("the last switch stopped at action {action} ({summary}) and {found}"),
                 )
                 .hint(format!(
                     "lodi does not guess and cannot repair this for you; read {}, put {subject} \
-                     into the state you want, then run the apply again with --resolved {}{repair}",
+                     into the state you want, then run lodi switch again with --resolved \
+                     {}{repair}",
                     record.path.display(),
                     record.id
                 )));
@@ -901,7 +901,7 @@ pub fn require_clear(
             "E_JOURNAL_AMBIGUOUS",
             format!("--resolved {id} was given and no journal is waiting on a human"),
         )
-        .hint("drop `--resolved` and run the apply again"));
+        .hint("drop `--resolved` and run lodi switch again"));
     }
     Ok(Some((record, classification)))
 }

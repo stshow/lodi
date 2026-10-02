@@ -420,45 +420,6 @@ fn syntax_is_refused_with_a_location() {
     );
 }
 
-/// Rule: a missing host manifest is named, and its hint is the command that writes one in
-/// place — `lodi host import`, with the `--root` it was asked about, and no privilege under a
-/// `--root`.
-#[test]
-fn a_missing_manifest_is_named_and_the_hint_is_host_import() {
-    let root = Root::new("core-missing");
-    let euid = lodi::hostscope::safety::current_euid();
-    let errors = lodi::hostscope::manifest::load(&root.dir, false, euid, &context())
-        .expect_err("no manifest");
-    assert_eq!(errors.codes(), vec!["E_NO_MANIFEST"]);
-    let text = errors.to_string();
-    assert!(
-        text.contains(&format!(
-            "`lodi host import --root {}` (it writes {})",
-            root.dir.display(),
-            root.path("etc/lodi/host.toml").display()
-        )),
-        "{text}"
-    );
-    assert!(!text.contains("host init"), "{text}");
-    assert!(!text.contains("sudo"), "{text}");
-}
-
-/// The same hint for the running system's `/`, proved on the function that builds it: no host
-/// command is run against `/` to produce it.
-#[test]
-fn the_missing_manifest_hint_on_the_system_root_is_sudo_host_import() {
-    let hint = lodi::hostscope::manifest::import_hint(
-        std::path::Path::new("/"),
-        true,
-        "/etc/lodi/host.toml",
-    );
-    assert!(
-        hint.contains("`sudo lodi host import` (it writes /etc/lodi/host.toml)"), // check-host-safety: refusal
-        "{hint}"
-    );
-    assert!(!hint.contains("--root"), "{hint}");
-}
-
 // ------------------------------------------------------------------------------- the host lock
 
 #[test]

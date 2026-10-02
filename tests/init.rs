@@ -50,7 +50,7 @@ fn init_writes_the_committed_template_and_the_ignore_line() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(
         stdout(&out),
-        "wrote ./lodi.toml\nadded .lodi/ to ./.gitignore\nnext: lodi lock\n",
+        "wrote ./lodi.toml\nadded .lodi/ to ./.gitignore\nnext: lodi develop\n",
         "the three lines of spec/10-cli §4, in order"
     );
 
@@ -177,7 +177,7 @@ fn a_second_init_refuses_with_e_exists_and_changes_no_byte() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(
         stdout(&out),
-        "replaced ./lodi.toml\nnext: lodi lock\n",
+        "replaced ./lodi.toml\nnext: lodi develop\n",
         "the ignore line is already there, so it is not reported again"
     );
     let after = fs::read_to_string(dir.join("lodi.toml")).unwrap();
@@ -320,7 +320,7 @@ fn the_gitignore_is_appended_to_and_never_rewritten() {
     // A second, forced run does not add it twice and prints no ignore line.
     let out = lodi(&dir, &["init", "--name", "hello", "--force"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stdout(&out), "replaced ./lodi.toml\nnext: lodi lock\n");
+    assert_eq!(stdout(&out), "replaced ./lodi.toml\nnext: lodi develop\n");
     assert_eq!(
         fs::read_to_string(dir.join(".gitignore")).unwrap(),
         "target\n/dist\n.lodi/\n"

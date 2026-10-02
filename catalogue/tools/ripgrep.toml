@@ -1,5 +1,5 @@
-# ripgrep for [tools] ripgrep. This recipe says where to look; it lists no
-# version. `lodi lock` discovers versions from the tags of the newest GitHub releases.
+# ripgrep for [tools] ripgrep. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases.
 [recipe]
 name        = "ripgrep"
 description = "Recursively search directories for a regex pattern, fast"

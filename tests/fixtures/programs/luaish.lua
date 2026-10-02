@@ -1,5 +1,5 @@
 -- Managed by lodi from home.toml [programs.luaish]. Edit home.toml, not this file:
--- a hand edit here is drift, and `lodi home apply` stops on it.
+-- a hand edit here is drift, and `lodi switch` stops on it.
 
 vim.opt.listchars = { ["end"] = "e", ["not-an-ident"] = "x", tab = "» ", trail = "·" }
 vim.opt.number = true

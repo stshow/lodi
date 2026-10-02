@@ -226,7 +226,7 @@ fn walk(
 
 /// Create an in-root directory path, one checked component at a time. A directory created on
 /// the way is [`PARENT_MODE`], and the last component, when it is created, is `mode`. This is
-/// the form for a destination outside a host root (`lodi host import --out`, `lodi host arm`);
+/// the form for a destination outside a host root (a folder `lodi import` writes);
 /// what the host apply changes goes through [`ensure_dir_trusted`].
 pub fn ensure_dir(root: &Path, path: &str, mode: u32) -> Result<PathBuf, Diagnostic> {
     make_dir(root, path, mode, None)
@@ -505,7 +505,7 @@ pub fn copy(root: &Path, from: &str, to: &str) -> Result<(), Diagnostic> {
                 "E_APPLY",
                 format!("refusing to overwrite the existing backup {to}"),
             )
-            .hint("move that backup aside and plan again"));
+            .hint("move that backup aside and run lodi switch again"));
         }
         Err(error) if error.kind() == io::ErrorKind::NotFound => {}
         Err(error) => return Err(io_error(to, error)),
@@ -578,7 +578,10 @@ pub fn hard_linked(path: &str, links: u64) -> Diagnostic {
         "E_PATH_ESCAPE",
         format!("{path} has {links} hard links, and lodi changes the owner or mode only of a file with one"),
     )
-    .hint("remove the other links, or replace the file with a copy of itself, and plan again. Nothing was changed")
+    .hint(
+        "remove the other links, or replace the file with a copy of itself, and run lodi switch \
+         again. Nothing was changed",
+    )
 }
 
 pub fn sync_parent(path: &Path) {

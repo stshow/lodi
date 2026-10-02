@@ -26,11 +26,7 @@
 //! - the ordinary transaction is `pacman -Syu --noconfirm <names…>`, refreshing the databases
 //!   and upgrading the machine together. A dated host pin alone pre-syncs private databases with
 //!   `-Syy --config pin.conf` to replace even newer live databases before checking digests;
-//!   its transaction still uses `-Syu --config pin.conf` (design call D10);
-//! - `--unsupported-partial-upgrade` is the only way to the other mode. It builds
-//!   `pacman -S --needed --noconfirm <names…>` and the plan prints `W_ARCH_PARTIAL`. The flag's
-//!   own name is the warning ADR-013 asked for, and `README.md` says in one sentence that the
-//!   mode is unsupported.
+//!   its transaction still uses `-Syu --config pin.conf` (design call D10).
 //!
 //! # A `hold` binds lodi's transactions, and nothing else (D11)
 //!
@@ -120,9 +116,6 @@ pub const KERNELS: &[&str] = &[
 
 pub struct Pacman {
     root: PathBuf,
-    /// `--unsupported-partial-upgrade` (design call D10). It changes one thing: which transaction
-    /// [`Pacman::transaction`] builds.
-    partial: bool,
     programs: BTreeMap<String, PathBuf>,
     /// Programs that were found and are not trusted, with the reason (LD-357).
     refused: BTreeMap<String, String>,
@@ -135,7 +128,7 @@ impl Pacman {
     /// place ([`resolve_program`], LD-357). A program that is there and is refused is kept with
     /// its refusal, which is what a use of it reports. Nothing is run here: a backend is built by
     /// `plan`, which mutates nothing.
-    pub fn new(root: &Path, partial: bool, operation: Operation) -> Pacman {
+    pub fn new(root: &Path, operation: Operation) -> Pacman {
         let system_root = root == Path::new("/");
         let euid = super::super::safety::current_euid();
         let mut programs = BTreeMap::new();
@@ -153,16 +146,10 @@ impl Pacman {
         }
         Pacman {
             root: root.to_path_buf(),
-            partial,
             programs,
             refused,
             operation,
         }
-    }
-
-    /// Whether this backend is in the unsupported partial-upgrade mode.
-    pub fn is_partial(&self) -> bool {
-        self.partial
     }
 
     /// What points pacman at `--root DIR` instead of the running machine (design call D2,
@@ -576,16 +563,9 @@ impl Backend for Pacman {
         if install.is_empty() {
             return Ok(Vec::new());
         }
-        // The one branch `--unsupported-partial-upgrade` makes anywhere in this build. `-S
-        // --needed` installs against the databases the machine already has and upgrades
-        // nothing; `-Syu` refreshes and upgrades the machine in the same transaction, which is
-        // the only state Arch supports and therefore the default (D10).
-        let leading: &[&str] = if self.partial {
-            &["-S", "--needed", "--noconfirm"]
-        } else {
-            &["-Syu", "--noconfirm"]
-        };
-        let mut args: Vec<String> = leading.iter().map(|a| (*a).to_string()).collect();
+        // `-Syu` refreshes and upgrades the machine in the same transaction, the only state Arch
+        // supports (D10).
+        let mut args: Vec<String> = vec!["-Syu".to_string(), "--noconfirm".to_string()];
         for name in ignore {
             args.push("--ignore".to_string());
             args.push(name.clone());
@@ -846,6 +826,14 @@ impl Backend for Pacman {
     /// guess about a machine it cannot see: it says the lock is there, names it, and leaves both
     /// the judgement and the removal to the operator. Lodi itself holds the apply lock while it
     /// asks, so the one pacman it could have started is not running.
+    fn item(&self, line: &str) -> Option<String> {
+        item(line)
+    }
+
+    fn download(&self, transaction: &Invocation) -> Option<Invocation> {
+        download(transaction)
+    }
+
     fn unclean(&self) -> Result<Vec<String>, Diagnostic> {
         let lock = self.root.join(DB_LOCK);
         if lock.symlink_metadata().is_ok() {
@@ -1155,6 +1143,39 @@ pub fn classify(repositories: &BTreeSet<String>, enabled: &BTreeSet<String>) -> 
     }
 }
 
+/// The package a line of `pacman` names, for the step list's count (#694): a download
+/// (` NAME-VERSION-RELEASE-ARCH downloading...`, where a database's line has no version) and
+/// the `installing NAME...` family of transaction lines.
+pub fn item(line: &str) -> Option<String> {
+    if let Some(file) = line.trim().strip_suffix(" downloading...") {
+        let mut parts = file.rsplitn(4, '-');
+        let (_arch, _release, _version) = (parts.next()?, parts.next()?, parts.next()?);
+        return parts.next().map(str::to_string);
+    }
+    let (verb, rest) = line.split_once(' ')?;
+    let verbs = [
+        "installing",
+        "upgrading",
+        "downgrading",
+        "reinstalling",
+        "removing",
+    ];
+    let name = rest.strip_suffix("...")?;
+    (verbs.contains(&verb) && !name.is_empty() && !name.contains(' ')).then(|| name.to_string())
+}
+
+/// The download of a transaction (#694): the same `pacman -S…` with `w`, which fetches the
+/// packages into the cache and installs nothing.
+pub fn download(transaction: &Invocation) -> Option<Invocation> {
+    let at = transaction
+        .args
+        .iter()
+        .position(|arg| arg.starts_with("-S") && !arg.starts_with("--"))?;
+    let mut download = transaction.clone();
+    download.args[at].push('w');
+    Some(download)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1164,17 +1185,9 @@ mod tests {
         programs.insert("pacman".to_string(), PathBuf::from("/usr/bin/pacman"));
         Pacman {
             root: PathBuf::from("/"),
-            partial: false,
             programs,
             refused: BTreeMap::new(),
             operation: Operation::Apply,
-        }
-    }
-
-    fn partial() -> Pacman {
-        Pacman {
-            partial: true,
-            ..pacman()
         }
     }
 
@@ -1255,17 +1268,6 @@ mod tests {
         assert!(pacman().transaction(&[], &[]).unwrap().is_empty());
     }
 
-    /// The partial mode exists, it is reached only by the flag whose name says it is
-    /// unsupported, and it is the only place `-S` appears without `-Syu`.
-    #[test]
-    fn the_partial_mode_is_needed_and_never_syncs() {
-        let invocations = partial().transaction(&names(&["tree"]), &[]).unwrap();
-        assert_eq!(
-            invocations[0].command_line(),
-            "pacman -S --needed --noconfirm -- tree"
-        );
-    }
-
     /// A hold is `--ignore` on lodi's own transaction and nothing else: there is no command that
     /// sets it, and nothing this backend can build ever names `pacman.conf` (D11).
     #[test]
@@ -1287,14 +1289,12 @@ mod tests {
         assert!(!super::super::Shape::of(Distro::Arch).hold_is_machine_state);
     }
 
-    /// Every argv this backend can build, in **both** modes, and the words none of them may
+    /// Every argv this backend can build, and the words none of them may
     /// ever contain. It is the check M-0.5's A12/A14 source scan used to make textually, made
     /// against the backend itself now that Arch really has one.
     #[test]
     fn the_backend_never_syncs_alone_collects_orphans_or_touches_a_key() {
-        for mode in [pacman(), partial()] {
-            no_argv_of_this_backend_syncs_alone(&mode);
-        }
+        no_argv_of_this_backend_syncs_alone(&pacman());
         let pacman = pacman();
         let mut every: Vec<String> = Vec::new();
         every.extend(
@@ -1387,8 +1387,7 @@ mod tests {
             ] {
                 assert!(!line.contains(forbidden), "{line} contains {forbidden}");
             }
-            // `-Syu` is the only operation that may begin with `-Sy`. The partial mode's `-S`
-            // is a plain install: it never carries a `y`, so it can never refresh anything.
+            // `-Syu` is the only operation that may begin with `-Sy`.
             assert!(
                 !line.starts_with("pacman -Sy") || line.starts_with("pacman -Syu"),
                 "{line} refreshes without upgrading"
@@ -1431,7 +1430,6 @@ mod tests {
     fn a_missing_program_is_a_runtime_error_that_names_it() {
         let pacman = Pacman {
             root: PathBuf::from("/"),
-            partial: false,
             programs: BTreeMap::new(),
             refused: BTreeMap::new(),
             operation: Operation::Apply,
@@ -1456,8 +1454,9 @@ mod tests {
                 "{text}"
             );
             for other in [Operation::Plan, Operation::Apply, Operation::Import] {
-                if other != operation {
-                    assert!(!text.contains(other.command()), "{text}");
+                if other.command() != operation.command() {
+                    let named = format!("run `{}`", other.command());
+                    assert!(!text.contains(&named), "{text}");
                 }
             }
         }

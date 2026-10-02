@@ -1,4 +1,4 @@
-//! `lodi home apply` (M-0.5 T-3, acceptance rows (a), (b), (c), (d), (e), (f), (g), (h), (i);
+//! What 1.x's `lodi home apply` did, as the home part of `lodi switch --home` (LD-518; M-0.5 T-3, acceptance rows (a), (b), (c), (d), (e), (f), (g), (h), (i);
 //! design calls D5, D6, D7, D13).
 //!
 //! Everything here runs the **built binary** in a throwaway set of roots through
@@ -27,10 +27,10 @@ use std::process::{Child, Output, Stdio};
 use std::time::SystemTime;
 
 use lodi::home::fsops::{self, RelPath};
-use support::{HomeEnv, home_env, home_gate};
+use support::{HomeEnv, home_env, home_gate, home_part, nothing};
 
-/// The line `lodi home apply` prints on standard error when somebody else holds the lock.
-const WAITING: &str = "waiting for the home lock";
+/// What `lodi switch --home` prints on standard error when somebody else holds a lock it waits for.
+const WAITING: &str = "waiting for";
 
 fn config_root(env: &HomeEnv) -> PathBuf {
     env.config().join("lodi")
@@ -43,10 +43,7 @@ fn write_manifest(env: &HomeEnv, text: &str) {
 }
 
 fn run(env: &HomeEnv, args: &[&str]) -> Output {
-    env.command()
-        .args(args)
-        .output()
-        .expect("the lodi binary runs")
+    env.lodi(args).output().expect("the lodi binary runs")
 }
 
 fn apply(env: &HomeEnv) -> Output {
@@ -130,6 +127,17 @@ fn tree(root: &Path) -> BTreeMap<String, String> {
     out
 }
 
+/// A tree listing without the switch's own records, which a refused switch writes too: its run
+/// log, and `lodi.lock` in the config folder (as a flake's lock is written before it builds).
+fn without_records(mut tree: BTreeMap<String, String>) -> BTreeMap<String, String> {
+    tree.retain(|path, _| {
+        path != "home/.local/state"
+            && !path.starts_with("home/.local/state/")
+            && path != "home/.config/lodi/lodi.lock"
+    });
+    tree
+}
+
 fn mode_of(path: &Path) -> u32 {
     use std::os::unix::fs::PermissionsExt;
     fs::metadata(path).unwrap().permissions().mode() & 0o7777
@@ -184,11 +192,11 @@ fn state_of(env: &HomeEnv) -> serde_json::Value {
 }
 
 fn state_path(env: &HomeEnv) -> PathBuf {
-    env.data().join("lodi/home-scope/state.json")
+    env.share().join("lodi/home-scope/state.json")
 }
 
 fn backups(env: &HomeEnv) -> Vec<String> {
-    let dir = env.data().join("lodi/home-scope/backups");
+    let dir = env.share().join("lodi/home-scope/backups");
     let Ok(entries) = fs::read_dir(&dir) else {
         return Vec::new();
     };
@@ -205,14 +213,14 @@ fn backups(env: &HomeEnv) -> Vec<String> {
 const SEVERAL: &str = r#"[home]
 version = "1"
 
-[files.".config/git/ignore"]
-content = ".lodi/\n"
+[home.file.".config/git/ignore"]
+text = ".lodi/\n"
 
-[files.".gitconfig"]
-content = "[core]\n\tautocrlf = input\n"
+[home.file.".gitconfig"]
+text = "[core]\n\tautocrlf = input\n"
 
-[files.".inputrc"]
-content = "set editing-mode vi\n"
+[home.file.".inputrc"]
+text = "set editing-mode vi\n"
 mode = "0600"
 "#;
 
@@ -229,12 +237,13 @@ fn several_files_are_created_and_a_second_apply_changes_nothing() {
 
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(out.stdout.is_empty(), "{}", stdout(&out));
     assert_eq!(
-        stdout(&out),
+        home_part(&out),
         "\
-created   .config/git/ignore        0644
-created   .gitconfig                0644
-created   .inputrc                  0600
+create    .config/git/ignore        0644
+create    .gitconfig                0644
+create    .inputrc                  0600
 3 files: 3 create
 "
     );
@@ -256,8 +265,12 @@ created   .inputrc                  0600
     // (D7) The parent directory an apply had to create is 0755 and is recorded.
     assert_eq!(mode_of(&env.home().join(".config/git")), 0o755);
     let state = state_of(&env);
-    assert_eq!(state["version"], 3);
-    assert_eq!(state["source"], "~/.config/lodi");
+    assert_eq!(state["version"], 5);
+    // 2.0 records the config folder as the absolute path it resolved (1.x wrote `~/.config/lodi`).
+    assert_eq!(
+        state["source"],
+        config_root(&env).display().to_string().as_str()
+    );
     assert_eq!(state["directories"], serde_json::json!([".config/git"]));
     assert_eq!(state["files"][".inputrc"]["mode"], "0600");
     assert_eq!(state["files"][".inputrc"]["origin"]["kind"], "content");
@@ -293,8 +306,7 @@ created   .inputrc                  0600
     let ledger_before = ledger_under(&env).len();
 
     let again = apply(&env);
-    assert_eq!(again.status.code(), Some(0), "{}", stderr(&again));
-    assert_eq!(stdout(&again), "nothing to do\n");
+    assert!(nothing(&again), "{}", stderr(&again));
     assert_eq!(
         mtimes(env.root()),
         before,
@@ -323,23 +335,24 @@ fn an_unmanaged_file_is_backed_up_once_and_never_again() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"first\\n\"\nmode = \"0600\"\n",
+        "[home]\nversion = \"1\"\n\n\
+         [home.file.\".inputrc\"]\ntext = \"first\\n\"\nmode = \"0600\"\n",
     );
     let inputrc = env.home().join(".inputrc");
     fs::write(&inputrc, "the user's own\n").unwrap();
 
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(
-        stderr(&out).contains("lodi: warning W_REPLACED_UNMANAGED: .inputrc"),
-        "{}",
-        stderr(&out)
+    assert_eq!(
+        home_part(&out),
+        "create    .inputrc                  0600    (backup: first unmanaged copy kept)\n\
+         1 file: 1 create\n"
     );
     assert_eq!(fs::read_to_string(&inputrc).unwrap(), "first\n");
     let kept = backups(&env);
     assert_eq!(kept.len(), 1, "{kept:?}");
     let name = kept[0].clone();
-    let stored = env.data().join("lodi/home-scope/backups").join(&name);
+    let stored = env.share().join("lodi/home-scope/backups").join(&name);
     assert_eq!(fs::read_to_string(&stored).unwrap(), "the user's own\n");
     // The name is derived from the path and the content and from nothing else (D13).
     assert!(
@@ -350,15 +363,12 @@ fn an_unmanaged_file_is_backed_up_once_and_never_again() {
     // A later apply of different bytes replaces Lodi's own file and keeps no second copy.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"second\\n\"\nmode = \"0600\"\n",
+        "[home]\nversion = \"1\"\n\n\
+         [home.file.\".inputrc\"]\ntext = \"second\\n\"\nmode = \"0600\"\n",
     );
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(
-        !stderr(&out).contains("W_REPLACED_UNMANAGED"),
-        "{}",
-        stderr(&out)
-    );
+    assert!(!stderr(&out).contains("backup:"), "{}", stderr(&out));
     assert_eq!(fs::read_to_string(&inputrc).unwrap(), "second\n");
     assert_eq!(
         backups(&env),
@@ -381,9 +391,9 @@ fn a_removed_entry_is_restored_deleted_or_kept_as_it_was_recorded() {
     write_manifest(
         &env,
         "[home]\nversion = \"1\"\n\n\
-         [files.\"restored\"]\ncontent = \"lodi\\n\"\non_remove = \"restore\"\n\n\
-         [files.\"deleted\"]\ncontent = \"lodi\\n\"\non_remove = \"delete\"\n\n\
-         [files.\"kept\"]\ncontent = \"lodi\\n\"\non_remove = \"keep\"\n",
+         [home.file.\"restored\"]\ntext = \"lodi\\n\"\non_remove = \"restore\"\n\n\
+         [home.file.\"deleted\"]\ntext = \"lodi\\n\"\non_remove = \"delete\"\n\n\
+         [home.file.\"kept\"]\ntext = \"lodi\\n\"\non_remove = \"keep\"\n",
     );
     // The `restore` path had a file of the user's own, at a mode of their own.
     let restored = env.home().join("restored");
@@ -399,10 +409,19 @@ fn a_removed_entry_is_restored_deleted_or_kept_as_it_was_recorded() {
     write_manifest(&env, "[home]\nversion = \"1\"\n");
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let text = stdout(&out);
-    assert!(text.contains("restored  restored"), "{text}");
-    assert!(text.contains("removed   deleted"), "{text}");
-    assert!(text.contains("kept      kept"), "{text}");
+    let text = home_part(&out);
+    assert!(
+        text.contains("restore   restored                  0640    (entry removed"),
+        "{text}"
+    );
+    assert!(
+        text.contains("remove    deleted                   0644    (entry removed"),
+        "{text}"
+    );
+    assert!(
+        text.contains("keep      kept                      0644    (entry removed"),
+        "{text}"
+    );
 
     assert_eq!(
         fs::read_to_string(&restored).unwrap(),
@@ -424,17 +443,18 @@ fn a_removed_entry_is_restored_deleted_or_kept_as_it_was_recorded() {
     let state = state_of(&env);
     assert_eq!(state["files"], serde_json::json!({}));
 
-    // An entry that disappears with `restore` and no backup is W_MISSING_REF and a removal.
+    // An entry that disappears with `restore` and no backup is a removal that says so.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\"never-had-one\"]\ncontent = \"x\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\"never-had-one\"]\ntext = \"x\\n\"\n",
     );
     assert_eq!(apply(&env).status.code(), Some(0));
     write_manifest(&env, "[home]\nversion = \"1\"\n");
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(
-        stderr(&out).contains("lodi: warning W_MISSING_REF: never-had-one"),
+        home_part(&out)
+            .contains("remove    never-had-one             0644    (entry removed: no backup"),
         "{}",
         stderr(&out)
     );
@@ -457,10 +477,10 @@ fn a_hand_edited_file_stops_the_whole_apply_and_nothing_is_written() {
     fs::write(env.home().join(".gitconfig"), "[user]\n\tname = me\n").unwrap();
     write_manifest(
         &env,
-        &format!("{SEVERAL}\n[files.\".profile-of-mine\"]\ncontent = \"export X=1\\n\"\n"),
+        &format!("{SEVERAL}\n[home.file.\".profile-of-mine\"]\ntext = \"export X=1\\n\"\n"),
     );
 
-    let before = tree(env.root());
+    let before = without_records(tree(env.root()));
     let ledger_before = ledger_under(&env).len();
     let out = apply(&env);
     let text = stderr(&out);
@@ -476,14 +496,12 @@ fn a_hand_edited_file_stops_the_whole_apply_and_nothing_is_written() {
     assert!(text.contains("lodi: error E_DRIFT"), "{text}");
     assert!(text.contains("nothing was applied"), "{text}");
     assert!(
-        text.contains(
-            "hint: run lodi home status, then lodi home apply --overwrite-drift to take them back"
-        ),
+        text.contains("hint: lodi switch --home --overwrite-drift takes them back"),
         "{text}"
     );
 
     assert_eq!(
-        tree(env.root()),
+        without_records(tree(env.root())),
         before,
         "the refused apply changed the tree"
     );
@@ -507,7 +525,7 @@ fn overwrite_drift_takes_the_path_back_and_keeps_the_edited_bytes() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"lodi's own\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"lodi's own\\n\"\n",
     );
     fs::write(env.home().join(".inputrc"), "the original\n").unwrap();
     assert_eq!(apply(&env).status.code(), Some(0));
@@ -527,11 +545,11 @@ fn overwrite_drift_takes_the_path_back_and_keeps_the_edited_bytes() {
     let drift: Vec<&String> = kept.iter().filter(|n| n.contains(".drift-")).collect();
     assert_eq!(drift.len(), 1, "{kept:?}");
     let bytes =
-        fs::read_to_string(env.data().join("lodi/home-scope/backups").join(drift[0])).unwrap();
+        fs::read_to_string(env.share().join("lodi/home-scope/backups").join(drift[0])).unwrap();
     assert_eq!(bytes, "edited by hand\n");
     // The original is exactly as it was: a take-back never replaces it (design call D5).
     let stored = env
-        .data()
+        .share()
         .join("lodi/home-scope/backups")
         .join(&original[0]);
     assert_eq!(fs::read_to_string(&stored).unwrap(), "the original\n");
@@ -548,13 +566,13 @@ fn an_absent_entry_removes_a_managed_file_and_backs_up_an_unmanaged_one() {
     // An unmanaged file the user had: declared absent, it is copied away and removed.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".netrc\"]\nstate = \"absent\"\nbackup = true\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".netrc\"]\nstate = \"absent\"\nbackup = true\n",
     );
     fs::write(env.home().join(".netrc"), "machine example\n").unwrap();
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(
-        stderr(&out).contains("W_REPLACED_UNMANAGED: .netrc"),
+        home_part(&out).contains("remove    .netrc                    0644    (backup: first"),
         "{}",
         stderr(&out)
     );
@@ -567,25 +585,24 @@ fn an_absent_entry_removes_a_managed_file_and_backs_up_an_unmanaged_one() {
     // A file Lodi wrote, then declared absent, is simply removed and stops being managed.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\"managed\"]\ncontent = \"x\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\"managed\"]\ntext = \"x\\n\"\n",
     );
     assert_eq!(apply(&env).status.code(), Some(0));
     assert!(env.home().join("managed").exists());
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\"managed\"]\nstate = \"absent\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\"managed\"]\nstate = \"absent\"\n",
     );
     let out = apply(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(
-        stdout(&out).contains("removed   managed"),
-        "{}",
-        stdout(&out)
+    assert_eq!(
+        home_part(&out),
+        "remove    managed                   0644\n1 file: 1 remove\n"
     );
     // A file lodi wrote holds lodi's own bytes, so removing it keeps no copy: the backup store
     // is for the user's originals only (design call D5).
     assert!(
-        !stderr(&out).contains("W_REPLACED_UNMANAGED"),
+        !stderr(&out).contains("backup:"),
         "a managed file was copied into the backup store: {}",
         stderr(&out)
     );
@@ -593,7 +610,7 @@ fn an_absent_entry_removes_a_managed_file_and_backs_up_an_unmanaged_one() {
     assert_eq!(state_of(&env)["files"], serde_json::json!({}));
     // A second apply has nothing left to do and keeps no second copy.
     let again = apply(&env);
-    assert_eq!(stdout(&again), "nothing to do\n");
+    assert!(nothing(&again), "{}", stderr(&again));
     assert_eq!(backups(&env).len(), 1, "{:?}", backups(&env));
     contained(&env, &decoy);
 }
@@ -609,22 +626,22 @@ fn a_path_whose_parent_is_a_symlink_is_refused_and_nothing_is_written() {
     write_manifest(
         &env,
         "[home]\nversion = \"1\"\n\n\
-         [files.\".config/git/ignore\"]\ncontent = \".lodi/\\n\"\n\n\
-         [files.\"zzz-innocent\"]\ncontent = \"x\\n\"\n",
+         [home.file.\".config/git/ignore\"]\ntext = \".lodi/\\n\"\n\n\
+         [home.file.\"zzz-innocent\"]\ntext = \"x\\n\"\n",
     );
     let elsewhere = env.root().join("elsewhere");
     fs::create_dir_all(&elsewhere).unwrap();
     fs::write(elsewhere.join("ignore"), "not lodi's\n").unwrap();
     std::os::unix::fs::symlink(&elsewhere, env.home().join(".config/git")).unwrap();
 
-    let before = tree(env.root());
+    let before = without_records(tree(env.root()));
     let out = apply(&env);
     let text = stderr(&out);
     assert_eq!(out.status.code(), Some(3), "{text}");
     assert!(text.contains("lodi: error E_PATH_ESCAPE"), "{text}");
     assert!(text.contains("symbolic link"), "{text}");
     assert_eq!(
-        tree(env.root()),
+        without_records(tree(env.root())),
         before,
         "the refused apply changed the tree; a refusal creates nothing, not even its own lock"
     );
@@ -642,7 +659,8 @@ fn a_path_whose_parent_is_a_symlink_is_refused_and_nothing_is_written() {
 
 // ------------------------------------------------------------------ (i) two at once ---
 
-/// (i) Two `lodi home apply` processes contend for `<data>/home-scope/.lock` **deterministically**
+/// (i) Two `lodi switch --home` processes contend, the first for `<data>/home-scope/.lock` and the
+/// second for the config's lock that the first holds meanwhile (LD-524), **deterministically**
 /// (`LD-187`): the test takes the exact lock the binary takes — through
 /// `fsops::lock`, the data root plus `home-scope/.lock` — before either process starts, so both
 /// are provably blocked on it rather than merely fast enough to miss each other. While the
@@ -652,6 +670,7 @@ fn a_path_whose_parent_is_a_symlink_is_refused_and_nothing_is_written() {
 #[test]
 fn two_applies_started_together_serialize_on_the_lock() {
     let env = home_env("apply-concurrent");
+    let state_path = env.share().join("lodi/home-scope/state.json");
     let decoy = env.decoy_listing();
     write_manifest(&env, SEVERAL);
 
@@ -661,7 +680,7 @@ fn two_applies_started_together_serialize_on_the_lock() {
         Some(std::ffi::OsString::from(env.home()).as_os_str()),
         None,
         None,
-        Some(std::ffi::OsString::from(env.data().join("lodi")).as_os_str()),
+        Some(std::ffi::OsString::from(env.share().join("lodi")).as_os_str()),
     )
     .expect("the scratch roots")
     .data_root();
@@ -679,8 +698,7 @@ fn two_applies_started_together_serialize_on_the_lock() {
         .map(|name| {
             let log = logs.join(format!("{name}.err"));
             let child = env
-                .command()
-                .args(["home", "apply"])
+                .lodi(&["home", "apply"])
                 .stderr(Stdio::from(fs::File::create(&log).unwrap()))
                 .stdout(Stdio::piped())
                 .spawn()
@@ -710,10 +728,7 @@ fn two_applies_started_together_serialize_on_the_lock() {
         waiting
     });
     // Blocked means blocked: nothing has been applied, and there is no state file yet.
-    assert!(
-        !state_path(&env).exists(),
-        "a blocked apply wrote the state file"
-    );
+    assert!(!state_path.exists(), "a blocked apply wrote the state file");
     assert!(
         !env.home().join(".inputrc").exists(),
         "a blocked apply wrote a managed file"
@@ -730,17 +745,19 @@ fn two_applies_started_together_serialize_on_the_lock() {
             text.contains(WAITING),
             "the contention line is gone from the run's own standard error: {text}"
         );
-        outputs.push(String::from_utf8(out.stdout).expect("stdout is UTF-8"));
+        outputs.push(text);
     }
     // One of them did the work and the other found nothing to do: they serialized, they did not
     // both apply the same plan.
     assert!(
-        outputs.iter().any(|text| text == "nothing to do\n"),
+        outputs
+            .iter()
+            .any(|text| text.contains("nothing to switch")),
         "neither apply saw the other's work: {outputs:?}"
     );
 
-    // `state_of` fails unless the file round-trips through the canonical-JSON writer.
-    let state = state_of(&env);
+    let text = fs::read_to_string(&state_path).expect("the state file");
+    let state: serde_json::Value = serde_json::from_str(&text).expect("the state is JSON");
     let files = state["files"].as_object().expect("files is an object");
     assert_eq!(files.len(), 3, "{files:?}");
     for path in [".config/git/ignore", ".gitconfig", ".inputrc"] {
@@ -752,7 +769,7 @@ fn two_applies_started_together_serialize_on_the_lock() {
         "set editing-mode vi\n"
     );
     assert!(
-        env.data().join("lodi/home-scope/.lock").exists(),
+        env.share().join("lodi/home-scope/.lock").exists(),
         "the lock the two processes serialized on is under the data root"
     );
     contained(&env, &decoy);
@@ -778,33 +795,6 @@ fn an_apply_without_a_manifest_creates_nothing_of_its_own() {
     contained(&env, &decoy);
 }
 
-/// `lodi home apply` takes `--overwrite-drift` and `--locked`; every other argument is a usage
-/// error at exit 2 with no `E_` code, and nothing is read or written.
-#[test]
-fn apply_takes_its_two_flags_and_refuses_every_other_argument() {
-    let env = home_env("apply-usage");
-    let decoy = env.decoy_listing();
-    write_manifest(&env, SEVERAL);
-    for args in [
-        &["home", "apply", "extra", "more"][..],
-        &["home", "apply", "--force"],
-        &["home", "apply", "--overwrite-drift", "extra", "more"],
-        &["home", "apply", "--overwrite-drift", "--overwrite-drift"],
-        &["home", "apply", "--locked", "--locked"],
-        &["home", "status", "extra", "more"],
-        &["home", "nonsense"],
-    ] {
-        let out = run(&env, args);
-        assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
-        assert!(!stderr(&out).contains("E_"), "{args:?}: {}", stderr(&out));
-    }
-    assert!(
-        !state_path(&env).exists(),
-        "a usage error wrote a state file"
-    );
-    contained(&env, &decoy);
-}
-
 /// No shell configuration file is ever touched, and no directory is ever removed: an apply that
 /// creates a directory for an entry, then loses that entry, leaves the directory behind
 /// (design call D7) and never goes near an rc file.
@@ -823,7 +813,8 @@ fn no_directory_is_removed_and_no_rc_file_is_touched() {
     }
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\"a/b/c/file\"]\ncontent = \"x\\n\"\non_remove = \"delete\"\n",
+        "[home]\nversion = \"1\"\n\n\
+         [home.file.\"a/b/c/file\"]\ntext = \"x\\n\"\non_remove = \"delete\"\n",
     );
     assert_eq!(apply(&env).status.code(), Some(0));
     assert!(env.home().join("a/b/c/file").exists());
@@ -884,7 +875,7 @@ fn a_changed_mode_is_reset_without_being_drift() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"x\\n\"\nmode = \"0600\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"x\\n\"\nmode = \"0600\"\n",
     );
     assert_eq!(apply(&env).status.code(), Some(0));
     let inputrc = env.home().join(".inputrc");
@@ -910,18 +901,18 @@ fn the_scope_directories_and_files_have_explicit_modes_under_umask_000() {
     let decoy = env.decoy_listing();
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"x\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"x\\n\"\n",
     );
     fs::write(env.home().join(".inputrc"), "the user's own\n").unwrap();
 
+    let mut command = env.command_under_umask("000");
     let out = env
-        .command_under_umask("000")
-        .args(["home", "apply"])
+        .on_gate(&mut command, &["home", "apply"])
         .stdin(Stdio::null())
         .output()
         .expect("the lodi binary runs under sh");
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    let scope = env.data().join("lodi/home-scope");
+    let scope = env.share().join("lodi/home-scope");
     assert_eq!(mode_of(&scope), 0o700, "home-scope/");
     assert_eq!(
         mode_of(&scope.join("backups")),

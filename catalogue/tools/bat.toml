@@ -1,5 +1,5 @@
-# bat for [tools] bat. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
+# bat for [tools] bat. This recipe says where to look; it lists no version. `lodi update` discovers
+# versions from the tags of the newest GitHub releases.
 [recipe]
 name        = "bat"
 description = "A cat clone with syntax highlighting and Git integration"

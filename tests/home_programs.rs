@@ -25,7 +25,7 @@ use std::sync::Mutex;
 
 use lodi::diag::Diagnostic;
 use lodi::fetch::{FetchError, Fetcher};
-use lodi::home::apply::{Options, apply_with, status_with};
+use lodi::home::apply::{Options, apply_reporting, apply_with, status_with};
 use lodi::home::manifest::{FileState, HomeManifest, OnRemove, Origin, parse_home_manifest_in};
 use lodi::home::plan::{Verb, plan_with};
 use lodi::home::programs::{
@@ -33,9 +33,10 @@ use lodi::home::programs::{
 };
 use lodi::home::render::{self, GitSection, Scalar};
 use lodi::home::toml::{Table, Value};
+use lodi::progress::{Event, Sink};
 use lodi::roots::Roots;
 
-use support::{HomeEnv, files_warning, home_env};
+use support::{HomeEnv, home_env};
 
 // ------------------------------------------------------------------------- the test modules ---
 
@@ -889,6 +890,57 @@ fn a_rendered_file_is_managed_like_any_other() {
     assert!(ok_plan(&roots).1.is_empty());
 }
 
+/// The home part of the step list (#694): tools, files and user services, in that order, each
+/// begun and finished, and every file written counted as an item of the files step.
+#[test]
+fn a_home_apply_reports_its_tools_files_and_user_services_steps() {
+    struct Recording(Vec<Event>);
+    impl Sink for Recording {
+        fn event(&mut self, event: Event) {
+            self.0.push(event);
+        }
+    }
+    let env = home_env("programs-steps");
+    let roots = roots(&env);
+    write_manifest(&env, &format!("{HEAD}[programs.demo]\ntheme = \"dark\"\n"));
+    let mut sink = Recording(Vec::new());
+    apply_reporting(
+        &roots,
+        &options(),
+        &NoFetch::default(),
+        0,
+        REGISTRY,
+        &mut sink,
+    )
+    .unwrap_or_else(|f| panic!("{}", f.text));
+    let begin = |name: &str, expected: Option<usize>| Event::Begin {
+        name: name.to_string(),
+        expected,
+    };
+    let finish = Event::Finish {
+        count: None,
+        detail: None,
+    };
+    assert_eq!(
+        sink.0,
+        [
+            begin("Tools", None),
+            finish.clone(),
+            begin("Files", Some(1)),
+            Event::Item {
+                name: ".config/demo/config.toml".to_string()
+            },
+            finish.clone(),
+            begin("User services", None),
+            finish,
+        ]
+    );
+    assert_eq!(
+        lodi::home::apply::STEPS,
+        ["Tools", "Files", "User services"]
+    );
+}
+
 /// What the demo module renders for `keys`, written beside the scratch roots for comparison.
 fn golden_like(roots: &Roots, keys: &str) -> PathBuf {
     let m = load(roots, &format!("{HEAD}[programs.demo]\n{keys}\n")).unwrap();
@@ -942,10 +994,9 @@ fn a_rendered_file_backs_up_once_and_restores() {
 
 /// The binary ships `bash`, `fish`, `git` and `zsh` (M-Home pa-1) and `alacritty`, `helix`,
 /// `kitty`, `nvim`, `starship` and `tmux` (pb-1): any other `[programs]` table is
-/// an unknown block naming the nearest module and the shipped list — and `[files]` is a plain
-/// alias whose one line on standard error is its `W_DEPRECATED` (decision D5, from 1.2).
+/// an unknown block naming the nearest module and the shipped list.
 #[test]
-fn the_shipped_binary_names_its_modules_and_accepts_files_as_an_alias() {
+fn the_shipped_binary_names_its_modules() {
     let names: Vec<&str> = programs::registry().iter().map(|m| m.name).collect();
     assert_eq!(
         names,
@@ -964,7 +1015,7 @@ fn the_shipped_binary_names_its_modules_and_accepts_files_as_an_alias() {
     );
     let env = home_env("programs-binary");
     write_manifest(&env, &format!("{HEAD}[programs.gti]\nenable = true\n"));
-    let out = env.command().args(["home", "plan"]).output().unwrap();
+    let out = env.lodi(&["home", "plan"]).output().unwrap();
     let stderr = String::from_utf8(out.stderr).unwrap();
     assert_eq!(out.status.code(), Some(3), "{stderr}");
     assert!(stderr.contains("E_UNKNOWN_BLOCK"), "{stderr}");
@@ -976,14 +1027,6 @@ fn the_shipped_binary_names_its_modules_and_accepts_files_as_an_alias() {
         "{stderr}"
     );
     assert!(stderr.contains("did you mean `git`?"), "{stderr}");
-
-    write_manifest(
-        &env,
-        &format!("{HEAD}[files.\".aliases\"]\ncontent = \"a\\n\"\n"),
-    );
-    let out = env.command().args(["home", "plan"]).output().unwrap();
-    assert!(out.status.success(), "{out:?}");
-    assert_eq!(String::from_utf8(out.stderr).unwrap(), files_warning());
 }
 
 // ---------------------------------------------------------------------------------- purity ---

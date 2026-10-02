@@ -1,4 +1,4 @@
-//! `lodi home plan`: what an apply would do to the user's files, before anything changes
+//! The home plan: what a switch would do to the user's files, before anything changes
 //! (M-0.5 T-2 and T-3, design calls D5, D6, D7, D12, D13 — `LD-101`, `LD-102`, `LD-108`, `LD-109`).
 //!
 //! **A plan writes nothing at all.** Not a state file, not a lock, not a directory — not even the
@@ -14,7 +14,7 @@
 //! create    .config/git/ignore        0644
 //! replace   .inputrc                  0600    (backup: first unmanaged copy kept)
 //! restore   .netrc                    0600    (entry removed: the original is restored)
-//! drift     .gitconfig                0644    (edited by hand: run lodi home status)
+//! drift     .gitconfig                0644    (edited by hand: …)
 //! unchanged .profile-that-is-fine     0644
 //! 5 files: 1 create, 1 replace, 1 restore, 1 drift, 1 unchanged
 //! ```
@@ -33,7 +33,7 @@
 //! manifest plans, applies and reports as 1.0 did (§10 I10).
 //!
 //! Since T-3 the plan is computed against the **state record** as well as the manifest, so it is
-//! literally the same computation `lodi home apply` performs: `apply` renders these steps in the
+//! literally the same computation the home apply performs: `apply` renders these steps in the
 //! past tense and executes the [`Action`] each one carries. A path in the state that the manifest
 //! no longer declares is `restore`, `remove` or `keep` from the `on_remove` recorded with it
 //! (design call D5); a managed path whose bytes are not the ones Lodi wrote is `drift`, and it is
@@ -64,7 +64,6 @@ pub enum Verb {
     Seed,
     Adopt,
     Update,
-    Replace,
     Restore,
     Remove,
     Keep,
@@ -79,7 +78,6 @@ impl Verb {
             Verb::Seed => "seed",
             Verb::Adopt => "adopt",
             Verb::Update => "update",
-            Verb::Replace => "replace",
             Verb::Restore => "restore",
             Verb::Remove => "remove",
             Verb::Keep => "keep",
@@ -96,7 +94,6 @@ const VERBS: &[Verb] = &[
     Verb::Seed,
     Verb::Adopt,
     Verb::Update,
-    Verb::Replace,
     Verb::Restore,
     Verb::Remove,
     Verb::Keep,
@@ -190,7 +187,7 @@ impl fmt::Display for Step {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Plan {
     pub steps: Vec<Step>,
-    /// The [`manifest_warnings`] lines, printed on standard error by `plan`.
+    /// The [`program_warnings`] lines, printed on standard error by `plan`.
     pub warnings: Vec<String>,
     /// `[services]`, after the files' summary; empty for a home without them.
     pub services: crate::home::services::Services,
@@ -262,32 +259,8 @@ pub fn plan_with(roots: &Roots, registry: &[Module]) -> Result<Plan, ManifestErr
         plan_for(roots, &manifest, false, &Default::default()).map_err(|d| ManifestErrors {
             diagnostics: vec![d],
         })?;
-    plan.warnings = manifest_warnings(roots, &manifest);
+    plan.warnings = program_warnings(roots, &manifest);
     Ok(plan)
-}
-
-/// Every warning a loaded manifest gives plan, apply and status, exit status unchanged: the
-/// [`files_deprecation`] line, then [`program_warnings`].
-pub fn manifest_warnings(roots: &Roots, manifest: &HomeManifest) -> Vec<String> {
-    let mut warnings: Vec<String> = files_deprecation(manifest).into_iter().collect();
-    warnings.extend(program_warnings(roots, manifest));
-    warnings
-}
-
-/// `W_DEPRECATED` for the 1.0 `[files]` table (decision D5, LD-324, from 1.2): one line for the
-/// manifest, whatever the number of its entries, rendered from `src/surface.rs`'s committed
-/// table. `[files]` stays an exact alias of `[home.file]` through 1.x; the line changes nothing
-/// else.
-pub fn files_deprecation(manifest: &HomeManifest) -> Option<String> {
-    if !manifest.files_table {
-        return None;
-    }
-    crate::surface::manifest_deprecation(
-        crate::surface::DEPRECATIONS,
-        crate::home::manifest::HOME_MANIFEST_FILE,
-        "[files]",
-    )
-    .map(|warning| warning.to_string())
 }
 
 /// Every warning a manifest's program modules give plan, apply and status, exit status
@@ -456,7 +429,9 @@ fn step(
         verb: Verb::Drift,
         path: path.to_string(),
         mode_text,
-        note: Some("edited by hand: run lodi home status".to_string()),
+        note: Some(
+            "edited by hand: lodi switch --home --overwrite-drift takes it back".to_string(),
+        ),
         action,
         drift: drift.clone(),
     };
@@ -495,18 +470,14 @@ fn step(
             if blocked {
                 return Ok(stopped(entry.mode_text.clone(), action));
             }
-            // `[files]` keeps 1.0's verbs byte for byte (§10 I10): `replace` for new bytes over
-            // any file, and `unchanged`, adopting nothing, where the bytes are already there. The
-            // 1.1 tables say which: `update` over Lodi's own file, `create` with the backup note
-            // over one it did not write (§4.3), and `adopt` for identical bytes.
-            let legacy = entry.table == "files";
+            // `update` over Lodi's own file, `create` with the backup note over one it did not
+            // write (§4.3), and `adopt` for identical bytes.
             let (verb, note, action) = match (&drift, &current) {
-                (Some(_), _) if legacy => (Verb::Replace, drift_note(), action),
                 (Some(_), _) => (Verb::Update, drift_note(), action),
                 (None, None) => (Verb::Create, None, action),
                 (None, Some((bytes, mode))) => {
                     if *bytes == entry.bytes && *mode == entry.mode {
-                        if managed.is_none() && !legacy {
+                        if managed.is_none() {
                             let note = backup_note(entry, managed, index)
                                 .then(|| "backup: first unmanaged copy kept".to_string());
                             (Verb::Adopt, note, Action::Adopt(entry.clone()))
@@ -517,7 +488,6 @@ fn step(
                         let note = backup_note(entry, managed, index)
                             .then(|| "backup: first unmanaged copy kept".to_string());
                         let verb = match managed {
-                            _ if legacy => Verb::Replace,
                             Some(_) => Verb::Update,
                             None => Verb::Create,
                         };
@@ -776,8 +746,8 @@ mod tests {
 
     #[test]
     fn a_step_prints_its_verb_path_and_mode_in_columns() {
-        let mut step = step_of(Verb::Replace, ".inputrc");
-        assert_eq!(step.to_string(), "replace   .inputrc                  0644");
+        let mut step = step_of(Verb::Update, ".inputrc");
+        assert_eq!(step.to_string(), "update    .inputrc                  0644");
         step.note = Some("backup: first unmanaged copy kept".into());
         assert!(
             step.to_string()

@@ -1,10 +1,10 @@
 //! `[services]` of `home.toml`: the user's own systemd units (hc-1, LD-427).
 //!
 //! A unit declared with `enable = true` is enabled and running, and one with `enable = false` is
-//! disabled and stopped, through `systemctl --user` run **as the home's user**: `lodi home apply`
-//! is that user already, and `sudo lodi apply` runs each home in a process that dropped to it
-//! for good. Nothing here ever talks to a root-owned user manager, so a root process with
-//! services to plan is refused.
+//! disabled and stopped, through `systemctl --user` run **as the home's user**: `lodi switch`
+//! started as the user is that user already, and `sudo lodi switch` runs each home in a process
+//! that dropped to it for good. Nothing here ever talks to a root-owned user manager, so a root
+//! process with services to plan is refused.
 //!
 //! Each unit Lodi manages is recorded in the home state with the state it had before Lodi first
 //! managed it; a unit whose declaration is removed goes back to that state, and nothing else: a
@@ -15,7 +15,7 @@
 //!
 //! `systemctl` and `loginctl` are resolved like the host scope's programs
 //! ([`crate::hostscope::safety::resolve_program`]): from the fixed `PATH` when the home belongs
-//! to the running system under `sudo lodi apply`, else from the caller's own `PATH`, which is
+//! to the running system under `sudo lodi switch`, else from the caller's own `PATH`, which is
 //! the user's. They run with the environment cleared, the fixed `PATH`, the user's own runtime
 //! directory (and session bus, where there is one), and every unit after `--`.
 
@@ -32,10 +32,10 @@ use crate::hostscope::safety;
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Context {
     /// Resolve the programs in the fixed `PATH` and use `/run/user/<uid>`: a home of the running
-    /// system that `sudo lodi apply` dropped to.
+    /// system that `sudo lodi switch` dropped to.
     pub fixed_path: bool,
-    /// Root runs `loginctl` for this home (`sudo lodi apply`): it turned lingering on before the
-    /// home ran, and turns it off after the home asks for that in [`Services::linger_off`].
+    /// Root changes lingering for this home: `sudo lodi switch` turns it on before the home runs
+    /// and off after it, and the root run of a switch that elevated itself does either before.
     pub linger_by_root: bool,
     /// Root turned lingering on for this home just before it ran.
     pub linger_enabled_by_root: bool,
@@ -119,6 +119,14 @@ impl Services {
     }
 
     /// Whether an apply would change nothing.
+    /// How many services and linger settings this plan changes.
+    pub fn changes(&self) -> usize {
+        let units = self.restores.iter().chain(&self.steps);
+        units.filter(|step| step.invocation.is_some()).count()
+            + usize::from(self.linger.is_some())
+            + usize::from(self.linger_done.is_some())
+    }
+
     pub fn is_empty(&self) -> bool {
         self.linger.is_none()
             && self.linger_done.is_none()
@@ -133,6 +141,49 @@ impl Services {
     pub fn linger_off(&self) -> bool {
         matches!(self.linger, Some((false, _)))
     }
+
+    /// Whether this plan turns lingering on (`Some(true)`) or off (`Some(false)`).
+    pub fn linger_change(&self) -> Option<bool> {
+        match &self.linger {
+            Some((on, _)) => Some(*on),
+            None => self.linger_done.as_ref().map(|_| true),
+        }
+    }
+}
+
+/// Root turns lingering of `uid` on or off (H1): polkit lets no process of the person's do it
+/// without a local session. Whether it changed; turned on for the running system (`fixed_path`),
+/// it waits up to ten seconds for the user manager that lingering starts.
+pub fn linger_as_root(uid: u32, fixed_path: bool, on: bool) -> Result<bool, Diagnostic> {
+    // SAFETY: geteuid cannot fail and takes no arguments.
+    let path = resolve("loginctl", fixed_path, unsafe { libc::geteuid() })?;
+    let run = |args: &[&str]| {
+        let argv: Vec<String> = args
+            .iter()
+            .map(|arg| (*arg).to_string())
+            .chain([uid.to_string()])
+            .collect();
+        Invocation::resolved("loginctl", &path, &argv, noninteractive_env())
+    };
+    if (word(&run(&["show-user", "--property=Linger", "--value"]))? == "yes") == on {
+        return Ok(false);
+    }
+    let verb = if on {
+        "enable-linger"
+    } else {
+        "disable-linger"
+    };
+    pm::run(&run(&[verb]))?;
+    if on && fixed_path {
+        let socket = PathBuf::from(format!("/run/user/{uid}/systemd/private"));
+        for _ in 0..100 {
+            if socket.exists() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+    }
+    Ok(true)
 }
 
 /// The user's `systemctl --user` and `loginctl`, resolved for one process.
@@ -172,7 +223,7 @@ impl Manager {
                 ),
             )
             .hint(
-                "log in as that user, or set linger = true on a service and run sudo lodi apply; \
+                "log in as that user, or set linger = true on a service and run lodi switch; \
                  nothing was changed",
             ));
         }

@@ -130,7 +130,7 @@ line"""
     );
     assert_eq!(
         c.snapshot, None,
-        "an absent snapshot is pinned by lodi lock"
+        "an absent snapshot is pinned when the project is locked"
     );
     assert_eq!(m.packages, ["git", "make", "g++"], "duplicates collapse");
     assert!(

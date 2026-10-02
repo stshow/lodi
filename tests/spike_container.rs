@@ -330,8 +330,10 @@ fn small_project(
     )
     .unwrap();
     fs::write(project.join("lodi.lock"), lock.to_canonical_json()).unwrap();
-    let o = user.run(&project, &["lock", "--check"]);
-    assert_eq!(o.status.code(), Some(0), "derived lock: {}", both(&o));
+    // The derived lock is fresh: entering keeps it as it is (LD-496).
+    if let Err(f) = lodi::lock::frozen(&project) {
+        panic!("derived lock: {f}");
+    }
     project
 }
 
@@ -431,9 +433,21 @@ fn an_arch_project_builds_offline_from_its_lock_and_a_warm_entry_downloads_nothi
     .unwrap();
 
     // Lock: metadata only. No rootfs, no package file, no signature and no keyring is fetched.
+    // `develop` locks by itself (LD-496); with no Podman on `PATH` it stops right after.
+    let empty = user.base.join("empty-path");
+    fs::create_dir_all(&empty).unwrap();
     user.mirror.clear();
-    let o = user.run(&project, &["lock"]);
-    assert_eq!(o.status.code(), Some(0), "{}", both(&o));
+    let o = user.run_with(
+        &project,
+        &["develop", "--", "true"],
+        &[("PATH", empty.to_str().unwrap())],
+    );
+    assert_eq!(o.status.code(), Some(7), "{}", both(&o));
+    assert!(
+        err(&o).contains("lodi: wrote lodi.lock (resolved base)"),
+        "{}",
+        both(&o)
+    );
     for url in user.mirror.requests() {
         assert!(
             !url.ends_with(".pkg.tar.zst") && !url.ends_with(".sig") && !url.contains("bootstrap"),
@@ -906,7 +920,36 @@ fn wait_for(what: &str, check: impl FnMut() -> bool) {
     wait::until(what, check);
 }
 
+/// Start `develop -- <argv>` in the background and wait until its one container of environment
+/// `name` runs (#718). The work whose length only the disk decides — the cold image build and
+/// Podman's one-time ID-mapped copy of the image for `--userns=keep-id` (`storage-chown-by-maps`,
+/// every file of the rootfs) — is done first by a synchronous `develop -- true`, with no clock
+/// over it, like every `user.run` here. The timed wait then covers only a warm `podman run`, and
+/// fails at once, with Lodi's status, if Lodi exits instead.
+fn start_session(user: &User, dir: &Path, name: &str, argv: &[&str]) -> Fixture {
+    let o = user.run(dir, &["develop", "--", "true"]);
+    assert_eq!(o.status.code(), Some(0), "warming the image: {}", both(&o));
+    let mut args = vec!["develop", "--"];
+    args.extend_from_slice(argv);
+    let mut session = spawn(user, dir, &args);
+    wait_for("the container to run", || {
+        if let Some(status) = session.child().try_wait().unwrap() {
+            panic!("lodi develop exited ({status}) before its container ran");
+        }
+        lodi_containers(name).len() == 1
+    });
+    session
+}
+
+/// Start a background `lodi` whose caller then waits, by the clock, for its container. Only on a
+/// realized image (#718): a cold build inside such a wait made the test's outcome depend on how
+/// busy the disk was, so a cold spawn fails here at once, on every machine.
 fn spawn(user: &User, dir: &Path, args: &[&str]) -> Fixture {
+    assert!(
+        user.image_record().is_some_and(|r| r["complete"] == true),
+        "a background session starts on a realized image (#718): run `develop -- true` first, \
+         or use start_session"
+    );
     Fixture::spawn(
         "lodi",
         user.command(dir, args)
@@ -1323,8 +1366,7 @@ fn a_container_of_a_test_that_panics_does_not_outlive_it() {
         let finish = Finish::new(NAME);
         let user = User::new("container-hygiene");
         let project = small_project(&user, NAME, &[], &[], |_| {});
-        let _session = spawn(&user, &project, &["develop", "--", "sleep", "600"]);
-        wait_for("the container to run", || lodi_containers(NAME).len() == 1);
+        let _session = start_session(&user, &project, NAME, &["sleep", "600"]);
         let name = lodi_containers(NAME).remove(0);
         let state = out(&podman(&[
             "inspect",
@@ -1367,6 +1409,34 @@ fn a_container_of_a_test_that_panics_does_not_outlive_it() {
         "the failed test's storage {} outlived it",
         dir.display()
     );
+}
+
+/// #718: a background session is never started on a cold image. Its caller waits for the
+/// container by the clock, and a cold build plus Podman's ID-mapped copy of the image inside that
+/// wait made the outcome depend on how busy the disk was. The refusal comes before anything is
+/// started, so it holds on an idle machine and a loaded one alike.
+#[test]
+fn a_background_session_on_a_cold_image_is_refused_before_it_starts() {
+    const NAME: &str = "cold";
+    let _finish = Finish::new(NAME);
+    let user = User::new("container-cold");
+    let project = small_project(&user, NAME, &[], &[], |_| {});
+    let refused = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        spawn(&user, &project, &["develop", "--", "sleep", "600"])
+    }));
+    let Err(message) = refused else {
+        panic!("a cold spawn is refused");
+    };
+    let message = match message.downcast_ref::<&str>() {
+        Some(text) => text.to_string(),
+        None => message
+            .downcast_ref::<String>()
+            .cloned()
+            .unwrap_or_default(),
+    };
+    assert!(message.contains("#718"), "{message}");
+    assert!(user.image_record().is_none(), "nothing was built");
+    assert!(lodi_containers(NAME).is_empty(), "nothing was started");
 }
 
 /// #544: a target directory reached through a symlink (the release clone's `target/` links to a
@@ -1427,8 +1497,7 @@ fn a_container_started_inside_lodi_work_slice_stays_in_it() {
     let _finish = Finish::new(NAME);
     let user = User::new("container-slice");
     let project = small_project(&user, NAME, &[], &[], |_| {});
-    let _session = spawn(&user, &project, &["develop", "--", "sleep", "600"]);
-    wait_for("the container to run", || lodi_containers(NAME).len() == 1);
+    let _session = start_session(&user, &project, NAME, &["sleep", "600"]);
     let name = lodi_containers(NAME).remove(0);
     let pid = out(&podman(&["inspect", "--format", "{{.State.Pid}}", &name]));
     let pid: i32 = pid.trim().parse().unwrap();

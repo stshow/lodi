@@ -20,12 +20,10 @@ mod wait;
 
 use std::cell::Cell;
 use std::fs;
-use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
-use fakehost::{Machine, out, story};
+use fakehost::{Machine, story};
 use lodi::diag::Diagnostic;
 use lodi::hostscope::pin::verbs::cache::{Arrival, Source, VersionsCache};
-use lodi::hostscope::pin::verbs::commit::{self, LockChange};
 use lodi::hostscope::pin::verbs::dirlock::HostDirLock;
 use lodi::hostscope::pin::verbs::{rewrite, table};
 use pinverbs::{BC, OLDER, RECENT, TZ_OLDER, TZ_RECENT, Verbs, census, copy_tree, ok, pkg};
@@ -409,9 +407,21 @@ fn versions_prints_newest_first_with_states_and_one_line_to_copy() {
         version: "8.6.0-1".into(),
         arrived: NOW - DAY,
     });
-    let out = table::render("curl", &offered, Some("7.88.1-10+deb12u8"), Some("8.5.0-2"));
+    let offered: Vec<table::Row> = (offered.iter())
+        .map(|a| table::Row {
+            version: a.version.clone(),
+            at: Some(a.arrived),
+        })
+        .collect();
     // check-host-safety: refusal — a line the table prints to copy; nothing runs it.
-    let copy = "lodi host pin curl --to 8.6.0-1\n";
+    let copy = "lodi pin curl --to 8.6.0-1\n";
+    let out = table::listing(
+        "arrived",
+        &offered,
+        Some("7.88.1-10+deb12u8"),
+        Some("8.5.0-2"),
+        Some(copy.trim_end()),
+    );
     let expected = format!(
         "\
 version            arrived     state
@@ -457,104 +467,16 @@ fn a_second_concurrent_pin_is_refused_by_name() {
     );
 }
 
-#[test]
-fn pins_lock_is_written_first_then_host_toml_atomically_keeping_the_mode() {
-    let dir = support::scratch("pin-commit");
-    let host = dir.join("host.toml");
-    fs::write(&host, HOST).unwrap();
-    fs::set_permissions(&host, fs::Permissions::from_mode(0o640)).unwrap();
-    let before = fs::metadata(&host).unwrap();
-    let new = rewrite::set_pin(HOST, "bc", Some("1.07.1-3")).unwrap().text;
-    let order = std::cell::RefCell::new(Vec::new());
-    commit::write(
-        &dir,
-        LockChange::Write(b"{}\n".to_vec()),
-        Some(&new),
-        || {
-            order.borrow_mut().push((
-                dir.join("pins.lock").exists(),
-                fs::read_to_string(&host).unwrap() == HOST,
-            ));
-            Ok(())
-        },
-    )
-    .unwrap();
-    assert_eq!(
-        *order.borrow(),
-        vec![(true, true)],
-        "pins.lock first, host.toml after"
-    );
-    assert_eq!(fs::read_to_string(&host).unwrap(), new);
-    let after = fs::metadata(&host).unwrap();
-    assert_eq!(after.permissions().mode() & 0o7777, 0o640);
-    assert_eq!((after.uid(), after.gid()), (before.uid(), before.gid()));
-    let lock = fs::metadata(dir.join("pins.lock")).unwrap();
-    assert_eq!(lock.permissions().mode() & 0o7777, 0o644);
-    let names: Vec<String> = fs::read_dir(&dir)
-        .unwrap()
-        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
-        .collect();
-    assert_eq!(names.len(), 2, "no temporary file left: {names:?}");
-}
-
-#[test]
-fn a_crash_between_the_two_writes_leaves_host_toml_unchanged() {
-    let dir = support::scratch("pin-crash");
-    let host = dir.join("host.toml");
-    fs::write(&host, HOST).unwrap();
-    let new = rewrite::set_pin(HOST, "bc", Some("1.07.1-3")).unwrap().text;
-    let err = commit::write(
-        &dir,
-        LockChange::Write(b"{\"x\": 1}\n".to_vec()),
-        Some(&new),
-        || Err(std::io::Error::other("injected crash")),
-    )
-    .unwrap_err();
-    assert!(err.to_string().contains("injected crash"), "{err}");
-    assert_eq!(
-        fs::read_to_string(&host).unwrap(),
-        HOST,
-        "host.toml untouched"
-    );
-    assert_eq!(fs::read(dir.join("pins.lock")).unwrap(), b"{\"x\": 1}\n");
-}
-
-#[test]
-fn unpin_all_removes_pins_lock_first() {
-    let dir = support::scratch("pin-remove");
-    let host = dir.join("host.toml");
-    fs::write(&host, HOST).unwrap();
-    fs::write(dir.join("pins.lock"), "{}\n").unwrap();
-    let floated = rewrite::float_all(HOST).unwrap().text;
-    let seen = Cell::new(false);
-    commit::write(&dir, LockChange::Remove, Some(&floated), || {
-        seen.set(!dir.join("pins.lock").exists() && fs::read_to_string(&host).unwrap() == HOST);
-        Ok(())
-    })
-    .unwrap();
-    assert!(
-        seen.get(),
-        "pins.lock removed before host.toml was rewritten"
-    );
-    assert_eq!(fs::read_to_string(&host).unwrap(), floated);
-    // Nothing to change writes nothing and moves no mtime.
-    let mtime = fs::metadata(&host).unwrap().mtime_nsec();
-    let outcome = commit::write(&dir, LockChange::Remove, None, || Ok(())).unwrap();
-    assert!(!outcome.changed);
-    assert_eq!(fs::metadata(&host).unwrap().mtime_nsec(), mtime);
-}
-
 /// V8. Import into a directory of hosts, pin, copy the directory to another machine with another
 /// hostname and apply it there with `--host`: the pinned names install at exactly the recorded
 /// versions, a second apply has nothing to do, and the directory is byte-identical afterwards.
 #[test]
 fn flake_loop_same_versions_on_a_second_root() {
     let first = Verbs::debian("verbs-flake-first", &[("bc", BC), ("tzdata", TZ_RECENT)]);
-    fs::remove_dir(first.dir()).unwrap();
-    ok(&first.run("import", &[&first.hosts()]));
-    ok(&first.run("pin", &["--all", "--to", RECENT, &first.hosts()]));
-    ok(&first.run("pin", &["tzdata", &first.hosts()]));
-    ok(&first.run("pin", &["bc", &first.hosts()]));
+    ok(&first.run("import", &[]));
+    ok(&first.run("pin", &["--all", "--to", RECENT]));
+    ok(&first.run("pin", &["tzdata", "--to", RECENT]));
+    ok(&first.run("pin", &["bc", "--to", RECENT]));
     let text = first.host_toml();
     for name in ["bc", "tzdata"] {
         assert!(text.contains(&format!("{name} = \"{RECENT}\"")), "{text}");
@@ -569,8 +491,14 @@ fn flake_loop_same_versions_on_a_second_root() {
         "other",
     );
     copy_tree(&first.dir(), &second.dir());
-    let before = census(&second.dir());
-    let apply = second.run("apply", &[&second.hosts(), "--host", "box"]);
+    // The config's own files: git keeps its working files in `.git`.
+    let files = |dir: &std::path::Path| {
+        let mut all = census(dir);
+        all.retain(|path, _| !path.starts_with(dir.join(".git")));
+        all
+    };
+    let before = files(&second.dir());
+    let apply = second.run("apply", &[]);
     ok(&apply);
     let machine = second.case.machine();
     assert_eq!(
@@ -580,14 +508,9 @@ fn flake_loop_same_versions_on_a_second_root() {
         story(&apply)
     );
     assert_eq!(machine["installed"]["tzdata"]["version"], TZ_RECENT);
-    let again = second.run("apply", &[&second.hosts(), "--host", "box"]);
-    ok(&again);
-    assert!(
-        out(&again).trim_end().ends_with("nothing to do"),
-        "{}",
-        story(&again)
-    );
-    assert_eq!(census(&second.dir()), before);
+    let again = second.run("apply", &[]);
+    assert!(fakehost::nothing(&again), "{}", story(&again));
+    assert_eq!(files(&second.dir()), before);
 }
 
 /// D5 (LD-395). Pin an older version and apply, pin a newer one and apply, then put the older
@@ -596,33 +519,27 @@ fn flake_loop_same_versions_on_a_second_root() {
 #[test]
 fn a_reverted_pin_reinstalls_the_older_version() {
     let verbs = Verbs::debian("verbs-revert", &[("bc", BC), ("tzdata", TZ_RECENT)]);
-    fs::remove_dir(verbs.dir()).unwrap();
-    ok(&verbs.run("import", &[&verbs.hosts()]));
-    ok(&verbs.run("pin", &["--all", "--to", RECENT, &verbs.hosts()]));
+    ok(&verbs.run("import", &[]));
+    ok(&verbs.run("pin", &["--all", "--to", RECENT]));
     let tzdata = |verbs: &Verbs| verbs.case.machine()["installed"]["tzdata"]["version"].clone();
 
-    ok(&verbs.run("pin", &["tzdata", "--to", OLDER, &verbs.hosts()]));
-    // The pins of a host a SOURCE chose live in the repository's root lock (LD-416).
+    ok(&verbs.run("pin", &["tzdata", "--to", OLDER]));
+    // The pins live in the config's own `lodi.lock` (LD-499).
     let older = (verbs.host_toml(), verbs.root_lock().unwrap());
-    let apply = verbs.run("apply", &[&verbs.hosts()]);
+    let apply = verbs.run("apply", &[]);
     ok(&apply);
     assert_eq!(tzdata(&verbs), TZ_OLDER, "{}", story(&apply));
 
-    ok(&verbs.run("pin", &["tzdata", "--to", RECENT, &verbs.hosts()]));
-    let apply = verbs.run("apply", &[&verbs.hosts()]);
+    ok(&verbs.run("pin", &["tzdata", "--to", RECENT]));
+    let apply = verbs.run("apply", &[]);
     ok(&apply);
     assert_eq!(tzdata(&verbs), TZ_RECENT, "{}", story(&apply));
 
     verbs.set_host(&older.0);
-    fs::write(verbs.case.root.path("hosts/lodi.lock"), &older.1).unwrap();
-    let apply = verbs.run("apply", &[&verbs.hosts()]);
+    fs::write(verbs.dir().join("lodi.lock"), &older.1).unwrap();
+    let apply = verbs.run("apply", &[]);
     ok(&apply);
     assert_eq!(tzdata(&verbs), TZ_OLDER, "{}", story(&apply));
-    let again = verbs.run("apply", &[&verbs.hosts()]);
-    ok(&again);
-    assert!(
-        out(&again).trim_end().ends_with("nothing to do"),
-        "{}",
-        story(&again)
-    );
+    let again = verbs.run("apply", &[]);
+    assert!(fakehost::nothing(&again), "{}", story(&again));
 }

@@ -5,13 +5,14 @@
 //!
 //! ```text
 //! home    $HOME                          the directory the home scope manages
-//! config  $XDG_CONFIG_HOME/lodi          else $HOME/.config/lodi   home.toml, home.lock, trust
+//! config  $XDG_CONFIG_HOME/lodi          else $HOME/.config/lodi
 //! data    $LODI_HOME                     else $XDG_DATA_HOME/lodi  else $HOME/.local/share/lodi
+//!                                        the store and trust
 //! ```
 //!
 //! [`capture`] is the **one** acquisition point: the marked span it sits in is the only part of
 //! the tree that names `HOME`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME` or `LODI_HOME` or reads one,
-//! and everything else — [`Roots`], the store's root and the trust store's directory alike — is
+//! and everything else — [`Roots`], the store's root, where the trust store is too, — is
 //! a **projection** of the [`EnvRoots`] it returns. `tests/home_containment.rs` lints the tree
 //! for a second reader, and since M-0.5 `validator-repair-1` it lints `src/roots.rs` itself too:
 //! a read outside that span fails the gate wherever it is written (`LD-184`).
@@ -73,7 +74,7 @@ pub fn privilege_guard(
             path.display()
         ),
     )
-    .hint("run lodi home as the user whose home it is, without sudo"))
+    .hint("run lodi as the user whose home it is, without sudo"))
 }
 
 /// The uid that owns `path`, or its deepest existing ancestor when it does not exist yet.
@@ -208,6 +209,18 @@ impl Roots {
         })
     }
 
+    /// These roots with the configuration and data folders the person's own environment names
+    /// (`XDG_CONFIG_HOME`, `LODI_HOME`, `XDG_DATA_HOME`), where it names them.
+    pub fn moved(mut self, xdg_config: Option<&Path>, data: Option<&Path>) -> Roots {
+        if let Some(xdg_config) = xdg_config {
+            self.xdg_config = xdg_config.to_path_buf();
+        }
+        if let Some(data) = data {
+            self.data = data.to_path_buf();
+        }
+        self
+    }
+
     pub fn home(&self) -> &Path {
         &self.home
     }
@@ -251,9 +264,9 @@ impl Roots {
 /// The four root variables of one process, read **once** by [`capture`] and never read again.
 ///
 /// Every consumer of a root in this tree takes one of the projections below rather than the
-/// environment, so the three precedence rules cannot drift apart: `Roots` for the home scope,
+/// environment, so the precedence rules cannot drift apart: `Roots` for the home scope, and
 /// [`EnvRoots::store_root`] for [`crate::store::Store::home_from_env`] and
-/// [`EnvRoots::trust_dir`] for [`crate::trust::TrustStore::from_env`]. The projections are
+/// [`crate::trust::TrustStore::from_env`]. The projections are
 /// deliberately **not** one rule: a store that `LODI_HOME` names needs no `HOME` at all, and
 /// tightening that here would change an existing exit status (M-0.5 T-1, kept by
 /// `validator-repair-1`).
@@ -311,6 +324,28 @@ impl EnvRoots {
         }
     }
 
+    /// The home folder as captured, unchecked: the config commands' `Identity` (#696).
+    pub fn home(&self) -> Option<PathBuf> {
+        self.home
+            .as_ref()
+            .filter(|v| !v.is_empty())
+            .map(PathBuf::from)
+    }
+
+    /// `XDG_CONFIG_HOME` as captured, when set: where a person's `[home.xdg_config]` goes.
+    pub fn xdg_config(&self) -> Option<PathBuf> {
+        self.config.as_ref().map(PathBuf::from)
+    }
+
+    /// The data root the variables name, when one does: `LODI_HOME`, else `XDG_DATA_HOME/lodi`.
+    pub fn named_data(&self) -> Option<PathBuf> {
+        match (&self.lodi_home, &self.data) {
+            (Some(home), _) => Some(PathBuf::from(home)),
+            (None, Some(data)) => Some(PathBuf::from(data).join("lodi")),
+            (None, None) => None,
+        }
+    }
+
     /// The home scope's three roots, with every refusal of [`Roots::from_vars`].
     pub fn roots(&self) -> Result<Roots, Diagnostic> {
         Roots::from_vars(
@@ -339,22 +374,6 @@ impl EnvRoots {
         Err(Diagnostic::new(
             "E_STORE_PERM",
             "neither LODI_HOME, XDG_DATA_HOME nor HOME is set; there is no place for the store",
-        ))
-    }
-
-    /// The configuration directory, with the precedence and the code
-    /// [`crate::trust::TrustStore::from_env`] has had since S-3: `XDG_CONFIG_HOME/lodi`, else
-    /// `$HOME/.config/lodi`, and `E_CONFIG` when neither is set.
-    pub fn trust_dir(&self) -> Result<PathBuf, Diagnostic> {
-        if let Some(config) = &self.config {
-            return Ok(PathBuf::from(config).join("lodi"));
-        }
-        if let Some(home) = &self.home {
-            return Ok(PathBuf::from(home).join(".config/lodi"));
-        }
-        Err(Diagnostic::new(
-            "E_CONFIG",
-            "neither XDG_CONFIG_HOME nor HOME is set; trust cannot be recorded",
         ))
     }
 }
@@ -465,39 +484,16 @@ mod tests {
         assert_eq!(d.code, "E_STORE_PERM");
     }
 
-    /// The trust store's projection likewise: `XDG_CONFIG_HOME/lodi`, else `$HOME/.config/lodi`,
-    /// else `E_CONFIG` — and `LODI_HOME` has never had a say in it.
-    #[test]
-    fn the_trust_projection_is_the_precedence_it_always_had() {
-        assert_eq!(
-            captured(Some("/h"), Some("/c"), None, Some("/l"))
-                .trust_dir()
-                .unwrap(),
-            PathBuf::from("/c/lodi")
-        );
-        assert_eq!(
-            captured(Some("/h"), None, None, Some("/l"))
-                .trust_dir()
-                .unwrap(),
-            PathBuf::from("/h/.config/lodi")
-        );
-        let d = captured(None, None, Some("/d"), Some("/l"))
-            .trust_dir()
-            .unwrap_err();
-        assert_eq!(d.code, "E_CONFIG");
-    }
-
     /// The home scope's projection is `Roots::from_vars` over the same captured values, so one
-    /// capture answers all three questions.
+    /// capture answers both questions.
     #[test]
-    fn one_capture_answers_all_three_questions() {
+    fn one_capture_answers_both_questions() {
         let captured = captured(Some("/"), Some("/c"), Some("/d"), Some("/l"));
         let roots = captured.roots().unwrap();
         assert_eq!(roots.home(), Path::new("/"));
         assert_eq!(roots.config(), Path::new("/c/lodi"));
         assert_eq!(roots.data(), Path::new("/l"));
         assert_eq!(captured.store_root().unwrap(), PathBuf::from("/l"));
-        assert_eq!(captured.trust_dir().unwrap(), PathBuf::from("/c/lodi"));
     }
 
     #[test]

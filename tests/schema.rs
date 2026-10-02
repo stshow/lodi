@@ -7,9 +7,8 @@
 //!    collected, and the set must be exactly what `lodi::schema::ARTIFACTS` names. A negative
 //!    control feeds the same scanner a source file that adds an unregistered type and requires
 //!    it to be reported (acceptance S01).
-//! 2. **Compatibility is proved by real specimens.** `tests/fixtures/schemas/<version>/` holds
-//!    artifacts written by that released version's own code (see the README there). Each is read
-//!    with **this** build, value for value (acceptance S02).
+//! 2. **Every read set is the one version 2.0 writes** (#710), and `docs/SCHEMAS.md`'s table
+//!    holds exactly the registry's rows: no 0.x or 1.x version is read back.
 //! 3. **A file outside its read-set is refused** with its artifact's own code and exit status,
 //!    before the rest of it is deserialized, and the message names the Lodi that wrote it — or
 //!    says plainly that the file records none (acceptance S03).
@@ -210,508 +209,78 @@ fn the_registry_is_closed_and_self_consistent() {
     }
 }
 
-/// The host directory's pin lock (M-Pin, LD-395): format `lodi-host-pins/1`, which records no
-/// writer by design, so that the same pins give the same bytes on any machine and under any
-/// build. fk-1 (LD-434): a Fedora host's lock is version 2 and only a Fedora host's; every other
-/// lock is still written as version 1.
+/// 2.0 restarts the read sets (#710): each artifact reads only the version it writes, a changed
+/// format is numbered above any 1.x version, and the 1.x locks 2.0 no longer writes are gone.
 #[test]
-fn the_pin_lock_row_writes_2_for_fedora_only_and_its_file_records_no_writer() {
-    use lodi::hostscope::pin::{self, PinsLock};
-    let row = schema::artifact(pin::ARTIFACT);
-    assert_eq!((row.writes, row.reads), (2, &[1u64, 2][..]));
-    let text = fs::read_to_string(repo().join("tests/fixtures/host/pin/pins.lock"))
-        .expect("the recorded pin lock");
-    let raw: Value = serde_json::from_str(&text).unwrap();
-    assert_eq!(schema::version_of(row.kind, &raw), Some(1));
-    assert_eq!(schema::writer_of(row.kind, &raw), None);
-    assert_eq!(raw["format"], pin::FORMAT);
-    for (distro, version, format) in [
-        ("debian", 1, pin::FORMAT),
-        ("ubuntu", 1, pin::FORMAT),
-        ("arch", 1, pin::FORMAT),
-        ("fedora", 2, pin::FEDORA_FORMAT),
-    ] {
-        let lock = PinsLock::new(distro, "x", "x86_64");
-        assert_eq!((lock.version, lock.format.as_str()), (version, format));
-        let bytes = pin::render_lock(&lock);
-        assert_eq!(pin::parse_lock(bytes.as_bytes(), "x").unwrap(), lock);
-        let mut other: Value = serde_json::from_str(&bytes).unwrap();
-        other["version"] = json!(3 - version);
-        other["format"] = json!(if version == 1 {
-            pin::FEDORA_FORMAT
-        } else {
-            pin::FORMAT
-        });
-        let refused = pin::parse_lock(other.to_string().as_bytes(), "x").unwrap_err();
-        assert_eq!(refused.code, "E_LOCK_VERSION", "{distro}");
+fn every_read_set_is_the_one_version_2_0_writes() {
+    for a in ARTIFACTS {
+        assert_eq!(a.reads, &[a.writes], "{} reads only what it writes", a.kind);
     }
-}
-
-/// fk-1 (LD-434): the repository's one lock is version 2 when it holds a Fedora host and only
-/// then, so a lock with none keeps its bytes, and an earlier build refuses a Fedora one by its
-/// version instead of misreading its records.
-#[test]
-fn a_root_lock_is_version_2_with_a_fedora_host_and_only_then() {
-    use lodi::flakelock::{self, HostSection, RootLock};
-    use lodi::hostscope::pin::PinsLock;
-    let mut lock = RootLock::new();
-    lock.hosts.insert(
-        "laptop".into(),
-        HostSection::from_pins(PinsLock::new("debian", "bookworm", "x86_64")),
-    );
-    let debian = flakelock::render(&lock);
-    assert!(
-        debian.contains("\"format\": \"lodi-repository-lock/1\""),
-        "{debian}"
-    );
-    lock.hosts.insert(
-        "desk".into(),
-        HostSection::from_pins(PinsLock::new("fedora", "44", "x86_64")),
-    );
-    let fedora = flakelock::render(&lock);
-    assert!(
-        fedora.contains("\"format\": \"lodi-repository-lock/2\""),
-        "{fedora}"
-    );
-    let read = flakelock::parse(fedora.as_bytes(), "lodi.lock").unwrap();
-    assert_eq!(flakelock::render(&read), fedora);
-    let mut raw: Value = serde_json::from_str(&fedora).unwrap();
-    raw["version"] = json!(1);
-    raw["format"] = json!(flakelock::FORMAT);
-    let refused = flakelock::parse(raw.to_string().as_bytes(), "lodi.lock").unwrap_err();
-    assert_eq!(refused.code, "E_LOCK_VERSION");
-    let mut raw: Value = serde_json::from_str(&debian).unwrap();
-    raw["version"] = json!(2);
-    raw["format"] = json!(flakelock::FEDORA_FORMAT);
-    let refused = flakelock::parse(raw.to_string().as_bytes(), "lodi.lock").unwrap_err();
-    assert_eq!(refused.code, "E_LOCK_VERSION");
-}
-
-/// The recorded pin lock reads back and renders to the same bytes.
-#[test]
-fn the_recorded_pin_lock_reads_back_byte_for_byte() {
-    let path = repo().join("tests/fixtures/host/pin/pins.lock");
-    let bytes = fs::read(&path).expect("the recorded pin lock");
-    let lock = lodi::hostscope::pin::parse_lock(&bytes, "pins.lock").expect("it reads");
-    assert_eq!(lodi::hostscope::pin::render_lock(&lock).into_bytes(), bytes);
-}
-
-/// A pin lock of a later format is refused before it is deserialized, naming the file and the
-/// versions this build reads.
-#[test]
-fn a_pin_lock_outside_the_read_set_is_refused_before_it_is_deserialized() {
-    let d = lodi::hostscope::pin::parse_lock(
-        br#"{"version": 3, "format": "lodi-host-pins/3", "whatever": true}"#,
-        "hosts/box/pins.lock",
-    )
-    .unwrap_err();
-    assert_eq!(d.code, "E_LOCK_VERSION");
-    assert_eq!(lodi::diag::exit_status(d.code), 4);
-    assert!(d.message.contains("hosts/box/pins.lock"), "{d}");
-    assert!(d.message.contains("lodi-host-pins/1"), "{d}");
-}
-
-// ---------------------------------------------------------------------------------------------
-// 2. The specimens (design call D15).
-// ---------------------------------------------------------------------------------------------
-
-fn specimen_dir() -> PathBuf {
-    repo().join("tests/fixtures/schemas")
-}
-
-/// Every released version that has a specimen directory, sorted.
-fn specimen_versions() -> Vec<String> {
-    let mut versions: Vec<String> = fs::read_dir(specimen_dir())
-        .expect("the specimen directory exists")
-        .flatten()
-        .filter(|e| e.path().is_dir())
-        .map(|e| e.file_name().to_string_lossy().into_owned())
-        .collect();
-    versions.sort();
-    versions
-}
-
-fn specimens(version: &str) -> BTreeMap<String, Vec<u8>> {
-    fs::read_dir(specimen_dir().join(version))
-        .expect("a specimen directory is readable")
-        .flatten()
-        .filter(|e| e.path().extension().is_some_and(|x| x == "json"))
-        .map(|e| {
-            let kind = e
-                .path()
-                .file_stem()
-                .expect("a specimen has a file stem")
-                .to_string_lossy()
-                .into_owned();
-            (kind, fs::read(e.path()).expect("a specimen is readable"))
-        })
-        .collect()
-}
-
-/// The keys the registry adds to a document that an earlier release wrote without them.
-fn added_fields(kind: &str) -> BTreeSet<String> {
-    let a = schema::artifact(kind);
-    [a.version_field.to_string(), a.writer_field.to_string()]
-        .into_iter()
-        .collect()
-}
-
-/// Every value in `original` is still there, unchanged, in `produced`; the only keys `produced`
-/// may add are the registry's own two.
-fn assert_round_trip(kind: &str, original: &Value, produced: &Value) {
-    let original = original.as_object().expect("a specimen is a JSON object");
-    let produced = produced.as_object().expect("the round trip is an object");
-    for (key, value) in original {
-        assert_eq!(
-            produced.get(key),
-            Some(value),
-            "{kind}: `{key}` did not survive the round trip"
-        );
-    }
-    let added = added_fields(kind);
-    for key in produced.keys() {
+    let kinds: Vec<&str> = ARTIFACTS.iter().map(|a| a.kind).collect();
+    for gone in ["home-lock", "host-pins", "repository-lock"] {
         assert!(
-            original.contains_key(key) || added.contains(key),
-            "{kind}: the round trip invented the key `{key}`"
+            !kinds.contains(&gone),
+            "{gone} is a 1.x artifact: {kinds:?}"
         );
     }
+    // The host lock's last 1.x version was 5 and the home state's 4.
+    assert_eq!(schema::artifact("host-lock").writes, 6);
+    assert_eq!(schema::artifact("home-state").writes, 5);
+}
+
+/// The rows of `docs/SCHEMAS.md`'s table: kind, the version written, the versions read.
+fn documented_rows() -> BTreeMap<String, (String, String)> {
+    let doc = fs::read_to_string(repo().join("docs/SCHEMAS.md")).expect("docs/SCHEMAS.md exists");
+    let mut rows = BTreeMap::new();
+    for line in doc.lines().filter(|l| l.starts_with("| `")) {
+        let cells: Vec<&str> = line.trim_matches('|').split('|').map(str::trim).collect();
+        let kind = cells[0].trim_matches('`').to_string();
+        rows.insert(kind, (cells[3].to_string(), cells[4].to_string()));
+    }
+    rows
 }
 
 #[test]
-fn the_released_versions_all_have_specimens() {
-    let versions = specimen_versions();
-    for released in ["0.2.0", "0.3.0"] {
-        assert!(
-            versions.iter().any(|v| v == released),
-            "no specimen directory for the released version {released}"
-        );
+fn the_schemas_table_is_the_registry() {
+    let rows = documented_rows();
+    let registered: BTreeSet<String> = ARTIFACTS.iter().map(|a| a.kind.to_string()).collect();
+    assert_eq!(
+        rows.keys().cloned().collect::<BTreeSet<_>>(),
+        registered,
+        "docs/SCHEMAS.md's table names exactly the registered artifacts"
+    );
+    for a in ARTIFACTS {
+        let (writes, reads) = &rows[a.kind];
+        assert_eq!(writes, &a.writes.to_string(), "{}: written version", a.kind);
+        let listed: Vec<String> = a.reads.iter().map(u64::to_string).collect();
+        assert_eq!(reads, &listed.join(", "), "{}: read set", a.kind);
     }
-    for version in &versions {
-        let found = specimens(version);
-        assert!(!found.is_empty(), "{version} has no specimen");
-        for kind in found.keys() {
-            assert!(
-                ARTIFACTS.iter().any(|a| a.kind == *kind),
-                "{version}/{kind}.json is not a registered artifact"
-            );
+}
+
+/// A document of `kind` as this build writes it, written by lodi `writer` (2.0 keeps these
+/// formats, so their bytes are what 1.12.2 recorded).
+fn written(kind: &str) -> Vec<u8> {
+    let text = match kind {
+        "project-lock" => {
+            r#"{"base":null,"format":"lodi-spike-lock/1","generatedBy":"lodi 1.12.2","manifestHash":"sha256:006ebb69de9f201a947e5527801d9d83bbd6c14e54d915fc514e76e5db2104b8","packages":{},"profiles":{"default":{"packages":[]}},"version":1}"#
         }
-    }
-}
-
-#[test]
-fn a_project_lock_written_by_a_released_lodi_still_reads() {
-    for version in specimen_versions() {
-        let bytes = specimens(&version)
-            .remove("project-lock")
-            .expect("every released version wrote a project lock");
-        let lock = lodi::lock::parse_lock(&bytes).unwrap_or_else(|e| {
-            panic!("the {version} project lock is refused: {e:?}");
-        });
-        assert_eq!(lock.version, lodi::lock::LOCK_VERSION);
-        assert_eq!(lock.format, lodi::lock::LOCK_FORMAT);
-        assert_eq!(lock.generated_by, format!("lodi {version}"));
-        // The lock is canonical JSON, so a lock this build re-serializes is byte for byte the
-        // lock that release wrote: no schema version moved and no lock byte moved (S04).
-        assert_eq!(
-            lock.to_canonical_json().as_bytes(),
-            bytes.as_slice(),
-            "the {version} lock does not round-trip byte for byte"
-        );
-        let raw: Value = serde_json::from_slice(&bytes).expect("a specimen is JSON");
-        assert_eq!(schema::version_of("project-lock", &raw), Some(1));
-        assert_eq!(
-            schema::writer_of("project-lock", &raw).as_deref(),
-            Some(version.as_str()),
-            "the specimen's writer field must name the directory it is in"
-        );
-    }
-}
-
-/// The home scope's state record 1.0.0 wrote (M-Home, recorded by `tests/home_compat.rs`) reads
-/// with this build, value for value, although this build writes version 2.
-#[test]
-fn a_home_state_written_by_a_released_lodi_still_reads() {
-    let mut found = 0;
-    for version in specimen_versions() {
-        let Some(bytes) = specimens(&version).remove("home-state") else {
-            continue;
-        };
-        found += 1;
-        let raw: Value = serde_json::from_slice(&bytes).expect("a specimen is JSON");
-        assert_eq!(schema::version_of("home-state", &raw), Some(1));
-        assert!(schema::artifact("home-state").reads_version(1));
-        let state: lodi::home::state::HomeState =
-            serde_json::from_value(raw.clone()).expect("the 1.0 state record deserializes");
-        let produced = serde_json::to_value(&state).unwrap();
-        assert_round_trip("home-state", &raw, &produced);
-    }
-    assert!(found > 0, "no released home-state specimen");
-}
-
-#[test]
-fn h7_new_home_state_records_schema_three_and_its_source() {
-    let dir = scratch("h7-source");
-    let home = dir.join("person");
-    fs::create_dir_all(&home).unwrap();
-    let roots = lodi::roots::Roots::for_host(home, dir.join("config"));
-    let data = roots.data_root();
-    lodi::home::state::write(&data, &lodi::home::state::HomeState::default()).unwrap();
-    let bytes = fs::read(data.path().join(lodi::home::state::STATE_FILE)).unwrap();
-    let raw: Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(raw["version"], 3);
-    assert_eq!(raw["source"], "~/.config/lodi");
-    assert!(schema::artifact("home-state").reads_version(2));
-    assert!(schema::artifact("home-state").reads_version(3));
-    fs::remove_dir_all(dir).unwrap();
-}
-
-#[test]
-fn a_home_state_names_services_with_version_4_and_only_then() {
-    use lodi::home::state::{self, HomeState, ServiceRecord};
-    let dir = scratch("home-state-services");
-    let roots = lodi::roots::Roots::for_host(dir.join("person"), dir.join("config"));
-    let data = roots.data_root();
-    let path = data.path().join(state::STATE_FILE);
-    let mut record = HomeState::default();
-    state::write(&data, &record).unwrap();
-    let plain = fs::read(&path).unwrap();
-    record.services.insert(
-        "backup.timer".into(),
-        ServiceRecord {
-            before: "absent".into(),
-        },
-    );
-    state::write(&data, &record).unwrap();
-    let raw: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
-    assert_eq!(raw["version"], 4);
-    assert_eq!(raw["services"]["backup.timer"]["before"], "absent");
-    let back = state::read(&data).unwrap();
-    assert_eq!((back.version, back.services), (4, record.services.clone()));
-
-    for (version, services, linger) in [
-        (4, json!({}), false),
-        (3, json!({"backup.timer": {"before": "absent"}}), false),
-        (4, json!({"--now": {"before": "absent"}}), false),
-        (4, json!({"backup.timer": {"before": "running"}}), false),
-        (3, json!({}), true),
-    ] {
-        let mut raw = raw.clone();
-        raw["version"] = json!(version);
-        raw["services"] = services;
-        raw["linger"] = json!(linger);
-        fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
-        assert_eq!(state::read(&data).unwrap_err().code, "E_STORE_IO", "{raw}");
-    }
-
-    record.services.clear();
-    state::write(&data, &record).unwrap();
-    assert_eq!(fs::read(&path).unwrap(), plain);
-    record.linger = true;
-    state::write(&data, &record).unwrap();
-    assert_eq!(state::read(&data).unwrap().version, 4);
-    let _ = fs::remove_dir_all(&dir);
-}
-
-#[test]
-fn a_store_sidecar_written_by_a_released_lodi_still_reads() {
-    for version in specimen_versions() {
-        let bytes = specimens(&version)
-            .remove("store-sidecar")
-            .expect("every released version wrote a store sidecar");
-        let raw: Value = serde_json::from_slice(&bytes).expect("a specimen is JSON");
-        assert_eq!(
-            schema::writer_of("store-sidecar", &raw).as_deref(),
-            Some(version.as_str())
-        );
-        // The sidecar has no `version` field before 1.0: reading it is the whole point of the
-        // `#[serde(default)]` of design call D5. From 1.0 on the writer stamps it.
-        let expected = if version.starts_with("0.") {
-            None
-        } else {
-            Some(1)
-        };
-        assert_eq!(
-            schema::version_of("store-sidecar", &raw),
-            expected,
-            "{version}"
-        );
-        let meta: lodi::store::Meta = schema::parse_registered("store-sidecar", &bytes)
-            .unwrap_or_else(|| {
-                panic!("the {version} store sidecar is refused");
-            });
-        assert_eq!(meta.version, 1, "a sidecar with no version is version 1");
-        assert_eq!(meta.lodi_version, version);
-        assert!(meta.complete);
-        let produced: Value = serde_json::to_value(&meta).expect("the sidecar re-serializes");
-        assert_round_trip("store-sidecar", &raw, &produced);
-    }
-}
-
-#[test]
-fn an_environment_plan_written_by_a_released_lodi_still_names_the_same_environment() {
-    for version in specimen_versions() {
-        let found = specimens(&version);
-        let raw: Value = serde_json::from_slice(&found["environment-plan"]).expect("JSON");
-        assert_eq!(schema::version_of("environment-plan", &raw), Some(1));
-        assert_eq!(raw["format"], json!("lodi-spike-plan/1"));
-        assert_eq!(raw["mode"], json!("host"));
-        assert_eq!(raw["arch"], json!("x86_64"));
-        assert_eq!(raw["env"], json!([["SPECIMEN", "1"]]));
-        assert_eq!(raw["tasks"]["hello"]["run"], json!("echo hello"));
-
-        // The plan document **is** the environment's identity: this build must hash the bytes
-        // that release wrote to the `envhash` the same release recorded beside them, or a store
-        // written by it would realize every environment again. From 1.0 on the document also
-        // carries the registry's writer field, which is added to the document and never to the
-        // value the identity is hashed from (`schema::stamped_json`), so it is left out here.
-        let mut hashed = raw.clone();
-        hashed
-            .as_object_mut()
-            .expect("a plan is a JSON object")
-            .remove(schema::artifact("environment-plan").writer_field);
-        let identity = lodi::util::sha256_tagged(lodi::lock::canonical_json(&hashed).as_bytes());
-        let sidecar: Value = serde_json::from_slice(&found["store-sidecar"]).expect("JSON");
-        assert_eq!(
-            sidecar["identity"],
-            json!(identity),
-            "the {version} plan no longer hashes to the entry that holds it"
-        );
-        let session: Value = serde_json::from_slice(&found["session-root"]).expect("JSON");
-        assert_eq!(session["activation"]["envhash"], json!(identity));
-    }
-}
-
-#[test]
-fn a_session_root_written_by_a_released_lodi_still_keeps_its_entries() {
-    // The real read: `lodi gc --dry-run` over a store whose only root is the committed specimen,
-    // renamed to this process's pid so that the root is live. Nothing in the file is edited.
-    for version in specimen_versions() {
-        let found = specimens(&version);
-        let dir = scratch(&format!("session-{version}"));
-        let store = dir.join("lodihome");
-        let session: Value = serde_json::from_slice(&found["session-root"]).expect("JSON");
-        let entry = session["entries"][0]
-            .as_str()
-            .expect("a session root names its entries")
-            .to_string();
-        fs::create_dir_all(store.join("gcroots/sessions")).unwrap();
-        fs::create_dir_all(store.join("store/.meta")).unwrap();
-        fs::create_dir_all(store.join(format!("store/{entry}"))).unwrap();
-        fs::write(
-            store.join(format!("store/{entry}/env.json")),
-            &found["environment-plan"],
-        )
-        .unwrap();
-        fs::write(
-            store
-                .join("gcroots/sessions")
-                .join(std::process::id().to_string()),
-            &found["session-root"],
-        )
-        .unwrap();
-        fs::write(
-            store.join(format!("store/.meta/{entry}.json")),
-            &found["store-sidecar"],
-        )
-        .unwrap();
-
-        let kept = gc_dry_run(&dir, &store);
-        assert!(
-            kept.contains("would remove 0 entries"),
-            "the {version} session root no longer keeps {entry}:\n{kept}"
-        );
-        assert!(
-            !kept.contains(&entry),
-            "a live root's entry must not be named for collection:\n{kept}"
-        );
-
-        // With the root gone the same store collects that entry, which is what proves the root
-        // is what kept it rather than an accident of the report.
-        fs::remove_file(
-            store
-                .join("gcroots/sessions")
-                .join(std::process::id().to_string()),
-        )
-        .unwrap();
-        let without = gc_dry_run(&dir, &store);
-        assert!(
-            without.contains(&format!("would remove entry {entry}")),
-            "with no root the entry must be collectable:\n{without}"
-        );
-        let _ = fs::remove_dir_all(&dir);
-    }
-}
-
-fn gc_dry_run(home: &Path, store: &Path) -> String {
-    let out = Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .args(["gc", "--dry-run", "-v"])
-        .env_clear()
-        .env("PATH", "")
-        .env("HOME", home)
-        .env("LODI_HOME", store)
-        .output()
-        .expect("the lodi binary runs");
-    assert!(out.status.success(), "{:?}", out);
-    format!(
-        "{}{}",
-        String::from_utf8_lossy(&out.stdout),
-        String::from_utf8_lossy(&out.stderr)
-    )
-}
-
-#[test]
-fn a_trust_file_written_by_a_released_lodi_is_still_trusted() {
-    // The manifest the specimens were recorded from (tests/fixtures/schemas/README.md) declares
-    // exactly this one task, so the hash that release recorded must be the hash this build
-    // computes for the same text.
-    let text = vec![("hello".to_string(), "echo hello".to_string())];
-    for version in specimen_versions() {
-        let bytes = specimens(&version)
-            .remove("trust-store")
-            .expect("every released version wrote a trust file");
-        let raw: Value = serde_json::from_slice(&bytes).expect("JSON");
-        assert_eq!(schema::version_of("trust-store", &raw), Some(1));
-        let manifest = raw["entries"]
-            .as_object()
-            .expect("the trust file records entries")
-            .keys()
-            .next()
-            .expect("one entry")
-            .clone();
-
-        let dir = scratch(&format!("trust-{version}"));
-        let path = dir.join("trust.json");
-        fs::write(&path, &bytes).unwrap();
-        let store = lodi::trust::TrustStore::at(path.clone());
-        let status = store
-            .status(
-                Path::new(&manifest),
-                &lodi::trust::Subject::Tasks(text.clone()),
-            )
-            .expect("the released trust file is read");
-        assert_eq!(
-            status,
-            lodi::trust::Status::Trusted,
-            "the {version} trust file no longer trusts the text it recorded"
-        );
-        // Reading it is all a trust decision does to it: the released bytes are unchanged, and
-        // the task text hashes to exactly what that release recorded (LD-359).
-        assert_eq!(fs::read(&path).unwrap(), bytes, "{version}: the file moved");
-        assert_eq!(
-            lodi::trust::Subject::Tasks(text.clone()).hash().as_deref(),
-            raw["entries"][&manifest]["hash"].as_str(),
-            "{version}: the task text no longer hashes as it was recorded"
-        );
-        let _ = fs::remove_dir_all(&dir);
-    }
+        "trust-store" => {
+            r#"{"entries":{"/tmp/work/project/lodi.toml":{"hash":"sha256:344f561fd0a19dfa46b99a34393e5cfe091b5f1b9ce42268707a41ebf5b195b1","trusted":"2026-09-30T22:58:38Z"}},"version":1}"#
+        }
+        "store-sidecar" => {
+            r#"{"complete":true,"created":"2026-09-30T22:58:38Z","identity":"sha256:5a0c047285a3d4a97b7eb59185d170f84b7c3236161a5afc074ada74330d4a9a","lodiVersion":"1.12.2","name":"env-5a0c047285a3d4a97b7eb59185d170f8","references":[],"treeHash":"sha256:6b4f6fc582a7744058fd8652d4bc01dc092b178af7d8974442b685c0ef9b585b","type":"env","version":1}"#
+        }
+        other => panic!("no document for {other}"),
+    };
+    text.as_bytes().to_vec()
 }
 
 // ---------------------------------------------------------------------------------------------
 // 3. The refusals (design calls D3, D18).
 // ---------------------------------------------------------------------------------------------
 
-/// A specimen with its schema version replaced by `version`. The bytes are still a released
-/// version's own document; only the one field the refusal is about is moved.
+/// A document with its schema version replaced by `version`; only the one field the refusal is
+/// about is moved.
 fn at_version(kind: &str, bytes: &[u8], version: u64) -> Vec<u8> {
     let mut raw: Value = serde_json::from_slice(bytes).expect("a specimen is JSON");
     raw[schema::artifact(kind).version_field] = json!(version);
@@ -728,7 +297,7 @@ fn without_writer(kind: &str, bytes: &[u8]) -> Vec<u8> {
 
 #[test]
 fn a_lock_outside_the_read_set_is_refused_and_names_its_writer() {
-    let bytes = specimens("0.3.0").remove("project-lock").unwrap();
+    let bytes = written("project-lock");
     // Newer and older alike: a version outside the read-set is refused the same way, because an
     // upgrade on read would be a write (design call D18).
     for version in [0, 2, 99] {
@@ -743,13 +312,13 @@ fn a_lock_outside_the_read_set_is_refused_and_names_its_writer() {
             "{rendered}"
         );
         assert!(rendered.contains("this lodi reads version 1"), "{rendered}");
-        assert!(rendered.contains("written by lodi 0.3.0"), "{rendered}");
+        assert!(rendered.contains("written by lodi 1.12.2"), "{rendered}");
     }
 }
 
 #[test]
 fn a_lock_that_records_no_writer_says_so_and_names_no_version() {
-    let bytes = specimens("0.2.0").remove("project-lock").unwrap();
+    let bytes = written("project-lock");
     let anonymous = without_writer("project-lock", &at_version("project-lock", &bytes, 2));
     let d = lodi::lock::parse_lock(&anonymous)
         .expect_err("still refused")
@@ -760,11 +329,7 @@ fn a_lock_that_records_no_writer_says_so_and_names_no_version() {
         "{rendered}"
     );
     assert!(
-        !rendered.contains("0.2.0"),
-        "no version may be guessed: {rendered}"
-    );
-    assert!(
-        !rendered.contains("0.4"),
+        !rendered.contains("1.12"),
         "no version may be guessed: {rendered}"
     );
 }
@@ -782,7 +347,7 @@ fn a_missing_lock_version_stays_the_stale_lock_error() {
 
 #[test]
 fn a_trust_file_outside_the_read_set_is_refused_with_its_own_code() {
-    let bytes = specimens("0.3.0").remove("trust-store").unwrap();
+    let bytes = written("trust-store");
     let dir = scratch("trust-refusal");
     let path = dir.join("trust.json");
     let refuse = |path: &Path| {
@@ -794,8 +359,8 @@ fn a_trust_file_outside_the_read_set_is_refused_with_its_own_code() {
             .expect_err("a trust file outside the read-set is refused")
     };
 
-    // Releases through 0.3.0 wrote no writer field into the trust file, so the specimen itself is
-    // the file that records nothing: the refusal must say exactly that and name no version.
+    // This document records no writer field: the refusal must say exactly that and name no
+    // version.
     fs::write(&path, at_version("trust-store", &bytes, 2)).unwrap();
     let d = refuse(&path);
     assert_eq!(d.code, "E_CONFIG");
@@ -807,7 +372,7 @@ fn a_trust_file_outside_the_read_set_is_refused_with_its_own_code() {
         "{rendered}"
     );
     assert!(
-        !rendered.contains("0.3.0"),
+        !rendered.contains("1.12"),
         "no version may be guessed: {rendered}"
     );
 
@@ -872,17 +437,18 @@ fn a_host_lock_outside_the_read_set_is_refused_before_it_is_deserialized() {
     let _ = fs::remove_dir_all(&dir);
 }
 
-/// LD-401: schema 3 is the record of a host read from a git URL. A git table comes with version 3
-/// and only with it, and a directory's record is still written as version 2.
+/// #710: 2.0 writes one host lock version, 6, whatever the record holds; a 1.x record (2 to 5)
+/// is refused with the artifact's code and the file's path, and what it keeps for a tool's argv
+/// is still held to the manifest's grammar.
 #[test]
-fn a_host_lock_carries_a_git_table_with_version_3_and_only_then() {
-    use lodi::hostscope::lock::{GitRecord, HostLock};
-    let dir = scratch("host-lock-git");
+fn a_host_lock_is_version_6_whatever_it_holds() {
+    use lodi::hostscope::lock::{BasicRecord, GitRecord, HostLock};
+    let dir = scratch("host-lock-six");
     let path = dir.join("host.lock");
-    let mut lock = HostLock::new("2026-09-26T00:00:00Z".into(), "debian".into(), "12".into());
+    let mut lock = HostLock::new("2026-10-02T00:00:00Z".into(), "debian".into(), "12".into());
     assert_eq!(
         (lock.version, lock.format.as_str()),
-        (2, "lodi-host-lock/2")
+        (6, "lodi-host-lock/6")
     );
     lock.set_git(Some(GitRecord {
         url: "git+https://github.com/owner/hosts.git".into(),
@@ -890,84 +456,52 @@ fn a_host_lock_carries_a_git_table_with_version_3_and_only_then() {
         rev: "0".repeat(40),
         nar_hash: format!("sha256:{}", "0".repeat(64)),
     }));
-    assert_eq!(
-        (lock.version, lock.format.as_str()),
-        (3, "lodi-host-lock/3")
-    );
-    fs::write(&path, lock.to_bytes()).unwrap();
-    assert_eq!(HostLock::read(&path).unwrap(), Some(lock.clone()));
-
-    let mut raw: serde_json::Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
-    raw.as_object_mut().unwrap().remove("git");
-    fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
-    assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
-    let mut raw: serde_json::Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
-    raw["version"] = json!(2);
-    raw["format"] = json!("lodi-host-lock/2");
-    fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
-    assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
-
-    lock.set_git(None);
-    assert_eq!(
-        (lock.version, lock.format.as_str()),
-        (2, "lodi-host-lock/2")
-    );
-    let _ = fs::remove_dir_all(&dir);
-}
-
-/// sd-1: schema 5 is the record that holds an OS basic, with or without services, and a record
-/// with none is written as before; what it keeps to restore is held to the manifest's grammar.
-#[test]
-fn a_host_lock_holds_basics_with_version_5_and_only_then() {
-    use lodi::hostscope::lock::{BasicRecord, HostLock};
-    let dir = scratch("host-lock-basics");
-    let path = dir.join("host.lock");
-    let mut lock = HostLock::new("2026-09-28T00:00:00Z".into(), "debian".into(), "12".into());
     lock.set_services([("ssh.service".to_string(), "enabled".to_string())].into());
-    let before = lock.to_bytes();
-    let record = |value: &str, was: Option<&str>| BasicRecord {
-        value: value.into(),
-        was: was.map(str::to_string),
-    };
     lock.set_basics(
-        [
-            ("timezone".to_string(), record("Europe/Berlin", Some("UTC"))),
-            ("network".to_string(), record("enp0s2", None)),
-        ]
+        [(
+            "timezone".to_string(),
+            BasicRecord {
+                value: "Europe/Berlin".into(),
+                was: Some("UTC".into()),
+            },
+        )]
         .into(),
     );
     assert_eq!(
         (lock.version, lock.format.as_str()),
-        (5, "lodi-host-lock/5")
+        (6, "lodi-host-lock/6")
     );
     fs::write(&path, lock.to_bytes()).unwrap();
     assert_eq!(HostLock::read(&path).unwrap(), Some(lock.clone()));
 
-    for (version, basics) in [
-        (5, json!({})),
-        (4, json!({"timezone": {"value": "UTC"}})),
-        (5, json!({"timezone": {"value": "UTC", "was": "-x"}})),
-        (5, json!({"hostname": {"value": "-x"}})),
-        (5, json!({"network": {"value": "enp0s2 -e"}})),
-        (5, json!({"sysctl": {"value": "x"}})),
-    ] {
-        let mut raw: serde_json::Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
+    for version in 2..=5 {
+        let mut raw: Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
         raw["version"] = json!(version);
         raw["format"] = json!(format!("lodi-host-lock/{version}"));
-        raw["basics"] = basics;
+        fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
+        let d = HostLock::read(&path).expect_err("a 1.x host lock is refused");
+        assert_eq!(d.code, "E_LOCK_VERSION");
+        assert!(d.to_string().contains(&path.display().to_string()), "{d}");
+    }
+    for (field, value) in [
+        ("basics", json!({"timezone": {"value": "UTC", "was": "-x"}})),
+        ("basics", json!({"hostname": {"value": "-x"}})),
+        ("basics", json!({"network": {"value": "enp0s2 -e"}})),
+        ("basics", json!({"sysctl": {"value": "x"}})),
+        ("services", json!({"--now": "enabled"})),
+    ] {
+        let mut raw: Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
+        raw[field] = value;
         fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
         assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
     }
-
-    lock.set_basics(Default::default());
-    assert_eq!(lock.to_bytes(), before);
     let _ = fs::remove_dir_all(&dir);
 }
 
-/// bc-1: version 5 also holds the loader's parameters and each sysctl value with what it was;
+/// bc-1: the host lock also holds the loader's parameters and each sysctl value with what it was;
 /// what it keeps reaches a tool's argv, so it is held to the manifest's grammar.
 #[test]
-fn a_host_lock_holds_kernel_parameters_and_sysctl_values_in_version_5() {
+fn a_host_lock_holds_kernel_parameters_and_sysctl_values() {
     use lodi::hostscope::lock::{BasicRecord, HostLock};
     let dir = scratch("host-lock-kernel");
     let path = dir.join("host.lock");
@@ -991,7 +525,7 @@ fn a_host_lock_holds_kernel_parameters_and_sysctl_values_in_version_5() {
         ]
         .into(),
     );
-    assert_eq!(lock.version, 5);
+    assert_eq!(lock.version, 6);
     fs::write(&path, lock.to_bytes()).unwrap();
     assert_eq!(HostLock::read(&path).unwrap(), Some(lock.clone()));
 
@@ -1010,11 +544,11 @@ fn a_host_lock_holds_kernel_parameters_and_sysctl_values_in_version_5() {
     let _ = fs::remove_dir_all(&dir);
 }
 
-/// bl-1: version 5 also holds the declared loader with the one it replaced, and its timeout and
+/// bl-1: the host lock also holds the declared loader with the one it replaced, and its timeout and
 /// default entry; what it keeps reaches a tool's argv or a loader file, so it is held to the
 /// manifest's grammar.
 #[test]
-fn a_host_lock_holds_the_boot_loader_in_version_5() {
+fn a_host_lock_holds_the_boot_loader() {
     use lodi::hostscope::lock::{BasicRecord, HostLock};
     let dir = scratch("host-lock-boot");
     let path = dir.join("host.lock");
@@ -1034,7 +568,7 @@ fn a_host_lock_holds_the_boot_loader_in_version_5() {
         ]
         .into(),
     );
-    assert_eq!(lock.version, 5);
+    assert_eq!(lock.version, 6);
     fs::write(&path, lock.to_bytes()).unwrap();
     assert_eq!(HostLock::read(&path).unwrap(), Some(lock.clone()));
 
@@ -1051,41 +585,6 @@ fn a_host_lock_holds_the_boot_loader_in_version_5() {
         fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
         assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
     }
-    let _ = fs::remove_dir_all(&dir);
-}
-
-/// sc-1: schema 4 is the record that names a declared service, with or without a git table, and
-/// a record with none is written as before.
-#[test]
-fn a_host_lock_names_services_with_version_4_and_only_then() {
-    use lodi::hostscope::lock::HostLock;
-    let dir = scratch("host-lock-services");
-    let path = dir.join("host.lock");
-    let mut lock = HostLock::new("2026-09-28T00:00:00Z".into(), "debian".into(), "12".into());
-    let plain = lock.to_bytes();
-    lock.set_services([("ssh.service".to_string(), "enabled".to_string())].into());
-    assert_eq!(
-        (lock.version, lock.format.as_str()),
-        (4, "lodi-host-lock/4")
-    );
-    fs::write(&path, lock.to_bytes()).unwrap();
-    assert_eq!(HostLock::read(&path).unwrap(), Some(lock.clone()));
-
-    for (version, services) in [(4, json!({})), (2, json!({"ssh.service": "enabled"}))] {
-        let mut raw: serde_json::Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
-        raw["version"] = json!(version);
-        raw["format"] = json!(format!("lodi-host-lock/{version}"));
-        raw["services"] = services;
-        fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
-        assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
-    }
-    let mut raw: serde_json::Value = serde_json::from_slice(&lock.to_bytes()).unwrap();
-    raw["services"] = json!({"--now": "enabled"});
-    fs::write(&path, lodi::lock::canonical_json(&raw)).unwrap();
-    assert_eq!(HostLock::read(&path).unwrap_err().code, "E_LOCK_VERSION");
-
-    lock.set_services(Default::default());
-    assert_eq!(lock.to_bytes(), plain);
     let _ = fs::remove_dir_all(&dir);
 }
 
@@ -1120,7 +619,7 @@ fn a_home_state_and_backup_index_outside_the_read_set_are_refused() {
     fs::create_dir_all(data_root.join("home-scope/backups")).unwrap();
     fs::write(
         data_root.join("home-scope/state.json"),
-        "{\"version\":5,\"lodiVersion\":\"9.9.9\",\"files\":{},\"directories\":[]}\n",
+        "{\"version\":4,\"lodiVersion\":\"9.9.9\",\"files\":{},\"directories\":[]}\n",
     )
     .unwrap();
     fs::write(
@@ -1147,7 +646,8 @@ fn a_home_state_and_backup_index_outside_the_read_set_are_refused() {
     assert_eq!(d.code, "E_STORE_IO");
     assert_eq!(lodi::diag::exit_status(d.code), 6);
     let rendered = d.to_string();
-    assert!(rendered.contains("is schema version 5"), "{rendered}");
+    assert!(rendered.contains("is schema version 4"), "{rendered}");
+    assert!(rendered.contains("home-scope/state.json"), "{rendered}");
     assert!(rendered.contains("written by lodi 9.9.9"), "{rendered}");
 
     let d = lodi::home::backup::read(&root).expect_err("an index outside the read-set is refused");
@@ -1160,10 +660,10 @@ fn a_home_state_and_backup_index_outside_the_read_set_are_refused() {
 
 #[test]
 fn a_sidecar_or_image_record_outside_the_read_set_is_not_a_usable_record() {
-    let bytes = specimens("0.3.0").remove("store-sidecar").unwrap();
+    let bytes = written("store-sidecar");
     assert!(
         schema::parse_registered::<lodi::store::Meta>("store-sidecar", &bytes).is_some(),
-        "the released sidecar is usable"
+        "a sidecar this build writes is usable"
     );
     assert!(
         schema::parse_registered::<lodi::store::Meta>(
@@ -1189,6 +689,9 @@ fn project(tag: &str, min: &str) -> PathBuf {
     dir
 }
 
+/// `lodi develop` locks the project first (LD-496), then runs a command that does nothing.
+const LOCKS: &[&str] = &["develop", "--trust", "--", "/bin/sh", "-c", ":"];
+
 fn lodi_in(dir: &Path, args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_lodi"))
         .args(args)
@@ -1213,7 +716,7 @@ fn a_satisfied_project_min_lodi_version_resolves() {
         .to_string();
     for constraint in [series.as_str(), ">=0.1.0", running] {
         let dir = project("min-ok", constraint);
-        let out = lodi_in(&dir, &["lock"]);
+        let out = lodi_in(&dir, LOCKS);
         assert!(
             out.status.success(),
             "`{constraint}` should be satisfied by lodi {running}: {}",
@@ -1227,7 +730,7 @@ fn a_satisfied_project_min_lodi_version_resolves() {
 #[test]
 fn an_unsatisfied_project_min_lodi_version_is_e_version_before_anything_is_resolved() {
     let dir = project("min-unsatisfied", ">=99.0.0");
-    let out = lodi_in(&dir, &["lock"]);
+    let out = lodi_in(&dir, LOCKS);
     assert_eq!(out.status.code(), Some(3));
     let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
     assert!(stderr.contains("E_VERSION"), "{stderr}");
@@ -1243,7 +746,7 @@ fn an_unsatisfied_project_min_lodi_version_is_e_version_before_anything_is_resol
 #[test]
 fn a_project_min_lodi_version_that_is_not_a_constraint_is_e_version() {
     let dir = project("min-nonsense", "nonsense");
-    let out = lodi_in(&dir, &["lock"]);
+    let out = lodi_in(&dir, LOCKS);
     assert_eq!(out.status.code(), Some(3));
     let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
     assert!(stderr.contains("E_VERSION"), "{stderr}");
@@ -1255,7 +758,7 @@ fn a_project_min_lodi_version_that_is_not_a_constraint_is_e_version() {
 #[test]
 fn an_empty_project_min_lodi_version_declares_no_minimum() {
     let dir = project("min-empty", "");
-    let out = lodi_in(&dir, &["lock"]);
+    let out = lodi_in(&dir, LOCKS);
     assert!(out.status.success(), "{:?}", out);
     let _ = fs::remove_dir_all(&dir);
 }

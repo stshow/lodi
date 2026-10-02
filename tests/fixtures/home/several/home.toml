@@ -3,19 +3,19 @@
 version = "1"
 min_lodi_version = ""
 
-[files.".config/git/ignore"]
-content = """
+[home.file.".config/git/ignore"]
+text = """
 .lodi/
 """
 
-[files.".gitconfig"]
-content = "[core]\n\tautocrlf = input\n"
+[home.file.".gitconfig"]
+text = "[core]\n\tautocrlf = input\n"
 
-[files.".inputrc"]
+[home.file.".inputrc"]
 source = "./dotfiles/inputrc"
 mode = "0600"
 
-[files.".netrc-that-must-go"]
+[home.file.".netrc-that-must-go"]
 state = "absent"
 backup = true
 on_remove = "keep"

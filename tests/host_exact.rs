@@ -17,7 +17,7 @@ mod wait;
 
 mod support;
 
-use fakehost::{Case, Family, Machine, Pkg, err, out, story};
+use fakehost::{Case, Family, Machine, Pkg, err, nothing, story};
 
 /// An Arch machine a person chose `tree` and `jq` on; `jq` pulled `oniguruma` in.
 fn arch_chosen() -> Machine {
@@ -39,22 +39,6 @@ fn machine_for(family: Family) -> Machine {
     match family {
         Family::Pacman => arch_chosen(),
         Family::Apt => debian_chosen(),
-    }
-}
-
-// These exact-convergence cases have no dated archive fixture. Float an imported Arch file
-// explicitly before exercising a package transaction; the dated path has its own loopback suite.
-fn float_arch_import(case: &Case, family: Family) {
-    if family == Family::Pacman {
-        let manifest = case.manifest();
-        assert!(manifest.lines().any(|line| line.starts_with("snapshot = ")));
-        case.set_manifest(
-            &manifest
-                .lines()
-                .filter(|line| !line.starts_with("snapshot = "))
-                .collect::<Vec<_>>()
-                .join("\n"),
-        );
     }
 }
 
@@ -81,12 +65,12 @@ fn deleting_a_line_removes_the_package(family: Family, name: &str) {
     );
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("- package tree (not in the manifest)"),
+        err(&plan).contains("- package tree (not in the manifest)"),
         "the plan names the removal and its reason\n{}",
         story(&plan)
     );
     assert!(
-        out(&apply).contains("- package tree (not in the manifest)"),
+        err(&apply).contains("- package tree (not in the manifest)"),
         "the apply names the removal and its reason\n{}",
         story(&apply)
     );
@@ -119,8 +103,7 @@ fn deleting_a_line_removes_the_package(family: Family, name: &str) {
 
     let again = case.apply(&[]);
     assert!(again.status.success(), "{}", story(&again));
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
-    assert_eq!(err(&again), "", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 }
 
 #[test]
@@ -199,17 +182,15 @@ fn e2_import_writes_exact_and_says_what_it_means() {
         .and_then(|rest| rest.split("\n[").next())
         .expect("a [host] table");
     assert!(host.contains("\npackages = \"exact\"\n"), "{host}");
-    // The release that first honours the file's `snapshot`, whatever lodi wrote the file:
-    // 1.4.0, as a minimum, so that every later release reads it too (LD-398).
-    assert!(
-        host.contains("\nmin_lodi_version = \">=1.4.0\"\n"),
-        "the import names 1.4.0 as the lodi it needs\n{host}"
-    );
+    // The 2.0 floor (LD-528): 2.0 reads no 1.x config and 1.x none of 2.0's, so the file names
+    // `>=2.0.0` from 2.0.0 on, and no 1.x lodi applies it.
+    let floor = format!("\nmin_lodi_version = \">={}\"\n", floor());
+    assert!(host.contains(&floor), "the import names its floor\n{host}");
     // And the lodi that wrote it applies it: the round trip stays usable.
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        host.contains("# packages = \"exact\": an apply makes this machine's packages"),
+        host.contains("# packages = \"exact\": a switch makes this machine's packages"),
         "the comment says what exact means:\n{host}"
     );
     // The comment that promised removal only of what lodi itself installed is gone.
@@ -244,7 +225,6 @@ fn e2_managed_keeps_the_recorded_removal() {
         case.log()
     );
     assert!(!err(&apply).contains("htop"), "{}", story(&apply));
-    assert!(!out(&apply).contains("htop"), "{}", story(&apply));
 }
 
 /// Without the key: `managed`, plus one `W_UNDECLARED` line per explicitly installed
@@ -289,7 +269,6 @@ fn e3_mark_auto_and_recorded_third_party_leave_with_their_lines() {
             .offering(Pkg::new("bc"));
         let case = Case::new(&format!("e3-leave-{family:?}"), machine);
         assert!(case.import().status.success());
-        float_arch_import(&case, family);
         replace_in_manifest(
             &case,
             "common = [\n",
@@ -363,13 +342,13 @@ fn e3_a_deleted_baseline_or_kernel_line_is_kept_and_said() {
         let plan = case.plan();
         assert!(plan.status.success(), "{family:?}: {}", story(&plan));
         assert!(
-            out(&plan).contains(&format!("= package {kernel} (baseline; not removed)")),
+            err(&plan).contains(&format!("= package {kernel} (baseline; not removed)")),
             "{family:?}: {}",
             story(&plan)
         );
         if let Some(meta) = meta {
             assert!(
-                out(&plan).contains(&format!("= package {meta} (baseline; not removed)")),
+                err(&plan).contains(&format!("= package {meta} (baseline; not removed)")),
                 "{}",
                 story(&plan)
             );
@@ -377,7 +356,7 @@ fn e3_a_deleted_baseline_or_kernel_line_is_kept_and_said() {
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{family:?}: {}", story(&apply));
         assert!(
-            out(&apply).contains(&format!("= package {kernel} (baseline; not removed)")),
+            err(&apply).contains(&format!("= package {kernel} (baseline; not removed)")),
             "{family:?}: {}",
             story(&apply)
         );
@@ -419,7 +398,7 @@ fn e4_pacman_demotes_a_needed_root_and_removes_it_with_its_last_consumer() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
+        err(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
         "{}",
         story(&plan)
     );
@@ -450,12 +429,12 @@ fn e4_pacman_demotes_a_needed_root_and_removes_it_with_its_last_consumer() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("- package app (not in the manifest)"),
+        err(&plan).contains("- package app (not in the manifest)"),
         "{}",
         story(&plan)
     );
     assert!(
-        out(&plan).contains("- package libfoo (needed by nothing once the rest is removed)"),
+        err(&plan).contains("- package libfoo (needed by nothing once the rest is removed)"),
         "{}",
         story(&plan)
     );
@@ -495,7 +474,7 @@ fn e4_apt_demotes_a_needed_root_and_removes_the_orphans_it_causes() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
+        err(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
         "{}",
         story(&plan)
     );
@@ -516,22 +495,22 @@ fn e4_apt_demotes_a_needed_root_and_removes_the_orphans_it_causes() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("- package app (not in the manifest)"),
+        err(&plan).contains("- package app (not in the manifest)"),
         "{}",
         story(&plan)
     );
     assert!(
-        out(&plan).contains("- package tool (not in the manifest)"),
+        err(&plan).contains("- package tool (not in the manifest)"),
         "{}",
         story(&plan)
     );
     assert!(
-        out(&plan).contains("- package libfoo (needed by nothing once the rest is removed)"),
+        err(&plan).contains("- package libfoo (needed by nothing once the rest is removed)"),
         "{}",
         story(&plan)
     );
     // Recommended by `viewer`, which stays: apt keeps it, and so does lodi.
-    assert!(!out(&plan).contains("libbar"), "{}", story(&plan));
+    assert!(!err(&plan).contains("libbar"), "{}", story(&plan));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
     let installed = case.installed();
@@ -579,6 +558,7 @@ fn e4_apt_exact_keeps_apts_default_recommends_in_the_simulation_and_the_transact
         .log()
         .into_iter()
         .filter(|l| l.starts_with("apt-get install") && !l.contains(" -s "))
+        .filter(|l| !l.contains("--download-only"))
         .collect();
     assert_eq!(ran.len(), 1, "{:?}", case.log());
     assert!(
@@ -594,7 +574,7 @@ fn e4_apt_exact_keeps_apts_default_recommends_in_the_simulation_and_the_transact
     assert!(!case.is_explicit("viewer-data"));
     assert!(!installed.contains("tree"), "{installed:?}");
     let again = case.apply(&[]);
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 
     // `managed` is 1.1.0's rule, and 1.1.0 installed without Recommends.
     let case = Case::new("e4-apt-recommends-managed", machine());
@@ -608,7 +588,7 @@ fn e4_apt_exact_keeps_apts_default_recommends_in_the_simulation_and_the_transact
     let ran: Vec<String> = case
         .log()
         .into_iter()
-        .filter(|l| l.starts_with("apt-get install"))
+        .filter(|l| l.starts_with("apt-get install") && !l.contains("--download-only"))
         .collect();
     assert_eq!(ran.len(), 1, "{:?}", case.log());
     assert!(ran[0].contains(" --no-install-recommends "), "{}", ran[0]);
@@ -623,7 +603,6 @@ fn e5_a_removal_set_that_changed_since_the_plan_stops_the_apply() {
     // pacman: the -Syu that installs `bc` gives `tree` a new dependency.
     let case = Case::new("e5-pacman", arch_chosen().offering(Pkg::new("bc")));
     assert!(case.import().status.success());
-    float_arch_import(&case, Family::Pacman);
     replace_in_manifest(&case, "common = [\n", "common = [\n  \"bc\",\n");
     case.delete_line("tree");
     case.edit(|m| {
@@ -683,7 +662,7 @@ fn e5_apt_a_name_the_refresh_brings_is_rechecked_before_its_transaction() {
     replace_in_manifest(&case, "common = [\n", "common = [\n  \"newjq\",\n");
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    assert!(out(&plan).contains("+ package newjq"), "{}", story(&plan));
+    assert!(err(&plan).contains("+ package newjq"), "{}", story(&plan));
     let apply = case.apply(&[]);
     assert_eq!(apply.status.code(), Some(8), "{}", story(&apply));
     assert!(
@@ -825,7 +804,7 @@ fn e5_apt_a_transaction_reaching_what_must_stay_is_refused_before_anything() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("= package helper (no longer needed, but declared; not removed)"),
+        err(&plan).contains("= package helper (no longer needed, but declared; not removed)"),
         "{}",
         story(&plan)
     );
@@ -861,10 +840,13 @@ fn e6_a_hand_install_is_drift_and_an_edit_is_not() {
             "{family:?}: {}",
             story(&apply)
         );
-        assert!(err(&apply).contains("E_DECLINED"), "{}", story(&apply));
-        assert!(err(&apply).contains("htop"), "{}", story(&apply));
+        // The preview is on standard error too; the refusal is the error and its hint.
+        let text = err(&apply);
+        let refusal = &text[text.find("E_DECLINED").unwrap_or(0)..];
+        assert!(refusal.starts_with("E_DECLINED"), "{}", story(&apply));
+        assert!(refusal.contains("htop"), "{}", story(&apply));
         assert!(
-            !err(&apply).contains("tree"),
+            !refusal.contains("tree"),
             "only the drift is named: {}",
             story(&apply)
         );
@@ -877,21 +859,21 @@ fn e6_a_hand_install_is_drift_and_an_edit_is_not() {
         let apply = case.apply(&["--overwrite-drift"]);
         assert!(apply.status.success(), "{family:?}: {}", story(&apply));
         assert!(!case.installed().contains("htop") && !case.installed().contains("tree"));
-        assert_eq!(out(&case.apply(&[])), "nothing to do\n");
+        assert!(nothing(&case.apply(&[])));
     }
 }
 
 // ------------------------------------------------------------------------ E7: the record ---
 
 #[test]
-fn e7_the_default_import_writes_the_record_and_the_other_destinations_do_not() {
+fn e7_the_import_writes_the_record() {
     let case = Case::new("e7-import", debian_chosen());
     case.edit(|m| m["installed"]["jq"]["held"] = serde_json::Value::Bool(true));
     // A record of a file an earlier apply wrote: the import keeps it.
     case.root.write(
         "etc/lodi/host.lock",
         &serde_json::json!({
-            "version": 1, "format": "lodi-host-lock/1", "generatedBy": "lodi 1.1.0",
+            "version": 6, "format": "lodi-host-lock/6", "generatedBy": "lodi 2.0.0",
             "appliedAt": "2026-09-22T00:00:00Z", "distro": "debian", "distroVersion": "12",
             "packages": {},
             "files": {"/etc/kept.conf": {"digest": "sha256:00", "mode": "0644",
@@ -910,13 +892,6 @@ fn e7_the_default_import_writes_the_record_and_the_other_destinations_do_not() {
         lock["packages"]["libc6"].is_null(),
         "the baseline is not recorded: {lock}"
     );
-
-    let other = Case::new("e7-import-out", debian_chosen());
-    let dir = other.root.path("elsewhere");
-    let out_dir = dir.display().to_string();
-    assert!(other.verb("import", &["--out", &out_dir]).status.success());
-    assert!(other.verb("import", &["--stdout"]).status.success());
-    assert!(!other.has_lock());
 }
 
 /// The record is kept true by every apply: a converged one says so and updates it, and a
@@ -927,9 +902,8 @@ fn e7_every_apply_keeps_the_record_true() {
     case.set_manifest(&manifest("packages = \"managed\"\n", &["tree", "jq"], ""));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
-    assert_eq!(
-        out(&apply),
-        "no machine changes; record updated\n",
+    assert!(
+        err(&apply).contains("host: no machine changes; the record is updated\n"),
         "{}",
         story(&apply)
     );
@@ -939,7 +913,7 @@ fn e7_every_apply_keeps_the_record_true() {
         "{}",
         case.lock()
     );
-    assert_eq!(out(&case.apply(&[])), "nothing to do\n");
+    assert!(nothing(&case.apply(&[])));
 
     let case = Case::new("e7-files", arch_chosen());
     let (uid, gid) = hostroot::ids(&case.root);
@@ -992,7 +966,6 @@ fn a_declared_metapackage_a_hand_removal_took_is_restored(family: Family) {
     let case = Case::new(&format!("e11-restore-{family:?}"), machine);
     let import = case.import();
     assert!(import.status.success(), "{}", story(&import));
-    float_arch_import(&case, family);
     let manifest = case.manifest();
     assert!(manifest.contains(&format!("\"{meta}\"")), "{manifest}");
     assert!(!manifest.contains(&format!("\"{stays}\"")), "{manifest}");
@@ -1009,12 +982,12 @@ fn a_declared_metapackage_a_hand_removal_took_is_restored(family: Family) {
     let plan = case.plan();
     assert!(plan.status.success(), "{family:?}: {}", story(&plan));
     assert!(
-        out(&plan).contains(&format!("+ package {meta}")),
+        err(&plan).contains(&format!("+ package {meta}")),
         "{family:?}: {}",
         story(&plan)
     );
     assert!(
-        !out(&plan).contains(&format!("package {stays} (")) && !err(&plan).contains("W_DRIFT"),
+        !err(&plan).contains(&format!("package {stays} (")) && !err(&plan).contains("W_DRIFT"),
         "{family:?}: what the metapackage needs is neither removed, demoted nor drift\n{}",
         story(&plan)
     );
@@ -1033,12 +1006,7 @@ fn a_declared_metapackage_a_hand_removal_took_is_restored(family: Family) {
     );
     let again = case.apply(&[]);
     assert!(again.status.success(), "{family:?}: {}", story(&again));
-    assert_eq!(
-        out(&again),
-        "nothing to do\n",
-        "{family:?}: {}",
-        story(&again)
-    );
+    assert!(nothing(&again), "{family:?}: {}", story(&again));
 }
 
 #[test]
@@ -1069,7 +1037,6 @@ fn e11_a_line_taken_out_that_a_new_declaration_needs_is_demoted() {
         };
         let case = Case::new(&format!("e11-needed-{family:?}"), machine);
         assert!(case.import().status.success());
-        float_arch_import(&case, family);
         assert!(
             case.manifest().contains("\"libfoo\""),
             "{}",
@@ -1081,7 +1048,7 @@ fn e11_a_line_taken_out_that_a_new_declaration_needs_is_demoted() {
         let plan = case.plan();
         assert!(plan.status.success(), "{family:?}: {}", story(&plan));
         assert!(
-            out(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
+            err(&plan).contains("~ package libfoo (a dependency now: needed by app; stays)"),
             "{family:?}: {}",
             story(&plan)
         );
@@ -1096,47 +1063,47 @@ fn e11_a_line_taken_out_that_a_new_declaration_needs_is_demoted() {
         assert!(!case.is_explicit("libfoo"), "{family:?}");
         let again = case.apply(&[]);
         assert!(again.status.success(), "{family:?}: {}", story(&again));
-        assert_eq!(
-            out(&again),
-            "nothing to do\n",
-            "{family:?}: {}",
-            story(&again)
-        );
+        assert!(nothing(&again), "{family:?}: {}", story(&again));
     }
 }
 
 // ------------------------------------------------------------- E10: what the documents say ---
 
-/// The README and the host scope document say what the import and `exact` do: the import records
-/// what it declared in `host.lock`, `--overwrite-drift` removes every package the plan names as
-/// drift, and no sentence still promises that a package you installed yourself is never removed
-/// (LD-375 validator repair).
+/// The how-to page on packages says what `--overwrite-drift` removes under `exact`, and no user
+/// page still promises that a package you installed yourself is never removed (LD-375; #711
+/// moved the text from the host scope page).
 #[test]
-fn e10_the_documents_say_what_the_import_and_exact_do() {
+fn e10_the_documents_say_what_exact_and_overwrite_drift_do() {
     let read = |rel: &str| {
-        std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel))
-            .unwrap_or_else(|e| panic!("{rel}: {e}"))
+        let text =
+            std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel))
+                .unwrap_or_else(|e| panic!("{rel}: {e}"));
+        text.split_whitespace().collect::<Vec<_>>().join(" ")
     };
-    let readme = read("README.md");
-    let host = read("docs/scopes/host.md");
-    let flat_readme = readme.split_whitespace().collect::<Vec<_>>().join(" ");
-    let row = flat_readme
-        .split(". ")
-        .find(|sentence| sentence.contains("The import copies this machine into "))
-        .expect("the README's sentence on what the import does");
+    let page = read("docs/guide/install-a-package.md");
     assert!(
-        row.contains("host.lock"),
-        "the README's import sentence does not say it writes host.lock: {row}"
+        page.contains(
+            "`--overwrite-drift` removes every package the preview lists as installed by hand"
+        ),
+        "the package how-to does not say what --overwrite-drift removes"
     );
-    for (name, text) in [("README.md", &readme), ("docs/scopes/host.md", &host)] {
-        let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    for rel in [
+        "README.md",
+        "docs/guide/install-a-package.md",
+        "docs/guide/preview-a-change.md",
+    ] {
         assert!(
-            flat.contains("removes **every** package the plan"),
-            "{name} does not say what --overwrite-drift removes under exact"
+            !read(rel).contains("It does not remove packages you installed yourself"),
+            "{rel} still promises a package installed by hand is never removed"
         );
-        assert!(
-            !flat.contains("It does not remove packages you installed yourself"),
-            "{name} still promises a package installed by hand is never removed"
-        );
+    }
+}
+
+/// The floor an import writes: 2.0's, `2.0.0`, once this crate is 2.0; a 1.x build keeps
+/// 1.4.0, since a floor above its own version would refuse its own import (LD-528).
+fn floor() -> &'static str {
+    match env!("CARGO_PKG_VERSION_MAJOR") {
+        "1" => "1.4.0",
+        _ => "2.0.0",
     }
 }

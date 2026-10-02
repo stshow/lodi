@@ -36,11 +36,11 @@
 //! ~ package NAME (pinned VERSION from source NAME; downgrade from VERSION)
 //! ~ package NAME (unhold: no longer pinned; VERSION stays installed)
 //! = package NAME (pinned VERSION from REPOSITORY at INSTANT; behind latest VERSION)
-//! = package NAME (pinned VERSION from REPOSITORY at INSTANT; not recorded in pins.lock, …)
+//! = package NAME (pinned VERSION from REPOSITORY at INSTANT; not recorded in lodi.lock, …)
 //! ~ index (remove the pin stage an interrupted apply left under /var/lib/lodi/host/pin)
 //! ```
 //!
-//! The unrecorded note ends `record it with: lodi host pin NAME --to VALUE`, naming the host as
+//! The unrecorded note ends `record it with: lodi pin NAME --to VALUE`, naming the host as
 //! this plan chose it, and `behind latest` is said when the live index offers a newer version.
 //!
 //! A managed file whose bytes differ from the digest the lock records is **drift**: the plan
@@ -49,7 +49,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::io::Read;
+use std::io::{self, Read};
 use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -87,9 +87,9 @@ pub const SOURCES_NOTE: &str = "= sources (the [host] snapshot does not reach a 
 /// The one line of the action that removes a stage an interrupted apply left (P4).
 pub const SWEEP_LINE: &str =
     "~ index (remove the pin stage an interrupted apply left under /var/lib/lodi/host/pin)";
-/// Appended to a pinned name's line when `pins.lock` does not record the pin (P13), with the
+/// Appended to a pinned name's line when `lodi.lock` does not record the pin (P13), with the
 /// command that records it (LD-397).
-pub const UNRECORDED: &str = "not recorded in pins.lock";
+pub const UNRECORDED: &str = "not recorded in lodi.lock";
 /// Appended to a pinned name's line when the live index offers a newer version (LD-397).
 pub const BEHIND: &str = "behind latest";
 
@@ -104,9 +104,8 @@ pub const W_OPTIONAL_SKIPPED: &str = "W_OPTIONAL_SKIPPED";
 /// write the file. The manifest's author is trusted, so the mode is applied as declared; the
 /// warning says so out loud rather than applying it in silence.
 pub const W_FILE_MODE: &str = "W_FILE_MODE";
-/// `--unsupported-partial-upgrade` was given, so this apply installs on Arch **without**
-/// upgrading the machine (design call D10). Arch does not support that state; the warning says
-/// what the risk is and the flag's own name says the mode is unsupported.
+/// A per-entry Arch pin is installed from a local package file with `pacman -U`, while the
+/// other packages follow the sync archive (design call D10).
 pub const W_ARCH_PARTIAL: &str = "W_ARCH_PARTIAL";
 /// The manifest has the legacy `[files]` table: it applies as before, and `[etc."PATH"]` is the
 /// form that replaces it (si-1, LD-421).
@@ -631,6 +630,17 @@ pub struct Plan {
     pub identities: (BTreeSet<String>, BTreeSet<String>),
     /// The OS basics a converged apply records (sd-1).
     pub basics: BTreeMap<String, super::lock::BasicRecord>,
+    /// What this process could not read, so that a root run reads it (#709, LD-513).
+    pub unread: Vec<Unread>,
+}
+
+/// An input only root may read, which this process could not (#709, LD-513): `action` names
+/// the action it decides (a basic's key, or `ssh keys NAME`), `shown` what the preview names. The
+/// action is planned as a change, and the root run plans it from what it reads.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Unread {
+    pub action: String,
+    pub shown: String,
 }
 
 /// What the plan knows of pins (M-Pin, LD-395): resolved once, by the command's first plan, and
@@ -639,14 +649,14 @@ pub struct Plan {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Pins {
     pub resolution: super::pin::Resolution,
-    /// Every name the host directory's `pins.lock` records.
+    /// Every name the host directory's `lodi.lock` records.
     pub recorded: std::collections::BTreeSet<String>,
     /// A pin stage an interrupted apply left behind (P4).
     pub stale_stage: bool,
-    /// What goes before and after `lodi host pin NAME --to VALUE` in the command an unrecorded
-    /// pin's line names: `sudo ` for the host in place on the running system, and the host this
-    /// plan chose (`SOURCE`, `--host`, `--root`), so that the line runs as printed (LD-397).
-    pub record_with: (String, String),
+    /// What goes after `lodi pin NAME --to VALUE` in the command an unrecorded pin's line
+    /// names: the host this plan chose (`SOURCE`, `--root`), so that the line runs as printed
+    /// (LD-397).
+    pub record_with: String,
 }
 
 /// What an apply of a pinned transaction does before the transaction: stage the private dated
@@ -784,7 +794,6 @@ impl Plan {
 /// commands that would change it are built, printed and journalled, not run.
 ///
 /// This is the plan of a host with nothing pinned; [`build_pinned`] is the one command uses.
-#[allow(clippy::too_many_arguments)]
 pub fn build(
     gate: &Gate,
     manifest: &HostManifest,
@@ -792,7 +801,6 @@ pub fn build(
     source: &str,
     lock: Option<&HostLock>,
     manifest_digest: &str,
-    no_update: bool,
 ) -> Result<Plan, Diagnostic> {
     build_pinned(
         gate,
@@ -801,13 +809,12 @@ pub fn build(
         source,
         lock,
         manifest_digest,
-        no_update,
         &Pins::default(),
     )
 }
 
 /// [`build`], with what the plan knows of pins (M-Pin, LD-395). With [`Pins::default`] — no
-/// `[host] snapshot`, no pin and no `pins.lock` — it is exactly [`build`], line for line and
+/// `[host] snapshot`, no pin and no `lodi.lock` — it is exactly [`build`], line for line and
 /// argv for argv (P3).
 #[allow(clippy::too_many_arguments)]
 pub fn build_pinned(
@@ -817,7 +824,6 @@ pub fn build_pinned(
     source: &str,
     lock: Option<&HostLock>,
     manifest_digest: &str,
-    no_update: bool,
     pins: &Pins,
 ) -> Result<Plan, Diagnostic> {
     let root = gate.root.clone();
@@ -854,24 +860,11 @@ pub fn build_pinned(
     // and before the transaction that installs from it. A source that changes forces the
     // refresh, whatever the age of the index, or the new repository's packages could not be
     // placed.
-    let refresh = super::sources::plan(
-        gate,
-        manifest,
-        sources,
-        lock,
-        no_update,
-        &mut actions,
-        &mut warnings,
-    )?;
+    let refresh = super::sources::plan(gate, manifest, sources, lock, &mut actions, &mut warnings)?;
 
     let exact = manifest.host.packages == Some(PackagesMode::Exact);
     if !manifest.packages.is_empty() || exact {
-        let mut backend = pm::backend_for(
-            gate.distro,
-            &gate.root,
-            gate.partial_upgrade,
-            gate.operation,
-        );
+        let mut backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
         if exact {
             backend.keep_default_recommends();
         }
@@ -889,22 +882,14 @@ pub fn build_pinned(
             manifest,
             lock,
             backend.as_ref(),
-            Refresh {
-                no_update,
-                sources: &refresh,
-            },
+            Refresh { sources: &refresh },
             pins,
             &mut sink,
         )?);
-    } else if refresh.forced() && !no_update && pm::Shape::of(gate.distro).refresh_is_an_action {
+    } else if refresh.forced() && pm::Shape::of(gate.distro).refresh_is_an_action {
         // A manifest with sources and no packages still refreshes the index a changing source
         // makes stale, so that the source is proven (S9) by the apply that arms it.
-        let backend = pm::backend_for(
-            gate.distro,
-            &gate.root,
-            gate.partial_upgrade,
-            gate.operation,
-        );
+        let backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
         let stale = backend
             .index_age()
             .is_none_or(|age| age >= pm::REFRESH_AFTER);
@@ -915,6 +900,7 @@ pub fn build_pinned(
     // (su-1, LD-419).
     let identities = super::users::plan(gate, manifest, lock)?;
     kept.extend(identities.kept);
+    let mut unread = identities.unread;
     for (index, action) in identities.actions.into_iter().enumerate() {
         actions.push(Action {
             id: format!("u{}", index + 1),
@@ -947,7 +933,7 @@ pub fn build_pinned(
 
     // The OS basics after the accounts and files, the network last of them (sd-1, LD-420).
     let mut basics = Vec::new();
-    let recorded_basics = super::basics::plan(gate, manifest, lock, &mut basics, &mut kept)?;
+    let recorded_basics = super::basics::plan(gate, manifest, lock, &mut basics, &mut unread)?;
     for (index, basic) in basics.into_iter().enumerate() {
         actions.push(Action {
             id: format!("b{}", index + 1),
@@ -969,6 +955,17 @@ pub fn build_pinned(
         });
     }
 
+    // A restore whose copy this process could not read (the originals store is 0700): the
+    // root run reads it (#709).
+    for file in actions.iter().filter_map(|action| match &action.kind {
+        Kind::File(file) if file.op == Op::Restore && file.desired.is_none() => Some(file),
+        _ => None,
+    }) {
+        unread.push(Unread {
+            action: file.path.clone(),
+            shown: file.restore_from.clone().unwrap_or_default(),
+        });
+    }
     let mut plan = Plan {
         root,
         actions,
@@ -989,6 +986,7 @@ pub fn build_pinned(
         services: recorded_services,
         identities: (identities.users, identities.groups),
         basics: recorded_basics,
+        unread,
     };
     // The record is part of what an apply keeps true: the packages as the machine now has them,
     // and every declared file as this plan would record it — a file adopted where it stands
@@ -1085,27 +1083,12 @@ pub(super) fn plan_path(
         ));
     }
     let recorded = lock.and_then(|lock| lock.files.get(path));
-    // A record an earlier release wrote with no copy may be of a file Lodi created or of one
-    // it found (LD-377 validator repair): it is read as possibly an original.
-    let recorded_earlier = recorded
-        .filter(|record| unbacked_restore(record))
-        .and(lock)
-        .and_then(|lock| written_before_adoption(&lock.generated_by));
     let drift = matches!((recorded, &before.digest), (Some(record), Some(digest))
         if &record.digest != digest);
     let action = match entry {
         Some(entry) => match entry.state {
             FileState::Absent => plan_absent(id, path, before, drift, &entry.on_remove),
-            FileState::Present => plan_present(
-                gate,
-                id,
-                path,
-                entry,
-                sources,
-                before,
-                recorded,
-                recorded_earlier.is_some(),
-            )?,
+            FileState::Present => plan_present(gate, id, path, entry, sources, before, recorded)?,
         },
         None => plan_departed(
             gate,
@@ -1114,7 +1097,6 @@ pub(super) fn plan_path(
             recorded.expect("a departed lock record"),
             before,
             drift,
-            recorded_earlier.as_deref(),
         )?,
     };
     // An owner or mode change reaches the file itself, and through it every other name the
@@ -1213,11 +1195,9 @@ fn not_installed() -> PackageFact {
 }
 
 /// What the plan already knows about the index refresh before the backend is asked how old the
-/// index is: whether the operator declined one, and whether a source this apply arms makes one
-/// necessary whatever the age (LD-365).
+/// index is: whether a source this apply arms makes one necessary whatever the age (LD-365).
 #[derive(Debug, Clone, Copy)]
 struct Refresh<'a> {
-    no_update: bool,
     sources: &'a super::sources::Refresh,
 }
 
@@ -1302,14 +1282,6 @@ fn plan_packages(
     let hold: std::collections::BTreeSet<&String> = holds.iter().collect();
 
     let shape = pm::Shape::of(gate.distro);
-    if shape.has_partial_upgrade && gate.partial_upgrade {
-        warnings.push(format!(
-            "{W_ARCH_PARTIAL}: --unsupported-partial-upgrade installs without upgrading this \
-             machine, which {} does not support; a package built against newer libraries than \
-             this machine has can fail to run",
-            gate.distro.name()
-        ));
-    }
     let observed = backend.observe()?;
     let candidates = backend.candidates(&wants)?;
     // A machine whose index is older than the refresh window, or that has no index at all,
@@ -1323,7 +1295,7 @@ fn plan_packages(
         .is_none_or(|age| age >= pm::REFRESH_AFTER);
     // A source this apply arms is not in the index yet, however fresh the index is (LD-365).
     let forced = refresh.sources.forced();
-    let refreshing = (stale || forced) && !refresh.no_update && shape.refresh_is_an_action;
+    let refreshing = (stale || forced) && shape.refresh_is_an_action;
 
     let mut wanted: Vec<String> = Vec::new();
     let mut unknown: Vec<String> = Vec::new();
@@ -1346,7 +1318,7 @@ fn plan_packages(
             // already recorded, so it would have to raise. `optional` says leave it out where
             // the index does not offer it, and a refreshed index offers it to the next apply.
             let refreshed = if refreshing {
-                "; this apply refreshes the index, so a later one will see it if it is there"
+                "; this switch refreshes the index, so a later one will see it if it is there"
             } else {
                 ""
             };
@@ -1947,22 +1919,31 @@ fn plan_packages(
         }
     }
     // A hold **Lodi** set, on a name the manifest no longer holds, is released. A hold the
-    // operator put on by hand is not Lodi's to take off. Neither applies to a family whose hold
-    // was never on the machine: there is nothing set, so there is nothing to release.
-    if shape.hold_is_machine_state
-        && let Some(lock) = lock
-    {
+    // operator put on by hand is not Lodi's to take off. A family whose hold is lodi's own
+    // `--ignore` (D11) set nothing on the machine: its release is the record's alone, and the
+    // plan still says it, as it said the hold (#712).
+    if let Some(lock) = lock {
         for (name, record) in &lock.packages {
-            if record.held && !hold.contains(name) && observed.held.contains(name) {
+            let set = if shape.hold_is_machine_state {
+                observed.held.contains(name)
+            } else {
+                observed.installed.contains_key(name)
+            };
+            if record.held && !hold.contains(name) && set {
                 action.unhold.push(name.clone());
                 // A pin the host directory recorded is gone: the hold goes with it, and the
-                // version it installed stays (P9).
-                if pins.recorded.contains(name)
-                    && let Some(version) = observed.installed.get(name)
-                {
+                // version it installed stays (P9). After `lodi unpin` or going back to an
+                // older config the lock names no pin either, and the record does not say
+                // whether a pin or a declared hold set it, so the line names both (LD-534).
+                if let Some(version) = observed.installed.get(name) {
+                    let why = if pins.recorded.contains(name) {
+                        "no longer pinned"
+                    } else {
+                        "no longer pinned or held"
+                    };
                     action.reasons.insert(
                         name.clone(),
-                        format!("unhold: no longer pinned; {version} stays installed"),
+                        format!("unhold: {why}; {version} stays installed"),
                     );
                 }
             }
@@ -2060,7 +2041,7 @@ fn plan_packages(
 /// A pinned name's resolved version and where it came from, in the one wording every plan line
 /// uses (M-Pin): then the move this apply makes, if any; `behind latest` with the version the
 /// live index offers when that is newer than the pin and not the version the move leaves; and,
-/// when `pins.lock` does not record the pin, the command that records it (LD-397).
+/// when `lodi.lock` does not record the pin, the command that records it (LD-397).
 fn pin_note(
     resolved: &super::pin::Resolved,
     pins: &Pins,
@@ -2080,11 +2061,11 @@ fn pin_note(
         note.push_str(&format!("; {BEHIND} {offered}"));
     }
     if !resolved.recorded {
-        let (before, after) = &pins.record_with;
         note.push_str(&format!(
-            "; {UNRECORDED}, record it with: {before}lodi host pin {} --to {}{after}",
+            "; {UNRECORDED}, record it with: lodi pin {} --to {}{}",
             resolved.name,
-            super::pin::verbs::word(&resolved.requested)
+            super::pin::verbs::word(&resolved.requested),
+            pins.record_with
         ));
     }
     note
@@ -2214,7 +2195,6 @@ fn plan_present(
     sources: &BTreeMap<String, Vec<u8>>,
     before: Facts,
     recorded: Option<&super::lock::FileRecord>,
-    recorded_earlier: bool,
 ) -> Result<Action, Diagnostic> {
     let drift = matches!((recorded, &before.digest), (Some(record), Some(digest))
         if &record.digest != digest);
@@ -2262,8 +2242,17 @@ fn plan_present(
         .hint("use a name from the root's own /etc/group, or a numeric id")
     })?;
 
+    // A file the person may not read whose mode and owner are still what lodi last wrote is
+    // taken as holding what it wrote (#695): the root run reads it again before it writes.
+    let seen = before.digest.clone().or_else(|| {
+        let record = recorded.filter(|_| before.exists && before.regular)?;
+        let mode = u32::from_str_radix(&record.mode, 8).ok();
+        let owned = before.uid == resolve_user(&gate.root, &record.owner)
+            && before.gid == resolve_group(&gate.root, &record.group);
+        (before.mode == mode && owned).then(|| record.digest.clone())
+    });
     let mut changes = Vec::new();
-    let content_differs = before.digest.as_deref() != Some(digest.as_str());
+    let content_differs = seen.as_deref() != Some(digest.as_str());
     if !before.exists {
         changes.push(format!("mode {:04o}", entry.mode));
         changes.push(format!("owner {}:{}", entry.owner, entry.group));
@@ -2300,16 +2289,9 @@ fn plan_present(
     // Whether the bytes at this path are still the original, the ones Lodi did not write
     // (LD-377): a file that was there before any record of it, or one whose record says Lodi
     // adopted it in place and has not written it since.
-    //
-    // A record an earlier release wrote with no copy cannot say which it is, so the file there is
-    // treated as an original too: its bytes are kept before Lodi writes over them, and without a
-    // copy its removal leaves it (LD-377 validator repair).
     let unwritten = match recorded {
         None => before.exists,
-        Some(record) => {
-            (adopted_in_place(record) || (recorded_earlier && before.exists))
-                && entry.on_remove == OnRemove::Restore
-        }
+        Some(record) => adopted_in_place(record) && entry.on_remove == OnRemove::Restore,
     };
     // The original is kept, once, the first time Lodi writes over it — its bytes or only its
     // mode and owner — when `backup` says so. It is then carried forward by `retained_backup`
@@ -2386,25 +2368,14 @@ fn adopted_in_place(record: &super::lock::FileRecord) -> bool {
     record.backup.is_none() && record.on_remove == "keep"
 }
 
-/// A record with no copy whose removal is `restore`: this release writes it only for a file Lodi
-/// created, and an earlier one wrote it for a file it found already right as well.
-fn unbacked_restore(record: &super::lock::FileRecord) -> bool {
-    record.backup.is_none() && record.on_remove == "restore"
-}
-
-/// The first release whose record tells a file Lodi adopted from one it created (LD-377).
-const ADOPTION_SINCE: &str = "1.1.1";
-
-/// The writer a lock's `generatedBy` names, when it is a release before [`ADOPTION_SINCE`] or no
-/// release this build can read — whose unbacked `restore` records are therefore ambiguous.
-fn written_before_adoption(generated_by: &str) -> Option<String> {
-    let since = crate::version::Version::parse(ADOPTION_SINCE).expect("a version");
-    let written = generated_by
-        .strip_prefix("lodi ")
-        .and_then(|version| crate::version::Version::parse(version).ok());
-    match written {
-        Some(version) if version >= since => None,
-        _ => Some(generated_by.to_string()),
+/// `path` below the root is there but closed to this process: a directory on the way may not be
+/// entered, or the file may not be read.
+fn closed(root: &Path, path: &str) -> bool {
+    let denied = |e: io::Error| e.kind() == io::ErrorKind::PermissionDenied;
+    let real = join(root, path);
+    match fs::symlink_metadata(&real) {
+        Err(e) => denied(e),
+        Ok(meta) => meta.is_file() && fs::File::open(&real).is_err_and(denied),
     }
 }
 
@@ -2415,7 +2386,6 @@ fn plan_departed(
     record: &super::lock::FileRecord,
     before: Facts,
     drift: bool,
-    recorded_earlier: Option<&str>,
 ) -> Result<Action, Diagnostic> {
     let policy = match record.on_remove.as_str() {
         "restore" => OnRemove::Restore,
@@ -2432,6 +2402,17 @@ fn plan_departed(
         }
     };
     let (op, desired, restore_from, after, changes) = match (policy, &record.backup) {
+        (OnRemove::Restore, Some(backup)) if gate.euid != 0 && closed(&gate.root, backup) => (
+            Op::Restore,
+            None,
+            Some(backup.clone()),
+            Facts {
+                exists: true,
+                regular: true,
+                ..Facts::absent(path)
+            },
+            vec![format!("restore {backup}")],
+        ),
         (OnRemove::Restore, Some(backup)) => {
             super::files::inspect_trusted(&gate.root, backup, true)?;
             let kept = Facts::observe(&gate.root, backup);
@@ -2470,20 +2451,6 @@ fn plan_departed(
                 vec![format!("restore {backup}")],
             )
         }
-        // An earlier release's record with no copy: the file may be one Lodi found, so it is never
-        // deleted — it is left where it stands and the record forgets it (LD-377 validator
-        // repair). Deleting a file Lodi created is then a step the operator takes.
-        (OnRemove::Restore, None) if before.exists && recorded_earlier.is_some() => (
-            Op::Keep,
-            None,
-            None,
-            before.clone(),
-            vec![format!(
-                "recorded by {} with no copy, so it may not be lodi's: left in place, forget \
-                 record",
-                recorded_earlier.unwrap_or_default()
-            )],
-        ),
         (OnRemove::Restore | OnRemove::Delete, None) => {
             if before.exists {
                 (Op::Remove, None, None, Facts::absent(path), Vec::new())

@@ -5,7 +5,7 @@
 //! then `core.db` and `extra.db`. It never fetches a bootstrap tarball, package, detached
 //! signature, keyring or executable. The rootfs pinning, the release and snapshot bounds and the
 //! lock's own shape are family-neutral and stay in `crate::debian::base`, which every family's
-//! `lodi lock` travels; only what changes with the package manager is here. The artifact
+//! lock goes through; only what changes with the package manager is here. The artifact
 //! verification helpers are for deterministic tests of a previously recorded pin.
 
 use crate::arch::db::{self, Package};

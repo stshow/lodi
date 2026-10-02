@@ -77,11 +77,9 @@ fn is_package_name(s: &str) -> bool {
         })
 }
 
-/// The tool names this invocation resolves, sorted: the built-in catalogue's and those of your
-/// own in the repository's `recipes/` folder (LD-409).
+/// The tool names `lodi shell` resolves, sorted: the built-in catalogue's alone (#698 story 39).
 pub fn recipe_names() -> Vec<String> {
-    use crate::tools::Catalogue;
-    catalogue::user::active().unwrap_or_default().names()
+    catalogue::builtin_tool_names()
 }
 
 fn ident(what: &str, name: &str) -> Diagnostic {
@@ -195,8 +193,7 @@ pub fn resolve_request(request: &Request) -> Result<Resolved, Diagnostic> {
                 if !is_package_name(name) {
                     return Err(ident("tool", name));
                 }
-                let own = catalogue::user::active()?;
-                if own.recipe(name).is_none() && catalogue::builtin_recipe(name).is_none() {
+                if catalogue::builtin_recipe(name).is_none() {
                     return Err(Diagnostic::new(
                         "E_NO_RECIPE",
                         format!("no recipe for tool `{name}` in the built-in catalogue"),
@@ -204,8 +201,7 @@ pub fn resolve_request(request: &Request) -> Result<Resolved, Diagnostic> {
                     .hint(format!(
                         "this build resolves {}; there is no fallback and nothing is guessed",
                         recipe_names().join(", ")
-                    ))
-                    .hint(format!("a recipe of your own goes in {}", own.place(name))));
+                    )));
                 }
                 let constraint = Constraint::parse(constraint_text).map_err(|why| {
                     Diagnostic::new(

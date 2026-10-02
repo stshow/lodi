@@ -37,7 +37,7 @@ use super::{Machine, Snapshot};
 /// The whole emitted manifest for one machine, read at one instant.
 ///
 /// `files` is the configuration capture of T-2, and `None` is a manifest that declares packages
-/// alone — which is what `lodi host import --stdout` emits, because a declaration whose `source`
+/// alone — which is what an import emits, because a declaration whose `source`
 /// points at a bundle nobody wrote would be a manifest that cannot apply. A capture is placed
 /// **before** the comment block, so that everything the emitter left out stays last.
 pub fn manifest(machine: &Machine, snapshot: &Snapshot, files: Option<&Capture>) -> String {
@@ -58,7 +58,7 @@ pub fn manifest(machine: &Machine, snapshot: &Snapshot, files: Option<&Capture>)
 fn system(out: &mut String, machine: &Machine) {
     if !machine.system.is_empty() {
         out.push_str(
-            "# The machine's own settings. An apply sets each one that differs, and leaves a\n\
+            "# The machine's own settings. A switch sets each one that differs, and leaves a\n\
              # line you take out as it is.\n",
         );
         out.push_str("[system]\n");
@@ -70,7 +70,7 @@ fn system(out: &mut String, machine: &Machine) {
     out.push_str(
         "# Tables lodi does not read off a machine, to write on purpose:\n\
          # [services]\n\
-         # \"ssh.service\" = true          # enabled and started; false disables and stops it\n\
+         # \"ssh.service\" = \"enabled\"     # enabled and started; \"disabled\" stops it\n\
          # [firewall]\n\
          # allow = [\"22/tcp\"]             # lodi's own nftables table; the rest is dropped\n\
          # [network]\n\
@@ -88,7 +88,7 @@ fn users(out: &mut String, machine: &Machine) {
     }
     out.push_str(
         "# The human accounts of the machine that was read: a UID from UID_MIN and a login\n\
-         # shell. An apply creates a missing one with a locked password, and never changes a\n\
+         # shell. A switch creates a missing one with a locked password, and never changes a\n\
          # password. No password, hash or key is written here; add public keys with ssh_keys.\n\
          # An account taken out of this file is left on the machine as it is, with its home.\n\n",
     );
@@ -144,7 +144,7 @@ fn plain_header(out: &mut String, machine: &Machine) {
         "#\n\
          # This is a starting point, not a backup. It does not carry anything installed from\n\
          # third-party repositories, foreign and hand-built packages, snaps and flatpaks, data,\n\
-         # services, users, or package versions: an apply installs a missing package at what\n",
+         # services, users, or package versions: a switch installs a missing package at what\n",
     );
     out.push_str(if machine.distro == Distro::Fedora {
         "# Fedora's repositories offer. "
@@ -176,28 +176,29 @@ fn applicability(machine: &Machine) -> String {
     }
 }
 
-/// The release that first honours the `[host] snapshot` every imported manifest carries, which
-/// every imported manifest names as its `min_lodi_version`. A 1.3 binary reads the snapshot and
-/// ignores it, so it would install from the live archive what the file pins to the dated one;
-/// from 1.4.0 the file names a lodi that honours it, and 1.3 refuses it by name (M-Pin, LD-398;
-/// it was 1.1.1, the release that first reads `packages = "exact"`, LD-375). It is not the
-/// version of the lodi that happens to run the import: a later importer writes the same minimum.
-/// A bare version would be a prefix under the shared constraint grammar, which 1.4.1 would not
-/// satisfy, so it is written as the range `>=1.4.0`.
-pub const IMPORT_MINIMUM: &str = "1.4.0";
+/// The lodi every imported manifest names as its `min_lodi_version`: the first release of the
+/// major that wrote it, `2.0.0` from 2.0 on. 2.0 reads no 1.x config and no 1.x lodi may apply
+/// a 2.0 one (LD-491, LD-528). A 1.x build keeps 1.4.0, the release that first honoured
+/// `snapshot` (LD-398): a floor above its own version would refuse its own import. A bare
+/// version would be a prefix under the shared constraint grammar, so it is written `>=2.0.0`.
+pub const IMPORT_MINIMUM: &str = match env!("CARGO_PKG_VERSION_MAJOR").as_bytes() {
+    b"1" => "1.4.0",
+    _ => concat!(env!("CARGO_PKG_VERSION_MAJOR"), ".0.0"),
+};
 
 /// What `[host] snapshot` does on Debian and Ubuntu, above the line the import writes it on: two
 /// lines, with no date, version, user, host or path in them (M-Pin, P11).
-pub const SNAPSHOT_COMMENT: &str = "# An apply installs a missing package from the dated archive at this instant, UTC;\n\
-     # remove the line and it installs from the live archive instead.\n";
+pub const SNAPSHOT_COMMENT: &str = concat!(
+    "# A switch installs a missing package from the dated archive at this instant, UTC;\n",
+    "# remove the line and it installs from the live archive instead.\n",
+);
 
 fn host(out: &mut String, machine: &Machine, snapshot: &Snapshot) {
     out.push_str("[host]\nversion = \"1\"\n");
     let _ = writeln!(out, "distro = \"{}\"", machine.distro.name());
     out.push_str(PACKAGES_EXACT_COMMENT);
     out.push_str("packages = \"exact\"\n");
-    // The lodi that honours `snapshot`: 1.4.0 or a later one (LD-398), so an older lodi refuses
-    // the file by name rather than ignoring its pin.
+    // The major that wrote the file (LD-528), so an older lodi refuses it by name.
     let _ = writeln!(out, "min_lodi_version = \">={IMPORT_MINIMUM}\"");
     // Fedora has no dated archive this build installs from, so its file carries no snapshot
     // (LD-432); an older lodi refuses `distro = "fedora"` by name.
@@ -245,7 +246,7 @@ fn packages(out: &mut String, machine: &Machine, selection: &Selection) {
         out.push_str(
             "# Declared above, and installed here from one of this distribution's own suites\n\
              # that a fresh install of the same release does not enable. The name is offered by\n\
-             # the release's own repositories, so an apply installs it — at whatever version the\n\
+             # the release's own repositories, so a switch installs it — at whatever version the\n\
              # default suites carry, which is not the version this machine has:\n",
         );
         for (name, suite) in &selection.from_other_suite {
@@ -273,24 +274,24 @@ fn packages(out: &mut String, machine: &Machine, selection: &Selection) {
     out.push_str(
         "# Lines lodi did not write, and what each one would do if you did:\n\
          #\n\
-         #   mark_auto = [\"NAME\"]  an apply marks NAME automatically installed, so that\n\
+         #   mark_auto = [\"NAME\"]  a switch marks NAME automatically installed, so that\n\
          #                         removing whatever pulled it in removes NAME with it.\n\
-         #   optional  = [\"NAME\"]  an apply that finds no such package in the index leaves\n\
+         #   optional  = [\"NAME\"]  a switch that finds no such package in the index leaves\n\
          #                         NAME out and carries on, rather than stopping.\n\
-         #   absent    = [\"NAME\"]  an apply removes NAME wherever it finds it installed.\n\
+         #   absent    = [\"NAME\"]  a switch removes NAME wherever it finds it installed.\n\
          #\n\
          # packages = \"exact\" under [host] is why a line taken out of this list is a package\n\
-         # taken off the machine: the next apply removes it, and says so.\n\n",
+         # taken off the machine: the next switch removes it, and says so.\n\n",
     );
 }
 
 /// What `packages = "exact"` means, said above the key the import writes (LD-375).
 pub const PACKAGES_EXACT_COMMENT: &str = "\
-# packages = \"exact\": an apply makes this machine's packages what this file declares, plus
+# packages = \"exact\": a switch makes this machine's packages what this file declares, plus
 # the distribution's own base system. A package whose line you delete is removed by the next
-# apply, and one a declared package still needs is kept as a dependency; each is named in the
-# plan with the reason. A package installed by hand since lodi last recorded this machine is
-# not removed unless the apply is given --overwrite-drift. \"managed\" removes only what lodi
+# switch, and one a declared package still needs is kept as a dependency; each is named in the
+# preview with the reason. A package installed by hand since lodi last recorded this machine is
+# not removed unless the switch is given --overwrite-drift. \"managed\" removes only what lodi
 # recorded installing.
 ";
 
@@ -323,18 +324,6 @@ fn class(index: usize, machine: &Machine) -> String {
     CLASSES[index].replace("{distro}", machine.distro.name())
 }
 
-/// The `# NOT CAPTURED` block alone, from its first line to the end of the file: what a reconcile
-/// regenerates in a manifest that still has it (LD-378).
-pub fn not_captured_block(
-    machine: &Machine,
-    selection: &Selection,
-    files: Option<&Capture>,
-) -> String {
-    let mut out = String::new();
-    not_captured(&mut out, machine, selection, files);
-    out
-}
-
 fn not_captured(
     out: &mut String,
     machine: &Machine,
@@ -351,7 +340,7 @@ fn not_captured(
     let _ = writeln!(
         out,
         "# {total} package(s) installed and chosen on this machine are NOT declared above,\n\
-         # because an apply of this file on a fresh {} machine could not install them:",
+         # because a switch of this file on a fresh {} machine could not install them:",
         machine.distro.name()
     );
     for (index, count) in counts.iter().enumerate() {
@@ -370,11 +359,11 @@ fn not_captured(
     let note = if machine.repositories.read {
         "take its commented [sources] block\n\
          # above, where one is written (the repositories below say why not), and add the name\n\
-         # to [packages]; without the source an apply of this file stops at\n\
+         # to [packages]; without the source a switch of this file stops at\n\
          # E_UNKNOWN_PACKAGE before it installs anything"
     } else {
         "add that source on the new machine\n\
-         # first, or an apply of this file stops at E_UNKNOWN_PACKAGE before it installs\n\
+         # first, or a switch of this file stops at E_UNKNOWN_PACKAGE before it installs\n\
          # anything"
     };
     labelled(out, &class(0, machine), &selection.third_party, Some(note));

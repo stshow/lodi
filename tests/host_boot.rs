@@ -21,7 +21,7 @@ mod support;
 
 use std::collections::BTreeMap;
 
-use fakehost::{Case, Machine, Pkg, err, out, story};
+use fakehost::{Case, Machine, Pkg, err, nothing, story};
 
 /// A GRUB configuration as a fresh guest has it.
 const GRUB: &str = "GRUB_DEFAULT=0\nGRUB_TIMEOUT=5\nGRUB_CMDLINE_LINUX_DEFAULT=\"quiet\"\n\
@@ -127,7 +127,7 @@ fn kernel_params_revert() {
         ));
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        tried_and_confirmed(&case, distro, 2);
+        no_trial(&case, distro);
         let cmdline = next_boot(&case, distro);
         for word in ["console=ttyS0", "quiet", "mitigations=off", "lodi.test=1"] {
             assert!(cmdline.contains(&word.to_string()), "{distro}: {cmdline:?}");
@@ -148,7 +148,7 @@ fn kernel_params_revert() {
         ));
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        tried_and_confirmed(&case, distro, 3);
+        no_trial(&case, distro);
         let cmdline = next_boot(&case, distro);
         assert!(
             !cmdline.contains(&"mitigations=off".to_string()),
@@ -183,13 +183,6 @@ fn kernel_params_revert() {
             case.lock()
         );
     }
-}
-
-/// A parameter change boots once as a trial (bv-1): boot it, and confirm it.
-fn tried_and_confirmed(case: &Case, distro: &str, count: u32) {
-    boot(case, distro, count);
-    let confirm = case.boot_confirm();
-    assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
 }
 
 #[test]
@@ -233,7 +226,7 @@ fn kernel_modules_load_blacklist_revert() {
         let again = case.apply(&[]);
         assert!(again.status.success(), "{distro}: {}", story(&again));
         assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
-        assert!(out(&case.plan()).ends_with("nothing to do\n"), "{distro}");
+        assert!(nothing(&case.plan()), "{distro}");
 
         // One out of each list, then both tables gone: the distribution's defaults.
         case.set_manifest(&manifest(distro, "[kernel]\nmodules = [\"ext4\"]\n"));
@@ -265,7 +258,7 @@ fn kernel_modules_load_blacklist_revert() {
             !case.root.exists("etc/modprobe.d/lodi-blacklist.conf"),
             "{distro}"
         );
-        assert!(out(&case.plan()).ends_with("nothing to do\n"), "{distro}");
+        assert!(nothing(&case.plan()), "{distro}");
     }
 }
 
@@ -342,16 +335,16 @@ fn plan_lists_kernel_changes_and_changes_nothing() {
         let before = case.machine();
         let plan = case.plan();
         assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        let text = out(&plan);
+        let text = err(&plan);
         for line in [
-            "+ parameters mitigations=off (a trial boot: lodi-trial once, by ",
+            "+ parameters mitigations=off (the default from the next boot; ",
             "+ modules dummy (",
             "+ blacklist pcspkr (",
             "~ sysctl net.ipv4.ip_forward 0 -> 1 (",
         ] {
             assert!(text.contains(line), "{distro}: {line:?} in\n{text}");
         }
-        assert!(text.ends_with("4 action(s)\n"), "{distro}: {text}");
+        assert!(text.contains("host: 4 other changes\n"), "{distro}: {text}");
         assert!(changes(&case).is_empty(), "{distro}: {:?}", case.log());
         assert_eq!(case.machine(), before, "{distro}");
         assert_eq!(case.root.read("etc/default/grub"), GRUB, "{distro}");
@@ -377,7 +370,7 @@ fn plan_lists_kernel_changes_and_changes_nothing() {
         let grub = case.root.read("etc/default/grub");
         let plan = case.plan();
         assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        let text = out(&plan);
+        let text = err(&plan);
         for line in [
             "~ parameters mitigations=off -> quiet (",
             "- blacklist pcspkr (",
@@ -422,24 +415,6 @@ fn parameters_without_a_loader_lodi_knows_are_refused_before_any_change() {
     assert_eq!(apply.status.code(), Some(7), "{}", story(&apply));
     assert!(err(&apply).contains("E_BOOT_LOADER"), "{}", story(&apply));
     assert!(changes(&case).is_empty(), "{:?}", case.log());
-
-    // GRUB without an EFI system partition has nowhere it can forget a trial as it boots it.
-    let case = case_without_esp(distro, machines().remove(0).1);
-    case.set_manifest(&manifest(distro, "[kernel]\nparameters = [\"quiet\"]\n"));
-    let apply = case.apply(&[]);
-    assert_eq!(apply.status.code(), Some(7), "{}", story(&apply));
-    for word in ["E_BOOT_LOADER", "EFI system partition"] {
-        assert!(err(&apply).contains(word), "{word}: {}", story(&apply));
-    }
-    assert!(changes(&case).is_empty(), "{:?}", case.log());
-    assert_eq!(case.root.read("etc/default/grub"), GRUB);
-    assert!(!case.root.exists("etc/grub.d/43_lodi_trial"));
-}
-
-fn case_without_esp(distro: &str, machine: Machine) -> Case {
-    let case = case("boot-no-esp", distro, machine);
-    std::fs::remove_dir_all(case.root.path(esp(distro))).expect("no ESP");
-    case
 }
 
 #[test]
@@ -479,7 +454,7 @@ fn package_exact_mode_keeps_the_running_kernel_and_the_bootloader() {
     ));
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan);
+    let text = err(&plan);
     assert!(
         text.contains("htop"),
         "exact mode still removes the rest: {text}"
@@ -743,25 +718,24 @@ const SYSTEMD_BOOT: &str = "[kernel]\nparameters = [\"lodi.test=1\"]\n\n\
 const BACK_TO_GRUB: &str = "[kernel]\nparameters = [\"lodi.test=1\"]\n\n\
                             [boot]\nloader = \"grub\"\ndefault = \"saved\"\ntimeout = 7\n";
 
-/// Switch a fresh root to systemd-boot, boot its trial and confirm it (bv-1), and check what it
-/// boots.
+/// Switch a fresh root to systemd-boot: the next start is systemd-boot at once, GRUB right
+/// after it in the boot order as the fallback, and nothing starts once (LD-491).
 fn to_systemd_boot(case: &Case, distro: &str) {
     case.set_manifest(&manifest(distro, SYSTEMD_BOOT));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{distro}: {}", story(&apply));
-    assert_eq!(
-        power_on(case, distro, esp(distro)).0,
-        SD_BOOT_PATH,
-        "{distro}"
-    );
-    let confirm = case.boot_confirm();
-    assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
+    no_trial(case, distro);
     assert_eq!(boots(case, 0), SD_BOOT_PATH, "{distro}: {:?}", nvram(case));
     assert_eq!(
         boots(case, 1),
         grub_path(distro),
         "{distro}: {:?}",
         nvram(case)
+    );
+    assert_eq!(
+        power_on(case, distro, esp(distro)).0,
+        SD_BOOT_PATH,
+        "{distro}"
     );
 }
 
@@ -774,7 +748,7 @@ fn loader_grub_to_systemd_boot() {
         case.set_manifest(&manifest(distro, SYSTEMD_BOOT));
         let plan = case.plan();
         assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        let text = out(&plan);
+        let text = err(&plan);
         for line in [
             "~ loader grub -> systemd-boot (",
             "+ timeout 3 (",
@@ -820,7 +794,7 @@ fn loader_grub_to_systemd_boot() {
             "{distro}: {}",
             story(&again)
         );
-        assert!(out(&case.plan()).ends_with("nothing to do\n"), "{distro}");
+        assert!(nothing(&case.plan()), "{distro}");
     }
 }
 
@@ -832,7 +806,7 @@ fn loader_systemd_boot_to_grub() {
 
         case.set_manifest(&manifest(distro, BACK_TO_GRUB));
         let plan = case.plan();
-        let text = out(&plan);
+        let text = err(&plan);
         assert!(
             text.contains("~ loader systemd-boot -> grub ("),
             "{distro}: {}",
@@ -840,20 +814,8 @@ fn loader_systemd_boot_to_grub() {
         );
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        // Back to GRUB is a switch as well: a trial, then confirmed (bv-1).
-        assert_eq!(
-            boots(&case, 0),
-            SD_BOOT_PATH,
-            "{distro}: {:?}",
-            nvram(&case)
-        );
-        assert_eq!(
-            power_on(&case, distro, esp).0,
-            grub_path(distro),
-            "{distro}"
-        );
-        let confirm = case.boot_confirm();
-        assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
+        // Back to GRUB at once, systemd-boot right after it as the fallback.
+        no_trial(&case, distro);
         assert_eq!(
             boots(&case, 0),
             grub_path(distro),
@@ -865,6 +827,11 @@ fn loader_systemd_boot_to_grub() {
             SD_BOOT_PATH,
             "{distro}: {:?}",
             nvram(&case)
+        );
+        assert_eq!(
+            power_on(&case, distro, esp).0,
+            grub_path(distro),
+            "{distro}"
         );
         let grub = if distro == "fedora" {
             "boot/grub2/grub.cfg"
@@ -889,7 +856,7 @@ fn loader_systemd_boot_to_grub() {
             "{distro}: {}",
             story(&again)
         );
-        assert!(out(&case.plan()).ends_with("nothing to do\n"), "{distro}");
+        assert!(nothing(&case.plan()), "{distro}");
     }
 }
 
@@ -923,12 +890,11 @@ fn loader_systemd_boot_entries_on_the_esp_past_an_ext4_boot() {
     case.set_manifest(&manifest("debian", BACK_TO_GRUB));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
-    assert_eq!(power_on(&case, "debian", esp).0, grub_path("debian"));
-    let confirm = case.boot_confirm();
-    assert!(confirm.status.success(), "{}", story(&confirm));
+    no_trial(&case, "debian");
     assert_eq!(boots(&case, 0), grub_path("debian"), "{:?}", nvram(&case));
+    assert_eq!(power_on(&case, "debian", esp).0, grub_path("debian"));
     assert!(!case.root.path("etc/kernel/install.conf").exists());
-    assert!(out(&case.plan()).ends_with("nothing to do\n"));
+    assert!(nothing(&case.plan()));
 }
 
 #[test]
@@ -1022,7 +988,7 @@ fn loader_removal_restores_defaults() {
         case.set_manifest(&manifest(distro, ""));
         let plan = case.plan();
         assert!(
-            out(&plan).contains("~ loader systemd-boot -> grub ("),
+            err(&plan).contains("~ loader systemd-boot -> grub ("),
             "{distro}: {}",
             story(&plan)
         );
@@ -1058,12 +1024,14 @@ fn loader_removal_restores_defaults() {
             "{distro}: {}",
             case.lock()
         );
-        assert!(out(&case.plan()).ends_with("nothing to do\n"), "{distro}");
+        assert!(nothing(&case.plan()), "{distro}");
     }
 }
 
-// bv-1: a change to the kernel's command line boots once as a trial. `lodi boot confirm` in the
-// trial boot makes it the default; a boot after it that was not confirmed is the earlier entry.
+// A boot change takes effect at once (LD-491, #686): a change to `[kernel] parameters` or
+// `[boot] loader` is the default from the next boot, and the entry that was the default stays
+// in the menu as the fallback, picked by hand. Nothing boots once and nothing waits to be
+// confirmed.
 
 /// `grub.cfg`, as `grub-mkconfig` writes it.
 fn grub_cfg(distro: &str) -> &'static str {
@@ -1072,52 +1040,6 @@ fn grub_cfg(distro: &str) -> &'static str {
     } else {
         "boot/grub/grub.cfg"
     }
-}
-
-/// lodi's one-shot flag: a GRUB environment block on the EFI system partition, which GRUB can
-/// write as it boots, where it cannot write to Arch's and Fedora's btrfs `/boot`.
-fn trial_env(distro: &str) -> String {
-    format!("{}/EFI/lodi.env", esp(distro))
-}
-
-/// An environment block as `grub-editenv` writes it and GRUB rewrites it in place: 1024 bytes.
-fn env_block(lines: &str) -> String {
-    let head = format!("# GRUB Environment Block\n{lines}");
-    format!("{head}{}", "#".repeat(1024 - head.len()))
-}
-
-/// The lines of lodi's script in `grub.cfg` that make the trial one-shot, in the order GRUB must
-/// run them: find the flag, read it, forget it, and only once that write is done boot the trial.
-const ONE_SHOT: [&str; 4] = [
-    "search --no-floppy --file --set=lodi_esp /EFI/lodi.env",
-    "load_env -f ($lodi_esp)/EFI/lodi.env lodi_trial",
-    "save_env -f ($lodi_esp)/EFI/lodi.env lodi_trial",
-    "set default=lodi-trial",
-];
-
-/// The entry GRUB boots once next, as lodi's script in `grub.cfg` finds it, if any.
-fn one_shot(case: &Case, distro: &str) -> Option<String> {
-    let env = trial_env(distro);
-    if !case.root.exists(&env) {
-        return None;
-    }
-    let block = case.root.read(&env);
-    assert_eq!(
-        block.len(),
-        1024,
-        "{distro}: GRUB writes only a whole block"
-    );
-    assert!(block.starts_with("# GRUB Environment Block\n"), "{distro}");
-    if !block.lines().any(|line| line == "lodi_trial=1") {
-        return None;
-    }
-    let cfg = case.root.read(grub_cfg(distro));
-    let mut rest = cfg.as_str();
-    for line in ONE_SHOT {
-        let at = rest.find(line)?;
-        rest = &rest[at + line.len()..];
-    }
-    Some("lodi-trial".to_string())
 }
 
 /// The command line of the entry `id`, a `grub.cfg` menu entry.
@@ -1134,17 +1056,10 @@ fn entry(case: &Case, distro: &str, id: &str) -> Option<Vec<String>> {
         .map(words)
 }
 
-/// Boot the fake machine as GRUB would: the one-shot entry once, else the default. The kernel's
-/// command line and a new boot id are what the next command reads.
+/// Boot the fake machine as GRUB would: its default entry. The kernel's command line and a new
+/// boot id are what the next command reads.
 fn boot(case: &Case, distro: &str, count: u32) -> Vec<String> {
-    let cmdline = match one_shot(case, distro) {
-        Some(id) => {
-            case.root
-                .write(&trial_env(distro), &env_block("lodi_trial=0\n"));
-            entry(case, distro, &id).unwrap_or_else(|| panic!("{distro}: no entry {id}"))
-        }
-        None => next_boot(case, distro),
-    };
+    let cmdline = next_boot(case, distro);
     case.root
         .write("proc/cmdline", &format!("{}\n", cmdline.join(" ")));
     case.root.write(
@@ -1154,217 +1069,9 @@ fn boot(case: &Case, distro: &str, count: u32) -> Vec<String> {
     cmdline
 }
 
-/// Whether a command ran the loader's own one-shot tool, which cannot forget an entry on btrfs.
-fn ran_grub_reboot(case: &Case) -> bool {
-    case.log()
-        .iter()
-        .any(|line| line.starts_with("grub-reboot") || line.starts_with("grub2-reboot"))
-}
-
 fn has(words: &[String], word: &str) -> bool {
     words.iter().any(|w| w == word)
 }
-
-/// A booted machine that declares `parameters`, applied once: the trial is set.
-fn trial(name: &str, distro: &str, machine: Machine, parameters: &str) -> Case {
-    let case = case(name, distro, machine);
-    boot(&case, distro, 1);
-    case.set_manifest(&manifest(
-        distro,
-        &format!("[kernel]\nparameters = [{parameters}]\n"),
-    ));
-    let apply = case.apply(&[]);
-    assert!(apply.status.success(), "{distro}: {}", story(&apply));
-    case
-}
-
-#[test]
-fn trial_entry_is_one_shot() {
-    for (distro, machine) in machines() {
-        let case = case(&format!("boot-trial-{distro}"), distro, machine);
-        boot(&case, distro, 1);
-        let default = next_boot(&case, distro);
-        case.set_manifest(&manifest(
-            distro,
-            "[kernel]\nparameters = [\"mitigations=off\"]\n",
-        ));
-        let plan = case.plan();
-        assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        assert!(
-            out(&plan).contains("trial boot"),
-            "{distro}: {}",
-            story(&plan)
-        );
-
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert!(
-            out(&apply).contains("lodi boot confirm"),
-            "{distro}: {}",
-            story(&apply)
-        );
-        // The default is as it was; the next boot, once, is the trial with the parameter.
-        assert_eq!(next_boot(&case, distro), default, "{distro}");
-        assert_eq!(case.root.read("etc/default/grub"), GRUB, "{distro}");
-        // Not by the loader's one-shot tool: GRUB cannot forget it on a btrfs `/boot`.
-        assert!(!ran_grub_reboot(&case), "{distro}: {:?}", case.log());
-        let id = one_shot(&case, distro).expect("a one-shot entry");
-        let tried = entry(&case, distro, &id).expect("the trial entry");
-        assert!(has(&tried, "mitigations=off"), "{distro}: {tried:?}");
-        assert!(has(&tried, "console=ttyS0"), "{distro}: {tried:?}");
-
-        // Applied again before the reboot: nothing to do, and the trial still follows.
-        let again = case.apply(&[]);
-        assert!(again.status.success(), "{distro}: {}", story(&again));
-        assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
-        assert!(out(&again).ends_with("nothing to do\n"), "{distro}");
-        assert_eq!(one_shot(&case, distro), Some(id), "{distro}");
-
-        // Nothing to confirm before the trial has booted.
-        let early = case.boot_confirm();
-        assert_eq!(early.status.code(), Some(7), "{distro}: {}", story(&early));
-        assert!(err(&early).contains("E_BOOT_TRIAL"), "{distro}");
-        assert_eq!(next_boot(&case, distro), default, "{distro}");
-
-        // One boot takes the trial; the one after it is the default again.
-        assert!(has(&boot(&case, distro, 2), "mitigations=off"), "{distro}");
-        assert_eq!(boot(&case, distro, 3), default, "{distro}");
-    }
-}
-
-#[test]
-fn trial_confirmed_becomes_default() {
-    for (distro, machine) in machines() {
-        let case = trial(
-            &format!("boot-confirm-{distro}"),
-            distro,
-            machine,
-            "\"mitigations=off\"",
-        );
-        let default = next_boot(&case, distro);
-        assert!(has(&boot(&case, distro, 2), "mitigations=off"), "{distro}");
-        let confirm = case.boot_confirm();
-        assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
-        let now = next_boot(&case, distro);
-        assert!(has(&now, "mitigations=off"), "{distro}: {now:?}");
-        assert_eq!(one_shot(&case, distro), None, "{distro}");
-        // The entry that booted before the change stays, as a fallback.
-        assert_eq!(
-            entry(&case, distro, "lodi-known-good"),
-            Some(default),
-            "{distro}"
-        );
-        assert_eq!(entry(&case, distro, "lodi-trial"), None, "{distro}");
-        assert!(has(&boot(&case, distro, 3), "mitigations=off"), "{distro}");
-
-        // Confirmed, it is converged; a second confirm has nothing to confirm.
-        let again = case.apply(&[]);
-        assert!(again.status.success(), "{distro}: {}", story(&again));
-        assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
-        let twice = case.boot_confirm();
-        assert_eq!(twice.status.code(), Some(7), "{distro}: {}", story(&twice));
-    }
-}
-
-#[test]
-fn trial_reverts_without_confirmation() {
-    for (distro, machine) in machines() {
-        let case = trial(
-            &format!("boot-revert-{distro}"),
-            distro,
-            machine,
-            "\"mitigations=off\"",
-        );
-        let default = next_boot(&case, distro);
-        assert!(has(&boot(&case, distro, 2), "mitigations=off"), "{distro}");
-        // Not confirmed: the next boot is the earlier entry, with no command in between.
-        assert_eq!(boot(&case, distro, 3), default, "{distro}");
-        let plan = case.plan();
-        assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        let text = out(&plan);
-        assert!(text.contains("reverted"), "{distro}: {text}");
-        assert!(text.contains("mitigations=off"), "{distro}: {text}");
-        assert_eq!(next_boot(&case, distro), default, "{distro}");
-        let late = case.boot_confirm();
-        assert_eq!(late.status.code(), Some(7), "{distro}: {}", story(&late));
-        assert_eq!(next_boot(&case, distro), default, "{distro}");
-
-        // Nothing was confirmed: taking the declaration out forgets the trial and keeps no
-        // fallback, and says so.
-        case.set_manifest(&manifest(distro, ""));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert!(
-            !out(&apply).contains("lodi-known-good"),
-            "{distro}: {}",
-            story(&apply)
-        );
-        assert_eq!(entry(&case, distro, "lodi-known-good"), None, "{distro}");
-        assert_eq!(entry(&case, distro, "lodi-trial"), None, "{distro}");
-        assert!(!case.root.exists(&trial_env(distro)), "{distro}");
-        assert_eq!(boot(&case, distro, 4), default, "{distro}");
-    }
-}
-
-#[test]
-fn removal_restores_defaults_keeps_known_good() {
-    for (distro, machine) in machines() {
-        let case = trial(
-            &format!("boot-removal-{distro}"),
-            distro,
-            machine,
-            "\"mitigations=off\", \"lodi.test=1\"",
-        );
-        let distribution = next_boot(&case, distro);
-        boot(&case, distro, 2);
-        let confirm = case.boot_confirm();
-        assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
-        let confirmed = next_boot(&case, distro);
-        boot(&case, distro, 3);
-        // A later change tried and not confirmed: the confirmed one is what goes.
-        case.set_manifest(&manifest(
-            distro,
-            "[kernel]\nparameters = [\"lodi.test=2\"]\n",
-        ));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        boot(&case, distro, 4);
-        assert_eq!(boot(&case, distro, 5), confirmed, "{distro}");
-
-        case.set_manifest(&manifest(distro, ""));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert!(
-            out(&apply).contains("- parameters mitigations=off lodi.test=1 ("),
-            "{distro}: {}",
-            story(&apply)
-        );
-        assert_eq!(case.root.read("etc/default/grub"), GRUB, "{distro}");
-        assert_eq!(next_boot(&case, distro), distribution, "{distro}");
-        assert_eq!(one_shot(&case, distro), None, "{distro}");
-        // The entry that booted last, confirmed, stays as the known-good fallback.
-        assert_eq!(
-            entry(&case, distro, "lodi-known-good"),
-            Some(confirmed),
-            "{distro}"
-        );
-        assert_eq!(boot(&case, distro, 6), distribution, "{distro}");
-        let again = case.apply(&[]);
-        assert!(again.status.success(), "{distro}: {}", story(&again));
-        assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
-        // Fedora's own entry is as the image had it, word for word: only grubby edits it.
-        if distro == "fedora" {
-            assert_eq!(
-                case.root.read("boot/loader/entries/fake.conf"),
-                "title Fedora\nlinux /vmlinuz\noptions root=/dev/vda1 console=ttyS0 quiet\n"
-            );
-        }
-    }
-}
-
-// bv-1 on bl-1's loader (LD-425): a switch of the loader boots once, through the firmware's own
-// one-shot `BootNext`, before `lodi boot confirm` puts it first; a command line change under
-// systemd-boot boots once through its own one-shot entry, `bootctl set-oneshot`.
 
 const SD_VENDOR: &str = "4a67b082-0a4c-41cf-b6c7-440b29bb8c4f";
 
@@ -1377,6 +1084,191 @@ fn efi_var(case: &Case, name: &str) -> Option<Vec<u8>> {
 /// The entry the firmware starts once, next, if any.
 fn boot_next(case: &Case) -> Option<u16> {
     efi_var(case, &format!("BootNext-{EFI_GLOBAL}")).map(|d| u16::from_le_bytes([d[0], d[1]]))
+}
+
+/// Nothing boots once behind the user's back: the last command left no trial entry, GRUB trial
+/// script, flag, trial record, `BootNext` or systemd-boot one-shot, and ran nothing that sets
+/// one. Every test of a boot change calls it after each apply.
+fn no_trial(case: &Case, distro: &str) {
+    let esp = esp(distro);
+    for path in [
+        "etc/grub.d/43_lodi_trial".to_string(),
+        "var/lib/lodi/host/boot-trial".to_string(),
+        "var/lib/lodi/host/boot-trial-loader".to_string(),
+        format!("{esp}/EFI/lodi.env"),
+        format!("{esp}/loader/entries/lodi-trial.conf"),
+    ] {
+        assert!(!case.root.exists(&path), "{distro}: {path}");
+    }
+    assert_eq!(boot_next(case), None, "{distro}");
+    let one_shot = format!("LoaderEntryOneShot-{SD_VENDOR}");
+    assert_eq!(efi_var(case, &one_shot), None, "{distro}");
+    if case.root.exists(grub_cfg(distro)) {
+        let cfg = case.root.read(grub_cfg(distro));
+        assert!(!cfg.contains("lodi-trial"), "{distro}: {cfg}");
+        assert!(!cfg.contains("lodi.trial"), "{distro}: {cfg}");
+    }
+    let set_once = ["--bootnext", "set-oneshot", "grub-reboot", "grub2-reboot"];
+    for line in case.log() {
+        assert!(
+            !set_once.iter().any(|word| line.contains(word)),
+            "{distro}: {line}"
+        );
+    }
+}
+
+/// A booted machine that declares `parameters`, applied once.
+fn declared(case: &Case, distro: &str, parameters: &str) {
+    case.set_manifest(&manifest(
+        distro,
+        &format!("[kernel]\nparameters = [{parameters}]\n"),
+    ));
+    let apply = case.apply(&[]);
+    assert!(apply.status.success(), "{distro}: {}", story(&apply));
+    no_trial(case, distro);
+}
+
+#[test]
+fn a_parameter_change_is_the_default_at_once() {
+    for (distro, machine) in machines() {
+        let case = case(&format!("boot-at-once-{distro}"), distro, machine);
+        let default = boot(&case, distro, 1);
+        case.set_manifest(&manifest(
+            distro,
+            "[kernel]\nparameters = [\"mitigations=off\"]\n",
+        ));
+        let plan = case.plan();
+        assert!(plan.status.success(), "{distro}: {}", story(&plan));
+        let text = err(&plan);
+        let line = "+ parameters mitigations=off (the default from the next boot; ";
+        assert!(text.contains(line), "{distro}: {text}");
+        assert!(text.contains("lodi-known-good"), "{distro}: {text}");
+        assert!(!text.contains("confirm"), "{distro}: {text}");
+        assert!(changes(&case).is_empty(), "{distro}: {:?}", case.log());
+        assert_eq!(case.root.read("etc/default/grub"), GRUB, "{distro}");
+
+        let apply = case.apply(&[]);
+        assert!(apply.status.success(), "{distro}: {}", story(&apply));
+        assert!(
+            !err(&apply).contains("confirm"),
+            "{distro}: {}",
+            story(&apply)
+        );
+        no_trial(&case, distro);
+        // The loader's own calls: grubby for the machine's entries, then lodi's on Fedora.
+        let calls: Vec<String> = changes(&case)
+            .iter()
+            .map(|line| line.split(' ').next().unwrap_or("").to_string())
+            .collect();
+        let want: &[&str] = if distro == "fedora" {
+            &["grubby", "grub2-mkconfig"]
+        } else {
+            &["grub-mkconfig"]
+        };
+        assert_eq!(calls, want, "{distro}: {:?}", case.log());
+        // The next boot has it; the entry that was the default stays as the fallback.
+        let next = next_boot(&case, distro);
+        assert!(has(&next, "mitigations=off"), "{distro}: {next:?}");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(default.clone()),
+            "{distro}"
+        );
+        assert!(has(&boot(&case, distro, 2), "mitigations=off"), "{distro}");
+        assert!(has(&boot(&case, distro, 3), "mitigations=off"), "{distro}");
+
+        // Applied again: nothing to do to the boot.
+        let again = case.apply(&[]);
+        assert!(again.status.success(), "{distro}: {}", story(&again));
+        assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
+        assert!(nothing(&again), "{distro}");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(default),
+            "{distro}"
+        );
+    }
+}
+
+#[test]
+fn the_fallback_becomes_the_entry_that_booted() {
+    for (distro, machine) in machines() {
+        let case = case(&format!("boot-fallback-{distro}"), distro, machine);
+        let distribution = boot(&case, distro, 1);
+        declared(&case, distro, "\"lodi.test=1\"");
+        let first = boot(&case, distro, 2);
+        assert!(has(&first, "lodi.test=1"), "{distro}: {first:?}");
+
+        // Changed after a reboot: the entry that booted is the fallback now.
+        declared(&case, distro, "\"lodi.test=2\"");
+        let next = next_boot(&case, distro);
+        assert!(has(&next, "lodi.test=2"), "{distro}: {next:?}");
+        assert!(!has(&next, "lodi.test=1"), "{distro}: {next:?}");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(first.clone()),
+            "{distro}"
+        );
+
+        // Changed again before a reboot: the default has not booted, so the fallback stays the
+        // entry that has (LD-492).
+        declared(&case, distro, "\"lodi.test=3\"");
+        assert!(has(&next_boot(&case, distro), "lodi.test=3"), "{distro}");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(first),
+            "{distro}"
+        );
+        let third = boot(&case, distro, 3);
+        declared(&case, distro, "\"lodi.test=4\"");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(third),
+            "{distro}"
+        );
+        assert_ne!(next_boot(&case, distro), distribution, "{distro}");
+    }
+}
+
+#[test]
+fn removal_restores_defaults_keeps_known_good() {
+    for (distro, machine) in machines() {
+        let case = case(&format!("boot-removal-{distro}"), distro, machine);
+        let distribution = boot(&case, distro, 1);
+        declared(&case, distro, "\"mitigations=off\", \"lodi.test=1\"");
+        let booted = boot(&case, distro, 2);
+
+        case.set_manifest(&manifest(distro, ""));
+        let plan = case.plan();
+        assert!(
+            err(&plan).contains("- parameters mitigations=off lodi.test=1 ("),
+            "{distro}: {}",
+            story(&plan)
+        );
+        assert!(err(&plan).contains("lodi-known-good"), "{distro}");
+        let apply = case.apply(&[]);
+        assert!(apply.status.success(), "{distro}: {}", story(&apply));
+        no_trial(&case, distro);
+        // The distribution's own command line at once, the entry before it as the fallback.
+        assert_eq!(case.root.read("etc/default/grub"), GRUB, "{distro}");
+        assert_eq!(next_boot(&case, distro), distribution, "{distro}");
+        assert_eq!(
+            entry(&case, distro, "lodi-known-good"),
+            Some(booted),
+            "{distro}"
+        );
+        assert_eq!(boot(&case, distro, 3), distribution, "{distro}");
+        let again = case.apply(&[]);
+        assert!(again.status.success(), "{distro}: {}", story(&again));
+        assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
+        // Fedora's own entry is as the image had it, word for word: only grubby edits it.
+        if distro == "fedora" {
+            assert_eq!(
+                case.root.read("boot/loader/entries/fake.conf"),
+                "title Fedora\nlinux /vmlinuz\noptions root=/dev/vda1 console=ttyS0 quiet\n"
+            );
+        }
+    }
 }
 
 /// systemd-boot's entries on the ESP, by file name, with their `options`.
@@ -1462,47 +1354,25 @@ fn booted(name: &str, distro: &str, machine: Machine) -> (Case, &'static str) {
 }
 
 #[test]
-fn loader_switch_boots_once_as_a_trial() {
+fn a_loader_switch_is_the_default_at_once() {
     for (distro, machine) in machines() {
-        let (case, esp) = booted(&format!("switch-trial-{distro}"), distro, machine);
+        let (case, esp) = booted(&format!("switch-at-once-{distro}"), distro, machine);
         case.set_manifest(&manifest(distro, SYSTEMD_BOOT));
+        let plan = case.plan();
+        assert!(plan.status.success(), "{distro}: {}", story(&plan));
+        let text = err(&plan);
+        assert!(text.contains("~ loader grub -> systemd-boot ("), "{text}");
+        assert!(text.contains("the default from the next boot"), "{text}");
+        assert!(!text.contains("confirm"), "{distro}: {text}");
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{distro}: {}", story(&apply));
         assert!(
-            out(&apply).contains("lodi boot confirm"),
+            !err(&apply).contains("confirm"),
             "{distro}: {}",
             story(&apply)
         );
-        // The loader the firmware starts is as it was; systemd-boot comes next, once.
-        assert_eq!(
-            boots(&case, 0),
-            grub_path(distro),
-            "{distro}: {:?}",
-            nvram(&case)
-        );
-        let sd = boot_next(&case).expect("BootNext");
-        assert_eq!(nvram(&case).1[&sd].1, SD_BOOT_PATH, "{distro}");
-        let again = case.apply(&[]);
-        assert!(again.status.success(), "{distro}: {}", story(&again));
-        assert!(
-            boot_changes(&case).is_empty(),
-            "{distro}: {}",
-            story(&again)
-        );
-        assert!(
-            out(&again).contains("a trial boot follows"),
-            "{distro}: {}",
-            story(&again)
-        );
-        let early = case.boot_confirm();
-        assert_eq!(early.status.code(), Some(7), "{distro}: {}", story(&early));
-
-        let (file, cmdline) = power_on(&case, distro, esp);
-        assert_eq!(file, SD_BOOT_PATH, "{distro}");
-        assert!(has(&cmdline, "lodi.test=1"), "{distro}: {cmdline:?}");
-        let confirm = case.boot_confirm();
-        assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
-        assert!(out(&confirm).contains("systemd-boot"), "{distro}");
+        no_trial(&case, distro);
+        // The new loader first, the earlier one right after it; the firmware starts it next.
         assert_eq!(
             boots(&case, 0),
             SD_BOOT_PATH,
@@ -1510,129 +1380,86 @@ fn loader_switch_boots_once_as_a_trial() {
             nvram(&case)
         );
         assert_eq!(boots(&case, 1), grub_path(distro), "{distro}");
+        let (file, cmdline) = power_on(&case, distro, esp);
+        assert_eq!(file, SD_BOOT_PATH, "{distro}");
+        assert!(has(&cmdline, "lodi.test=1"), "{distro}: {cmdline:?}");
         assert_eq!(power_on(&case, distro, esp).0, SD_BOOT_PATH, "{distro}");
         let settled = case.apply(&[]);
         assert!(settled.status.success(), "{distro}: {}", story(&settled));
         assert!(
-            out(&settled).ends_with("nothing to do\n"),
+            boot_changes(&case).is_empty(),
             "{distro}: {}",
             story(&settled)
         );
+        assert!(nothing(&settled), "{distro}: {}", story(&settled));
     }
 }
 
 #[test]
-fn loader_switch_reverts_without_confirmation() {
+fn systemd_boot_parameters_take_effect_at_once() {
     for (distro, machine) in machines() {
-        let (case, esp) = booted(&format!("switch-revert-{distro}"), distro, machine);
-        case.set_manifest(&manifest(distro, SYSTEMD_BOOT));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert_eq!(power_on(&case, distro, esp).0, SD_BOOT_PATH, "{distro}");
-        // Not confirmed: the next start is the earlier loader, with no command in between.
-        assert_eq!(
-            power_on(&case, distro, esp).0,
-            grub_path(distro),
-            "{distro}"
-        );
-        let plan = case.plan();
-        assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        assert!(
-            out(&plan).contains("reverted"),
-            "{distro}: {}",
-            story(&plan)
-        );
-        let late = case.boot_confirm();
-        assert_eq!(late.status.code(), Some(7), "{distro}: {}", story(&late));
-        assert_eq!(boots(&case, 0), grub_path(distro), "{distro}");
-
-        // Taking `[boot]` out is not a trial, and forgets this one.
-        case.set_manifest(&manifest(distro, ""));
-        let removal = case.apply(&[]);
-        assert!(removal.status.success(), "{distro}: {}", story(&removal));
-        assert_eq!(boot_next(&case), None, "{distro}");
-        assert_eq!(boots(&case, 0), grub_path(distro), "{distro}");
-        let late = case.boot_confirm();
-        assert_eq!(late.status.code(), Some(7), "{distro}: {}", story(&late));
-    }
-}
-
-#[test]
-fn systemd_boot_parameters_boot_once_as_a_trial() {
-    for (distro, machine) in machines() {
-        let (case, esp) = booted(&format!("sd-trial-{distro}"), distro, machine);
+        let (case, esp) = booted(&format!("sd-at-once-{distro}"), distro, machine);
         to_systemd_boot(&case, distro);
-        let default = power_on(&case, distro, esp).1;
+        let first = power_on(&case, distro, esp).1;
+        assert!(has(&first, "lodi.test=1"), "{distro}: {first:?}");
         let two = SYSTEMD_BOOT.replace("lodi.test=1", "lodi.test=2");
         case.set_manifest(&manifest(distro, &two));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert!(
-            out(&apply).contains("lodi boot confirm"),
-            "{distro}: {}",
-            story(&apply)
-        );
-        // The machine's entries and command line are as they were; the trial entry boots once.
-        assert!(
-            case.root.read("etc/kernel/cmdline").contains("lodi.test=1"),
-            "{distro}"
-        );
-        let tried = &sd_entries(&case, esp)["lodi-trial.conf"];
-        assert!(
-            has(tried, "lodi.test=2") && !has(tried, "lodi.test=1"),
-            "{distro}: {tried:?}"
-        );
-        let (_, cmdline) = power_on(&case, distro, esp);
-        assert!(has(&cmdline, "lodi.test=2"), "{distro}: {cmdline:?}");
-        let confirm = case.boot_confirm();
-        assert!(confirm.status.success(), "{distro}: {}", story(&confirm));
-        let entries = sd_entries(&case, esp);
-        assert!(
-            !entries.contains_key("lodi-trial.conf"),
-            "{distro}: {entries:?}"
-        );
-        assert_eq!(entries["lodi-known-good.conf"], default, "{distro}");
-        let now = power_on(&case, distro, esp).1;
-        assert!(
-            has(&now, "lodi.test=2") && !has(&now, "lodi.trial=1"),
-            "{distro}: {now:?}"
-        );
-        let settled = case.apply(&[]);
-        assert!(
-            out(&settled).ends_with("nothing to do\n"),
-            "{distro}: {}",
-            story(&settled)
-        );
-
-        // A later change booted once and not confirmed: the confirmed one is back.
-        let three = SYSTEMD_BOOT.replace("lodi.test=1", "lodi.test=3");
-        case.set_manifest(&manifest(distro, &three));
-        let apply = case.apply(&[]);
-        assert!(apply.status.success(), "{distro}: {}", story(&apply));
-        assert!(
-            has(&power_on(&case, distro, esp).1, "lodi.test=3"),
-            "{distro}"
-        );
-        assert_eq!(power_on(&case, distro, esp).1, now, "{distro}");
         let plan = case.plan();
+        let text = err(&plan);
+        assert!(text.contains("the default from the next boot"), "{text}");
+        assert!(text.contains("lodi-known-good.conf"), "{text}");
+        let apply = case.apply(&[]);
+        assert!(apply.status.success(), "{distro}: {}", story(&apply));
+        no_trial(&case, distro);
+        let cmdline = case.root.read("etc/kernel/cmdline");
+        assert!(cmdline.contains("lodi.test=2"), "{distro}: {cmdline}");
+        assert!(!cmdline.contains("lodi.test=1"), "{distro}: {cmdline}");
         assert!(
-            out(&plan).contains("reverted"),
-            "{distro}: {}",
-            story(&plan)
+            case.log()
+                .iter()
+                .any(|l| l.starts_with("kernel-install ") && l.contains(" add ")),
+            "{distro}: {:?}",
+            case.log()
         );
-        // Tried again, it is the confirmed command line with the new parameter in place of the
-        // confirmed one, not beside it.
-        let said = out(&plan);
-        let again: Vec<&str> = said
-            .lines()
-            .find_map(|line| line.strip_prefix("~ cmdline "))
-            .unwrap_or_default()
-            .split_whitespace()
-            .collect();
+        let entries = sd_entries(&case, esp);
+        assert_eq!(entries["lodi-known-good.conf"], first, "{distro}");
+        let now = power_on(&case, distro, esp).1;
+        assert!(has(&now, "lodi.test=2"), "{distro}: {now:?}");
+        let settled = case.apply(&[]);
+        assert!(nothing(&settled), "{distro}: {}", story(&settled));
+
+        // Changed twice before a reboot: the fallback stays the entry that booted (LD-492).
+        for n in [3, 4] {
+            let next = SYSTEMD_BOOT.replace("lodi.test=1", &format!("lodi.test={n}"));
+            case.set_manifest(&manifest(distro, &next));
+            let apply = case.apply(&[]);
+            assert!(apply.status.success(), "{distro}: {}", story(&apply));
+            no_trial(&case, distro);
+            assert_eq!(
+                sd_entries(&case, esp)["lodi-known-good.conf"],
+                now,
+                "{distro}"
+            );
+        }
+        let four = power_on(&case, distro, esp).1;
+        assert!(has(&four, "lodi.test=4"), "{distro}: {four:?}");
+        assert!(!has(&four, "lodi.test=3"), "{distro}: {four:?}");
+
+        // Taking the parameters out: the machine's own line at once, the entry before it kept.
+        let none = SYSTEMD_BOOT.replace("[kernel]\nparameters = [\"lodi.test=1\"]\n\n", "");
+        case.set_manifest(&manifest(distro, &none));
+        let apply = case.apply(&[]);
+        assert!(apply.status.success(), "{distro}: {}", story(&apply));
+        no_trial(&case, distro);
+        assert_eq!(
+            sd_entries(&case, esp)["lodi-known-good.conf"],
+            four,
+            "{distro}"
+        );
+        let own = power_on(&case, distro, esp).1;
         assert!(
-            again.contains(&"lodi.test=3") && !again.contains(&"lodi.test=2"),
-            "{distro}: {}",
-            story(&plan)
+            !own.iter().any(|w| w.starts_with("lodi.test")),
+            "{distro}: {own:?}"
         );
     }
 }

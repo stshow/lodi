@@ -1021,6 +1021,29 @@ impl HomeGate {
     }
 }
 
+/// The machine `lodi switch --root ROOT` reads below a scratch `ROOT` (LD-518): its hostname
+/// (`box`) and release (Arch), and the test's own ids as the one login, `sample`, so that the
+/// config's trust walk starts at `ROOT`, owned by the test, never at `/dev/shm` or the target
+/// directory above it. A `HOME` given with it must be below `ROOT`.
+pub fn machine_at(root: &Path) {
+    // SAFETY: `geteuid` and `getegid` cannot fail and take no arguments.
+    let (uid, gid) = unsafe { (libc::geteuid(), libc::getegid()) };
+    let etc = root.join("etc");
+    fs::create_dir_all(&etc).unwrap();
+    fs::write(etc.join("hostname"), "box\n").unwrap();
+    fs::write(
+        etc.join("os-release"),
+        "NAME=\"Arch Linux\"\nID=arch\nBUILD_ID=rolling\n",
+    )
+    .unwrap();
+    fs::write(
+        etc.join("passwd"),
+        format!("root:x:0:0::/root:/bin/sh\nsample:x:{uid}:{gid}::/:/bin/sh\n"),
+    )
+    .unwrap();
+    fs::write(etc.join("group"), format!("root:x:0:\nsample:x:{gid}:\n")).unwrap();
+}
+
 /// Initialize the gate exactly once. Every test that touches the home scope calls this **first**,
 /// so the single environment write below happens before any read anywhere in the process: the
 /// `OnceLock` blocks every other caller until it has returned.
@@ -1029,6 +1052,7 @@ pub fn home_gate() -> &'static HomeGate {
     GATE.get_or_init(|| {
         let root = scratch("home-gate");
         let ledger = root.join("ledger.tsv");
+        machine_at(&root);
         let ambient_home = std::env::var_os("HOME").map(PathBuf::from);
         // SAFETY: this closure is the only code in a test process of this repository that writes
         // to its own environment. `OnceLock::get_or_init` serializes it against every other
@@ -1043,14 +1067,42 @@ pub fn home_gate() -> &'static HomeGate {
     })
 }
 
-/// The one `W_DEPRECATED` line, newline included, that `lodi home plan`, `apply` and `status`
-/// print first on standard error from 1.2 when `home.toml` uses `[files]` (decision D5, LD-324).
-/// Its text is pinned in `tests/surface.rs`.
-pub fn files_warning() -> String {
-    let warning =
-        lodi::surface::manifest_deprecation(lodi::surface::DEPRECATIONS, "home.toml", "[files]")
-            .expect("the committed table has the D5 row");
-    format!("{warning}\n")
+/// A 1.x home verb's words as the 2.0 command that keeps it (#699, LD-518): `home plan` and
+/// `home status` are `switch --home --dry-run`, `home apply` is `switch --home`; anything else
+/// is passed on as it is.
+pub fn switch_args(args: &[&str]) -> Vec<String> {
+    let verb: &[&str] = match args {
+        ["home", "plan" | "status", ..] => &["switch", "--home", "--dry-run"],
+        ["home", "apply", ..] => &["switch", "--home"],
+        _ => return args.iter().map(|a| a.to_string()).collect(),
+    };
+    verb.iter()
+        .chain(&args[2..])
+        .map(|a| a.to_string())
+        .collect()
+}
+
+/// The home part's plan a `lodi switch --home` previewed on standard error: its lines before the
+/// `home: N files` count, which is where 1.x's home verbs printed it on standard output. Empty
+/// when there was no count line (nothing to switch, or a stop before the preview).
+pub fn home_part(output: &std::process::Output) -> String {
+    let text = String::from_utf8_lossy(&output.stderr);
+    let lines: Vec<&str> = text.split_inclusive('\n').collect();
+    match lines.iter().position(|line| line.starts_with("home: ")) {
+        Some(count) => lines[..count].concat(),
+        None => String::new(),
+    }
+}
+
+/// Whether a `lodi switch` succeeded with nothing to do: what it says first on standard error,
+/// after the `source` line of a config fetched from a URL (LD-528).
+pub fn nothing(output: &std::process::Output) -> bool {
+    let text = String::from_utf8_lossy(&output.stderr);
+    let mut lines = text.lines().skip_while(|line| line.starts_with("source "));
+    output.status.success()
+        && lines
+            .next()
+            .is_some_and(|l| l.starts_with("nothing to switch"))
 }
 
 /// A throwaway set of home-scope roots, and the only way these tests run the binary against one.
@@ -1132,10 +1184,42 @@ impl HomeEnv {
         &self.decoy
     }
 
+    /// The folder whose `lodi/` holds the home part's data: `XDG_DATA_HOME`, as `LODI_HOME` is
+    /// its `lodi/` here (#700 story 19).
+    pub fn share(&self) -> PathBuf {
+        self.data.clone()
+    }
+
     /// The built binary with **nothing** inherited: `env_clear`, then exactly the seven variables
     /// the home scope may see.
     pub fn command(&self) -> std::process::Command {
         self.environ(std::process::Command::new(env!("CARGO_BIN_EXE_lodi")))
+    }
+
+    /// `lodi ARGS` as [`HomeEnv::command`] runs it, with a 1.x home verb read as the 2.0 command
+    /// that keeps it ([`switch_args`], LD-518), on the gate's machine ([`HomeEnv::on_gate`]).
+    pub fn lodi(&self, args: &[&str]) -> std::process::Command {
+        let mut command = self.command();
+        self.on_gate(&mut command, args);
+        command
+    }
+
+    /// Append `args` ([`switch_args`]) to `command`, a [`HomeEnv::command`] or one built like it,
+    /// with `--root` naming the gate: the config's trust walk starts there, owned by the test and
+    /// written by nobody else, never at `/dev/shm` or the target directory above it. Host verbs
+    /// stay refused without a root (`LODI_HOST_REQUIRE_ROOT=1`), and git stops at the gate.
+    pub fn on_gate<'a>(
+        &self,
+        command: &'a mut std::process::Command,
+        args: &[&str],
+    ) -> &'a mut std::process::Command {
+        let gate = home_gate().root();
+        command
+            .args(switch_args(args))
+            .arg("--root")
+            .arg(gate)
+            .env("LODI_HOST_REQUIRE_ROOT", "1")
+            .env("GIT_CEILING_DIRECTORIES", gate)
     }
 
     /// [`HomeEnv::command`] started under `umask <mask>`, through `/bin/sh`: the binary and the
@@ -1203,4 +1287,15 @@ pub fn without_legacy(report: &str) -> String {
     assert_eq!(legacy.len(), 1, "one W_LEGACY_FILES line:\n{report}");
     assert!(legacy[0].contains("[etc.\"PATH\"]"), "{report}");
     rest.concat()
+}
+
+/// Record trust for the project in `project` in the trust store at `trust_file`, as a "yes" at
+/// the prompt of `lodi develop` would: a test's setup, so that it need not answer on a terminal.
+pub fn record_trust(trust_file: &Path, project: &Path) {
+    let path = project.join("lodi.toml").canonicalize().unwrap();
+    let manifest = lodi::manifest::load_project_manifest(&path).expect("the manifest loads");
+    let subject = lodi::trust::Subject::of(&manifest, &fs::read(&path).unwrap());
+    lodi::trust::TrustStore::at(trust_file.to_path_buf())
+        .trust(&path, &subject)
+        .unwrap();
 }

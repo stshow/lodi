@@ -1,0 +1,10 @@
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 637 KiB. Need to download 637 KiB.
+After this operation, 1 MiB extra will be used (install 1 MiB, remove 0 B).
+The operation will only download packages for the transaction.
+[1/2] libutempter-0:1.2.1-20.fc44.x86_6 100% |  32.3 KiB/s |  26.7 KiB |  00m01s
+[2/2] tmux-0:3.7c-1.fc44.x86_64         100% | 231.9 KiB/s | 610.3 KiB |  00m03s
+--------------------------------------------------------------------------------
+[2/2] Total                             100% | 177.1 KiB/s | 637.1 KiB |  00m04s
+Complete!

@@ -1,0 +1,32 @@
+{
+  "kind": "lodi-progress-fixture-provenance",
+  "image": "fedora-44 44-1.7 (Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2)",
+  "recorded": "2026-10-01",
+  "environment": [
+    "env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "LC_ALL=C LANG=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true",
+    "PAGER=cat <command> >NAME.stdout 2>NAME.stderr; echo $? >NAME.status"
+  ],
+  "commands": {
+    "refresh": "dnf5 makecache",
+    "download": "dnf5 -y --setopt=install_weak_deps=False install --downloadonly tmux",
+    "install": "dnf5 -y --setopt=install_weak_deps=False install tmux",
+    "remove": "dnf5 -y remove tmux"
+  },
+  "notes": [
+    [
+      "Recorded as root via sudo over lodivm ssh without a tty, in a fresh guest (2",
+      "vCPU, 2048 MiB), commands run in the order refresh, download, install, remove"
+    ],
+    "No substitutions; tmux was absent on the stock image",
+    [
+      "refresh.stderr contains a real transient mirror error (Curl error 35, connection",
+      "reset) for the openh264 repository; the command still exited 0; kept as recorded"
+    ],
+    [
+      "Redaction: install.stderr OpenPGP key UserID email (Fedora signing key address)",
+      "replaced with redacted"
+    ]
+  ],
+  "wrapping": "a string longer than 80 characters is a list of its lines, joined by spaces"
+}

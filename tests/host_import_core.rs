@@ -267,7 +267,7 @@ impl Case {
             fixtures.display()
         );
         let root = Root::new(&format!("import-{distro}-{scenario}"));
-        root.arm();
+        root.may_manage();
         root.write(
             "etc/os-release",
             &fs::read_to_string(fixtures_root().join(distro).join("os-release"))
@@ -385,13 +385,12 @@ fn every_scenario_emits_the_committed_bytes_and_twice_the_same_bytes() {
     }
 }
 
-/// The emitted bytes as the committed file holds them. The lodi an imported manifest names as the
-/// one it needs is the release that first honours its `snapshot`, `>=1.4.0`, whatever lodi ran
-/// the import (LD-398), so the recording holds it literally and a version bump moves nothing.
+/// The emitted bytes as the committed file holds them. An imported manifest names 2.0's floor
+/// (LD-528); the recording holds `>=2.0.0`, so the version bump to 2.0.0 moves nothing.
 fn recorded(emitted: &str) -> String {
-    let needs = "min_lodi_version = \">=1.4.0\"";
-    assert_eq!(emitted.matches(needs).count(), 1, "{emitted}");
-    emitted.to_string()
+    let needs = format!("min_lodi_version = \">={}\"", floor());
+    assert_eq!(emitted.matches(&needs).count(), 1, "{emitted}");
+    emitted.replace(&needs, "min_lodi_version = \">=2.0.0\"")
 }
 
 /// The capture is the instant floored to the hour, and it is the caller's value rather than a
@@ -422,8 +421,8 @@ fn the_snapshot_is_the_last_day_ended_at_the_capture() {
 }
 
 /// A 1.3 binary reads `[host] snapshot` and ignores it, so a file that carries a live snapshot
-/// names a lodi that reads it: every 1.3 release refuses the file, and 1.4.0 on applies it
-/// (M-Pin, LD-398).
+/// names a lodi that reads it: every 1.3 release refuses the file, and the floor on applies it
+/// (M-Pin, LD-398; LD-528).
 #[test]
 fn an_imported_file_with_a_live_snapshot_is_refused_by_a_1_3_lodi() {
     use lodi::version::{Constraint, Version};
@@ -446,7 +445,7 @@ fn an_imported_file_with_a_live_snapshot_is_refused_by_a_1_3_lodi() {
                 "{distro}/{scenario}: {older} accepts it"
             );
         }
-        for newer in ["1.4.0", "1.4.1", "1.5.0"] {
+        for newer in [floor(), env!("CARGO_PKG_VERSION")] {
             assert!(
                 needs.matches(&v(newer)),
                 "{distro}/{scenario}: {newer} refuses it"
@@ -455,13 +454,12 @@ fn an_imported_file_with_a_live_snapshot_is_refused_by_a_1_3_lodi() {
     }
 }
 
-/// The one manifest key added after 1.4.0 is the opt-in `[packages.arch] archived_keyring`,
-/// which a 1.4.0 binary refuses. The import never writes it, so the file it writes is one 1.4.0
-/// reads, and `IMPORT_MINIMUM` stays 1.4.0 (LD-451, LD-454).
+/// The opt-in `[packages.arch] archived_keyring` is never written by the import (LD-451,
+/// LD-454); the floor it names is the major's, 2.0's from 2.0 on (LD-528).
 #[test]
 fn an_imported_file_never_writes_the_archived_keyring_a_1_4_0_lodi_refuses() {
     use lodi::hostscope::import::emit::IMPORT_MINIMUM;
-    assert_eq!(IMPORT_MINIMUM, "1.4.0");
+    assert_eq!(IMPORT_MINIMUM, floor());
     for (distro, scenario) in SCENARIOS {
         let emitted = Case::new(distro, scenario).emitted();
         assert!(
@@ -890,10 +888,9 @@ fn the_emitted_text_round_trips_with_no_package_action() {
                 &gate,
                 &parsed,
                 &std::collections::BTreeMap::new(),
-                lodi::hostscope::lock::IN_PLACE_SOURCE,
+                "/etc/lodi",
                 None,
                 "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-                false,
             )
             .unwrap_or_else(|e| panic!("{distro}/{scenario}: the plan failed: {e}"))
         };
@@ -1051,11 +1048,11 @@ fn the_emitted_bytes_carry_no_address_home_path_host_name_or_version() {
         assert_eq!(emitted.matches(&hostname).count(), 1, "{where_}: {emitted}");
         let emitted = emitted.replace(&hostname, "[system]\n");
         assert!(!emitted.contains(HOST_NAME), "{where_}: the host name");
-        // One version is written, on purpose, and only one: the lodi that honours the snapshot,
-        // 1.4.0 (LD-398). Everything else stays true of the rest of the file.
-        let needs = "min_lodi_version = \">=1.4.0\"\n";
-        assert_eq!(emitted.matches(needs).count(), 1, "{where_}: {emitted}");
-        let emitted = emitted.replace(needs, "");
+        // One version is written, on purpose, and only one: the floor (LD-528). Everything else
+        // stays true of the rest of the file.
+        let needs = format!("min_lodi_version = \">={}\"\n", floor());
+        assert_eq!(emitted.matches(&needs).count(), 1, "{where_}: {emitted}");
+        let emitted = emitted.replace(&needs, "");
         // And one more, commented, in each [sources] block: the lodi that reads the table
         // (LD-367). A file with no block carries none of it.
         let sources_need = "# #   min_lodi_version = \">=1.3.0\"\n";
@@ -2160,5 +2157,14 @@ fn an_ordinary_ubuntu_or_debian_machine_names_no_suite_of_its_own_archive() {
             "{scenario}: {:?}",
             refusals(&machine)
         );
+    }
+}
+
+/// The floor an import writes: 2.0's, `2.0.0`, once this crate is 2.0; a 1.x build keeps
+/// 1.4.0, since a floor above its own version would refuse its own import (LD-528).
+fn floor() -> &'static str {
+    match env!("CARGO_PKG_VERSION_MAJOR") {
+        "1" => "1.4.0",
+        _ => "2.0.0",
     }
 }

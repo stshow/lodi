@@ -1,13 +1,13 @@
-//! The pin verbs' CLI harness (LD-397): one machine called `box` under a scratch `--root`, a
-//! user-owned directory of hosts at `<root>/hosts`, and the recorded dated archives of
-//! `tests/fixtures/host/pin/` served on loopback through `LODI_FETCH_REWRITE`. Shared by
-//! `tests/host_pin_verbs_cli.rs` and `tests/host_pin_verbs.rs`.
+//! The pin verbs' CLI harness (LD-397): one machine called `box` under a scratch `--root`, its
+//! config, and the recorded dated archives of `tests/fixtures/host/pin/` served on loopback
+//! through `LODI_FETCH_REWRITE`. The config is the scratch `HOME`'s `~/.config/lodi`, which
+//! `lodi pin` finds with no path (#696).
 
 #![allow(dead_code)]
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::os::unix::fs::{MetadataExt, PermissionsExt};
+use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
@@ -33,32 +33,7 @@ pub fn repo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// Every recorded archive file by the public URL it was trimmed from, and every recorded answer
-/// of Ubuntu's per-package interface.
-pub fn archive_files() -> BTreeMap<String, Vec<u8>> {
-    fn walk(base: &Path, dir: &Path, out: &mut BTreeMap<String, Vec<u8>>) {
-        for entry in fs::read_dir(dir).expect("a fixture directory") {
-            let path = entry.expect("an entry").path();
-            if path.is_dir() {
-                walk(base, &path, out);
-            } else if path.file_name().is_some_and(|n| n != "PROVENANCE") {
-                let rel = path.strip_prefix(base).unwrap().display().to_string();
-                out.insert(format!("https://{rel}"), fs::read(&path).unwrap());
-            }
-        }
-    }
-    let fixtures = repo().join("tests/fixtures/host/pin");
-    let mut out = BTreeMap::new();
-    let base = fixtures.join("archive");
-    walk(&base, &base, &mut out);
-    let interface = fixtures.join("interface");
-    let index: BTreeMap<String, String> =
-        serde_json::from_slice(&fs::read(interface.join("index.json")).unwrap()).unwrap();
-    for (url, file) in index {
-        out.insert(url, fs::read(interface.join(file)).unwrap());
-    }
-    out
-}
+pub use crate::fakehost::archive_files;
 
 pub fn pkg(name: &str, version: &str) -> Pkg {
     let mut pkg = Pkg::new(name);
@@ -225,10 +200,6 @@ impl Verbs {
                 }
             }
         }
-        for dir in ["hosts", "hosts/box"] {
-            fs::create_dir_all(case.root.path(dir)).unwrap();
-            fs::set_permissions(case.root.path(dir), fs::Permissions::from_mode(0o755)).unwrap();
-        }
         Verbs {
             case,
             server: support::Server::start(archive_files()),
@@ -249,8 +220,9 @@ impl Verbs {
         self.case.root.path("hosts").display().to_string()
     }
 
+    /// The folder holding the host's `host.toml`: the config.
     pub fn dir(&self) -> PathBuf {
-        self.case.root.path("hosts/box")
+        self.case.config()
     }
 
     pub fn host_toml(&self) -> String {
@@ -258,37 +230,25 @@ impl Verbs {
     }
 
     pub fn set_host(&self, text: &str) {
-        fs::write(self.dir().join("host.toml"), text).unwrap();
-        fs::set_permissions(
-            self.dir().join("host.toml"),
-            fs::Permissions::from_mode(0o644),
-        )
-        .unwrap();
+        self.case.set_manifest(text)
     }
 
-    /// The host's pins as a 1.4 `pins.lock` reads: that file when the host has one, else its
-    /// section of the repository's root lock — the directory above it, which the verbs of this
-    /// harness name as `SOURCE` (LD-416) — with the version and format the section leaves out.
+    /// The host's pins: the section of its `host.toml` in the config's own `lodi.lock`, shaped
+    /// as the cases read it.
     pub fn lock_at(&self, dir: &Path) -> Option<serde_json::Value> {
-        if let Ok(bytes) = fs::read(dir.join("pins.lock")) {
-            return Some(serde_json::from_slice(&bytes).expect("pins.lock is JSON"));
-        }
-        let key = dir.file_name()?.to_str()?;
-        let bytes = fs::read(dir.parent()?.join("lodi.lock")).ok()?;
+        let (key, bytes) = ("host.toml", fs::read(dir.join("lodi.lock")).ok()?);
         let root: serde_json::Value = serde_json::from_slice(&bytes).expect("lodi.lock is JSON");
         let mut section = root["hosts"][key].as_object()?.clone();
         section.remove("keys");
         section
             .entry("pins")
             .or_insert_with(|| serde_json::json!({}));
-        section.insert("version".into(), serde_json::json!(1));
-        section.insert("format".into(), serde_json::json!("lodi-host-pins/1"));
         Some(serde_json::Value::Object(section))
     }
 
-    /// The repository's root lock this harness's verbs write, as bytes (LD-416).
+    /// The config's lock this harness's verbs write, as bytes.
     pub fn root_lock(&self) -> Option<Vec<u8>> {
-        fs::read(self.case.root.path("hosts/lodi.lock")).ok()
+        fs::read(self.case.config().join("lodi.lock")).ok()
     }
 
     pub fn lock(&self) -> Option<serde_json::Value> {
@@ -298,27 +258,6 @@ impl Verbs {
     /// Serve the newer recorded day as the dated archive of the last ended UTC day and of the
     /// next one: the instants a verb given no `--to` takes, whichever day it runs in (LD-444).
     pub fn alias_now(&self) -> Vec<String> {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as i64;
-        let day = lodi::arch::base::latest_published_day(now);
-        let instants: Vec<String> = [day, day + 86_400]
-            .iter()
-            .map(|at| lodi::util::format_utc(*at))
-            .collect();
-        let mut files = self.server.files.lock().unwrap();
-        let recorded: Vec<(String, Vec<u8>)> = files
-            .iter()
-            .filter(|(url, _)| url.contains("/20260901T000000Z/"))
-            .map(|(url, bytes)| (url.clone(), bytes.clone()))
-            .collect();
-        for instant in &instants {
-            let id = instant.replace(['-', ':'], "");
-            for (url, bytes) in &recorded {
-                files.insert(url.replace("20260901T000000Z", &id), bytes.clone());
-            }
-        }
-        instants
+        crate::fakehost::alias_now(&self.server)
     }
 }

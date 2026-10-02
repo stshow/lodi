@@ -1,9 +1,9 @@
-//! M-Pin's three verbs as the operator runs them (LD-397, charter §5 V1–V8): `host versions
-//! NAME`, `host pin NAME|--all [--to …]` and `host unpin NAME|--all`, the plan's behind-latest
-//! line and the re-import rule.
+//! The pin verbs as the operator runs them (LD-397, charter §5 V1–V8; 2.0 #696): `pin NAME`
+//! (the versions listing), `pin NAME|--all [--to …]` and `unpin NAME|--all` on the config's
+//! `lodi.lock`, the plan's behind-latest line and the re-import rule.
 //!
 //! Every case is the real binary against a scratch `--root` with the fake machine of
-//! `tests/support/fakehost.rs` behind it, a user-owned directory of hosts at `<root>/hosts`, and
+//! `tests/support/fakehost.rs` behind it, the config at the scratch `HOME`'s `~/.config/lodi`, and
 //! the recorded dated archives of `tests/fixtures/host/pin/` served on loopback through
 //! `LODI_FETCH_REWRITE`. Nothing reaches `/`: every host command carries `--root`.
 
@@ -36,29 +36,6 @@ fn child_apply() {
 
 // ------------------------------------------------------------------ V1 verb safety ---
 
-/// V1. The verbs take the import's gate: an unarmed root is refused before anything is read,
-/// and nothing anywhere under the root changes.
-#[test]
-fn v1_every_verb_is_refused_on_an_unarmed_root_and_writes_nothing() {
-    let v = Verbs::debian("verbs-unarmed", &[("bc", BC)]);
-    v.set_host(&host("debian", None, &["bc"], &[]));
-    fs::remove_file(v.case.root.path("etc/lodi/host-allowed")).unwrap();
-    let before = census(&v.case.root.dir);
-    let hosts = v.hosts();
-    for argv in [
-        vec!["versions", "bc", &hosts],
-        vec!["pin", "bc", "--to", "2026-09-01", &hosts],
-        vec!["pin", "--all", &hosts],
-        vec!["unpin", "bc", &hosts],
-        vec!["unpin", "--all", &hosts],
-    ] {
-        let output = v.run(argv[0], &argv[1..]);
-        refused(&output, "E_HOST_NOT_ARMED");
-    }
-    assert_eq!(census(&v.case.root.dir), before);
-    assert!(v.server.requests().is_empty(), "{:?}", v.server.requests());
-}
-
 /// V1. A pin of a user-owned host needs no root and takes no apply lock: it holds an advisory
 /// lock on the host directory, so a second verb on it is refused by name and writes nothing; and
 /// it never touches the machine — no package-manager change, no path under `etc/` or `var/`.
@@ -67,19 +44,19 @@ fn v1_a_pin_holds_the_host_directory_lock_and_never_touches_the_machine() {
     let v = Verbs::debian("verbs-lock", &[("bc", BC), ("tzdata", TZ_RECENT)]);
     let text = host("debian", None, &["bc", "tzdata"], &[]);
     v.set_host(&text);
-    // The verbs hold the repository's advisory lock, the directory SOURCE names (LD-416).
-    let held = fs::File::open(v.hosts()).unwrap();
+    // The verbs hold the config folder's advisory lock (LD-499).
+    let held = fs::File::open(v.dir()).unwrap();
     // SAFETY: flock on a descriptor this test owns.
     let taken = unsafe { libc::flock(held.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
     assert_eq!(taken, 0);
-    let busy = v.run("pin", &["--all", "--to", RECENT, &v.hosts()]);
+    let busy = v.run("pin", &["--all", "--to", RECENT]);
     refused(&busy, "E_SYSTEM_BUSY");
     assert_eq!(v.host_toml(), text);
     assert!(v.lock().is_none());
     drop(held);
     // A sibling test's fork can hold a copy of the descriptor until its exec: wait it out.
     for _ in 0..100 {
-        let probe = fs::File::open(v.hosts()).unwrap();
+        let probe = fs::File::open(v.dir()).unwrap();
         // SAFETY: flock on a descriptor this test owns; closing it releases the lock.
         if unsafe { libc::flock(probe.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } == 0 {
             break;
@@ -92,7 +69,7 @@ fn v1_a_pin_holds_the_host_directory_lock_and_never_touches_the_machine() {
         census(&v.case.root.path("var")),
         v.case.machine(),
     );
-    let pinned = v.run("pin", &["--all", "--to", RECENT, &v.hosts()]);
+    let pinned = v.run("pin", &["--all", "--to", RECENT]);
     ok(&pinned);
     assert!(v.host_toml().contains(&format!("snapshot = \"{RECENT}\"")));
     assert_eq!(
@@ -131,7 +108,7 @@ fn v3_pin_all_to_a_day_sets_the_snapshot_records_its_indexes_and_keeps_entry_pin
         &[("tzdata", "2025-03-01")],
     );
     v.set_host(&text);
-    let pinned = v.run("pin", &["--all", "--to", "2026-09-01", &v.hosts()]);
+    let pinned = v.run("pin", &["--all", "--to", "2026-09-01"]);
     ok(&pinned);
     assert_eq!(
         changed_lines(&text, &v.host_toml()),
@@ -165,7 +142,7 @@ fn v3_pin_all_without_to_takes_the_last_ended_day() {
     let v = Verbs::debian("verbs-pin-all-now", &[("bc", BC)]);
     v.set_host(&host("debian", None, &["bc"], &[]));
     let instants = v.alias_now();
-    let pinned = v.run("pin", &["--all", &v.hosts()]);
+    let pinned = v.run("pin", &["--all"]);
     ok(&pinned);
     let text = v.host_toml();
     let written = text
@@ -177,7 +154,7 @@ fn v3_pin_all_without_to_takes_the_last_ended_day() {
         instants.iter().any(|i| i == written),
         "{written} {instants:?}"
     );
-    let lock = v.lock().expect("pins.lock");
+    let lock = v.lock().expect("lodi.lock");
     assert_eq!(lock["snapshot"]["instant"], written);
     assert_eq!(lock["snapshot"]["indexes"].as_object().unwrap().len(), 3);
 }
@@ -187,9 +164,9 @@ fn v3_pin_all_without_to_takes_the_last_ended_day() {
 fn v3_pinning_the_file_twice_is_byte_identical_and_says_so() {
     let v = Verbs::debian("verbs-pin-all-twice", &[("bc", BC)]);
     v.set_host(&host("debian", None, &["bc"], &[]));
-    ok(&v.run("pin", &["--all", "--to", RECENT, &v.hosts()]));
+    ok(&v.run("pin", &["--all", "--to", RECENT]));
     let before = census(&v.dir());
-    let again = v.run("pin", &["--all", "--to", RECENT, &v.hosts()]);
+    let again = v.run("pin", &["--all", "--to", RECENT]);
     ok(&again);
     assert!(out(&again).contains("nothing written"), "{}", story(&again));
     assert_eq!(census(&v.dir()), before);
@@ -197,8 +174,8 @@ fn v3_pinning_the_file_twice_is_byte_identical_and_says_so() {
 
 // ------------------------------------------------------------ V4 unpin --all ---
 
-/// V4. `unpin --all` removes `[host] snapshot`, every pin table and `pins.lock`; the next apply
-/// releases every hold a pin set and changes no version.
+/// V4. `unpin --all` removes `[host] snapshot`, every pin table and their `lodi.lock` entries;
+/// the next switch releases every hold a pin set and changes no version.
 #[test]
 fn v4_unpin_all_floats_the_file_and_the_next_apply_releases_every_hold_keeping_versions() {
     let v = Verbs::debian("verbs-unpin-all", &[("bc", BC), ("tzdata", TZ_RECENT)]);
@@ -208,7 +185,7 @@ fn v4_unpin_all_floats_the_file_and_the_next_apply_releases_every_hold_keeping_v
          [packages.debian.pin]\nbc = \"2026-09-01\"\n",
     );
     ok(&v.run("pin", &["--all", "--to", RECENT]));
-    assert!(v.case.root.exists("etc/lodi/pins.lock"));
+    assert!(v.lock().is_some_and(|lock| lock.get("snapshot").is_some()));
     ok(&v.run("apply", &[]));
     let machine = v.case.machine();
     let version = |m: &serde_json::Value, n: &str| m["installed"][n]["version"].clone();
@@ -226,7 +203,11 @@ fn v4_unpin_all_floats_the_file_and_the_next_apply_releases_every_hold_keeping_v
         !text.contains("snapshot") && !text.contains(".pin]") && text.contains("common = ["),
         "{text}"
     );
-    assert!(!v.case.root.exists("etc/lodi/pins.lock"));
+    let lock = v.lock().expect("the host's lodi.lock section");
+    assert!(
+        lock.get("snapshot").is_none() && lock["pins"].as_object().unwrap().is_empty(),
+        "{lock}"
+    );
     ok(&v.run("apply", &[]));
     let after = v.case.machine();
     assert!(!held(&after, "tzdata") && !held(&after, "bc"), "{after}");
@@ -242,7 +223,7 @@ fn v5_pin_one_name_to_a_day_writes_one_key_and_one_entry() {
     let v = Verbs::debian("verbs-pin-one", &[("bc", BC), ("tzdata", TZ_RECENT)]);
     let text = host("debian", None, &["bc", "tzdata"], &[]);
     v.set_host(&text);
-    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]));
+    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01"]));
     assert_eq!(
         changed_lines(&text, &v.host_toml()),
         (
@@ -254,7 +235,7 @@ fn v5_pin_one_name_to_a_day_writes_one_key_and_one_entry() {
             ]
         )
     );
-    let lock = v.lock().expect("pins.lock");
+    let lock = v.lock().expect("lodi.lock");
     assert_eq!(
         lock["pins"].as_object().unwrap().keys().collect::<Vec<_>>(),
         vec!["tzdata"]
@@ -264,53 +245,13 @@ fn v5_pin_one_name_to_a_day_writes_one_key_and_one_entry() {
     assert!(lock.get("snapshot").is_none(), "{lock}");
 }
 
-/// V5. With no `--to` a Debian name is pinned to the day whose dated archive serves exactly the
-/// installed version — Debian has no verifiable per-package interface, so a version is no pin
-/// there (P1) — the file's own snapshot tried first.
+/// V5. An Ubuntu name is pinned to a version, which the per-package interface resolves.
 #[test]
-fn v5_pin_without_to_on_debian_takes_the_day_that_serves_the_installed_version() {
-    let v = Verbs::debian("verbs-pin-installed", &[("bc", BC), ("tzdata", TZ_RECENT)]);
-    let text = host("debian", Some(RECENT), &["bc", "tzdata"], &[]);
-    v.set_host(&text);
-    ok(&v.run("pin", &["tzdata", &v.hosts()]));
-    assert_eq!(
-        changed_lines(&text, &v.host_toml()).1,
-        vec![
-            String::new(),
-            "[packages.pin]".to_string(),
-            format!("tzdata = \"{RECENT}\"")
-        ]
-    );
-    let lock = v.lock().expect("pins.lock");
-    assert_eq!(lock["pins"]["tzdata"]["version"], TZ_RECENT);
-    assert_eq!(lock["snapshot"]["requested"], RECENT);
-}
-
-/// Idempotence. With no `--to` a name pinned to a day that still serves the installed version
-/// keeps that day: moving the file's snapshot between two pins of it changes nothing.
-#[test]
-fn v5_pinning_a_name_again_keeps_its_day_after_the_snapshot_moved() {
-    let v = Verbs::debian("verbs-pin-name-twice", &[("bc", BC)]);
-    v.set_host(&host("debian", Some(RECENT), &["bc"], &[]));
-    ok(&v.run("pin", &["bc", &v.hosts()]));
-    ok(&v.run("pin", &["--all", "--to", OLDER, &v.hosts()]));
-    let text = v.host_toml();
-    assert!(text.contains(&format!("bc = \"{RECENT}\"")), "{text}");
-    let before = census(&v.dir());
-    let again = v.run("pin", &["bc", &v.hosts()]);
-    ok(&again);
-    assert!(out(&again).contains("nothing written"), "{}", story(&again));
-    assert_eq!(census(&v.dir()), before);
-}
-
-/// V5. With no `--to` an Ubuntu name is pinned to its installed version, which the per-package
-/// interface resolves.
-#[test]
-fn v5_pin_without_to_on_ubuntu_writes_the_installed_version() {
+fn v5_pin_to_a_version_on_ubuntu_writes_that_version() {
     let v = Verbs::ubuntu("verbs-pin-ubuntu", &[("tzdata", "2024b-0ubuntu0.24.04.1")]);
     let text = host("ubuntu", None, &["tzdata"], &[]);
     v.set_host(&text);
-    ok(&v.run("pin", &["tzdata", &v.hosts()]));
+    ok(&v.run("pin", &["tzdata", "--to", "2024b-0ubuntu0.24.04.1"]));
     assert_eq!(
         changed_lines(&text, &v.host_toml()).1,
         vec![
@@ -319,27 +260,9 @@ fn v5_pin_without_to_on_ubuntu_writes_the_installed_version() {
             "tzdata = \"2024b-0ubuntu0.24.04.1\"".to_string()
         ]
     );
-    let lock = v.lock().expect("pins.lock");
+    let lock = v.lock().expect("lodi.lock");
     assert_eq!(lock["pins"]["tzdata"]["policy"], "version");
     assert_eq!(lock["pins"]["tzdata"]["snapshot"], "2025-02-05T19:00:00Z");
-}
-
-/// V5. A name that is not installed is `E_UNKNOWN_PACKAGE`, naming `host versions NAME`, and
-/// nothing is written.
-#[test]
-fn v5_a_name_that_is_not_installed_is_e_unknown_package_naming_versions() {
-    let v = Verbs::debian("verbs-pin-absent", &[("bc", BC)]);
-    let text = host("debian", Some(RECENT), &["bc", "tree"], &[]);
-    v.set_host(&text);
-    let pinned = v.run("pin", &["tree", &v.hosts()]);
-    refused(&pinned, "E_UNKNOWN_PACKAGE");
-    assert!(
-        err(&pinned).contains("host versions tree"),
-        "{}",
-        story(&pinned)
-    );
-    assert_eq!(v.host_toml(), text);
-    assert!(v.lock().is_none());
 }
 
 /// V5. It resolves before it writes: a request the archive refuses writes nothing.
@@ -349,16 +272,16 @@ fn v5_a_request_that_does_not_resolve_writes_nothing() {
     let text = host("debian", None, &["bc", "tzdata"], &[("bc", "2026-09-01")]);
     v.set_host(&text);
     let before = census(&v.dir());
-    let too_old = v.run("pin", &["tzdata", "--to", "2001-01-01", &v.hosts()]);
+    let too_old = v.run("pin", &["tzdata", "--to", "2001-01-01"]);
     refused(&too_old, "E_SNAPSHOT_TOO_OLD");
-    let a_version = v.run("pin", &["tzdata", "--to", TZ_RECENT, &v.hosts()]);
+    let a_version = v.run("pin", &["tzdata", "--to", TZ_RECENT]);
     refused(&a_version, "E_UNSUPPORTED");
     assert!(
         err(&a_version).contains("YYYY-MM-DD"),
         "{}",
         story(&a_version)
     );
-    let undeclared = v.run("pin", &["curl", "--to", "2026-09-01", &v.hosts()]);
+    let undeclared = v.run("pin", &["curl", "--to", "2026-09-01"]);
     refused(&undeclared, "E_UNKNOWN_PACKAGE");
     assert_eq!(census(&v.dir()), before);
 }
@@ -380,7 +303,7 @@ fn v5_pinning_a_hand_edited_pin_to_its_own_value_records_it_and_keeps_host_toml(
         fs::read(&toml).unwrap(),
         fs::metadata(&toml).unwrap().mtime_nsec(),
     );
-    let recorded = v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]);
+    let recorded = v.run("pin", &["tzdata", "--to", "2025-03-01"]);
     ok(&recorded);
     assert_eq!(
         (
@@ -390,11 +313,11 @@ fn v5_pinning_a_hand_edited_pin_to_its_own_value_records_it_and_keeps_host_toml(
         meta
     );
     assert_eq!(
-        v.lock().expect("pins.lock")["pins"]["tzdata"]["version"],
+        v.lock().expect("lodi.lock")["pins"]["tzdata"]["version"],
         TZ_OLDER
     );
     let before = census(&v.dir());
-    let again = v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]);
+    let again = v.run("pin", &["tzdata", "--to", "2025-03-01"]);
     ok(&again);
     assert!(out(&again).contains("nothing written"), "{}", story(&again));
     assert_eq!(census(&v.dir()), before);
@@ -413,16 +336,16 @@ fn v6_unpin_one_name_removes_one_key_and_one_entry_and_no_pin_is_exit_zero() {
         &["bc", "tzdata"],
         &[("bc", "2026-09-01"), ("tzdata", "2025-03-01")],
     ));
-    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]));
+    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01"]));
     let text = v.host_toml();
-    let lock = v.lock().expect("pins.lock");
+    let lock = v.lock().expect("lodi.lock");
     assert!(lock["pins"].get("bc").is_some(), "{lock}");
-    ok(&v.run("unpin", &["bc", &v.hosts()]));
+    ok(&v.run("unpin", &["bc"]));
     assert_eq!(
         changed_lines(&text, &v.host_toml()),
         (vec!["bc = \"2026-09-01\"".to_string()], vec![])
     );
-    let after = v.lock().expect("pins.lock");
+    let after = v.lock().expect("lodi.lock");
     assert_eq!(
         after["pins"]
             .as_object()
@@ -433,7 +356,7 @@ fn v6_unpin_one_name_removes_one_key_and_one_entry_and_no_pin_is_exit_zero() {
     );
     assert_eq!(after["pins"]["tzdata"], lock["pins"]["tzdata"]);
     let before = census(&v.dir());
-    let none = v.run("unpin", &["bc", &v.hosts()]);
+    let none = v.run("unpin", &["bc"]);
     ok(&none);
     assert!(out(&none).contains("bc has no pin"), "{}", story(&none));
     assert_eq!(census(&v.dir()), before);
@@ -446,9 +369,9 @@ fn v6_unpin_one_name_removes_one_key_and_one_entry_and_no_pin_is_exit_zero() {
 fn v7_moving_a_pin_or_the_snapshot_changes_exactly_that_line_and_that_entry() {
     let v = Verbs::debian("verbs-move", &[("bc", BC), ("tzdata", TZ_OLDER)]);
     v.set_host(&host("debian", Some(OLDER), &["bc", "tzdata"], &[]));
-    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]));
-    let (text, lock) = (v.host_toml(), v.lock().expect("pins.lock"));
-    ok(&v.run("pin", &["tzdata", "--to", "2026-09-01", &v.hosts()]));
+    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01"]));
+    let (text, lock) = (v.host_toml(), v.lock().expect("lodi.lock"));
+    ok(&v.run("pin", &["tzdata", "--to", "2026-09-01"]));
     assert_eq!(
         changed_lines(&text, &v.host_toml()),
         (
@@ -456,12 +379,12 @@ fn v7_moving_a_pin_or_the_snapshot_changes_exactly_that_line_and_that_entry() {
             vec!["tzdata = \"2026-09-01\"".to_string()]
         )
     );
-    let moved = v.lock().expect("pins.lock");
+    let moved = v.lock().expect("lodi.lock");
     assert_eq!(moved["pins"]["tzdata"]["version"], TZ_RECENT);
     assert_eq!(moved["snapshot"], lock["snapshot"]);
 
     let text = v.host_toml();
-    ok(&v.run("pin", &["--all", "--to", RECENT, &v.hosts()]));
+    ok(&v.run("pin", &["--all", "--to", RECENT]));
     assert_eq!(
         changed_lines(&text, &v.host_toml()),
         (
@@ -469,12 +392,10 @@ fn v7_moving_a_pin_or_the_snapshot_changes_exactly_that_line_and_that_entry() {
             vec![format!("snapshot = \"{RECENT}\"")]
         )
     );
-    let file = v.lock().expect("pins.lock");
+    let file = v.lock().expect("lodi.lock");
     assert_eq!(file["pins"], moved["pins"]);
     assert_eq!(file["snapshot"]["instant"], RECENT);
 }
-
-// ---------------------------------------------------------- V8 the flake loop ---
 
 // ------------------------------------------------------------ versions NAME ---
 
@@ -493,7 +414,7 @@ fn versions_on_ubuntu_lists_every_version_newest_first_and_one_line_to_copy() {
         &["tzdata"],
         &[("tzdata", "2024b-0ubuntu0.24.04.1")],
     ));
-    let listed = v.run("versions", &["tzdata", &v.hosts()]);
+    let listed = v.run("versions", &["tzdata"]);
     ok(&listed);
     let text = out(&listed);
     let mut lines = text.lines();
@@ -537,11 +458,7 @@ fn versions_on_ubuntu_lists_every_version_newest_first_and_one_line_to_copy() {
     let copy = lines.collect::<Vec<_>>();
     assert_eq!(
         copy,
-        vec![format!(
-            "lodi host pin tzdata --to 2026c-0ubuntu0.24.04.1 {} --root {}",
-            v.hosts(),
-            v.root()
-        )]
+        vec!["lodi pin tzdata --to 2026c-0ubuntu0.24.04.1".to_string()]
     );
 }
 
@@ -557,9 +474,9 @@ fn versions_on_debian_lists_what_the_dated_archive_serves_and_the_pinned_and_ins
         &["bc", "tzdata"],
         &[("tzdata", "2025-03-01")],
     ));
-    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01", &v.hosts()]));
+    ok(&v.run("pin", &["tzdata", "--to", "2025-03-01"]));
     let instants = v.alias_now();
-    let listed = v.run("versions", &["tzdata", &v.hosts()]);
+    let listed = v.run("versions", &["tzdata"]);
     ok(&listed);
     let text = out(&listed);
     let lines: Vec<&str> = text.lines().collect();
@@ -575,12 +492,10 @@ fn versions_on_debian_lists_what_the_dated_archive_serves_and_the_pinned_and_ins
         "{text}"
     );
     assert_eq!(lines[3], "");
-    let hosts = v.hosts();
-    let root = v.root();
     assert!(
         instants
             .iter()
-            .any(|at| lines[4] == format!("lodi host pin tzdata --to {at} {hosts} --root {root}")),
+            .any(|at| lines[4] == format!("lodi pin tzdata --to {at}")),
         "{text}"
     );
     assert_eq!(lines.len(), 5, "{text}");
@@ -592,7 +507,7 @@ fn versions_on_debian_lists_what_the_dated_archive_serves_and_the_pinned_and_ins
 fn v2_versions_answers_from_a_young_cache_and_refetches_a_corrupt_or_stale_one() {
     let v = Verbs::ubuntu("verbs-cache", &[("tzdata", "2024b-0ubuntu0.24.04.1")]);
     v.set_host(&host("ubuntu", None, &["tzdata"], &[]));
-    let first = v.run("versions", &["tzdata", &v.hosts()]);
+    let first = v.run("versions", &["tzdata"]);
     ok(&first);
     assert!(!v.server.requests().is_empty());
     let cache = v
@@ -602,13 +517,13 @@ fn v2_versions_answers_from_a_young_cache_and_refetches_a_corrupt_or_stale_one()
     assert!(cache.is_file());
 
     v.server.clear();
-    let second = v.run("versions", &["tzdata", &v.hosts()]);
+    let second = v.run("versions", &["tzdata"]);
     ok(&second);
     assert_eq!(out(&second), out(&first));
     assert!(v.server.requests().is_empty(), "{:?}", v.server.requests());
 
     fs::write(&cache, "{ not a cache").unwrap();
-    let third = v.run("versions", &["tzdata", &v.hosts()]);
+    let third = v.run("versions", &["tzdata"]);
     ok(&third);
     assert!(!v.server.requests().is_empty());
     let mut file: serde_json::Value = serde_json::from_slice(&fs::read(&cache).unwrap()).unwrap();
@@ -617,7 +532,7 @@ fn v2_versions_answers_from_a_young_cache_and_refetches_a_corrupt_or_stale_one()
     file["fetched"] = serde_json::json!(file["fetched"].as_i64().unwrap() - 2 * 86_400);
     fs::write(&cache, serde_json::to_vec(&file).unwrap()).unwrap();
     v.server.clear();
-    let fourth = v.run("versions", &["tzdata", &v.hosts()]);
+    let fourth = v.run("versions", &["tzdata"]);
     ok(&fourth);
     assert!(!v.server.requests().is_empty(), "a stale file was used");
 }
@@ -630,7 +545,7 @@ fn v2_a_cold_cache_with_no_network_is_e_repo_unreachable() {
     let closed = support::ClosedPort::bind();
     let offline = v.case.verb_env(
         "versions",
-        &["tzdata", &v.hosts()],
+        &["tzdata"],
         &[
             ("LODI_FETCH_REWRITE", closed.rewrite().as_str()),
             // One attempt: a refused connection is retried with a backoff otherwise (LD-386).
@@ -666,7 +581,7 @@ fn plan_prints_one_behind_latest_line_for_a_pinned_name_the_archive_moved_past()
     ));
     let plan = v.run("plan", &[]);
     ok(&plan);
-    let behind: Vec<String> = out(&plan)
+    let behind: Vec<String> = err(&plan)
         .lines()
         .filter(|l| l.contains("behind latest"))
         .map(str::to_string)
@@ -680,17 +595,15 @@ fn plan_prints_one_behind_latest_line_for_a_pinned_name_the_archive_moved_past()
 
 // ------------------------------------------------------------ the re-import ---
 
-/// Re-import never moves a pin: the snapshot, every pin and `pins.lock` are kept while what
-/// changed on the machine is merged in, and one line names `host pin --all` because the machine
-/// was read later than the snapshot.
+/// Re-import never moves a pin: the snapshot, every pin and their `lodi.lock` section are kept
+/// while what changed on the machine is merged in.
 #[test]
-fn a_re_import_keeps_the_snapshot_pins_and_lock_and_names_pin_all() {
+fn a_re_import_keeps_the_snapshot_pins_and_lock() {
     let v = Verbs::debian("verbs-reimport", &[("bc", BC), ("tzdata", TZ_RECENT)]);
     ok(&v.run("import", &[]));
     ok(&v.run("pin", &["--all", "--to", RECENT]));
-    ok(&v.run("pin", &["tzdata"]));
-    let lock = v.case.root.read("etc/lodi/pins.lock");
-    assert!(!lock.is_empty());
+    ok(&v.run("pin", &["tzdata", "--to", RECENT]));
+    let lock = v.lock().expect("the host's lodi.lock section");
     v.case.install_by_hand(pkg("tree", "2.1.0-1"));
     let again = v.run("import", &[]);
     ok(&again);
@@ -698,11 +611,5 @@ fn a_re_import_keeps_the_snapshot_pins_and_lock_and_names_pin_all() {
     assert!(text.contains("\"tree\""), "{}", story(&again));
     assert!(text.contains(&format!("snapshot = \"{RECENT}\"")), "{text}");
     assert!(text.contains(&format!("tzdata = \"{RECENT}\"")), "{text}");
-    assert_eq!(v.case.root.read("etc/lodi/pins.lock"), lock);
-    let said = format!("{}{}", out(&again), err(&again));
-    let named: Vec<&str> = said
-        .lines()
-        .filter(|l| l.contains("host pin --all"))
-        .collect();
-    assert_eq!(named.len(), 1, "{}", story(&again));
+    assert_eq!(v.lock().expect("the host's lodi.lock section"), lock);
 }

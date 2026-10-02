@@ -2,7 +2,8 @@
 //! disabled and stopped through `systemctl --user` as the home's user, lingering only on request,
 //! removal restoring only the units Lodi managed, and an inline unit only when one is written.
 //!
-//! The built binary runs in the throwaway roots of `support::home_env`, with test-owned
+//! The built binary runs as `lodi switch --home` (1.x's `lodi home plan` and `apply`, LD-518) in
+//! the throwaway roots of `support::home_env`, with test-owned
 //! `systemctl` and `loginctl` first on `PATH` and a scratch `XDG_RUNTIME_DIR`: they keep the
 //! units' states in files beside them and log every call with the uid that made it, so no test
 //! here ever reaches a real user manager or logind. Offline and deterministic.
@@ -139,15 +140,15 @@ impl Case {
 
     fn lodi(&self, args: &[&str]) -> Output {
         let path = format!("{}:/usr/bin:/bin", self.bin.display());
+        let mut command = self.env.command();
+        command.env("PATH", path).env("XDG_RUNTIME_DIR", &self.run);
         self.env
-            .command()
-            .env("PATH", path)
-            .env("XDG_RUNTIME_DIR", &self.run)
-            .args(args)
+            .on_gate(&mut command, args)
             .output()
             .expect("the lodi binary runs")
     }
 
+    /// What a successful switch said, all of it on standard error.
     fn ok(&self, args: &[&str]) -> String {
         let out = self.lodi(args);
         assert!(
@@ -156,7 +157,14 @@ impl Case {
             String::from_utf8_lossy(&out.stdout),
             String::from_utf8_lossy(&out.stderr)
         );
-        String::from_utf8(out.stdout).unwrap()
+        assert!(out.stdout.is_empty(), "{out:?}");
+        String::from_utf8(out.stderr).unwrap()
+    }
+
+    /// A `lodi switch --home` that had nothing to do.
+    fn nothing(&self) {
+        let out = self.lodi(&["home", "apply"]);
+        assert!(support::nothing(&out), "{out:?}");
     }
 
     fn calls(&self) -> Vec<String> {
@@ -216,9 +224,13 @@ fn service_runs_as_user() {
     assert!(case.changes_since(0).is_empty(), "plan changed nothing");
     assert_eq!(case.state("a.service"), ("disabled".into(), false));
 
-    case.ok(&["home", "apply"]);
+    let applied = case.ok(&["home", "apply"]);
     assert_eq!(case.state("a.service"), ("enabled".into(), true));
     assert_eq!(case.state("b.service"), ("disabled".into(), false));
+    // Services are counted as services, and the steps with nothing to do are left out (#694).
+    let summary = applied.lines().last().unwrap_or_default();
+    assert!(summary.ends_with("home 2 services"), "{applied}");
+    assert!(applied.contains("[1/1] User services"), "{applied}");
     let who = format!(
         "uid={} runtime={} bus= systemctl --user ",
         case.uid(),
@@ -231,7 +243,7 @@ fn service_runs_as_user() {
     }
 
     let before = case.calls().len();
-    assert_eq!(case.ok(&["home", "apply"]), "nothing to do\n");
+    case.nothing();
     assert!(case.changes_since(before).is_empty(), "{:?}", case.calls());
 }
 
@@ -251,7 +263,7 @@ fn linger_only_when_opted_in() {
     assert!(!case.lingering(), "plan changed nothing");
     case.ok(&["home", "apply"]);
     assert!(case.lingering());
-    assert_eq!(case.ok(&["home", "apply"]), "nothing to do\n");
+    case.nothing();
 
     // Lodi turned it on, so taking the request out turns it off.
     case.manifest("[services.\"a.service\"]\nenable = true\n");
@@ -287,7 +299,7 @@ fn removal_restores_only_managed_units() {
         "a unit lodi never managed is never read or touched"
     );
     assert_eq!(case.changes_since(before).len(), 1);
-    assert_eq!(case.ok(&["home", "apply"]), "nothing to do\n");
+    case.nothing();
 }
 
 const UNIT: &str = "[Unit]\nDescription=hello\n\n[Service]\nExecStart=/bin/true\n\n\
@@ -323,18 +335,4 @@ fn inline_unit_only_when_opted_in() {
     case.ok(&["home", "apply"]);
     assert!(!units.join("hello.service").exists());
     assert_eq!(case.state("hello.service"), ("disabled".into(), false));
-
-    // The import never copies a unit file, and never replaces what the user wrote.
-    fs::write(units.join("mine.service"), UNIT).unwrap();
-    let emitted = case.ok(&["home", "import", "--stdout"]);
-    assert!(
-        !emitted.contains("[services") && !emitted.contains("ExecStart"),
-        "{emitted}"
-    );
-    let listing: Vec<_> = fs::read_dir(&units).unwrap().flatten().collect();
-    assert_eq!(listing.len(), 1, "{listing:?}");
-    let manifest = case.env.config().join("lodi/home.toml");
-    let written = fs::read(&manifest).unwrap();
-    assert!(!case.lodi(&["home", "import"]).status.success());
-    assert_eq!(fs::read(&manifest).unwrap(), written);
 }

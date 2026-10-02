@@ -2,7 +2,7 @@
 //!
 //! Two halves:
 //!
-//! 1. the four failures a new user hits — no manifest, no or stale lock, no container runtime,
+//! 1. the four failures a new user hits — no manifest, an unusable lock, no container runtime,
 //!    untrusted task text — each pinned by its `spec/11` code, its exit status **and** its hint,
 //!    through the real binary or the real library function the binary calls;
 //! 2. `docs/ERRORS.md` walked in both directions (D15, LD-60): every code this build can emit
@@ -31,10 +31,23 @@ fn scratch(tag: &str) -> PathBuf {
     support::scratch(&format!("diag-{tag}"))
 }
 
+/// The binary in `dir` with nothing of the developer's environment: its home, configuration and
+/// store are scratch directories inside `dir`, and every fetch goes to a closed loopback port.
 fn lodi(dir: &Path, args: &[&str]) -> Output {
+    let own = dir.join(".env");
+    let closed = support::ClosedPort::bind();
     Command::new(env!("CARGO_BIN_EXE_lodi"))
         .args(args)
         .current_dir(dir)
+        .env_clear()
+        .env("PATH", "/usr/bin:/bin")
+        .env("HOME", own.join("home"))
+        .env("XDG_CONFIG_HOME", own.join("config"))
+        .env("LODI_HOME", own.join("lodi-home"))
+        .env(
+            "LODI_FETCH_REWRITE",
+            format!("https://=http://127.0.0.1:{}/", closed.port()),
+        )
         .output()
         .expect("the lodi binary runs")
 }
@@ -50,12 +63,9 @@ fn stderr(o: &Output) -> String {
 fn a_missing_manifest_points_at_lodi_init() {
     let dir = scratch("no-manifest");
     for args in [
-        &["lock"][..],
-        &["lock", "--check"],
-        &["develop", "--", "true"],
-        &["trust"],
-        // `lodi info` with no argument needs a manifest too (M-0.4 T-6, design call D17).
-        &["info"],
+        &["develop", "--", "true"][..],
+        &["develop", "--trust", "--", "true"],
+        &["run", "hi"],
     ] {
         let out = lodi(&dir, args);
         assert_eq!(out.status.code(), Some(3), "{args:?}: {}", stderr(&out));
@@ -73,24 +83,40 @@ fn a_missing_manifest_points_at_lodi_init() {
     fs::remove_dir_all(&dir).unwrap();
 }
 
-/// A manifest with no lock: `E_LOCK_STALE`, exit 10, and the hint names `lodi lock`. A lock that
-/// is present but out of date lists the stale labels, as `spec/11` requires.
+/// A missing lock is no error: `lodi develop` and `lodi run` write it (LD-496). A lock that is
+/// there but cannot be read is `E_LOCK_STALE`, exit 10, with exactly one hint, and it is never
+/// replaced. A stale lock's diagnostic, which `spec/11` still defines, lists the stale labels.
 #[test]
-fn a_missing_or_stale_lock_points_at_lodi_lock() {
-    let dir = scratch("lock");
-    assert_eq!(
-        lodi(&dir, &["init", "--name", "hello"]).status.code(),
-        Some(0)
-    );
-    for args in [&["lock", "--check"][..], &["develop", "--", "true"]] {
+fn an_unreadable_lock_is_named_once_and_left_alone() {
+    let dir = scratch("lock-one-hint");
+    fs::write(
+        dir.join("lodi.toml"),
+        "[project]\nname = \"hint\"\n\n[tasks.hi]\nrun = \"echo hi\"\n",
+    )
+    .unwrap();
+    let hints = |text: &str| text.lines().filter(|l| l.contains("hint:")).count();
+    fs::write(dir.join("lodi.lock"), "not a lock").unwrap();
+    for args in [
+        &["develop", "--trust", "--", "true"][..],
+        &["run", "--trust", "hi"],
+    ] {
         let out = lodi(&dir, args);
         assert_eq!(out.status.code(), Some(10), "{args:?}: {}", stderr(&out));
         let text = stderr(&out);
         assert!(
-            text.contains("lodi: error E_LOCK_STALE"),
+            text.contains("lodi: error E_LOCK_STALE: lodi.lock is invalid: "),
             "{args:?}: {text}"
         );
-        assert!(text.contains("hint: run `lodi lock`"), "{args:?}: {text}");
+        assert_eq!(hints(&text), 1, "{args:?}: {text}");
+        assert!(
+            text.ends_with("\n   = hint: remove lodi.lock to resolve every entry again\n"),
+            "{args:?}: {text}"
+        );
+        assert!(!text.contains("lodi lock"), "{args:?}: {text}");
+        assert_eq!(
+            fs::read_to_string(dir.join("lodi.lock")).unwrap(),
+            "not a lock"
+        );
     }
     assert_eq!(diag::exit_status("E_LOCK_STALE"), 10);
 
@@ -103,61 +129,15 @@ fn a_missing_or_stale_lock_points_at_lodi_lock() {
         text.contains("python 3.12") && text.contains("base bookworm"),
         "{text}"
     );
-    assert!(text.contains("hint: run `lodi lock`"), "{text}");
-    fs::remove_dir_all(&dir).unwrap();
-}
+    assert!(!text.contains("lodi lock"), "{text}");
 
-/// `lodi develop` and `lodi run` meet a lock that is missing, or one that cannot be read, with
-/// exactly one hint, and it says that these two commands never resolve; for a lock that cannot be
-/// read it still says to remove it first. `lodi lock --check` keeps the plain hints.
-#[test]
-fn develop_and_run_meet_an_unusable_lock_with_one_hint() {
-    let dir = scratch("lock-one-hint");
-    fs::write(
-        dir.join("lodi.toml"),
-        "[project]\nname = \"hint\"\n\n[tasks.hi]\nrun = \"echo hi\"\n",
-    )
-    .unwrap();
-    let hints = |text: &str| text.lines().filter(|l| l.contains("hint:")).count();
-    for args in [&["develop", "--", "true"][..], &["run", "hi"]] {
-        let out = lodi(&dir, args);
-        assert_eq!(out.status.code(), Some(10), "{args:?}: {}", stderr(&out));
-        let text = stderr(&out);
-        assert_eq!(
-            text,
-            "lodi: error E_LOCK_STALE: lodi.lock does not exist\n   \
-             = hint: run `lodi lock` first; develop and run never resolve\n",
-            "{args:?}"
-        );
-    }
-    let check = stderr(&lodi(&dir, &["lock", "--check"]));
-    assert_eq!(hints(&check), 1, "{check}");
-    assert!(check.ends_with("= hint: run `lodi lock`\n"), "{check}");
-
-    fs::write(dir.join("lodi.lock"), "not a lock").unwrap();
-    for args in [&["develop", "--", "true"][..], &["run", "hi"]] {
-        let out = lodi(&dir, args);
-        assert_eq!(out.status.code(), Some(10), "{args:?}: {}", stderr(&out));
-        let text = stderr(&out);
-        assert!(
-            text.starts_with("lodi: error E_LOCK_STALE: lodi.lock is invalid: "),
-            "{args:?}: {text}"
-        );
-        assert_eq!(hints(&text), 1, "{args:?}: {text}");
-        assert!(
-            text.ends_with(
-                "\n   = hint: remove lodi.lock and run `lodi lock` first; \
-                 develop and run never resolve\n"
-            ),
-            "{args:?}: {text}"
-        );
-    }
-    let check = stderr(&lodi(&dir, &["lock", "--check"]));
-    assert_eq!(hints(&check), 1, "{check}");
-    assert!(
-        check.ends_with("= hint: remove lodi.lock and run `lodi lock` to resolve again\n"),
-        "{check}"
-    );
+    // No lock at all is written, not refused.
+    fs::remove_file(dir.join("lodi.lock")).unwrap();
+    let out = lodi(&dir, &["run", "--trust", "hi"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(dir.join("lodi.lock").exists());
+    // The store makes its entries read-only.
+    support::make_writable(&dir);
     fs::remove_dir_all(&dir).unwrap();
 }
 
@@ -178,10 +158,10 @@ fn a_missing_container_runtime_names_the_install_command() {
     fs::remove_dir_all(&empty).unwrap();
 }
 
-/// Task text that has not been trusted: `E_TRUST_REQUIRED`, exit 11, and the hint names both
-/// `lodi trust` and the one-invocation escape hatch (ADR-014).
+/// Task text that has not been trusted: `E_TRUST_REQUIRED`, exit 11, and the hint names the
+/// terminal prompt and the one-run escape hatch, `--trust` or `LODI_TRUST=1` (ADR-014, LD-496).
 #[test]
-fn untrusted_task_text_points_at_lodi_trust() {
+fn untrusted_task_text_points_at_the_trust_flag() {
     let dir = scratch("trust");
     let home = dir.join("config");
     fs::create_dir_all(&home).unwrap();
@@ -209,8 +189,8 @@ fn untrusted_task_text_points_at_lodi_trust() {
     assert_eq!(diag::exit_status("E_TRUST_REQUIRED"), 11);
     let shown = failure.to_string();
     assert!(shown.contains("nothing was realized or run"), "{shown}");
-    assert!(shown.contains("hint: run `lodi trust`"), "{shown}");
-    assert!(shown.contains("LODI_TRUST=1 for one invocation"), "{shown}");
+    assert!(shown.contains("--trust"), "{shown}");
+    assert!(!shown.contains("lodi trust"), "{shown}");
 
     // `LODI_TRUST=1` authorizes exactly one invocation, so the same gate then passes.
     let once = lodi::host::Options {
@@ -260,10 +240,16 @@ fn a_tool_with_no_recipe_has_no_silent_fallback() {
         );
     }
     assert_eq!(diag::exit_status("E_NO_RECIPE"), 4);
-    // `lodi info TOOL` is the other command that meets it (M-0.4 T-6): it says so through the
-    // real binary, at exit 4, and names the nearest catalogue names instead of guessing.
+    // A project naming a tool no recipe has meets it when `lodi develop` locks: it says so
+    // through the real binary, at exit 4, and names the nearest catalogue names instead of
+    // guessing.
     let dir = scratch("no-recipe");
-    let out = lodi(&dir, &["info", "not-a-tool"]);
+    fs::write(
+        dir.join("lodi.toml"),
+        "[project]\nname = \"x\"\n\n[tools]\nnot-a-tool = \"1\"\n",
+    )
+    .unwrap();
+    let out = lodi(&dir, &["develop", "--trust", "--", "true"]);
     assert_eq!(out.status.code(), Some(4), "{}", stderr(&out));
     assert!(
         stderr(&out).contains("lodi: error E_NO_RECIPE"),
@@ -478,21 +464,28 @@ fn manifest_mistakes_print_no_internal_ids() {
         let args: Vec<&str> = match scope {
             Scope::Project => {
                 fs::write(project.join("lodi.toml"), &manifest).unwrap();
-                vec!["lock"]
+                vec!["develop", "--trust", "--", "true"]
             }
             Scope::Home => {
-                fs::write(home.join(".config/lodi/home.toml"), &manifest).unwrap();
-                vec!["home", "plan"]
+                // The home part's preview, on a scratch machine whose home holds the config
+                // (#699).
+                support::machine_at(&root);
+                fs::create_dir_all(root.join("home/.config/lodi")).unwrap();
+                fs::write(root.join("home/.config/lodi/home.toml"), &manifest).unwrap();
+                vec!["switch", "--home", "--dry-run", "--root", &root_arg]
             }
             Scope::Host => {
-                fs::write(root.join("etc/lodi/host-allowed"), "").unwrap();
+                fs::write(root.join("etc/lodi/may-manage"), "").unwrap();
+                fs::write(root.join("etc/hostname"), "box\n").unwrap();
                 fs::write(
                     root.join("etc/os-release"),
                     "ID=debian\nVERSION_ID=\"12\"\n",
                 )
                 .unwrap();
-                fs::write(root.join("etc/lodi/host.toml"), &manifest).unwrap();
-                vec!["host", "plan", "--root", &root_arg]
+                // The config is the person's, below the root it describes.
+                fs::create_dir_all(root.join("home/.config/lodi")).unwrap();
+                fs::write(root.join("home/.config/lodi/host.toml"), &manifest).unwrap();
+                vec!["switch", "--host", "--dry-run", "--root", &root_arg]
             }
         };
         let out = Command::new(env!("CARGO_BIN_EXE_lodi"))
@@ -500,9 +493,17 @@ fn manifest_mistakes_print_no_internal_ids() {
             .current_dir(&project)
             .env_clear()
             .env("PATH", format!("{}:/usr/bin:/bin", shims.display()))
-            .env("HOME", &home)
+            .env(
+                "HOME",
+                match scope {
+                    Scope::Host | Scope::Home => root.join("home"),
+                    _ => home.clone(),
+                },
+            )
             .env("LODI_HOME", dir.join("lodi-home"))
             .env("LODI_HOST_REQUIRE_ROOT", "1")
+            // Every mistake stops before a lock fill; were one asked, it finds nothing on loopback.
+            .env("LODI_FETCH_REWRITE", "https://=http://127.0.0.1:9/")
             .output()
             .expect("the lodi binary runs");
         let text = stderr(&out);

@@ -5,7 +5,9 @@
 //! (`AGENTS.md` §8). What runs is the product, unchanged, as a child process, with a directory of
 //! test-owned shims first on its `PATH` — which is the whole seam by design (D3, LD-115). Each
 //! shim does two things: it appends its own argv to a log, and it prints the bytes the guest
-//! printed for that command. So the assertions below are of two kinds, and both are exact:
+//! printed for that command. The rest of the machine is `tests/support/fakehost.rs`'s, which also
+//! runs every command as the 2.0 command that keeps the 1.x verb's behaviour (LD-514, LD-521). So
+//! the assertions below are of two kinds, and both are exact:
 //!
 //! - **what lodi would run**: every argv, byte for byte, in order, from the log;
 //! - **what lodi concludes**: the plan's lines, the journal, the lock and the restart
@@ -18,7 +20,7 @@
 //! part way through, which `dpkg --audit` really does print).
 //!
 //! The shims read two variables of their own, `LODI_APT_STATE` and `LODI_APT_FIXTURES`, from a
-//! `shim-env` file beside them, written by the test: the product clears the environment of every
+//! `apt-env` file beside them, written by the test: the product clears the environment of every
 //! package manager it runs (LD-357), so nothing of the test's own environment reaches a shim.
 //! Nothing in the product knows either name: they are how the *test* tells *its own* shims which
 //! recording to replay, and there is no test-only branch anywhere in the product's paths.
@@ -27,6 +29,8 @@
 //! 1.1.0's removal rule is kept exactly under that key (LD-375). The exact mode, which an import
 //! writes, is `tests/host_exact.rs`'s.
 
+#[path = "support/fakehost.rs"]
+mod fakehost;
 /// Long-lived children that end with their test, pass or panic (LD-372).
 #[path = "support/fixture.rs"]
 mod fixture;
@@ -38,24 +42,21 @@ mod wait;
 
 mod support;
 
+/// The real binary on a pseudo-terminal, for the run this file holds part way.
+#[allow(clippy::duplicate_mod)]
+#[path = "support/terminal.rs"]
+mod terminal;
+
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
-use std::sync::RwLock;
+use std::process::{Command, Output};
 use std::time::Duration;
 
 use fixture::Fixture;
-use hostroot::{Root, feed, wait_until};
+use hostroot::{feed, wait_until};
 use lodi::hostscope::pm::{Origin, apt};
 use lodi::hostscope::safety::Distro;
-
-/// Held for writing while this file's `Case::new` writes its shims and for reading around every
-/// spawn that might exec one (#465, the same class of defect #456 fixed for the fakehost-based
-/// binaries in `tests/support/fakehost.rs`). This file defines its own `Case` and shim writer and
-/// does not include that module, so it needs its own instance — one `static` per compiled test
-/// binary, matching fork's per-process scope.
-static SHIMS: RwLock<()> = RwLock::new(());
 
 /// The manifest the `install` recordings were made against: `common`, a per-distro `add`, a
 /// `mark_auto`, a `hold`, and one `optional` name no distribution has. The `arch` table is never
@@ -106,29 +107,34 @@ packages = \"managed\"
 common = [\"unzip\", \"patch\"]
 ";
 
-/// One scratch root with one set of recordings behind a directory of shims.
+/// One scratch root with one set of recordings behind a directory of shims: a
+/// [`fakehost::Case`], which runs every command as the 2.0 command that keeps the 1.x verb's
+/// behaviour (`plan` is `switch --host --dry-run`, `apply` is `switch --host`, LD-514), with
+/// the config at the scratch `HOME`'s `.config/lodi` and its root part behind a stub elevator.
+/// The apt programs among its shims are this file's recorded ones.
 struct Case {
-    root: Root,
+    host: fakehost::Case,
     shims: PathBuf,
     state: PathBuf,
     fixtures: PathBuf,
 }
 
 impl Case {
-    /// A fresh root, armed and given the identity of `distro`, with the shims of this test
-    /// first on the `PATH` every child gets and `scenario`'s recordings behind them.
+    /// A fresh root, given the identity of `distro`, with the shims of this test first on the
+    /// `PATH` every child gets and `scenario`'s recordings behind them.
     fn new(name: &str, distro: &str, scenario: &str, manifest: &str) -> Case {
-        let root = Root::new(name);
+        let host = fakehost::Case::new(&format!("apt-{name}"), fakehost::Machine::debian());
+        let root = &host.root;
         match distro {
             "debian-12" => {
-                root.arm().write(
+                root.write(
                     "etc/os-release",
                     "PRETTY_NAME=\"Debian GNU/Linux 12 (bookworm)\"\nID=debian\n\
                      VERSION_ID=\"12\"\nVERSION_CODENAME=bookworm\n",
                 );
             }
             "ubuntu-24.04" => {
-                root.arm().write(
+                root.write(
                     "etc/os-release",
                     "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nID=ubuntu\nID_LIKE=debian\n\
                      VERSION_ID=\"24.04\"\nVERSION_CODENAME=noble\n",
@@ -136,7 +142,7 @@ impl Case {
             }
             other => panic!("no recordings for {other}"),
         }
-        root.write("etc/lodi/host.toml", manifest);
+        host.set_manifest(manifest);
         let fixtures = fixtures_dir().join(distro).join(scenario);
         assert!(
             fixtures.is_dir(),
@@ -144,18 +150,19 @@ impl Case {
              `docs/milestones/m-0.6/probes/hostvm.py --record-fixtures`",
             fixtures.display()
         );
-        let base = support::scratch(&format!("apt-{name}"));
-        let shims = base.join("bin");
-        let state = base.join("state");
-        fs::create_dir_all(&shims).expect("the shim directory");
+        // The fake's own shim directory: the recorded apt programs replace its answering ones.
+        let shims = host.base().join("bin");
+        let state = host.base().join("apt-state");
         fs::create_dir_all(&state).expect("the shim state directory");
         {
-            let _writing = SHIMS.write().unwrap_or_else(|e| e.into_inner());
+            let _writing = fakehost::writing();
             write_shims(&shims);
             write_shim_env(&shims, &state, &fixtures);
         }
+        // The fake's own index goes: this file's is the recorded one below.
+        fs::remove_file(root.path("var/lib/apt/lists/fake_Packages")).expect("the fake's index");
         let case = Case {
-            root,
+            host,
             shims,
             state,
             fixtures,
@@ -163,9 +170,13 @@ impl Case {
         case.phase("before");
         // A fresh index, so that nothing is refreshed unless a test asks for it. The product
         // reads when a file below `<root>/var/lib/apt/lists` was last touched and nothing else.
-        case.root
+        case.root()
             .write("var/lib/apt/lists/recorded_Packages", "recorded index\n");
         case
+    }
+
+    fn root(&self) -> &hostroot::Root {
+        &self.host.root
     }
 
     /// Which recorded state of the machine the shims replay from now on.
@@ -179,14 +190,14 @@ impl Case {
     /// is reached the one way a test can: a lists directory apt never filled. The six-hour window
     /// itself is proven in `pm::apt`'s unit tests.
     fn stale_index(&self) {
-        fs::remove_file(self.root.path("var/lib/apt/lists/recorded_Packages"))
+        fs::remove_file(self.root().path("var/lib/apt/lists/recorded_Packages"))
             .expect("the index file");
     }
 
     /// Give the index file what apt gives it: an mtime set to the archive's own
     /// `Last-Modified`, `hours` ago, while the file itself was written just now.
     fn archive_dated_index(&self, hours: u64) {
-        let path = self.root.path("var/lib/apt/lists/recorded_Packages");
+        let path = self.root().path("var/lib/apt/lists/recorded_Packages");
         let when = std::time::SystemTime::now() - Duration::from_secs(hours * 3600);
         let file = fs::File::options()
             .write(true)
@@ -196,48 +207,26 @@ impl Case {
     }
 
     fn manifest(&self, body: &str) {
-        self.root.write("etc/lodi/host.toml", body);
-    }
-
-    fn command(&self, args: &[&str]) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
-        let path = format!(
-            "{}:{}",
-            self.shims.display(),
-            std::env::var("PATH").unwrap_or_default()
-        );
-        command
-            .args(args)
-            .arg("--root")
-            .arg(&self.root.dir)
-            .env("PATH", path)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-        command
+        self.host.set_manifest(body);
     }
 
     /// Run one host command, with the log emptied first so that it holds this run alone.
     ///
-    /// The verb is assembled here rather than spelled out at each call, so that every host
-    /// invocation in this file is a scratch-root one by construction: there is exactly one place
-    /// the scope and the `--root` come from, and `scripts/check-host-safety.py` can see it.
-    // check-host-safety: refusal — one place, and `command` appends this scratch root as --root.
-    fn verb(&self, verb: &str, extra: &[&str]) -> Output {
-        let mut args = vec!["host", verb];
-        args.extend_from_slice(extra);
+    /// The command is assembled by [`fakehost::Case::verb_env`], the one place every host test's
+    /// scope and `--root` come from, which `scripts/check-host-safety.py` can see.
+    fn verb_env(&self, verb: &str, extra: &[&str], envs: &[(&str, &str)]) -> Output {
         let _ = fs::remove_file(self.state.join("log"));
         let _ = fs::remove_file(self.state.join("env"));
         let _ = fs::remove_file(self.state.join("inherited"));
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-        self.command(&args).output().expect("lodi runs")
+        self.host.verb_env(verb, extra, envs)
     }
 
     fn plan(&self) -> Output {
-        self.verb("plan", &[])
+        self.verb_env("plan", &[], &[])
     }
 
     fn apply(&self, extra: &[&str]) -> Output {
-        self.verb("apply", extra)
+        self.verb_env("apply", extra, &[])
     }
 
     /// Every argv the shims saw, in order, exactly as the product built it.
@@ -269,7 +258,7 @@ impl Case {
     /// The root the product resolved, which is the scratch root after canonicalization: it is
     /// what the root options below carry, so an assertion has to read it the same way.
     fn resolved(&self) -> PathBuf {
-        fs::canonicalize(&self.root.dir).expect("the scratch root is there")
+        fs::canonicalize(&self.root().dir).expect("the scratch root is there")
     }
 
     /// Design call D2 (LD-114) puts these after the subcommand of every invocation, because
@@ -289,13 +278,13 @@ impl Case {
     }
 
     fn lock(&self) -> serde_json::Value {
-        serde_json::from_str(&self.root.read("etc/lodi/host.lock")).expect("the lock parses")
+        self.host.lock()
     }
 
     /// The newest journal's header, which is where the argv of every action is written down
     /// **before** it runs.
     fn journal(&self) -> serde_json::Value {
-        let path = hostroot::journals(&self.root)
+        let path = hostroot::journals(self.root())
             .pop()
             .expect("a journal was written");
         let text = fs::read_to_string(path).expect("the journal is readable");
@@ -307,24 +296,40 @@ fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/host/apt")
 }
 
-fn out(output: &Output) -> String {
-    String::from_utf8_lossy(&output.stdout).into_owned()
+/// A switch's plan and outcome: what it says on standard error, which is the terminal.
+fn shown(output: &Output) -> String {
+    fakehost::err(output)
+}
+
+/// What a switch plans: its action lines and its `host:` count, without the warnings and notes
+/// around them.
+fn planned(output: &Output) -> String {
+    shown(output)
+        .lines()
+        .filter(|line| {
+            ["+ ", "- ", "~ ", "host: "]
+                .iter()
+                .any(|p| line.starts_with(p))
+        })
+        .map(|line| format!("{line}\n"))
+        .collect()
 }
 
 fn err(output: &Output) -> String {
-    String::from_utf8_lossy(&output.stderr).into_owned()
+    fakehost::story(output)
 }
 
 /// What the shims read in place of an environment: the product starts every package manager
 /// with the environment cleared and a fixed `PATH` (LD-357), so the shims take their own
-/// variables — and the `PATH` their `cat` is found on — from this file beside them.
+/// variables — and the `PATH` their `cat` is found on — from this file beside them. The fake's
+/// own `shim-env` is its other shims'.
 fn write_shim_env(shims: &Path, state: &Path, fixtures: &Path) {
     let quote = |p: &Path| format!("'{}'", p.display().to_string().replace('\'', "'\\''"));
     let path = std::env::var("PATH")
         .unwrap_or_default()
         .replace('\'', "'\\''");
     fs::write(
-        shims.join("shim-env"),
+        shims.join("apt-env"),
         format!(
             "PATH='{path}'\nexport PATH\nLODI_APT_STATE={}\nLODI_APT_FIXTURES={}\n",
             quote(state),
@@ -344,7 +349,7 @@ fn write_shims(dir: &Path) {
             "case \"$1\" in\n\
              update) printf 'Hit:1 the recorded index\\n' ;;\n\
              install)\n\
-             \x20 if [ -p \"$state/gate\" ]; then cat \"$state/gate\" >/dev/null;\n\
+             \x20 if [ -p \"$state/gate\" ]; then echo \"$PPID\" > \"$state/held\"; cat \"$state/gate\" >/dev/null;\n\
              \x20 else printf '%s\\n' \"${LODI_APT_NEXT_PHASE:-after}\" > \"$state/phase\"; fi\n\
              \x20 code=$(cat \"$state/exit\" 2>/dev/null || echo 0)\n\
              \x20 if [ -f \"$state/stderr\" ]; then cat \"$state/stderr\" >&2; fi\n\
@@ -379,7 +384,7 @@ fn write_shims(dir: &Path) {
              # A test-owned shim. It replays what a real guest printed for this command.\n\
              # Everything this process inherited, read by a builtin before anything is set.\n\
              inherited=$(export -p)\n\
-             . \"${{0%/*}}/shim-env\"\n\
+             . \"${{0%/*}}/apt-env\"\n\
              state=\"$LODI_APT_STATE\"\n\
              fixtures=\"$LODI_APT_FIXTURES\"\n\
              # Command substitution strips the trailing newline, so this is the bare word.\n\
@@ -401,13 +406,17 @@ fn write_shims(dir: &Path) {
     }
 }
 
-/// Start a real apply and stop it inside the transaction, with the package manager held at the
-/// moment it was started: the `apt-get install` shim blocks on a fifo until this returns.
+/// Start a real switch and stop it inside the transaction, with the package manager held at the
+/// moment it was started: the `apt-get install` shim blocks on a fifo until this returns. The
+/// transaction runs in the root part the stub elevator started, which is the shim's parent and
+/// the process killed; the switch that started it then ends on its own.
 fn kill_inside_the_transaction(case: &Case) {
     let gate = case.state.join("gate");
+    let held = case.state.join("held");
     let _ = fs::remove_file(&gate);
+    let _ = fs::remove_file(&held);
     let status = {
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
+        let _spawning = fakehost::spawning();
         Command::new("mkfifo")
             .arg(&gate)
             .status()
@@ -415,32 +424,41 @@ fn kill_inside_the_transaction(case: &Case) {
     };
     assert!(status.success(), "mkfifo {}", gate.display());
     let _ = fs::remove_file(case.state.join("log"));
-    // Whatever fails below, neither the apply nor the shim it holds outlives this test.
-    let mut child = {
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-        Fixture::spawn(
-            "the held apply",
-            // check-host-safety: refusal — `command` appends this scratch root as `--root`.
-            &mut case.command(&["host", "apply"]),
-        )
-    };
-    wait_until("the transaction to start", || {
-        case.lines()
-            .iter()
-            .any(|line| line.starts_with("apt-get install"))
+    let command = case.host.command("apply", &[], &[]);
+    // On a terminal, as `fakehost::Case::verb_env` runs it, so that the switch asks the stub
+    // elevator; the command is dropped inside, so that no copy of the terminal outlives it.
+    terminal::on_terminal("", |stdin, stderr| {
+        let mut command = command;
+        command.stdin(stdin).stderr(stderr);
+        // Whatever fails below, neither the switch nor the shim it holds outlives this test.
+        let mut child = {
+            let _spawning = fakehost::spawning();
+            Fixture::spawn("the held switch", &mut command)
+        };
+        drop(command);
+        wait_until("the transaction to start", || {
+            case.lines()
+                .iter()
+                .any(|line| line.starts_with("apt-get install"))
+                && fs::read_to_string(&held).is_ok_and(|pid| pid.ends_with('\n'))
+        });
+        let pid = fs::read_to_string(&held).expect("the held shim's parent");
+        {
+            let _spawning = fakehost::spawning();
+            let _ = Command::new("kill").arg("-KILL").arg(pid.trim()).status();
+        }
+        let status = child.wait().expect("the switch ends");
+        // Let the held shim go, without letting it record anything further: it writes no phase
+        // when it was gated, so what the machine shows next is only what this test says it
+        // shows.
+        feed(&gate, "");
+        let _ = fs::remove_file(&gate);
+        Output {
+            status,
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+        }
     });
-    {
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-        let _ = Command::new("kill")
-            .arg("-KILL")
-            .arg(child.id().to_string())
-            .status();
-    }
-    let _ = child.wait();
-    // Let the held shim go, without letting it record anything further: it writes no phase
-    // when it was gated, so what the machine shows next is only what this test says it shows.
-    feed(&gate, "");
-    let _ = fs::remove_file(&gate);
 }
 
 // ------------------------------------------------------------------ (a), (h): the one argv ---
@@ -454,9 +472,9 @@ fn every_apt_invocation_of_one_apply_is_exactly_this() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
+        planned(&plan),
         "+ package tree\n+ package sqlite3\n+ package zip\n\
-         ~ package tree (auto)\n~ package sqlite3 (hold)\n2 action(s)\n"
+         ~ package tree (auto)\n~ package sqlite3 (hold)\nhost: +3 -0 packages\n"
     );
     assert!(
         err(&plan).contains("W_OPTIONAL_SKIPPED: `lodi-absent-probe` is optional"),
@@ -490,7 +508,13 @@ fn every_apt_invocation_of_one_apply_is_exactly_this() {
     assert_eq!(
         case.lines(),
         [
-            // the read-only pre-flight, before the apply lock exists
+            // the preview, as the person, before the switch asks for root
+            query.clone(),
+            showauto.clone(),
+            showhold.clone(),
+            policy.clone(),
+            // the root part reads it again and goes on only if the plan is the one previewed:
+            // its read-only pre-flight, before the apply lock exists
             query.clone(),
             showauto.clone(),
             showhold.clone(),
@@ -503,6 +527,12 @@ fn every_apt_invocation_of_one_apply_is_exactly_this() {
             policy.clone(),
             // the transaction: the index is asked once more that it can still place every name
             format!("apt-cache policy {ro} -- tree sqlite3 zip"),
+            // the download, its own step, before anything is installed (#694)
+            format!(
+                "apt-get install --download-only {ro} -y --no-install-recommends \
+                 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
+                 -- tree sqlite3 zip"
+            ),
             format!(
                 "apt-get install {ro} -y --no-install-recommends \
                  -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
@@ -520,7 +550,7 @@ fn every_apt_invocation_of_one_apply_is_exactly_this() {
     assert_eq!(
         case.lines()
             .iter()
-            .filter(|line| line.starts_with("apt-get install"))
+            .filter(|line| line.starts_with("apt-get install") && !line.contains("--download-only"))
             .count(),
         1,
         "one transaction, always"
@@ -611,17 +641,17 @@ fn no_invocation_upgrades_autoremoves_or_configures_dpkg() {
 fn a_second_apply_plans_and_changes_nothing() {
     let case = Case::new("noop", "debian-12", "install", INSTALL_MANIFEST);
     assert!(case.apply(&[]).status.success());
-    assert_eq!(case.root.read("var/lib/lodi/host/.lock"), "");
+    assert_eq!(case.root().read("var/lib/lodi/host/.lock"), "");
 
     let plan = case.plan();
-    assert_eq!(out(&plan), "nothing to do\n", "{}", err(&plan));
-    let before = fs::metadata(case.root.path("etc/lodi/host.lock"))
+    assert!(fakehost::nothing(&plan), "{}", err(&plan));
+    let before = fs::metadata(case.root().path("etc/lodi/host.lock"))
         .and_then(|meta| meta.modified())
         .expect("the lock's mtime");
     std::thread::sleep(Duration::from_millis(20));
     let apply = case.apply(&[]);
-    assert_eq!(out(&apply), "nothing to do\n", "{}", err(&apply));
-    let after = fs::metadata(case.root.path("etc/lodi/host.lock"))
+    assert!(fakehost::nothing(&apply), "{}", err(&apply));
+    let after = fs::metadata(case.root().path("etc/lodi/host.lock"))
         .and_then(|meta| meta.modified())
         .expect("the lock's mtime");
     assert_eq!(before, after, "the second apply rewrote the lock");
@@ -676,11 +706,15 @@ fn the_lock_records_the_marks_and_bounds_auto_remove() {
     case.manifest(REMOVED_MANIFEST);
     let removal = case.apply(&[]);
     assert!(removal.status.success(), "{}", err(&removal));
-    assert!(out(&removal).contains("- package zip"), "{}", out(&removal));
+    assert!(
+        shown(&removal).contains("- package zip"),
+        "{}",
+        shown(&removal)
+    );
     let transaction: Vec<String> = case
         .lines()
         .into_iter()
-        .filter(|line| line.starts_with("apt-get install"))
+        .filter(|line| line.starts_with("apt-get install") && !line.contains("--download-only"))
         .collect();
     assert_eq!(transaction.len(), 1, "{transaction:?}");
     assert!(
@@ -710,8 +744,8 @@ fn the_lock_records_a_declared_package_that_was_already_installed() {
     case.phase("partial");
     let plan = case.plan();
     assert_eq!(
-        out(&plan),
-        "+ package patch\n1 action(s)\n",
+        planned(&plan),
+        "+ package patch\nhost: +1 -0 packages\n",
         "{}",
         err(&plan)
     );
@@ -721,7 +755,7 @@ fn the_lock_records_a_declared_package_that_was_already_installed() {
     let transactions: Vec<String> = case
         .lines()
         .into_iter()
-        .filter(|line| line.starts_with("apt-get install"))
+        .filter(|line| line.starts_with("apt-get install") && !line.contains("--download-only"))
         .collect();
     assert_eq!(transactions.len(), 1, "{transactions:?}");
     assert!(transactions[0].ends_with(" patch"), "{}", transactions[0]);
@@ -757,8 +791,8 @@ fn absent_removes_in_the_same_transaction_as_an_install() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
-        "- package tree\n1 action(s)\n",
+        planned(&plan),
+        "- package tree\nhost: +0 -1 packages\n",
         "{}",
         err(&plan)
     );
@@ -768,7 +802,7 @@ fn absent_removes_in_the_same_transaction_as_an_install() {
     let transactions: Vec<String> = case
         .lines()
         .into_iter()
-        .filter(|line| line.starts_with("apt-get install"))
+        .filter(|line| line.starts_with("apt-get install") && !line.contains("--download-only"))
         .collect();
     assert_eq!(transactions.len(), 1, "{transactions:?}");
     assert!(transactions[0].ends_with(" tree-"), "{}", transactions[0]);
@@ -818,7 +852,7 @@ fn an_unknown_name_is_an_error_and_an_optional_one_is_skipped() {
         err(&plan)
     );
     // Nothing was planned, journalled or changed by a refusal.
-    assert!(!case.root.exists("var/lib/lodi"));
+    assert!(!case.root().exists("var/lib/lodi"));
 
     case.manifest(
         "[host]\nversion = \"1\"\npackages = \"managed\"\n\n[packages]\ncommon = [\"lodi-absent-probe\"]\n\
@@ -832,7 +866,7 @@ fn an_unknown_name_is_an_error_and_an_optional_one_is_skipped() {
         "{}",
         err(&apply)
     );
-    assert_eq!(out(&apply), "nothing to do\n", "{}", err(&apply));
+    assert!(fakehost::nothing(&apply), "{}", err(&apply));
     assert!(
         !case
             .lines()
@@ -872,10 +906,10 @@ fn an_index_dated_by_its_archive_is_as_fresh_as_its_last_update() {
     case.archive_dated_index(9);
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
-    assert_eq!(out(&plan), "nothing to do\n", "{}", err(&plan));
+    assert!(fakehost::nothing(&plan), "{}", err(&plan));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
-    assert_eq!(out(&apply), "nothing to do\n", "{}", err(&apply));
+    assert!(fakehost::nothing(&apply), "{}", err(&apply));
     assert!(
         !case
             .lines()
@@ -887,18 +921,18 @@ fn an_index_dated_by_its_archive_is_as_fresh_as_its_last_update() {
 }
 
 /// An index older than six hours, or none at all, is refreshed as an action in the journal like
-/// any other, and `--no-update` skips it. Nothing else in the apply changes because of it.
+/// any other. Nothing else in the apply changes because of it.
 #[test]
-fn a_stale_index_is_refreshed_as_an_action_and_no_update_skips_it() {
+fn a_stale_index_is_refreshed_as_an_action() {
     let case = Case::new("refresh", "debian-12", "install", INSTALL_MANIFEST);
     case.stale_index();
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
+        planned(&plan),
         format!(
             "~ index (apt-get update {})\n+ package tree\n+ package sqlite3\n+ package zip\n\
-             ~ package tree (auto)\n~ package sqlite3 (hold)\n3 action(s)\n",
+             ~ package tree (auto)\n~ package sqlite3 (hold)\nhost: +3 -0 packages\n",
             case.root_option()
         )
     );
@@ -920,27 +954,6 @@ fn a_stale_index_is_refreshed_as_an_action_and_no_update_skips_it() {
     assert_eq!(journal["actions"][0]["kind"], "packages.index");
     assert_eq!(journal["actions"][0]["commands"][0][0], "apt-get");
     assert_eq!(journal["actions"][0]["commands"][0][1], "update");
-
-    // `--no-update` leaves the stale index alone and installs anyway.
-    let case = Case::new("refresh-skipped", "debian-12", "install", INSTALL_MANIFEST);
-    case.stale_index();
-    let apply = case.apply(&["--no-update"]);
-    assert!(apply.status.success(), "{}", err(&apply));
-    assert!(
-        !case
-            .lines()
-            .iter()
-            .any(|line| line.starts_with("apt-get update")),
-        "{:?}",
-        case.lines()
-    );
-    assert!(
-        case.lines()
-            .iter()
-            .any(|line| line.starts_with("apt-get install")),
-        "{:?}",
-        case.lines()
-    );
 }
 
 // -------------------------------------------------------- (g): the three classifications ---
@@ -964,17 +977,25 @@ fn a_killed_transaction_is_classified_incomplete_completed_or_ambiguous() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert!(
-        out(&plan).contains("is outstanding: incomplete at p1"),
+        shown(&plan).contains("is outstanding: incomplete at p1"),
         "{}",
-        out(&plan)
+        shown(&plan)
     );
+    // The switch shows the same note before it plans again, says after it what the journal
+    // was, and leaves nothing outstanding.
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
+    let said = shown(&apply);
+    let before = said.find("is outstanding: incomplete at p1");
+    let switched = said.find("switched");
+    let after = said.rfind("was incomplete at p1");
     assert!(
-        out(&apply).contains("was incomplete at p1"),
+        before.is_some() && switched.is_some() && after.is_some() && switched < after,
         "{}",
-        out(&apply)
+        err(&apply)
     );
+    let after = case.plan();
+    assert!(!shown(&after).contains("is outstanding"), "{}", err(&after));
 
     // completed: the transaction had in fact finished when the kill landed.
     let case = Case::new(
@@ -988,9 +1009,9 @@ fn a_killed_transaction_is_classified_incomplete_completed_or_ambiguous() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert!(
-        out(&plan).contains("is outstanding: complete"),
+        shown(&plan).contains("is outstanding: complete"),
         "{}",
-        out(&plan)
+        shown(&plan)
     );
 
     // ambiguous: one of the two packages is there and the other is not, which is neither the
@@ -1006,9 +1027,9 @@ fn a_killed_transaction_is_classified_incomplete_completed_or_ambiguous() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert!(
-        out(&plan).contains("is outstanding: ambiguous at p1"),
+        shown(&plan).contains("is outstanding: ambiguous at p1"),
         "{}",
-        out(&plan)
+        shown(&plan)
     );
     let apply = case.apply(&[]);
     assert_eq!(apply.status.code(), Some(8), "{}", err(&apply));
@@ -1022,7 +1043,7 @@ fn a_killed_transaction_is_classified_incomplete_completed_or_ambiguous() {
         message.contains("--resolved"),
         "the ambiguous stop names how a human clears it: {message}"
     );
-    let id = hostroot::journals(&case.root)
+    let id = hostroot::journals(case.root())
         .pop()
         .expect("a journal")
         .file_stem()
@@ -1114,7 +1135,7 @@ fn a_failing_transaction_is_apply_error_carrying_what_apt_printed() {
     let journal = case.journal();
     assert_eq!(journal["actions"][0]["id"], "p1");
     assert!(
-        !case.root.exists("etc/lodi/host.lock"),
+        !case.root().exists("etc/lodi/host.lock"),
         "no lock was written"
     );
 }
@@ -1129,16 +1150,16 @@ fn ubuntu_24_04_installs_the_same_way_from_its_own_recordings() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
+        planned(&plan),
         "+ package tree\n+ package sqlite3\n+ package zip\n\
-         ~ package tree (auto)\n~ package sqlite3 (hold)\n2 action(s)\n"
+         ~ package tree (auto)\n~ package sqlite3 (hold)\nhost: +3 -0 packages\n"
     );
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
     let transactions: Vec<String> = case
         .lines()
         .into_iter()
-        .filter(|line| line.starts_with("apt-get install"))
+        .filter(|line| line.starts_with("apt-get install") && !line.contains("--download-only"))
         .collect();
     assert_eq!(
         transactions,
@@ -1369,17 +1390,15 @@ fn the_unchecked_origin_is_declared_and_the_local_only_one_is_not() {
 fn a_package_manager_inherits_nothing_but_the_fixed_environment() {
     let case = Case::new("fixed-env", "debian-12", "install", INSTALL_MANIFEST);
     let _ = fs::remove_file(case.state.join("inherited"));
-    let output = {
-        let _spawning = SHIMS.read().unwrap_or_else(|e| e.into_inner());
-        case
-            // check-host-safety: refusal — `command` appends this scratch root as `--root`.
-            .command(&["host", "plan"])
-            .env("APT_CONFIG", "/nonexistent/planted.conf")
-            .env("LD_LIBRARY_PATH", "/nonexistent")
-            .env("LODI_PLANTED", "planted")
-            .output()
-            .expect("lodi runs")
-    };
+    let output = case.verb_env(
+        "plan",
+        &[],
+        &[
+            ("APT_CONFIG", "/nonexistent/planted.conf"),
+            ("LD_LIBRARY_PATH", "/nonexistent"),
+            ("LODI_PLANTED", "planted"),
+        ],
+    );
     assert!(output.status.success(), "{}", err(&output));
     let inherited = fs::read_to_string(case.state.join("inherited")).expect("the shims ran");
     assert!(!inherited.contains("planted"), "{inherited}");
@@ -1398,28 +1417,20 @@ fn a_package_manager_inherits_nothing_but_the_fixed_environment() {
     assert!(checked > 0, "no package manager ran:\n{inherited}");
 }
 
-/// The scope document discloses what the transaction's two dpkg options do on the real machine
-/// (LD-358): the options it names are the ones the argv above carries, it says they apply on the
-/// real machine as under `--root`, and it says which version of a changed configuration file wins
-/// and that Lodi does not report it. The document is read as it is in the tree, its line wrapping
-/// folded away, so the assertion holds the text and not its layout.
+/// The how-to page on packages discloses what the transaction's dpkg options above do on the
+/// real machine (LD-358): dpkg keeps the machine's version of a changed configuration file, and
+/// lodi does not report which files that happened to (#711 moved the text from the host scope
+/// page). The page is read with its line wrapping folded away.
 #[test]
-fn the_host_scope_document_discloses_force_confold_on_the_real_machine() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/scopes/host.md");
-    let text = fs::read_to_string(&path).expect("docs/scopes/host.md");
+fn the_package_how_to_discloses_force_confold_on_the_real_machine() {
+    let rel = "docs/guide/install-a-package.md";
+    let text = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)).expect(rel);
     let text = text.split_whitespace().collect::<Vec<&str>>().join(" ");
     for needle in [
-        "That invocation carries \
-         `-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold`, \
-         on the real machine exactly as under `--root`",
-        "dpkg **keeps the machine's version** and leaves the package's new one beside it \
-         (normally as `.dpkg-dist`)",
-        "Lodi does not report which files that happened to.",
-        "Compare them yourself after an apply.",
+        "dpkg keeps your version, and puts the new one beside it, normally as `.dpkg-dist`",
+        "lodi does not report which files that happened to",
+        "compare them yourself after a switch",
     ] {
-        assert!(
-            text.contains(needle),
-            "docs/scopes/host.md no longer discloses: {needle}"
-        );
+        assert!(text.contains(needle), "{rel} no longer discloses: {needle}");
     }
 }

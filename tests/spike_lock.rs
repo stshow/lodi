@@ -1,4 +1,5 @@
-//! M-Spike S-2: `lodi lock` — snapshot, base and closure pinning and upstream tool resolution.
+//! M-Spike S-2: locking — snapshot, base and closure pinning and upstream tool resolution, and
+//! `lodi develop` and `lodi run` locking by themselves (LD-496).
 //!
 //! Offline: every upstream document is served from the synthetic fixtures in
 //! `tests/fixtures/spike/lock/` (see its README), either by an in-memory fetcher (library
@@ -1251,93 +1252,263 @@ impl Mirror {
     }
 }
 
-fn lodi_in(dir: &Path, args: &[&str], rewrite: &str) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .args(args)
-        .current_dir(dir)
-        .env("LODI_FETCH_REWRITE", rewrite)
-        .output()
-        .expect("the lodi binary runs")
-}
-
 fn text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).into_owned()
 }
 
+/// One scratch project with its own `HOME`, XDG, `LODI_HOME` and an empty `PATH` (no Podman):
+/// `develop` and `run` lock against the loopback mirror and then stop at realization, which is
+/// not what these tests look at.
+struct Auto {
+    base: PathBuf,
+    dir: PathBuf,
+}
+
+impl Auto {
+    fn new(name: &str, manifest: &str) -> Auto {
+        let base = support::scratch(name);
+        let dir = base.join("project");
+        for d in ["home", "config", "lodi-home", "empty-bin", "project"] {
+            fs::create_dir_all(base.join(d)).unwrap();
+        }
+        fs::write(dir.join("lodi.toml"), manifest).unwrap();
+        Auto { base, dir }
+    }
+
+    fn manifest(&self, text: &str) {
+        fs::write(self.dir.join("lodi.toml"), text).unwrap();
+    }
+
+    fn lodi(&self, args: &[&str], mirror: &Mirror) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_lodi"))
+            .args(args)
+            .current_dir(&self.dir)
+            .env_clear()
+            .env("PATH", self.base.join("empty-bin"))
+            .env("HOME", self.base.join("home"))
+            .env("XDG_CONFIG_HOME", self.base.join("config"))
+            .env("LODI_HOME", self.base.join("lodi-home"))
+            .env("LODI_FETCH_REWRITE", mirror.rewrite())
+            .env("LODI_FETCH_ATTEMPTS", "1")
+            .output()
+            .expect("the lodi binary runs")
+    }
+
+    fn develop(&self, mirror: &Mirror) -> Output {
+        self.lodi(&["develop", "--trust", "--", "true"], mirror)
+    }
+
+    fn lock_text(&self) -> String {
+        fs::read_to_string(self.dir.join(LOCK_FILE)).unwrap()
+    }
+
+    fn lock(&self) -> LockFile {
+        parse_lock(self.lock_text().as_bytes()).unwrap()
+    }
+}
+
+/// The canonical bytes of one tool entry of a lock's text.
+fn entry_bytes(lock_text: &str, label: &str) -> String {
+    let value: serde_json::Value = serde_json::from_str(lock_text).unwrap();
+    serde_json::to_string(&value["packages"][label]).unwrap()
+}
+
+/// What a mirror was asked for apart from artifacts: the requests locking makes.
+fn lock_requests(mirror: &Mirror) -> Vec<String> {
+    mirror
+        .take_log()
+        .into_iter()
+        .filter(|u| !is_artifact(u))
+        .collect()
+}
+
+/// `upstream` with Node 22.23.2, the newest 22, not released yet.
+fn before_node_22_23_2(upstream: &Upstream) -> Upstream {
+    let mut older = upstream.clone();
+    let url = "https://nodejs.org/dist/index.json";
+    let index: Vec<serde_json::Value> = serde_json::from_slice(&older.get(url)).unwrap();
+    let kept: Vec<_> = index
+        .into_iter()
+        .filter(|e| e["version"] != "v22.23.2")
+        .collect();
+    older.set(url, serde_json::to_string(&kept).unwrap());
+    older
+}
+
+const TOOLS: &str = "[project]\nname = \"auto\"\n\n[tools]\nnodejs = \"22\"\n";
+
+/// `develop` and `run` lock by themselves: a missing lock is written, a tool added to the
+/// manifest is added alone while every other entry keeps its bytes (a newer upstream release is
+/// not taken), a removed tool is dropped, a fresh lock is neither rewritten nor asked about, and
+/// an edited constraint re-resolves that entry alone (LD-492). Each write is one line on
+/// standard error, and standard output stays the command's.
 #[test]
-fn the_binary_locks_checks_and_detects_staleness() {
+fn develop_and_run_lock_by_themselves_and_never_move_a_pin() {
+    let upstream = Upstream::standard();
+    let older = Mirror::start(&before_node_22_23_2(&upstream));
+    let project = Auto::new("auto-lock-tools", TOOLS);
+
+    let first = project.develop(&older);
+    let said = text(&first.stderr);
+    assert!(
+        said.contains("lodi: wrote lodi.lock (resolved nodejs): nodejs 22.23.1\n"),
+        "{said}"
+    );
+    assert!(first.stdout.is_empty(), "{}", text(&first.stdout));
+    assert_eq!(project.lock().packages["nodejs"].version, "22.23.1");
+    let pinned = entry_bytes(&project.lock_text(), "nodejs");
+
+    // Node 22.23.2 is out now; adding python resolves python alone.
+    let newer = Mirror::start(&upstream);
+    project.manifest(&format!("{TOOLS}python = \"3.12\"\n"));
+    let added = project.lodi(&["run", "--trust", "missing-task"], &newer);
+    assert_eq!(
+        added.status.code(),
+        Some(2),
+        "an unknown task locks nothing"
+    );
+    assert!(newer.take_log().is_empty());
+    let added = project.develop(&newer);
+    let said = text(&added.stderr);
+    assert!(
+        said.contains("lodi: wrote lodi.lock (resolved python): "),
+        "{said}"
+    );
+    assert_eq!(entry_bytes(&project.lock_text(), "nodejs"), pinned);
+    assert_eq!(project.lock().packages["python"].version, "3.12.14");
+    let asked = lock_requests(&newer);
+    assert!(
+        !asked.iter().any(|u| u.contains("nodejs.org")),
+        "{asked:#?}"
+    );
+
+    // Fresh: not rewritten, not even touched, and nothing is asked to lock.
+    let bytes = project.lock_text();
+    let modified = fs::metadata(project.dir.join(LOCK_FILE))
+        .unwrap()
+        .modified()
+        .unwrap();
+    let fresh = project.develop(&newer);
+    assert!(!text(&fresh.stderr).contains("wrote lodi.lock"));
+    assert_eq!(project.lock_text(), bytes);
+    let again = fs::metadata(project.dir.join(LOCK_FILE))
+        .unwrap()
+        .modified()
+        .unwrap();
+    assert_eq!(again, modified);
+    assert_eq!(lock_requests(&newer), Vec::<String>::new());
+
+    // A removed tool is dropped, with no request.
+    project.manifest(TOOLS);
+    let dropped = project.develop(&newer);
+    assert!(
+        text(&dropped.stderr).contains("lodi: wrote lodi.lock"),
+        "{}",
+        text(&dropped.stderr)
+    );
+    assert!(!project.lock().packages.contains_key("python"));
+    assert_eq!(entry_bytes(&project.lock_text(), "nodejs"), pinned);
+    assert_eq!(lock_requests(&newer), Vec::<String>::new());
+
+    // An edited constraint moves that entry, on purpose, and nothing else.
+    project.manifest(&format!("{TOOLS}python = \"3.12\"\n"));
+    project.develop(&newer);
+    let python = entry_bytes(&project.lock_text(), "python");
+    project.manifest(&format!(
+        "{}python = \"3.12\"\n",
+        TOOLS.replace("\"22\"", "\"24\"")
+    ));
+    let edited = project.develop(&newer);
+    assert!(
+        text(&edited.stderr).contains("(resolved nodejs)"),
+        "{}",
+        text(&edited.stderr)
+    );
+    assert_eq!(project.lock().packages["nodejs"].version, "24.21.0");
+    assert_eq!(entry_bytes(&project.lock_text(), "python"), python);
+}
+
+/// A failed resolution leaves the previous lock and runs nothing; a lock that cannot be read, or
+/// that a newer lodi wrote, stops with its name and is never replaced.
+#[test]
+fn a_failed_lock_or_an_unreadable_one_is_left_as_it_was() {
     let upstream = Upstream::standard();
     let mirror = Mirror::start(&upstream);
-    let rewrite = mirror.rewrite();
-    let fixture_manifest = fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/tests/fixtures/spike/lodi.toml"
-    ))
-    .unwrap();
-    let dir = project(&fixture_manifest);
+    let project = Auto::new("auto-lock-failures", TOOLS);
+    project.develop(&mirror);
+    let bytes = project.lock_text();
 
-    let check = lodi_in(&dir, &["lock", "--check"], &rewrite);
-    assert_eq!(check.status.code(), Some(10), "{}", text(&check.stderr));
-    assert!(text(&check.stderr).contains("lodi: error E_LOCK_STALE: lodi.lock does not exist"));
+    project.manifest(&TOOLS.replace("\"22\"", "\"19\""));
+    let failed = project.develop(&mirror);
+    assert_ne!(failed.status.code(), Some(0));
+    assert_eq!(project.lock_text(), bytes);
 
-    let out = lodi_in(&dir, &["lock"], &rewrite);
-    assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
-    let stdout = text(&out.stdout);
-    assert!(
-        stdout.starts_with("wrote lodi.lock (resolved base, nodejs, python)"),
-        "{stdout}"
-    );
-    assert!(
-        stdout.contains("debian bookworm snapshot 2026-09-18T00:00:00Z"),
-        "{stdout}"
-    );
-    let requests = mirror.take_log();
-    assert!(
-        !requests.is_empty() && !requests.iter().any(|u| is_artifact(u)),
-        "{requests:#?}"
-    );
-    let lock = parse_lock(&fs::read(dir.join(LOCK_FILE)).unwrap()).unwrap();
-    assert_eq!(lock.packages["python"].version, "3.12.14");
-    // The lock records the canonical upstream URLs, not the mirror.
-    let written = fs::read_to_string(dir.join(LOCK_FILE)).unwrap();
-    assert!(!written.contains("127.0.0.1") && written.contains("https://snapshot.debian.org/"));
+    project.manifest(TOOLS);
+    for (what, unreadable) in [
+        ("garbage", "not a lock\n".to_string()),
+        (
+            "newer",
+            bytes.replacen("\"version\": 1", "\"version\": 99", 1),
+        ),
+    ] {
+        fs::write(project.dir.join(LOCK_FILE), &unreadable).unwrap();
+        let stopped = project.develop(&mirror);
+        let said = text(&stopped.stderr);
+        assert_ne!(stopped.status.code(), Some(0), "{what}");
+        assert!(said.contains("lodi.lock"), "{what}: {said}");
+        assert!(!said.contains("lodi lock"), "{what}: {said}");
+        assert_eq!(project.lock_text(), unreadable, "{what}");
+    }
+}
 
-    let again = lodi_in(&dir, &["lock"], &rewrite);
-    assert_eq!(again.status.code(), Some(0));
-    assert!(text(&again.stdout).starts_with("lodi.lock is up to date"));
+/// A container project: a base added to the manifest is filled in, and a package added later is
+/// resolved at the snapshot the lock already pins, so every package already locked keeps its
+/// version even when the manifest no longer names a snapshot (LD-496).
+#[test]
+fn a_container_base_is_filled_in_and_a_new_package_keeps_the_pinned_snapshot() {
+    let upstream = Upstream::standard();
+    let mirror = Mirror::start(&upstream);
+    let project = Auto::new("auto-lock-container", "[project]\nname = \"auto\"\n");
+    let nothing = project.develop(&mirror);
     assert!(
-        mirror.take_log().is_empty(),
-        "a fresh lock fetched something"
+        text(&nothing.stderr).contains("lodi: wrote lodi.lock: nothing to lock"),
+        "{}",
+        text(&nothing.stderr)
     );
-    let check = lodi_in(&dir, &["lock", "--check"], "");
-    assert_eq!(check.status.code(), Some(0), "{}", text(&check.stderr));
+    assert!(project.lock().base.is_none());
 
-    fs::write(
-        dir.join("lodi.toml"),
-        fixture_manifest.replace("nodejs = \"22\"", "nodejs = \"24\""),
-    )
-    .unwrap();
-    let check = lodi_in(&dir, &["lock", "--check"], "");
-    assert_eq!(check.status.code(), Some(10));
-    let stderr = text(&check.stderr);
+    let container = MANIFEST.replace("[tools]\npython = \"3.12\"\nnodejs = \"22\"\n", "");
+    project.manifest(&container);
+    let filled = project.develop(&mirror);
     assert!(
-        stderr.contains("E_LOCK_STALE") && stderr.contains("nodejs: locked for `22`"),
-        "{stderr}"
+        text(&filled.stderr).contains("(resolved base)"),
+        "{}",
+        text(&filled.stderr)
     );
-    assert_eq!(
-        fs::read_to_string(dir.join(LOCK_FILE)).unwrap(),
-        written,
-        "--check wrote"
-    );
+    let before = project.lock().base.unwrap();
+    assert_eq!(before.snapshot, SNAPSHOT);
 
-    // Manifest errors exit 3; insecure rewrites are refused before any request.
-    fs::write(dir.join("lodi.toml"), "[project]\nnmae = \"x\"\n").unwrap();
-    let bad = lodi_in(&dir, &["lock"], &rewrite);
-    assert_eq!(bad.status.code(), Some(3));
-    assert!(text(&bad.stderr).contains("E_UNKNOWN_ATTR"));
-    let insecure = lodi_in(&dir, &["lock"], "https://nodejs.org/=http://example.com/");
-    assert_eq!(insecure.status.code(), Some(3));
-    assert!(text(&insecure.stderr).contains("E_CONFIG: LODI_FETCH_REWRITE"));
+    project.manifest(
+        &container
+            .replace("snapshot = \"2026-09-18T00:00:00Z\"\n", "")
+            .replace("\"build-essential\"]", "\"build-essential\", \"make\"]"),
+    );
+    let added = project.develop(&mirror);
+    assert!(
+        text(&added.stderr).contains("(resolved base)"),
+        "{}",
+        text(&added.stderr)
+    );
+    let after = project.lock().base.unwrap();
+    assert_eq!(after.snapshot, SNAPSHOT);
+    assert!(after.requested["default"].contains(&"make".to_string()));
+    for package in &before.closure.packages {
+        assert!(
+            after.closure.packages.contains(package),
+            "{} moved",
+            package.name
+        );
+    }
 }
 
 /// LD-386: `LODI_FETCH_ATTEMPTS` is how many attempts a fetch whose failure passes gets. At 1 a
@@ -1365,12 +1536,17 @@ fn the_fetch_attempts_setting_asks_once_at_one_and_refuses_anything_but_one_to_t
             );
         }
     });
-    let dir = project(MANIFEST);
+    let auto = Auto::new("spike-lock-attempts", MANIFEST);
     let rewrite = format!("https://=http://127.0.0.1:{port}/");
+    // `develop` locks by itself, so its first request is the one counted here.
     let lock = |attempts: &str| {
         Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .arg("lock")
-            .current_dir(&dir)
+            .args(["develop", "--trust", "--", "true"])
+            .current_dir(&auto.dir)
+            .env_clear()
+            .env("HOME", auto.base.join("home"))
+            .env("XDG_CONFIG_HOME", auto.base.join("config"))
+            .env("LODI_HOME", auto.base.join("lodi-home"))
             .env("LODI_FETCH_REWRITE", &rewrite)
             .env("LODI_FETCH_ATTEMPTS", attempts)
             .output()

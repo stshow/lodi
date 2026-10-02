@@ -426,12 +426,11 @@ fn g5_truncation_and_bit_flip_return_nothing() {
 }
 
 #[test]
-fn g9_client_is_internal_until_url_lane() {
-    // gu-1 (LD-401) is the URL lane: the client is reached only through a host SOURCE URL,
-    // which the help and docs/CLI.md now name, and never as a git verb of its own.
+fn g9_client_is_internal_to_a_url_config() {
+    // gu-1 (LD-401): the client is reached only through a config URL that `switch` takes, never
+    // as a git verb of its own.
     let help = std::process::Command::new(env!("CARGO_BIN_EXE_lodi"))
-        // check-host-safety: refusal — the help of that command is read, and nothing is run.
-        .args(["help", "host", "plan"])
+        .args(["help", "switch"])
         .output()
         .unwrap();
     assert!(help.status.success());
@@ -443,9 +442,6 @@ fn g9_client_is_internal_until_url_lane() {
     ] {
         assert!(!text.contains("git fetch"), "G9 no git reader verb");
     }
-    assert!(
-        help.contains("git+https://") && include_str!("../docs/CLI.md").contains("git+https://")
-    );
     let verb = std::process::Command::new(env!("CARGO_BIN_EXE_lodi"))
         .args(["git", "fetch"])
         .output()

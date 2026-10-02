@@ -1,11 +1,10 @@
-//! Recipes of your own (LD-409): `recipes/NAME.toml` at the root of the lodi repository, with
-//! exactly the standing of a built-in recipe.
+//! Recipes of your own (LD-409): `recipes/NAME.toml` at the root of the config, with exactly
+//! the standing of a built-in recipe.
 //!
-//! - **Where.** The root is the repository a verb reads: the directory its `SOURCE` names, as the
-//!   root `lodi.lock` is found ([`for_repository`]); for a verb that names none, LD-447's order
-//!   through [`crate::repo::resolve`] — the current directory once confirmed, then `LODI_REPO`
-//!   ([`from_environment`]). With no repository only the built-in recipes resolve, and no other
-//!   folder is read: not `HOME`, not XDG, not a `recipes/` beside a manifest.
+//! - **Where.** The root of the config a switch, update, pin or unpin acts on (#692, #710).
+//!   `shell`, `develop`, `run` and `search` never look for a config (#698 story 39), so only the
+//!   built-in recipes resolve there, and no other folder is read: not the current directory, not
+//!   a `recipes/` beside a project manifest.
 //! - **What.** Flat regular `NAME.toml` files directly in `recipes/`, each read through the host
 //!   scope's walk and caps. A link, a directory or a file that is not `NAME.toml` with a valid
 //!   package name is skipped with `W_RECIPE_SKIPPED`. A file that does not read or parse refuses
@@ -17,14 +16,12 @@
 //!   Nothing installed is no repository.
 
 use std::collections::BTreeMap;
-use std::io::{BufRead, IsTerminal};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
 use crate::catalogue::{Recipe, builtin_recipe, builtin_tool_names, parse_user_recipe};
 use crate::diag::Diagnostic;
 use crate::hostscope::source::{self, Host};
-use crate::repo;
 use crate::util::sha256_tagged;
 
 /// The folder at the repository's root.
@@ -75,20 +72,12 @@ impl UserRecipes {
         self.files.contains_key(name)
     }
 
-    /// Every recipe of your own that parses, by name.
-    pub fn recipes(&self) -> Vec<Recipe> {
-        self.files
-            .values()
-            .filter_map(|file| file.recipe.clone().ok())
-            .collect()
-    }
-
     /// Where a recipe of your own named `name` goes: this repository's folder, or where one
     /// would be.
     pub fn place(&self, name: &str) -> String {
         match &self.dir {
             Some(dir) => format!("{}", dir.join(format!("{name}.toml")).display()),
-            None => format!("{DIR}/{name}.toml at your lodi repository's root"),
+            None => format!("{DIR}/{name}.toml at your config's root"),
         }
     }
 
@@ -104,21 +93,6 @@ impl UserRecipes {
             }
         }
         lines
-    }
-
-    /// The `W_RECIPE_SKIPPED` line of every file that does not read or parse, which `lodi
-    /// search` prints instead of refusing.
-    pub fn broken(&self) -> Vec<String> {
-        self.files
-            .iter()
-            .filter_map(|(name, file)| {
-                let error = file.recipe.as_ref().err()?;
-                Some(skipped(
-                    &format!("{DIR}/{name}.toml"),
-                    &format!("is refused ({} {})", error.code, error.message),
-                ))
-            })
-            .collect()
     }
 }
 
@@ -198,90 +172,6 @@ fn parse_bytes(bytes: &[u8], file: &str, shown: &str) -> Result<Recipe, Diagnost
     parse_user_recipe(text, file)
 }
 
-/// The recipes of the repository `host` was chosen from — the directory its `SOURCE` named, the
-/// one whose root `lodi.lock` it uses — read through the host's own walk. None for the manifest
-/// in place, a project directory or a directory that is not a repository.
-pub fn for_repository(host: &Host) -> Result<UserRecipes, Diagnostic> {
-    let Some(repository) = crate::flakelock::Repository::of(host) else {
-        return Ok(UserRecipes::none());
-    };
-    read(&Host {
-        dir: repository.dir.clone(),
-        anchor: host.anchor.clone(),
-        source: repository.dir.display().to_string(),
-        in_place: false,
-        owners: host.owners.clone(),
-        named: None,
-    })
-}
-
-/// LD-447's question, asked only where there is something to confirm: a current directory whose
-/// repository has no `recipes/` folder is taken as it is, since there is nothing in it to read.
-struct Ask {
-    folder: bool,
-}
-
-impl repo::Confirm for Ask {
-    fn interactive(&self) -> bool {
-        !self.folder || (std::io::stdin().is_terminal() && std::io::stderr().is_terminal())
-    }
-
-    fn ask(&mut self, question: &str) -> bool {
-        if !self.folder {
-            return true;
-        }
-        eprint!("{question} [y/N] ");
-        let mut line = String::new();
-        if std::io::stdin().lock().read_line(&mut line).is_err() {
-            return false;
-        }
-        matches!(line.trim(), "y" | "Y" | "yes" | "Yes" | "YES")
-    }
-}
-
-/// The recipes of the repository a verb that names none takes, by LD-447's order: the current
-/// directory once confirmed, else `LODI_REPO`. No repository, a declined or unasked current
-/// directory, and a repository named by URL — which a verb that fetches nothing never reads —
-/// all leave the built-in recipes alone.
-pub fn from_environment(verb: &str) -> Result<UserRecipes, Diagnostic> {
-    let Ok(cwd) = std::env::current_dir() else {
-        return Ok(UserRecipes::none());
-    };
-    let env = std::env::var_os(repo::ENV);
-    let mut ask = Ask {
-        folder: cwd.join(DIR).is_dir(),
-    };
-    let Ok(found) = repo::resolve(verb, None, &cwd, env.as_deref(), false, &mut ask) else {
-        return Ok(UserRecipes::none());
-    };
-    local(&found.source, &cwd)
-}
-
-/// A repository directory on this machine, read as its owner or root may have written it.
-fn local(named: &Path, cwd: &Path) -> Result<UserRecipes, Diagnostic> {
-    if crate::hostscope::remote::is_url(named.as_os_str()) {
-        return Ok(UserRecipes::none());
-    }
-    let dir = if named.is_absolute() {
-        named.to_path_buf()
-    } else {
-        cwd.join(named)
-    };
-    if dir.join(crate::lock::MANIFEST_FILE).exists() || !dir.is_dir() {
-        return Ok(UserRecipes::none());
-    }
-    // SAFETY: geteuid cannot fail and takes no arguments.
-    let euid = unsafe { libc::geteuid() };
-    read(&Host {
-        dir: dir.clone(),
-        anchor: dir.clone(),
-        source: dir.display().to_string(),
-        in_place: false,
-        owners: source::owners_for(euid, None),
-        named: None,
-    })
-}
-
 type Loaded = Result<Arc<UserRecipes>, Diagnostic>;
 
 static ACTIVE: RwLock<Option<Loaded>> = RwLock::new(None);
@@ -308,6 +198,7 @@ pub fn active() -> Result<Arc<UserRecipes>, Diagnostic> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::Path;
 
     const RECIPE: &str = "[recipe]\nname = \"widget\"\ndescription = \"a tool\"\n\
         homepage = \"https://widget.test/\"\n\n[versions]\nstrategy = \"text_index\"\n\
@@ -327,8 +218,8 @@ mod tests {
             dir: dir.to_path_buf(),
             anchor: dir.to_path_buf(),
             source: String::new(),
-            in_place: false,
             owners: source::owners_for(unsafe { libc::geteuid() }, None),
+            private: Vec::new(),
             named: None,
         }
     }
@@ -373,7 +264,6 @@ mod tests {
             .collect();
         assert_eq!(shadowed.len(), 1, "{warnings:?}");
         assert!(shadowed[0].contains("built-in recipe jq"));
-        assert_eq!(read.broken().len(), 1);
         let _ = std::fs::remove_dir_all(dir);
     }
 

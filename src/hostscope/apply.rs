@@ -12,6 +12,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::diag::Diagnostic;
+use crate::progress::{self, Sink};
 
 use super::journal::{Event, Journal};
 use super::lock::{HostLock, PackageRecord};
@@ -52,21 +53,22 @@ fn need_root(path: &str, owner: &str) -> Diagnostic {
 
 /// Run the plan. The journal is on disk and fsynced before the first mutation.
 ///
-/// Returns the report the caller prints.
+/// Returns the report the caller prints, and reports the steps of [`steps`] into `sink` as they
+/// run; a failed step is left for the caller to fail with the diagnostic it ends with.
 pub fn run(
     gate: &Gate,
     plan: &Plan,
     resolved: Option<&str>,
     lock: Option<&HostLock>,
+    sink: &mut dyn Sink,
 ) -> Result<String, Diagnostic> {
+    let mut steps = Steps {
+        sink,
+        current: None,
+    };
     preflight(gate, plan)?;
 
-    let mut backend = pm::backend_for(
-        gate.distro,
-        &gate.root,
-        gate.partial_upgrade,
-        gate.operation,
-    );
+    let mut backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
     // The re-check before an exact removal simulates the transaction the plan built, so it keeps
     // the same default for what a package recommends.
     if plan
@@ -99,6 +101,11 @@ pub fn run(
     let mut taken: Vec<super::sources::Taken> = Vec::new();
     let mut services_checked = false;
     for action in plan.changing() {
+        if downloads(action) {
+            steps.enter(DOWNLOAD, Some(action_installs(action)));
+        } else {
+            steps.enter(step_of(action), expected(action));
+        }
         if let Kind::Source(step) = &action.kind {
             perform_source(gate, &mut journal, plan, action, step, &mut taken)?;
             for line in action.lines() {
@@ -136,11 +143,13 @@ pub fn run(
                     services_checked = true;
                     super::services::recheck(gate, deferred_services(plan))?;
                 }
-                pm::run(
+                pm::run_reporting(
                     service
                         .invocation
                         .as_ref()
                         .expect("a changing service runs"),
+                    steps.sink,
+                    &|_| None,
                 )
             })(),
             Kind::Identity(identity) => super::users::perform(gate, identity),
@@ -153,12 +162,17 @@ pub fn run(
                 {
                     stage = Some(pin_preflight(gate, backend.as_ref(), pinned)?);
                 }
-                perform_packages(gate, backend.as_ref(), packages)
+                perform_packages(gate, backend.as_ref(), packages, &mut steps)
             })(),
             Kind::Source(_) => unreachable!("a source step is performed above"),
         };
         match result {
             Ok(()) => {
+                if !matches!(action.kind, Kind::Package(_)) {
+                    steps.sink.event(progress::Event::Item {
+                        name: action.summary(),
+                    });
+                }
                 journal.end(&action.id)?;
                 for line in action.lines() {
                     out.push_str(&line);
@@ -174,7 +188,10 @@ pub fn run(
                 // A refusal that happened **instead of** the action, rather than during it, is
                 // reported as itself: nothing was attempted, so calling it `E_APPLY` — which
                 // means "some of this transaction happened" — would be a lie.
+                // It changed nothing, so the journal holds all there is to know: it is closed,
+                // and the next switch has nothing outstanding to report (LD-530).
                 if never_started(error.code) {
+                    journal.commit()?;
                     return Err(error);
                 }
                 let mut failed = Diagnostic::new(
@@ -223,6 +240,7 @@ pub fn run(
         }
     }
 
+    steps.end();
     let (packages, observed) = package_records(backend.as_ref(), plan, lock)?;
     for line in write_lock(gate, plan, packages, observed.as_ref())? {
         out.push_str(&line);
@@ -337,7 +355,9 @@ fn pin_preflight(
                     error.message
                 ),
             )
-            .hint("nothing was installed or removed; run the apply again once the archive answers")
+            .hint(
+                "nothing was installed or removed; run lodi switch again once the archive answers",
+            )
         })?;
     }
     for (instant, digests) in &pinned.checks {
@@ -370,7 +390,7 @@ fn fedora_preflight(
     if std::fs::symlink_metadata(&dir).is_ok() {
         sweep(gate)?;
     }
-    super::files::ensure_dir_trusted(&gate.root, STATE, 0o700)?;
+    super::files::ensure_dir_trusted(&gate.root, STATE, 0o755)?;
     super::files::ensure_dir_trusted(&gate.root, STAGE, 0o700)?;
     let stage = Stage {
         dir: dir.clone(),
@@ -404,7 +424,10 @@ fn fedora_preflight(
                     builds.join(", ")
                 ),
             )
-            .hint("nothing was installed or removed; pin a build whose dependencies are offered, or remove the pin")
+            .hint(
+                "nothing was installed or removed; pin a build whose dependencies are offered, \
+                 or remove the pin",
+            )
         })?;
     Ok(stage)
 }
@@ -425,7 +448,7 @@ fn arch_preflight(
     if std::fs::symlink_metadata(&dir).is_ok() {
         sweep(gate)?;
     }
-    super::files::ensure_dir_trusted(&gate.root, STATE, 0o700)?;
+    super::files::ensure_dir_trusted(&gate.root, STATE, 0o755)?;
     super::files::ensure_dir_trusted(&gate.root, STAGE, 0o700)?;
     let config = super::plan::join(&gate.root, STATE).join("pin.conf");
     let stage = Stage {
@@ -497,7 +520,8 @@ fn arch_preflight(
                     return Err(Diagnostic::new(
                         "E_HASH_MISMATCH",
                         format!(
-                            "the dated {key} pacman synchronised has sha256:{got}, pins.lock records {want}; nothing was installed"
+                            "the dated {key} pacman synchronised has sha256:{got}, \
+                             lodi.lock records {want}; nothing was installed"
                         ),
                     ));
                 }
@@ -700,9 +724,12 @@ fn refused(pinned: &super::plan::Pinned, error: &Diagnostic) -> Diagnostic {
             .unwrap_or_default();
         return Diagnostic::new(
             "E_UNKNOWN_PACKAGE",
-            format!("the source set this apply reads offers no package called `{name}`"),
+            format!("the source set this switch reads offers no package called `{name}`"),
         )
-        .hint("nothing was installed or removed; correct the name in the host manifest, or put it in `[packages] optional`");
+        .hint(
+            "nothing was installed or removed; correct the name in the host manifest, or put it \
+             in `[packages] optional`",
+        );
     }
     Diagnostic::new(
         "E_APPLY",
@@ -720,7 +747,7 @@ pub fn pin_unsatisfiable(name: &str, version: &str, origin: &str) -> Diagnostic 
     Diagnostic::new(
         "E_PIN_UNSATISFIABLE",
         format!(
-            "`{name}` is pinned to {version} from {origin}, and the source set this apply reads \
+            "`{name}` is pinned to {version} from {origin}, and the source set this switch reads \
              does not offer that version"
         ),
     )
@@ -905,7 +932,7 @@ fn put_back(
         }
     }
     let done = if whole {
-        "every source file this apply wrote was put back as it was, and no package was installed \
+        "every source file this switch wrote was put back as it was, and no package was installed \
          or removed"
     } else {
         "the source files named above were not all put back; no package was installed or removed"
@@ -965,6 +992,7 @@ fn perform_packages(
     gate: &Gate,
     backend: &dyn Backend,
     packages: &PackageAction,
+    steps: &mut Steps<'_>,
 ) -> Result<(), Diagnostic> {
     // Only a family that refreshes the index as its own action has a window here: its plan may
     // have been derived from an index too old to place a name, and `i1` has just refreshed it.
@@ -986,7 +1014,7 @@ fn perform_packages(
                 "E_UNKNOWN_PACKAGE",
                 format!(
                     "the {} index offers no package called `{name}`, and the index was \
-                     refreshed by this apply",
+                     refreshed by this switch",
                     gate.distro.name()
                 ),
             )
@@ -1033,8 +1061,19 @@ fn perform_packages(
             ));
         }
     }
+    let items = |line: &str| backend.item(line);
+    if packages.step == Step::Transaction && !packages.install.is_empty() {
+        // The download is its own step, entered before this action began, and nothing is
+        // installed until it ends: a failure here changes nothing on the host (#694).
+        for invocation in &packages.invocations {
+            if let Some(download) = backend.download(invocation) {
+                pm::run_reporting(&download, steps.sink, &items)?;
+            }
+        }
+        steps.enter(INSTALL, Some(packages.install.len()));
+    }
     for invocation in &packages.invocations {
-        super::pm::run(invocation)?;
+        pm::run_reporting(invocation, steps.sink, &items)?;
     }
     if packages.step == Step::Index {
         backend.refreshed();
@@ -1247,6 +1286,107 @@ fn perform(gate: &Gate, file: &FileAction) -> Result<(), Diagnostic> {
                 root,
                 file.restore_from.as_deref().expect("a restore source"),
             )
+        }
+    }
+}
+
+const DOWNLOAD: &str = "Download packages";
+const INSTALL: &str = "Install packages";
+
+/// The host part's steps, in order (#694): one per run of changing actions of one name, and a
+/// download before a transaction that installs. A caller gives these to the step list.
+pub fn steps(plan: &Plan) -> Vec<&'static str> {
+    let mut steps: Vec<&'static str> = Vec::new();
+    for action in plan.changing() {
+        let names = if downloads(action) {
+            vec![DOWNLOAD, INSTALL]
+        } else {
+            vec![step_of(action)]
+        };
+        for name in names {
+            if steps.last() != Some(&name) {
+                steps.push(name);
+            }
+        }
+    }
+    steps
+}
+
+/// The step an action belongs to.
+fn step_of(action: &Action) -> &'static str {
+    match &action.kind {
+        Kind::Package(packages) if packages.forced => "Refresh package index",
+        Kind::Package(packages) => match packages.step {
+            Step::Index => "Refresh package index",
+            // A pin's move to another version is an install of that version.
+            Step::Transaction
+                if packages.sweep
+                    || !packages.install.is_empty()
+                    || !packages.changed.is_empty() =>
+            {
+                INSTALL
+            }
+            Step::Transaction | Step::Removal => "Remove packages",
+            Step::Marks => "Package marks",
+        },
+        Kind::Source(_) => "Package sources",
+        Kind::File(_) => "Files",
+        Kind::Identity(_) => "Users and groups",
+        Kind::Basic(basic) if matches!(basic.key, "cmdline" | "loader" | "parameters") => "Boot",
+        Kind::Basic(_) => "System settings",
+        Kind::Service(_) => "Services",
+    }
+}
+
+/// Whether an action is a transaction that installs, which downloads first.
+fn downloads(action: &Action) -> bool {
+    matches!(&action.kind, Kind::Package(packages)
+        if packages.step == Step::Transaction
+            && !packages.forced
+            && !packages.sweep
+            && !(packages.install.is_empty() && packages.changed.is_empty()))
+}
+
+fn action_installs(action: &Action) -> usize {
+    match &action.kind {
+        Kind::Package(packages) => packages.install.len(),
+        _ => 0,
+    }
+}
+
+/// How many items a step of this action is expected to reach, when the plan knows.
+fn expected(action: &Action) -> Option<usize> {
+    match &action.kind {
+        Kind::Package(packages) if packages.step == Step::Removal => Some(packages.remove.len()),
+        _ => None,
+    }
+}
+
+/// The step list as the apply runs: actions of one name share a step.
+struct Steps<'a> {
+    sink: &'a mut dyn Sink,
+    current: Option<&'static str>,
+}
+
+impl Steps<'_> {
+    fn enter(&mut self, name: &'static str, expected: Option<usize>) {
+        if self.current == Some(name) {
+            return;
+        }
+        self.end();
+        self.sink.event(progress::Event::Begin {
+            name: name.to_string(),
+            expected,
+        });
+        self.current = Some(name);
+    }
+
+    fn end(&mut self) {
+        if self.current.take().is_some() {
+            self.sink.event(progress::Event::Finish {
+                count: None,
+                detail: None,
+            });
         }
     }
 }

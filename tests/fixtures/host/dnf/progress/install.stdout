@@ -1,0 +1,9 @@
+Package      Arch   Version         Repository      Size
+Installing:
+ tmux        x86_64 0:3.7c-1.fc44   updates      1.4 MiB
+Installing dependencies:
+ libutempter x86_64 0:1.2.1-20.fc44 fedora      49.2 KiB
+
+Transaction Summary:
+ Installing:         2 packages
+

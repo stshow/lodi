@@ -1,10 +1,12 @@
 //! rf-1 (LD-409): recipes of your own in the `recipes/` folder at the root of your lodi
 //! repository, run as the real binary against a loopback server.
 //!
-//! The repository is found as `lodi apply` finds it: the `SOURCE` a verb names, else the current
-//! directory once confirmed (never, here: no child has a terminal), else `LODI_REPO`. With none,
-//! only the built-in recipes resolve. Every fetch is rewritten to a loopback server that serves a
+//! The recipes are the `recipes/` folder of the config a switch acts on (#692, #710). `shell`,
+//! `develop`, `run` and `search` look for no config, so only the built-in recipes resolve there
+//! (#698 story 39). Every fetch is rewritten to a loopback server that serves a
 //! synthetic Kubernetes release bucket, so nothing leaves the machine.
+//!
+//! The home rows run `lodi switch --home` on the config, whose `recipes/` it reads (LD-524).
 
 mod support;
 
@@ -88,15 +90,8 @@ fn upstream(others: &[(&str, &str)]) -> BTreeMap<String, Vec<u8>> {
     files
 }
 
-fn login() -> String {
-    String::from_utf8(Command::new("id").arg("-un").output().unwrap().stdout)
-        .unwrap()
-        .trim()
-        .to_string()
-}
-
-/// A scratch tree: a person's home, and a repository `hosts/` with one host `box` whose home for
-/// the invoking user declares `tools`, and a `recipes/` folder at its root.
+/// A scratch tree: a person's home, and a repository `hosts/` with one host `box`, a `recipes/`
+/// folder at its root and, beside them, the flat config's `home.toml` declaring `tools`.
 struct Tree {
     dir: PathBuf,
     home: PathBuf,
@@ -109,13 +104,12 @@ impl Tree {
         let dir = support::scratch(&format!("user-recipes-{name}"));
         let home = dir.join("person");
         let hosts = dir.join("hosts");
-        let selected = hosts.join("box/home").join(login());
         fs::create_dir_all(&home).unwrap();
-        fs::create_dir_all(&selected).unwrap();
+        fs::create_dir_all(hosts.join("box")).unwrap();
         fs::create_dir_all(hosts.join("recipes")).unwrap();
         fs::write(hosts.join("box/host.toml"), "[host]\ndistro = \"debian\"\n").unwrap();
         fs::write(
-            selected.join("home.toml"),
+            hosts.join("home.toml"),
             format!("[home]\nversion = \"1\"\n\n[tools]\n{tools}"),
         )
         .unwrap();
@@ -147,21 +141,26 @@ impl Tree {
         command.output().unwrap()
     }
 
+    /// `lodi switch --home` on the config, with the tree as the machine's `--root`.
     fn home_apply(&self, server: &Server) -> Output {
         let hosts = self.hosts.to_str().unwrap();
-        self.lodi(
-            &self.dir,
-            server,
-            &["home", "apply", hosts, "--host", "box"],
-            &[],
-        )
+        support::machine_at(&self.dir);
+        let require = [("LODI_HOST_REQUIRE_ROOT", Path::new("1"))];
+        let args = [
+            "switch",
+            "--home",
+            hosts,
+            "--root",
+            self.dir.to_str().unwrap(),
+        ];
+        self.lodi(&self.dir, server, &args, &require)
     }
 
     /// The home's tool section of the repository's root lock.
     fn locked(&self, tool: &str) -> serde_json::Value {
         let root: serde_json::Value =
             serde_json::from_slice(&fs::read(self.hosts.join("lodi.lock")).unwrap()).unwrap();
-        root["homes"][format!("box/home/{}", login())]["tools"][tool].clone()
+        root["homes"]["home.toml"]["tools"][tool].clone()
     }
 
     /// The executable the home's profile puts on `PATH` for `tool`.
@@ -223,46 +222,8 @@ fn home_apply_installs_a_tool_from_the_repository_recipes_folder() {
     assert!(server.requests().is_empty(), "{:?}", server.requests());
 }
 
-#[test]
-fn info_and_search_name_the_repository_recipe() {
-    let tree = Tree::new("browse", "");
-    tree.recipe("kubectl-convert.toml", KUBECTL_CONVERT);
-    let server = Server::start(BTreeMap::new());
-    let repo: &[(&str, &Path)] = &[("LODI_REPO", &tree.hosts)];
-    let shown = tree.hosts.join("recipes/kubectl-convert.toml");
-
-    let info = tree.lodi(&tree.hosts, &server, &["info", "kubectl-convert"], repo);
-    assert_eq!(info.status.code(), Some(0), "{info:?}");
-    let recipe_line = stdout(&info)
-        .lines()
-        .find(|line| line.trim_start().starts_with("recipe:"))
-        .map(str::to_string)
-        .unwrap_or_default();
-    assert!(
-        recipe_line.contains(shown.to_str().unwrap()),
-        "{recipe_line:?} in {info:?}"
-    );
-
-    let search = tree.lodi(&tree.hosts, &server, &["search", "kubectl-convert"], repo);
-    assert_eq!(search.status.code(), Some(0), "{search:?}");
-    let text = stdout(&search);
-    let lines: Vec<&str> = text.lines().collect();
-    let row = lines
-        .iter()
-        .position(|line| line.trim_start().starts_with("kubectl-convert "))
-        .unwrap_or_else(|| panic!("no kubectl-convert row: {text}"));
-    let heading = lines[..row]
-        .iter()
-        .rev()
-        .find(|line| !line.starts_with(' '))
-        .unwrap();
-    assert_ne!(*heading, "catalogue", "{text}");
-    assert!(
-        heading.contains(tree.hosts.join("recipes").to_str().unwrap()),
-        "{text}"
-    );
-    assert!(server.requests().is_empty(), "{:?}", server.requests());
-}
+/// `lodi develop` with the project's text allowed for this run only: it locks, then runs a shell that does nothing.
+const DEVELOP: &[&str] = &["develop", "--trust", "--", "/bin/sh", "-c", ":"];
 
 #[test]
 fn a_repository_recipe_replaces_a_built_in_and_warns_once() {
@@ -305,19 +266,23 @@ fn a_repository_recipe_replaces_a_built_in_and_warns_once() {
 fn no_repository_means_built_in_recipes_only() {
     let tree = Tree::new("none", "");
     let server = Server::start(upstream(&[]));
-    // A recipe in every place a person might guess: none of them is a repository's root.
+    // A recipe in every place a person might guess outside the config: none of them is a
+    // repository's root. The config is one (LD-524), so its `recipes/` comes after the switch.
     let config = tree.home.join(".config/lodi");
     let project = tree.dir.join("project");
+    let guess = |dir: PathBuf| {
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("kubectl-convert.toml"), KUBECTL_CONVERT).unwrap();
+    };
     for dir in [
         tree.home.join("recipes"),
-        config.join("recipes"),
         tree.home.join(".config/recipes"),
         tree.home.join(".local/share/lodi/recipes"),
         project.join("recipes"),
     ] {
-        fs::create_dir_all(&dir).unwrap();
-        fs::write(dir.join("kubectl-convert.toml"), KUBECTL_CONVERT).unwrap();
+        guess(dir);
     }
+    fs::create_dir_all(&config).unwrap();
     fs::write(
         config.join("home.toml"),
         "[home]\nversion = \"1\"\n\n[tools]\nkubectl-convert = \"latest\"\n",
@@ -329,8 +294,13 @@ fn no_repository_means_built_in_recipes_only() {
     )
     .unwrap();
 
-    let home = tree.lodi(&tree.dir, &server, &["home", "apply"], &[]);
-    let lock = tree.lodi(&project, &server, &["lock"], &[]);
+    // `lodi switch --home` on the config, with the tree as the machine's `--root` (#699).
+    support::machine_at(&tree.dir);
+    let require = [("LODI_HOST_REQUIRE_ROOT", Path::new("1"))];
+    let root = tree.dir.to_str().unwrap();
+    let args = ["switch", "--home", config.to_str().unwrap(), "--root", root];
+    let home = tree.lodi(&tree.dir, &server, &args, &require);
+    let lock = tree.lodi(&project, &server, DEVELOP, &[]);
     for output in [&home, &lock] {
         assert_eq!(output.status.code(), Some(4), "{output:?}");
         let err = stderr(output);
@@ -341,154 +311,113 @@ fn no_repository_means_built_in_recipes_only() {
     }
     assert!(!project.join("lodi.lock").exists());
     assert!(server.requests().is_empty(), "{:?}", server.requests());
-
-    // Named by LODI_REPO, the repository's own folder is read, and only it.
-    tree.recipe("kubectl-convert.toml", KUBECTL_CONVERT);
-    let named = tree.lodi(&project, &server, &["lock"], &[("LODI_REPO", &tree.hosts)]);
-    assert_eq!(named.status.code(), Some(0), "{named:?}");
-    let written: serde_json::Value =
-        serde_json::from_slice(&fs::read(project.join("lodi.lock")).unwrap()).unwrap();
-    assert_eq!(
-        written["packages"]["kubectl-convert"]["recipe"]["input"],
-        "user"
-    );
 }
 
+/// `shell`, `develop`, `run` and `search` never look for a config (#698 story 39): a config
+/// `LODI_REPO` names, with a `recipes/` folder, is not read, and only the built-in recipes
+/// resolve.
+#[test]
+fn a_project_and_search_never_take_a_config_s_recipes() {
+    let tree = Tree::new("found", "");
+    tree.recipe("kubectl-convert.toml", KUBECTL_CONVERT);
+    let server = Server::start(upstream(&[]));
+    let project = tree.dir.join("project");
+    fs::create_dir_all(&project).unwrap();
+    fs::write(
+        project.join("lodi.toml"),
+        "[project]\nversion = \"1\"\n\n[tools]\nkubectl-convert = \"latest\"\n",
+    )
+    .unwrap();
+    let repo = [("LODI_REPO", tree.hosts.as_path())];
+    let develop = tree.lodi(&project, &server, DEVELOP, &repo);
+    assert_eq!(develop.status.code(), Some(4), "{develop:?}");
+    assert!(stderr(&develop).contains("E_NO_RECIPE"), "{develop:?}");
+    let search = tree.lodi(&project, &server, &["search", "kubectl-conv"], &repo);
+    assert!(!stdout(&search).contains("kubectl-convert"), "{search:?}");
+    assert_eq!(lines_with(&stderr(&search), "W_RECIPE_"), 0, "{search:?}");
+    assert!(server.requests().is_empty(), "{:?}", server.requests());
+}
+
+/// Run as `lodi switch --home` on the config, whose `recipes/` it reads (LD-524); `lodi search`
+/// over a broken file reads no config at all.
 #[test]
 fn an_edited_or_broken_recipe_affects_only_its_own_tool() {
-    let tree = Tree::new("edit", "");
+    let tree = Tree::new("edit", "kfmt = \"latest\"\nkubectl-convert = \"latest\"\n");
     tree.recipe("kubectl-convert.toml", KUBECTL_CONVERT);
     tree.recipe("kfmt.toml", &tool_recipe("kfmt", "kfmt.test"));
     // Broken: its name does not match its file.
     tree.recipe("broken.toml", &tool_recipe("mended", "broken.test"));
     let server = Server::start(upstream(&[("kfmt", "kfmt.test")]));
-    let project = tree.dir.join("project");
-    fs::create_dir_all(&project).unwrap();
-    let manifest = "[project]\nversion = \"1\"\n\n[tools]\nkfmt = \"latest\"\n\
-                    kubectl-convert = \"latest\"\n";
-    fs::write(project.join("lodi.toml"), manifest).unwrap();
-    let repo: &[(&str, &Path)] = &[("LODI_REPO", &tree.hosts)];
 
-    let first = tree.lodi(&project, &server, &["lock"], repo);
+    let first = tree.home_apply(&server);
     assert_eq!(first.status.code(), Some(0), "{first:?}");
-    let check = tree.lodi(&project, &server, &["lock", "--check"], repo);
-    assert_eq!(check.status.code(), Some(0), "{check:?}");
-
-    // A comment is an edit: the recipe's digest moves, and only its tool is stale.
-    tree.recipe(
-        "kubectl-convert.toml",
-        &format!("# edited by hand\n{KUBECTL_CONVERT}"),
-    );
-    let stale = tree.lodi(&project, &server, &["lock", "--check"], repo);
-    assert_eq!(stale.status.code(), Some(10), "{stale:?}");
-    let err = stderr(&stale);
-    assert!(err.contains("E_LOCK_STALE"), "{err}");
-    assert!(err.contains("kubectl-convert"), "{err}");
-    assert!(!err.contains("kfmt"), "{err}");
-
     server.clear();
-    let relock = tree.lodi(&project, &server, &["lock"], repo);
-    assert_eq!(relock.status.code(), Some(0), "{relock:?}");
-    assert!(
-        stdout(&relock).contains("resolved kubectl-convert)"),
-        "{relock:?}"
-    );
-    for request in server.requests() {
-        assert!(request.starts_with("https://dl.k8s.io/"), "{request}");
-    }
+    let fresh = tree.home_apply(&server);
+    assert_eq!(fresh.status.code(), Some(0), "{fresh:?}");
+    assert!(server.requests().is_empty(), "{:?}", server.requests());
 
     // The broken file refuses only the tool that names it, naming the file.
-    let before = fs::read(project.join("lodi.lock")).unwrap();
+    let before = fs::read(tree.hosts.join("lodi.lock")).unwrap();
     fs::write(
-        project.join("lodi.toml"),
-        format!("{manifest}broken = \"latest\"\n"),
+        tree.hosts.join("home.toml"),
+        "[home]\nversion = \"1\"\n\n[tools]\nkfmt = \"latest\"\n\
+         kubectl-convert = \"latest\"\nbroken = \"latest\"\n",
     )
     .unwrap();
-    let refused = tree.lodi(&project, &server, &["lock"], repo);
+    let refused = tree.home_apply(&server);
     assert_eq!(refused.status.code(), Some(4), "{refused:?}");
     let err = stderr(&refused);
     assert!(err.contains("E_RECIPE_INVALID"), "{err}");
     assert!(err.contains("recipes/broken.toml"), "{err}");
-    assert_eq!(fs::read(project.join("lodi.lock")).unwrap(), before);
-
-    // `lodi search` skips it with a warning and lists the others.
-    let search = tree.lodi(&project, &server, &["search", "k"], repo);
-    assert_eq!(search.status.code(), Some(0), "{search:?}");
-    let err = stderr(&search);
-    assert_eq!(lines_with(&err, "W_RECIPE_SKIPPED"), 1, "{err}");
-    assert!(err.contains("recipes/broken.toml"), "{err}");
-    let out = stdout(&search);
-    assert!(out.contains("kubectl-convert"), "{out}");
-    assert!(out.contains("kfmt"), "{out}");
+    assert_eq!(fs::read(tree.hosts.join("lodi.lock")).unwrap(), before);
 }
 
-/// The binary the compatibility test applies the lock with: the one `LODI_COMPAT_BINARY` names
-/// while recording (the released lodi 1.5.0), this build's otherwise.
-fn compat_binary() -> std::ffi::OsString {
-    std::env::var_os("LODI_COMPAT_BINARY")
-        .unwrap_or_else(|| std::ffi::OsString::from(env!("CARGO_BIN_EXE_lodi")))
-}
-
-fn compat_recording() -> bool {
-    std::env::var_os("LODI_RECORD_EXPECTED").is_some()
-        && std::env::var_os("LODI_COMPAT_BINARY").is_some()
-}
-
-/// The oldest lodi that can use a `lodi.lock` 1.6.0 writes (rel-1-release-1-6-0, LD-411).
-/// This build locks a home whose tool comes from the repository's `recipes/` folder; then, in an
-/// emptied home, the lock is applied `--locked` by lodi 1.5.0 while recording and by this build
-/// otherwise. What each prints, fetches, leaves in the lock and puts on the home's `PATH` is held
-/// to one golden recorded from 1.5.0, so 1.5.0 applies such a lock exactly as 1.6.0 does and the
-/// lock needs no newer lodi. The recipe is not edited: lodi 1.5 reads the lock, not `recipes/`.
+/// A switch never moves a locked tool (LD-528): when a tool's version or its recipe of your own
+/// changed since the lock, it stops with `E_LOCK_STALE` naming `lodi update` and leaves the lock
+/// as it was; `lodi update` locks the change, and the next switch applies it.
 #[test]
-fn a_lock_pinning_a_repository_recipe_is_one_lodi_1_5_0_applies_as_1_6_0_does() {
-    let tree = Tree::new("compat-150", "kubectl-convert = \"latest\"\n");
-    tree.recipe("kubectl-convert.toml", KUBECTL_CONVERT);
-    let server = Server::start(upstream(&[]));
-    let written = tree.home_apply(&server);
-    assert_eq!(written.status.code(), Some(0), "{written:?}");
-    let lock = fs::read(tree.hosts.join("lodi.lock")).unwrap();
-    assert_eq!(tree.locked("kubectl-convert")["recipe"]["input"], "user");
+fn a_changed_tool_or_recipe_stops_switch_until_lodi_update() {
+    let tree = Tree::new("stale", "kfmt = \"latest\"\n");
+    tree.recipe("kfmt.toml", &tool_recipe("kfmt", "kfmt.test"));
+    let server = Server::start(upstream(&[("kfmt", "kfmt.test")]));
+    let first = tree.home_apply(&server);
+    assert_eq!(first.status.code(), Some(0), "{first:?}");
+    let lock = || fs::read(tree.hosts.join("lodi.lock")).unwrap();
+    let stale = |output: &Output, before: &[u8]| {
+        assert_eq!(output.status.code(), Some(10), "{output:?}");
+        let err = stderr(output);
+        assert!(err.contains("E_LOCK_STALE"), "{err}");
+        assert!(err.contains("lodi update"), "{err}");
+        assert_eq!(lock(), before, "{err}");
+        assert!(!tree.hosts.join("home.lock").exists());
+    };
 
-    // A person's second machine: the same repository, a home lodi has never applied.
-    let second = tree.dir.join("second");
-    fs::create_dir_all(&second).unwrap();
-    server.clear();
+    let before = lock();
+    let edited = format!("{}\n# edited\n", tool_recipe("kfmt", "kfmt.test"));
+    tree.recipe("kfmt.toml", &edited);
+    stale(&tree.home_apply(&server), &before);
+
+    fs::write(
+        tree.hosts.join("home.toml"),
+        format!("[home]\nversion = \"1\"\n\n[tools]\nkfmt = \"{VERSION}\"\n"),
+    )
+    .unwrap();
+    stale(&tree.home_apply(&server), &before);
+
     let hosts = tree.hosts.to_str().unwrap();
-    let applied = Command::new(compat_binary())
-        .args(["home", "apply", "--locked", hosts, "--host", "box"])
-        .env_clear()
-        .env("PATH", "/usr/bin:/bin")
-        .env("HOME", &second)
-        .env("LODI_FETCH_REWRITE", server.rewrite())
-        .current_dir(&tree.dir)
-        .output()
-        .unwrap();
-    let run = Command::new(second.join(".local/share/lodi/home-scope/profile/bin/kubectl-convert"))
-        .output();
-    let dir = tree.dir.to_str().unwrap();
-    let mut requests = server.requests();
-    requests.sort();
-    let transcript = format!(
-        "exit: {:?}\nstdout:\n{}stderr:\n{}requests:\n{}\nlock kept: {}\nkubectl-convert: {}",
-        applied.status.code(),
-        stdout(&applied).replace(dir, "<dir>"),
-        stderr(&applied).replace(dir, "<dir>"),
-        requests.join("\n"),
-        fs::read(tree.hosts.join("lodi.lock")).unwrap() == lock,
-        run.map(|r| stdout(&r)).unwrap_or_else(|e| format!("{e}\n")),
+    let root = tree.dir.to_str().unwrap();
+    let require = [("LODI_HOST_REQUIRE_ROOT", Path::new("1"))];
+    let update = tree.lodi(
+        &tree.dir,
+        &server,
+        &["update", hosts, "--root", root],
+        &require,
     );
-    let golden = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/user-recipes/lock-applied-by-1.5.0.txt");
-    if compat_recording() {
-        fs::create_dir_all(golden.parent().unwrap()).unwrap();
-        fs::write(&golden, &transcript).unwrap();
-        return;
-    }
-    assert_eq!(transcript, fs::read_to_string(&golden).unwrap());
-    assert_eq!(applied.status.code(), Some(0), "{applied:?}");
-    assert!(
-        transcript.ends_with(&said("kubectl-convert")),
-        "{transcript}"
+    assert_eq!(update.status.code(), Some(0), "{update:?}");
+    assert_eq!(
+        tree.locked("kfmt")["recipe"]["sha256"],
+        sha256_tagged(edited.as_bytes())
     );
+    let again = tree.home_apply(&server);
+    assert_eq!(again.status.code(), Some(0), "{again:?}");
 }

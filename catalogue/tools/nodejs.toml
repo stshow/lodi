@@ -1,5 +1,5 @@
-# Upstream Node.js for [tools] nodejs. This recipe says where to look;
-# it lists no version. `lodi lock` discovers versions from the nodejs.org release index.
+# Upstream Node.js for [tools] nodejs. This recipe says where to look; it lists no version.
+# `lodi update` discovers versions from the nodejs.org release index.
 [recipe]
 name        = "nodejs"
 description = "Node.js JavaScript runtime, official Linux binaries"

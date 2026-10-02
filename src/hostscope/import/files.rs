@@ -187,6 +187,8 @@ pub struct Capture {
     pub untracked: usize,
     /// Whether the census above reached [`MAX_CENSUS_ENTRIES`] and stopped early.
     pub untracked_is_a_floor: bool,
+    /// Candidates this process may not read, sorted: what a capture as root may judge otherwise.
+    pub unread: Vec<String>,
 }
 
 impl Capture {
@@ -211,7 +213,11 @@ impl Capture {
 
         for file in &self.captured {
             let shown = format!("/{}", file.source);
-            let target = boundary::ensure_parent(out, &shown, 0o755)?;
+            // The boundary names the path from `out`; the refusal says where `out` is.
+            let target = boundary::ensure_parent(out, &shown, 0o755).map_err(|mut refused| {
+                refused.message = format!("{}{}", out.display(), refused.message);
+                refused
+            })?;
             match fs::symlink_metadata(&target) {
                 // `ensure_parent` has already refused a link; what is left is replaced below.
                 Ok(meta) if meta.is_file() => {}
@@ -272,7 +278,7 @@ fn io(path: &Path, detail: &str) -> Diagnostic {
 ///
 /// The only failure is a failure to read the package manager.
 pub fn capture(gate: &Gate) -> Result<Capture, Diagnostic> {
-    let backend = pm::backend_for(gate.distro, &gate.root, false, gate.operation);
+    let backend = pm::backend_for(gate.distro, &gate.root, gate.operation);
     capture_with(gate, backend.as_ref())
 }
 
@@ -295,6 +301,9 @@ pub fn capture_with(gate: &Gate, backend: &dyn pm::Backend) -> Result<Capture, D
     candidates.sort();
     candidates.dedup();
     for path in candidates {
+        if !readable(&gate.root.join(path.trim_start_matches('/'))) {
+            out.unread.push(path.clone());
+        }
         let reason = consider(gate, &path);
         out.refused.push(Refused { path, reason });
     }
@@ -302,6 +311,19 @@ pub fn capture_with(gate: &Gate, backend: &dyn pm::Backend) -> Result<Capture, D
     out.untracked = untracked;
     out.untracked_is_a_floor = floored;
     Ok(out)
+}
+
+/// Whether this process may read `path`, asked without opening it; a path that is not there
+/// counts as readable, as there is nothing to read.
+fn readable(path: &Path) -> bool {
+    use std::os::unix::ffi::OsStrExt;
+    let Ok(c) = std::ffi::CString::new(path.as_os_str().as_bytes()) else {
+        return true;
+    };
+    // SAFETY: `c` is a valid NUL-terminated string that outlives the call.
+    let denied = unsafe { libc::access(c.as_ptr(), libc::R_OK) } != 0
+        && std::io::Error::last_os_error().kind() == std::io::ErrorKind::PermissionDenied;
+    !denied
 }
 
 /// Why one changed file is not captured, from its path alone.

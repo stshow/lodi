@@ -1,4 +1,4 @@
-//! The repositories an apt machine has enabled, read for `lodi host import` and written back as
+//! The repositories an apt machine has enabled, read for `lodi import` and written back as
 //! `[sources]` blocks a person can uncomment (LD-367).
 //!
 //! # One source of truth for attribution
@@ -1087,10 +1087,10 @@ pub fn emit(out: &mut String, machine: &Machine, bundled: bool) {
     }
     out.push_str(
         " this machine installed from, each written as the\n\
-         # [sources] block an apply would arm. They are commented out, because arming one\n\
+         # [sources] block a switch would turn on. They are commented out, because turning one on\n\
          # writes a trust anchor, and that is a step you take on purpose: remove the `# ` from\n\
          # a block's lines to take it, then add the names it lists to [packages]. The keyring\n\
-         # it names travels beside this file under files/, and an apply verifies it against\n\
+         # it names travels beside this file under files/, and a switch verifies it against\n\
          # signed_by_sha256 before it writes anything.\n\
          #\n",
     );

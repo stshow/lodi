@@ -1,0 +1,29 @@
+{
+  "kind": "lodi-progress-fixture-provenance",
+  "image": "arch 20260915.594445 (Arch-Linux-x86_64-cloudimg-20260915.594445.qcow2)",
+  "recorded": "2026-10-01",
+  "environment": [
+    "env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "LC_ALL=C LANG=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true",
+    "PAGER=cat <command> >NAME.stdout 2>NAME.stderr; echo $? >NAME.status"
+  ],
+  "commands": {
+    "refresh": "pacman -Sy",
+    "download": "pacman -Sw --needed --noconfirm tree",
+    "install": "pacman -S --needed --noconfirm tree",
+    "remove": "pacman -Rns --noconfirm tree"
+  },
+  "notes": [
+    [
+      "Recorded as root via sudo over lodivm ssh without a tty, in a fresh guest (2",
+      "vCPU, 2048 MiB), commands run in the order refresh, download, install, remove"
+    ],
+    [
+      "Before recording, unrecorded: pacman-key --init && pacman-key --populate",
+      "archlinux"
+    ],
+    "No substitutions; tree was absent on the stock image",
+    "No redactions"
+  ],
+  "wrapping": "a string longer than 80 characters is a list of its lines, joined by spaces"
+}

@@ -1,5 +1,5 @@
-# Upstream CPython for [tools] python. This recipe says where to look;
-# it lists no version. `lodi lock` discovers versions from the assets of the newest releases.
+# Upstream CPython for [tools] python. This recipe says where to look; it lists no version.
+# `lodi update` discovers versions from the assets of the newest releases.
 [recipe]
 name        = "python"
 description = "Relocatable CPython builds from python-build-standalone"

@@ -5,8 +5,9 @@
 //! one (`AGENTS.md` §8). What runs is the product, unchanged, as a child process, with a
 //! directory of test-owned shims first on its `PATH` — which is the whole seam by design (D3,
 //! LD-115). The shim does two things: it appends its own argv to a log, and it prints the bytes
-//! the guest printed for that command. So the assertions below are of two kinds, and both are
-//! exact:
+//! the guest printed for that command. The rest of the machine is `tests/support/fakehost.rs`'s,
+//! which also runs every command as the 2.0 command that keeps the 1.x verb's behaviour (LD-514,
+//! LD-522). So the assertions below are of two kinds, and both are exact:
 //!
 //! - **what lodi would run**: every argv, byte for byte, in order, from the log;
 //! - **what lodi concludes**: the plan's lines, the journal, the lock and the restart
@@ -19,16 +20,16 @@
 //! moment after the kill, when pacman's own `db.lck` is still on the machine).
 //!
 //! The shim reads two variables of its own, `LODI_PACMAN_STATE` and `LODI_PACMAN_FIXTURES`, from
-//! a `shim-env` file beside it, written by the test: the product clears the environment of every
+//! a `pacman-env` file beside it, written by the test: the product clears the environment of every
 //! package manager it runs (LD-357), so nothing of the test's own environment reaches a shim.
 //! Nothing in the product knows either name: they are how the *test* tells *its own* shim which
 //! recording to replay, and there is no test-only branch anywhere in the product's paths.
 //!
 //! What Arch makes different, and what this file therefore asks that `tests/host_apt.rs` does
 //! not: the refresh is inside the transaction and there is no index action, the removals are a
-//! second action of their own, a `hold` is `--ignore` on lodi's own transaction and leaves
-//! nothing behind on the machine (D11), and `--unsupported-partial-upgrade` is the one door to
-//! the one mode Arch does not support (D10).
+//! second action of their own, and a `hold` is `--ignore` on lodi's own transaction and leaves
+//! nothing behind on the machine (D11). 1.x's `--unsupported-partial-upgrade` went with 2.0's
+//! `switch` (LD-522).
 //!
 //! Every manifest here says `packages = "managed"` under `[host]`: this file is the proof that
 //! 1.1.0's removal rule is kept exactly under that key (LD-375). The exact mode, which an import
@@ -46,11 +47,16 @@ mod support;
 #[path = "support/wait.rs"]
 mod wait;
 
+/// The real binary on a pseudo-terminal, for the run this file holds part way.
+#[allow(clippy::duplicate_mod)]
+#[path = "support/terminal.rs"]
+mod terminal;
+
 use std::collections::BTreeSet;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::process::{Command, Output};
 
 use fixture::Fixture;
 use hostroot::{Root, feed, wait_until};
@@ -207,18 +213,6 @@ hold = [\"libsecret\"]
 absent = [\"zip\"]
 ";
 
-/// One name that is not installed yet, so that the partial mode has a transaction to build.
-const PARTIAL_MANIFEST: &str = "\
-[host]
-version = \"1\"
-packages = \"managed\"
-
-[packages]
-common = [\"tree\", \"jq\", \"libsecret\", \"bc\"]
-mark_auto = [\"tree\"]
-hold = [\"libsecret\"]
-";
-
 /// The manifest the `interrupted` recordings were made against. Two packages in one transaction
 /// is what makes an **ambiguous** restart producible on purpose: one there and one not is
 /// neither bracket.
@@ -231,25 +225,28 @@ packages = \"managed\"
 common = [\"unzip\", \"patch\"]
 ";
 
-/// One scratch root with one set of recordings behind a directory of shims.
+/// One scratch root with one set of recordings behind a directory of shims: a
+/// [`fakehost::Case`], which runs every command as the 2.0 command that keeps the 1.x verb's
+/// behaviour (`plan` is `switch --host --dry-run`, `apply` is `switch --host`, LD-514), with
+/// the config at the scratch `HOME`'s `.config/lodi` and its root part behind a stub elevator.
+/// The `pacman` among its shims is this file's recorded one.
 struct Case {
-    root: Root,
-    shims: PathBuf,
+    host: fakehost::Case,
     state: PathBuf,
     fixtures: PathBuf,
 }
 
 impl Case {
-    /// A fresh root, armed and given Arch's identity, with the shim of this test first on the
-    /// `PATH` every child gets and `scenario`'s recordings behind it.
+    /// A fresh root, given Arch's identity, with the shim of this test first on the `PATH`
+    /// every child gets and `scenario`'s recordings behind it.
     fn new(name: &str, scenario: &str, manifest: &str) -> Case {
-        let root = Root::new(name);
-        root.arm().write(
+        let host = fakehost::Case::new(&format!("pacman-{name}"), fakehost::Machine::arch());
+        host.root.write(
             "etc/os-release",
             "NAME=\"Arch Linux\"\nPRETTY_NAME=\"Arch Linux\"\nID=arch\n\
              BUILD_ID=rolling\nANSI_COLOR=\"38;2;23;147;209\"\n",
         );
-        root.write("etc/lodi/host.toml", manifest);
+        host.set_manifest(manifest);
         let fixtures = fixtures_dir().join("arch").join(scenario);
         assert!(
             fixtures.is_dir(),
@@ -257,22 +254,17 @@ impl Case {
              `docs/milestones/m-0.6/probes/hostvm.py --record-fixtures`",
             fixtures.display()
         );
-        let base = support::scratch(&format!("pacman-{name}"));
-        let shims = base.join("bin");
-        let state = base.join("state");
-        fs::create_dir_all(&shims).expect("the shim directory");
+        // The fake's own shim directory: the recorded `pacman` replaces its answering one.
+        let shims = host.base().join("bin");
+        let state = host.base().join("pacman-state");
         fs::create_dir_all(&state).expect("the shim state directory");
         {
-            // This file's own recorded-fixture shim, not `fakehost::Case`'s, but the same guard
-            // (#456): the two run in the same test binary, so a write here and a spawn from a
-            // `fakehost::Case` elsewhere in this file can race the same way.
             let _writing = fakehost::writing();
             write_shims(&shims);
             write_shim_env(&shims, &state, &fixtures);
         }
         let case = Case {
-            root,
-            shims,
+            host,
             state,
             fixtures,
         };
@@ -280,9 +272,13 @@ impl Case {
         // Synchronised databases, so that `index_age` answers. Nothing acts on the answer here
         // — Arch refreshes inside the transaction — but the plan reports it, and a machine with
         // no databases at all is a different machine from this one.
-        case.root
+        case.root()
             .write("var/lib/pacman/sync/extra.db", "recorded database\n");
         case
+    }
+
+    fn root(&self) -> &Root {
+        &self.host.root
     }
 
     /// Which recorded state of the machine the shim replays from now on.
@@ -293,7 +289,7 @@ impl Case {
     /// Leave pacman's own transaction lock on the root, as a killed pacman does. Lodi reads it
     /// and never removes it, so a test that puts it there is the only thing that takes it away.
     fn db_lock(&self, present: bool) {
-        let path = self.root.path("var/lib/pacman/db.lck");
+        let path = self.root().path("var/lib/pacman/db.lck");
         if present {
             fs::write(&path, "").expect("the database lock");
         } else {
@@ -302,40 +298,22 @@ impl Case {
     }
 
     fn manifest(&self, body: &str) {
-        self.root.write("etc/lodi/host.toml", body);
-    }
-
-    fn command(&self, args: &[&str]) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_lodi"));
-        let path = format!(
-            "{}:{}",
-            self.shims.display(),
-            std::env::var("PATH").unwrap_or_default()
-        );
-        command
-            .args(args)
-            .arg("--root")
-            .arg(&self.root.dir)
-            .env("PATH", path)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-        command
+        self.host.set_manifest(body);
     }
 
     /// Run one host command, with the log emptied first so that it holds this run alone.
     ///
-    /// The verb is assembled here rather than spelled out at each call, so that every host
-    /// invocation in this file is a scratch-root one by construction: there is exactly one place
-    /// the scope and the `--root` come from, and `scripts/check-host-safety.py` can see it.
-    // check-host-safety: refusal — one place, and `command` appends this scratch root as --root.
-    fn verb(&self, verb: &str, extra: &[&str]) -> Output {
-        let mut args = vec!["host", verb];
-        args.extend_from_slice(extra);
+    /// The command is assembled by [`fakehost::Case::verb_env`], the one place every host test's
+    /// scope and `--root` come from, which `scripts/check-host-safety.py` can see.
+    fn verb_env(&self, verb: &str, extra: &[&str], envs: &[(&str, &str)]) -> Output {
         let _ = fs::remove_file(self.state.join("log"));
         let _ = fs::remove_file(self.state.join("env"));
         let _ = fs::remove_file(self.state.join("inherited"));
-        let _spawning = fakehost::spawning();
-        self.command(&args).output().expect("lodi runs")
+        self.host.verb_env(verb, extra, envs)
+    }
+
+    fn verb(&self, verb: &str, extra: &[&str]) -> Output {
+        self.verb_env(verb, extra, &[])
     }
 
     fn plan(&self) -> Output {
@@ -372,7 +350,7 @@ impl Case {
 
     /// The root the product resolved, which is the scratch root after canonicalization.
     fn resolved(&self) -> PathBuf {
-        fs::canonicalize(&self.root.dir).expect("the scratch root is there")
+        fs::canonicalize(&self.root().dir).expect("the scratch root is there")
     }
 
     /// Design call D2 (LD-114) puts these after the operation of every invocation, because every
@@ -389,13 +367,13 @@ impl Case {
     }
 
     fn lock(&self) -> serde_json::Value {
-        serde_json::from_str(&self.root.read("etc/lodi/host.lock")).expect("the lock parses")
+        self.host.lock()
     }
 
     /// The newest journal's header, which is where the argv of every action is written down
     /// **before** it runs.
     fn journal(&self) -> serde_json::Value {
-        let path = hostroot::journals(&self.root)
+        let path = hostroot::journals(self.root())
             .pop()
             .expect("a journal was written");
         let text = fs::read_to_string(path).expect("the journal is readable");
@@ -407,24 +385,40 @@ fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/host/pacman")
 }
 
-fn out(output: &Output) -> String {
-    String::from_utf8_lossy(&output.stdout).into_owned()
+/// A switch's plan and outcome: what it says on standard error, which is the terminal.
+fn shown(output: &Output) -> String {
+    fakehost::err(output)
+}
+
+/// What a switch plans: its action lines and its `host:` count, without the warnings and notes
+/// around them.
+fn planned(output: &Output) -> String {
+    shown(output)
+        .lines()
+        .filter(|line| {
+            ["+ ", "- ", "~ ", "host: "]
+                .iter()
+                .any(|p| line.starts_with(p))
+        })
+        .map(|line| format!("{line}\n"))
+        .collect()
 }
 
 fn err(output: &Output) -> String {
-    String::from_utf8_lossy(&output.stderr).into_owned()
+    fakehost::story(output)
 }
 
 /// What the shims read in place of an environment: the product starts every package manager
 /// with the environment cleared and a fixed `PATH` (LD-357), so the shims take their own
-/// variables — and the `PATH` their `cat` is found on — from this file beside them.
+/// variables — and the `PATH` their `cat` is found on — from this file beside them. The fake's
+/// own `shim-env` is its other shims'.
 fn write_shim_env(shims: &Path, state: &Path, fixtures: &Path) {
     let quote = |p: &Path| format!("'{}'", p.display().to_string().replace('\'', "'\\''"));
     let path = std::env::var("PATH")
         .unwrap_or_default()
         .replace('\'', "'\\''");
     fs::write(
-        shims.join("shim-env"),
+        shims.join("pacman-env"),
         format!(
             "PATH='{path}'\nexport PATH\nLODI_PACMAN_STATE={}\nLODI_PACMAN_FIXTURES={}\n",
             quote(state),
@@ -445,7 +439,7 @@ fn write_shims(dir: &Path) {
 # A test-owned shim. It replays what a real Arch guest printed for this command.
 # Everything this process inherited, read by a builtin before anything is set.
 inherited=$(export -p)
-. \"${0%/*}/shim-env\"
+. \"${0%/*}/pacman-env\"
 state=\"$LODI_PACMAN_STATE\"
 fixtures=\"$LODI_PACMAN_FIXTURES\"
 # Command substitution strips the trailing newline, so this is the bare word.
@@ -466,7 +460,7 @@ case \"$1\" in
     # pacman exits non-zero when any one name is unknown, and prints the rest anyway.
     if [ -s \"$fixtures/pacman-Si.err\" ]; then cat \"$fixtures/pacman-Si.err\" >&2; exit 1; fi ;;
   -Syu|-S|-Rns)
-    if [ -p \"$state/gate\" ]; then cat \"$state/gate\" >/dev/null; printf 'gone\\n' > \"$state/gated\"
+    if [ -p \"$state/gate\" ]; then echo \"$PPID\" > \"$state/held\"; cat \"$state/gate\" >/dev/null; printf 'gone\\n' > \"$state/gated\"
     else printf '%s\\n' \"${LODI_PACMAN_NEXT_PHASE:-after}\" > \"$state/phase\"; fi
     code=$(cat \"$state/exit\" 2>/dev/null || echo 0)
     if [ -f \"$state/stderr\" ]; then cat \"$state/stderr\" >&2; fi
@@ -479,42 +473,64 @@ exit 0
     fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).expect("a shim mode");
 }
 
-/// Start a real apply and stop it inside the transaction, with the package manager held at the
-/// moment it was started: the `pacman -Syu` shim blocks on a fifo until this returns.
+/// Start a real switch and stop it inside the transaction, with the package manager held at the
+/// moment it was started: the `pacman -Syu` shim blocks on a fifo until this returns. The
+/// transaction runs in the root part the stub elevator started, which is the shim's parent and
+/// the process killed; the switch that started it then ends on its own.
 fn kill_inside_the_transaction(case: &Case) {
     let gate = case.state.join("gate");
+    let held = case.state.join("held");
     let _ = fs::remove_file(&gate);
+    let _ = fs::remove_file(&held);
     let gone = case.state.join("gated");
     let _ = fs::remove_file(&gone);
-    let status = Command::new("mkfifo")
-        .arg(&gate)
-        .status()
-        .expect("mkfifo runs");
+    let status = {
+        let _spawning = fakehost::spawning();
+        Command::new("mkfifo")
+            .arg(&gate)
+            .status()
+            .expect("mkfifo runs")
+    };
     assert!(status.success(), "mkfifo {}", gate.display());
     let _ = fs::remove_file(case.state.join("log"));
-    // Whatever fails below, neither the apply nor the shim it holds outlives this test.
-    let mut child = Fixture::spawn(
-        "the held apply",
-        // check-host-safety: refusal — `command` appends this scratch root as `--root`.
-        &mut case.command(&["host", "apply"]),
-    );
-    wait_until("the transaction to start", || {
-        case.lines()
-            .iter()
-            .any(|line| line.starts_with("pacman -Syu"))
+    let command = case.host.command("apply", &[], &[]);
+    // On a terminal, as `fakehost::Case::verb_env` runs it, so that the switch asks the stub
+    // elevator; the command is dropped inside, so that no copy of the terminal outlives it.
+    terminal::on_terminal("", |stdin, stderr| {
+        let mut command = command;
+        command.stdin(stdin).stderr(stderr);
+        // Whatever fails below, neither the switch nor the shim it holds outlives this test.
+        let mut child = {
+            let _spawning = fakehost::spawning();
+            Fixture::spawn("the held switch", &mut command)
+        };
+        drop(command);
+        wait_until("the transaction to start", || {
+            case.lines()
+                .iter()
+                .any(|line| line.starts_with("pacman -Syu "))
+                && fs::read_to_string(&held).is_ok_and(|pid| pid.ends_with('\n'))
+        });
+        let pid = fs::read_to_string(&held).expect("the held shim's parent");
+        {
+            let _spawning = fakehost::spawning();
+            let _ = Command::new("kill").arg("-KILL").arg(pid.trim()).status();
+        }
+        let status = child.wait().expect("the switch ends");
+        // Let the held shim go, without letting it record anything further: it writes no phase
+        // when it was gated, so what the machine shows next is only what this test says it
+        // shows. The wait is the point — the shim outlived the process that started it, and a
+        // test that set the next state while it was still running would be racing its own
+        // fixture.
+        feed(&gate, "");
+        wait_until("the held package manager to exit", || gone.is_file());
+        let _ = fs::remove_file(&gate);
+        Output {
+            status,
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+        }
     });
-    let _ = Command::new("kill")
-        .arg("-KILL")
-        .arg(child.id().to_string())
-        .status();
-    let _ = child.wait();
-    // Let the held shim go, without letting it record anything further: it writes no phase when
-    // it was gated, so what the machine shows next is only what this test says it shows. The
-    // wait is the point — the shim outlived the process that started it, and a test that set
-    // the next state while it was still running would be racing its own fixture.
-    feed(&gate, "");
-    wait_until("the held package manager to exit", || gone.is_file());
-    let _ = fs::remove_file(&gate);
 }
 
 // ----------------------------------------------------------------- (a), (i): the one argv ---
@@ -528,10 +544,10 @@ fn every_pacman_invocation_of_one_apply_is_exactly_this() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
+        planned(&plan),
         "+ package tree\n+ package jq\n+ package zip\n\
          ~ package libsecret (hold: lodi transactions only)\n\
-         ~ package tree (auto)\n~ package libsecret (manual)\n2 action(s)\n"
+         ~ package tree (auto)\n~ package libsecret (manual)\nhost: +3 -0 packages, 1 other change\n"
     );
     assert!(
         err(&plan).contains("W_OPTIONAL_SKIPPED: `lodi-absent-probe` is optional"),
@@ -555,9 +571,14 @@ fn every_pacman_invocation_of_one_apply_is_exactly_this() {
     assert_eq!(
         case.lines(),
         vec![
-            // The machine is read twice before anything moves: once for the read-only
-            // pre-flight, and again after the apply lock is held, because another process may
-            // have changed the machine in between. Neither reading mutates anything.
+            // The machine is read three times before anything moves: the preview, as the
+            // person, before the switch asks for root; the root part's check that the plan is
+            // the one previewed, which is also its read-only pre-flight; and again after the
+            // apply lock is held, because another process may have changed the machine in
+            // between. No reading mutates anything.
+            format!("pacman -Q {ro}"),
+            format!("pacman -Qe {ro}"),
+            format!("pacman -Si {ro} -- tree jq libsecret lodi-absent-probe zip"),
             format!("pacman -Q {ro}"),
             format!("pacman -Qe {ro}"),
             format!("pacman -Si {ro} -- tree jq libsecret lodi-absent-probe zip"),
@@ -565,7 +586,9 @@ fn every_pacman_invocation_of_one_apply_is_exactly_this() {
             format!("pacman -Qe {ro}"),
             format!("pacman -Si {ro} -- tree jq libsecret lodi-absent-probe zip"),
             // One transaction. It refreshes and upgrades the machine in the same breath,
-            // because on Arch that is the only supported way to install (D10).
+            // because on Arch that is the only supported way to install (D10). Its download comes
+            // first, as a step of its own that installs nothing (#694).
+            format!("pacman -Syuw {ro} --noconfirm --ignore libsecret -- tree jq zip"),
             format!("pacman -Syu {ro} --noconfirm --ignore libsecret -- tree jq zip"),
             format!("pacman -D {ro} --asdeps -- tree"),
             format!("pacman -D {ro} --asexplicit -- libsecret"),
@@ -626,15 +649,15 @@ fn the_journal_records_the_transaction_before_it_runs() {
 fn a_second_apply_plans_and_changes_nothing() {
     let case = Case::new("idempotent", "install", INSTALL_MANIFEST);
     assert!(case.apply(&[]).status.success());
-    let first = case.root.read("etc/lodi/host.lock");
+    let first = case.root().read("etc/lodi/host.lock");
 
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
-    assert_eq!(out(&plan), "nothing to do\n");
+    assert!(fakehost::nothing(&plan), "{}", err(&plan));
     let second = case.apply(&[]);
     assert!(second.status.success(), "{}", err(&second));
-    assert_eq!(out(&second), "nothing to do\n");
-    assert_eq!(case.root.read("etc/lodi/host.lock"), first);
+    assert!(fakehost::nothing(&second), "{}", err(&second));
+    assert_eq!(case.root().read("etc/lodi/host.lock"), first);
     let ro = case.root_options();
     assert_eq!(
         case.lines(),
@@ -645,80 +668,6 @@ fn a_second_apply_plans_and_changes_nothing() {
         ],
         "a settled machine is observed and left alone"
     );
-}
-
-// -------------------------------------------------- (c): the unsupported partial upgrade ---
-
-/// (c) `--unsupported-partial-upgrade` builds `-S --needed`, warns with `W_ARCH_PARTIAL`, and is
-/// the **only** way to reach that mode: no manifest key, no environment variable, no default,
-/// and not even a plan.
-#[test]
-fn the_partial_upgrade_is_one_flag_one_argv_and_one_warning() {
-    let case = Case::new("partial", "install", INSTALL_MANIFEST);
-    assert!(case.apply(&[]).status.success());
-    case.manifest(PARTIAL_MANIFEST);
-
-    let apply = case.apply(&["--unsupported-partial-upgrade"]);
-    assert!(apply.status.success(), "{}", err(&apply));
-    let warning = err(&apply);
-    assert!(
-        warning.contains(
-            "W_ARCH_PARTIAL: --unsupported-partial-upgrade installs without \
-                          upgrading this machine, which arch does not support"
-        ),
-        "{warning}"
-    );
-    let ro = case.root_options();
-    assert!(
-        case.lines().contains(&format!(
-            "pacman -S {ro} --needed --noconfirm --ignore libsecret -- bc"
-        )),
-        "{:?}",
-        case.lines()
-    );
-    assert!(
-        !case.lines().iter().any(|line| line.contains("-Syu")),
-        "the partial mode upgrades nothing: {:?}",
-        case.lines()
-    );
-
-    // Without the flag, the same manifest is a full upgrade and there is no warning.
-    let full = case.apply(&[]);
-    assert!(full.status.success(), "{}", err(&full));
-    assert!(!err(&full).contains("W_ARCH_PARTIAL"), "{}", err(&full));
-    assert!(
-        case.lines().contains(&format!(
-            "pacman -Syu {ro} --noconfirm --ignore libsecret -- bc"
-        )),
-        "{:?}",
-        case.lines()
-    );
-
-    // A plan does not take the flag: it is an apply's flag, and an unknown one is a usage error.
-    let planned = case.verb("plan", &["--unsupported-partial-upgrade"]);
-    assert_eq!(planned.status.code(), Some(2), "{}", err(&planned));
-}
-
-/// The flag means something on Arch and nothing anywhere else, so a root that is not Arch
-/// refuses it rather than accepting a flag it would ignore.
-#[test]
-fn a_root_with_no_partial_mode_refuses_the_flag_rather_than_ignoring_it() {
-    let root = Root::new("pacman-flag-on-debian");
-    root.arm().write(
-        "etc/os-release",
-        "PRETTY_NAME=\"Debian GNU/Linux 12 (bookworm)\"\nID=debian\nVERSION_ID=\"12\"\n",
-    );
-    root.write("etc/lodi/host.toml", "[host]\nversion = \"1\"\n");
-    let output = Command::new(env!("CARGO_BIN_EXE_lodi"))
-        // check-host-safety: refusal — this scratch root is the `--root` of this one call.
-        .args(["host", "apply", "--unsupported-partial-upgrade", "--root"])
-        .arg(&root.dir)
-        .output()
-        .expect("lodi runs");
-    assert_eq!(output.status.code(), Some(3), "{}", err(&output));
-    let message = err(&output);
-    assert!(message.contains("E_UNSUPPORTED"), "{message}");
-    assert!(message.contains("arch option"), "{message}");
 }
 
 // -------------------------------------------------------------------------- (d): the marks ---
@@ -768,9 +717,9 @@ fn a_hold_is_an_ignore_on_lodis_own_transaction_and_says_so() {
     let case = Case::new("hold", "install", INSTALL_MANIFEST);
     let plan = case.plan();
     assert!(
-        out(&plan).contains("~ package libsecret (hold: lodi transactions only)"),
+        shown(&plan).contains("~ package libsecret (hold: lodi transactions only)"),
         "{}",
-        out(&plan)
+        shown(&plan)
     );
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
@@ -784,8 +733,8 @@ fn a_hold_is_an_ignore_on_lodis_own_transaction_and_says_so() {
     );
     // Nothing that could hold a package outside this transaction: no `pacman.conf`, no
     // drop-in beside it, and no `IgnorePkg` anywhere below the root.
-    assert!(!case.root.exists("etc/pacman.conf"));
-    assert!(!case.root.exists("etc/pacman.d"));
+    assert!(!case.root().exists("etc/pacman.conf"));
+    assert!(!case.root().exists("etc/pacman.d"));
     for line in case.lines() {
         assert!(!line.contains("pacman.conf"), "{line}");
         assert!(!line.contains("IgnorePkg"), "{line}");
@@ -819,11 +768,11 @@ fn a_hold_on_a_package_the_machine_does_not_have_still_installs_it() {
     );
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
-    assert!(out(&plan).contains("+ package jq"), "{}", out(&plan));
+    assert!(shown(&plan).contains("+ package jq"), "{}", shown(&plan));
     assert!(
-        !out(&plan).contains("~ package jq (hold"),
+        !shown(&plan).contains("~ package jq (hold"),
         "a package that is not there cannot be held at a version: {}",
-        out(&plan)
+        shown(&plan)
     );
     assert!(case.apply(&[]).status.success());
     assert!(
@@ -847,7 +796,7 @@ fn auto_remove_is_one_rns_of_exactly_what_lodi_installed() {
 
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
-    assert_eq!(out(&plan), "- package zip\n1 action(s)\n");
+    assert_eq!(planned(&plan), "- package zip\nhost: +0 -1 packages\n");
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
     let ro = case.root_options();
@@ -889,9 +838,9 @@ fn absent_is_the_second_action_of_an_apply_that_also_installs() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert_eq!(
-        out(&plan),
+        planned(&plan),
         "+ package bc\n~ package libsecret (hold: lodi transactions only)\n\
-         - package zip\n2 action(s)\n"
+         - package zip\nhost: +1 -1 packages\n"
     );
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", err(&apply));
@@ -936,8 +885,8 @@ fn an_unknown_name_stops_and_the_same_name_optional_is_skipped() {
         message.contains("lodi") || message.contains("did you mean"),
         "{message}"
     );
-    assert!(!case.root.exists("etc/lodi/host.lock"));
-    assert!(!case.root.exists("var/lib/lodi"));
+    assert!(!case.root().exists("etc/lodi/host.lock"));
+    assert!(!case.root().exists("var/lib/lodi"));
 
     // The same name, declared optional.
     case.manifest(
@@ -952,14 +901,14 @@ fn an_unknown_name_stops_and_the_same_name_optional_is_skipped() {
         err(&skipped)
     );
     assert!(
-        out(&skipped).contains("+ package tree"),
+        planned(&skipped).contains("+ package tree"),
         "{}",
-        out(&skipped)
+        shown(&skipped)
     );
     assert!(
-        !out(&skipped).contains("lodi-absent-probe"),
+        !planned(&skipped).contains("lodi-absent-probe"),
         "{}",
-        out(&skipped)
+        shown(&skipped)
     );
 }
 
@@ -986,9 +935,9 @@ fn a_killed_transaction_is_classified_from_what_the_machine_shows() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", err(&plan));
     assert!(
-        out(&plan).contains("is outstanding: incomplete at p1"),
+        shown(&plan).contains("is outstanding: incomplete at p1"),
         "{}",
-        out(&plan)
+        shown(&plan)
     );
 
     // Everything happened: the machine is as the transaction meant to leave it.
@@ -996,9 +945,9 @@ fn a_killed_transaction_is_classified_from_what_the_machine_shows() {
     let done = case.plan();
     assert!(done.status.success(), "{}", err(&done));
     assert!(
-        out(&done).contains("is outstanding: complete\n"),
+        shown(&done).contains("is outstanding: complete\n"),
         "{}",
-        out(&done)
+        shown(&done)
     );
 
     // One of the two: neither bracket, so lodi refuses to guess.
@@ -1074,7 +1023,7 @@ fn a_database_lock_left_behind_is_ambiguous_and_lodi_never_removes_it() {
         "the hint may never ask for a sentence to be put into a state: {message}"
     );
     assert!(
-        case.root.exists("var/lib/pacman/db.lck"),
+        case.root().exists("var/lib/pacman/db.lck"),
         "lodi removed the lock, which is never lodi's to remove"
     );
     // No pacman was run at all: the command stopped before it planned anything to do.
@@ -1089,9 +1038,9 @@ fn a_database_lock_left_behind_is_ambiguous_and_lodi_never_removes_it() {
     let clear = case.plan();
     assert!(clear.status.success(), "{}", err(&clear));
     assert!(
-        out(&clear).contains("is outstanding: complete\n"),
+        shown(&clear).contains("is outstanding: complete\n"),
         "{}",
-        out(&clear)
+        shown(&clear)
     );
 }
 
@@ -1314,14 +1263,15 @@ fn a_root_with_no_sync_database_has_no_index() {
 fn a_package_manager_inherits_nothing_but_the_fixed_environment() {
     let case = Case::new("fixed-env", "install", INSTALL_MANIFEST);
     let _ = fs::remove_file(case.state.join("inherited"));
-    let output = case
-        // check-host-safety: refusal — `command` appends this scratch root as `--root`.
-        .command(&["host", "plan"])
-        .env("PACMAN_CONF", "/nonexistent/planted.conf")
-        .env("LD_LIBRARY_PATH", "/nonexistent")
-        .env("LODI_PLANTED", "planted")
-        .output()
-        .expect("lodi runs");
+    let output = case.verb_env(
+        "plan",
+        &[],
+        &[
+            ("PACMAN_CONF", "/nonexistent/planted.conf"),
+            ("LD_LIBRARY_PATH", "/nonexistent"),
+            ("LODI_PLANTED", "planted"),
+        ],
+    );
     assert!(output.status.success(), "{}", err(&output));
     let inherited = fs::read_to_string(case.state.join("inherited")).expect("the shims ran");
     assert!(!inherited.contains("planted"), "{inherited}");

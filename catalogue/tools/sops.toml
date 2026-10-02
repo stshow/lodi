@@ -1,7 +1,6 @@
-# sops for [tools] sops. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# Upstream publishes a bare executable whose name carries the tag; it is installed as
-# `bin/sops`.
+# sops for [tools] sops. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. Upstream publishes a bare
+# executable whose name carries the tag; it is installed as `bin/sops`.
 [recipe]
 name        = "sops"
 description = "Simple and flexible tool for managing secrets"

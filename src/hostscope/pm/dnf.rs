@@ -1141,6 +1141,14 @@ impl Backend for Dnf {
 
     /// `dnf5 -C check`: every problem it reports with the installed packages — a duplicate an
     /// interrupted rpm transaction left, a broken dependency — one line each.
+    fn item(&self, line: &str) -> Option<String> {
+        item(line)
+    }
+
+    fn download(&self, transaction: &Invocation) -> Option<Invocation> {
+        download(transaction)
+    }
+
     fn unclean(&self) -> Result<Vec<String>, Diagnostic> {
         let invocation = self.dnf(&["-C", "check"], &[])?;
         let output = output(&invocation)?;
@@ -1188,6 +1196,49 @@ fn excludes(names: &[String]) -> Result<Vec<String>, Diagnostic> {
             }
         })
         .collect()
+}
+
+/// The package a line of `dnf5` names, for the step list's count (#694): a download
+/// (`[1/2] NAME-EPOCH:VERSION-RELEASE.ARCH  100% | …`) or a transaction step (`[3/4] Installing
+/// NAME-…`, `Removing`, `Upgrading` and the like). dnf5 cuts the column to its width, so the
+/// name is what comes before `-EPOCH:`, which it always prints; a cut name is taken as it is.
+pub fn item(line: &str) -> Option<String> {
+    let rest = line.strip_prefix('[')?.split_once("] ")?.1;
+    let mut words = rest.split_whitespace();
+    let first = words.next()?;
+    let verbs = [
+        "Installing",
+        "Upgrading",
+        "Downgrading",
+        "Reinstalling",
+        "Removing",
+        "Replacing",
+    ];
+    let (nevra, verb) = if verbs.contains(&first) {
+        (words.next()?, true)
+    } else {
+        (first, false)
+    };
+    let epoch = nevra.char_indices().find(|&(at, c)| {
+        c == '-'
+            && nevra[at + 1..]
+                .split_once(':')
+                .is_some_and(|(n, _)| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
+    });
+    match epoch {
+        Some((at, _)) => Some(nevra[..at].to_string()),
+        None if verb => Some(nevra.to_string()),
+        None => None,
+    }
+}
+
+/// The download of a transaction (#694): the same `dnf5 install` with `--downloadonly`, so it
+/// reads the same repositories and installs nothing.
+pub fn download(transaction: &Invocation) -> Option<Invocation> {
+    let at = transaction.args.iter().position(|arg| arg == "install")?;
+    let mut download = transaction.clone();
+    download.args.insert(at + 1, "--downloadonly".to_string());
+    Some(download)
 }
 
 #[cfg(test)]

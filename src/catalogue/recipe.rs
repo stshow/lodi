@@ -18,9 +18,9 @@ pub struct Recipe {
     /// Where it came from, as the lock records it: `builtin`, or `user` for a recipe of the
     /// person's own in their repository's `recipes/` folder (LD-409).
     pub input: &'static str,
-    /// `[recipe] description`: the one line `lodi search` and `lodi info` show (M-0.4 T-6).
+    /// `[recipe] description`: the one line `lodi search` shows (M-0.4 T-6).
     pub description: String,
-    /// `[recipe] homepage`: where the tool itself lives, shown by the same two commands.
+    /// `[recipe] homepage`: where the tool itself lives, shown by the same command.
     pub homepage: String,
     /// The recipe file as messages name it: `python.toml` for a built-in one, and its path from
     /// the repository's root, `recipes/python.toml`, for one of the person's own.
@@ -111,7 +111,7 @@ pub fn parse_user_recipe(text: &str, file: &str) -> Result<Recipe, Diagnostic> {
         .find(|line| !line.is_empty() && !line.starts_with('#') && has_version_literal(line))
     {
         return Err(r.invalid(format!(
-            "looks like a version list: `{line}`; a recipe names no version, `lodi lock` \
+            "looks like a version list: `{line}`; a recipe names no version, locking \
              discovers it"
         )));
     }

@@ -19,7 +19,7 @@ mod wait;
 use std::fs;
 use std::process::{Command, Stdio};
 
-use fakehost::{Case, Machine, Pkg, err, out, story};
+use fakehost::{Case, Machine, Pkg, err, nothing, out, story};
 
 /// A package at a Fedora 44 build.
 fn fc44(name: &str, version: &str) -> Pkg {
@@ -56,7 +56,7 @@ fn log(case: &Case) -> Vec<String> {
 
 /// Whether one logged argv changes the machine rather than reading or simulating it.
 fn mutates(line: &str) -> bool {
-    line.starts_with("dnf5 ") && line.contains(" -y ")
+    line.starts_with("dnf5 ") && line.contains(" -y ") && !line.contains(" --downloadonly")
         || line.starts_with("dnf5 ") && line.contains("makecache")
 }
 
@@ -98,7 +98,7 @@ fn import_writes_packages_fedora_and_matches_id_fedora_only() {
     // A distribution that is only like Fedora is not Fedora.
     let like = "NAME=\"Nobara\"\nID=nobara\nID_LIKE=\"rhel centos fedora\"\nVERSION_ID=44\n";
     case.root.write("etc/os-release", like);
-    let refused = case.verb("import", &["--stdout"]);
+    let refused = case.verb("import", &["--dry-run"]);
     assert_eq!(refused.status.code(), Some(3), "{}", story(&refused));
     assert!(
         err(&refused).contains("E_UNSUPPORTED") && err(&refused).contains("ID=nobara"),
@@ -145,8 +145,7 @@ fn exact_apply_removes_the_undeclared_package_then_changes_nothing() {
 
     let again = case.apply(&[]);
     assert!(again.status.success(), "{}", story(&again));
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
-    assert_eq!(err(&again), "", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
     let changed: Vec<String> = log(&case).into_iter().filter(|l| mutates(l)).collect();
     assert!(changed.is_empty(), "{changed:?}");
 }
@@ -172,7 +171,7 @@ fn a_refresh_is_recorded_and_the_next_apply_changes_nothing() {
         story(&apply)
     );
     let again = case.apply(&[]);
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 }
 
 #[test]
@@ -187,7 +186,7 @@ fn plan_shows_the_dnf_transaction_and_changes_nothing() {
 
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan);
+    let text = err(&plan);
     assert!(
         text.contains("+ package tree 0:2.2.1-4.fc44.x86_64\n"),
         "{}",
@@ -226,7 +225,8 @@ fn plan_shows_the_dnf_transaction_and_changes_nothing() {
 fn an_rpm_ostree_system_is_rejected_before_any_change() {
     let case = Case::new("dnf-ostree", chosen());
     case.set_manifest(
-        "[host]\nversion = \"1\"\ndistro = \"fedora\"\n\n[packages.fedora]\nadd = [\"tree\"]\n",
+        "[host]\nversion = \"1\"\ndistro = \"fedora\"\n\n[system]\nhostname = \"box\"\n\n\
+         [packages.fedora]\nadd = [\"tree\"]\n",
     );
     case.root.write("run/ostree-booted", "");
     let before = case.machine();
@@ -252,28 +252,40 @@ fn an_rpm_ostree_system_is_rejected_before_any_change() {
         !case.root.exists("var/lib/lodi/host"),
         "no journal, no state"
     );
+}
 
-    // `lodi apply` reaches the host through the same gate.
-    case.root.write(
-        "hosts/box/host.toml",
-        "[host]\nversion = \"1\"\ndistro = \"fedora\"\n",
-    );
-    let _spawning = fakehost::spawning();
-    let top = Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .arg("apply")
-        .arg(case.root.path("hosts"))
-        .args(["--host", "box", "--root"])
-        .arg(&case.root.dir)
-        .env("PATH", case.fake_path())
-        .env("HOME", case.root.path("home"))
-        .env("LODI_HOST_REQUIRE_ROOT", "1")
-        .stdin(Stdio::null())
-        .output()
-        .expect("lodi runs");
-    assert_eq!(top.status.code(), Some(3), "{}", story(&top));
-    assert!(err(&top).contains("E_HOST_OSTREE"), "{}", story(&top));
-    assert!(case.log().is_empty(), "{:?}", case.log());
-    assert_eq!(case.machine(), before);
+/// An ostree root is refused for what it is before lodi asks whether it may manage the machine
+/// or what the machine is called: neither the marker nor the hostname is there (LD-528).
+#[test]
+fn an_rpm_ostree_system_is_named_before_the_marker_or_the_hostname() {
+    let case = Case::new("dnf-ostree-first", chosen());
+    case.set_manifest("[host]\nversion = \"1\"\ndistro = \"fedora\"\n");
+    case.root.write("run/ostree-booted", "");
+    for extra in [&[][..], &["--dry-run"][..]] {
+        let mut command = case.command("switch", extra, &[]);
+        fs::remove_file(case.root.path("etc/lodi/may-manage")).unwrap();
+        let _ = fs::remove_file(case.root.path("etc/hostname"));
+        let refused = {
+            let _spawning = fakehost::spawning();
+            command
+                .stdin(Stdio::null())
+                .stderr(Stdio::piped())
+                .output()
+                .expect("lodi runs")
+        };
+        assert_eq!(
+            refused.status.code(),
+            Some(3),
+            "{extra:?}: {}",
+            story(&refused)
+        );
+        assert!(
+            err(&refused).contains("E_HOST_OSTREE"),
+            "{}",
+            story(&refused)
+        );
+        assert!(case.log().is_empty(), "{extra:?} ran {:?}", case.log());
+    }
 }
 
 /// The destination below the scratch root, and the label it carries before and after.
@@ -290,7 +302,7 @@ subprocess.run(["cp", "-a", source + "/.", root], check=True)
 dest = os.path.join(root, rel)
 os.setxattr(dest, "security.selinux", label.encode() + b"\0")
 before = os.stat(dest).st_ino
-run = subprocess.run([lodi, "host", "apply", "--root", root], capture_output=True, text=True,
+run = subprocess.run([lodi, "switch", "--host", "--root", root], capture_output=True, text=True,
                      stdin=subprocess.DEVNULL)
 after = os.stat(dest)
 print(json.dumps({
@@ -305,9 +317,13 @@ print(json.dumps({
 fn a_managed_file_is_renamed_in_place_and_keeps_its_label() {
     let case = Case::new("dnf-label", Machine::fedora());
     case.set_manifest(&format!(
-        "[host]\nversion = \"1\"\ndistro = \"fedora\"\n\n[files.\"/{MANAGED}\"]\n\
-         content = \"PasswordAuthentication no\\n\"\nbackup = false\n"
+        "[host]\nversion = \"1\"\ndistro = \"fedora\"\n\n[system]\nhostname = \"box\"\n\n\
+         [files.\"/{MANAGED}\"]\ncontent = \"PasswordAuthentication no\\n\"\nbackup = false\n"
     ));
+    // The owner agreed once: the "may manage" marker `lodi import` leaves (#705).
+    case.root
+        .write("etc/lodi/may-manage", "")
+        .chmod("etc/lodi/may-manage", 0o644);
     case.root.write(MANAGED, "PasswordAuthentication yes\n");
     case.root.write("etc/group", "root:x:0:\n");
     let mount = support::scratch("dnf-label-mount");
@@ -327,7 +343,16 @@ fn a_managed_file_is_renamed_in_place_and_keeps_its_label() {
         .arg(env!("CARGO_BIN_EXE_lodi"))
         .args([MANAGED, LABEL])
         .env("PATH", case.fake_path())
-        .env("HOME", case.root.path("home"))
+        // The root run reads the config the copy carries, below the root it changes.
+        .env("HOME", mount.join("home"))
+        .env("XDG_CONFIG_HOME", mount.join("home/config"))
+        .env("XDG_DATA_HOME", mount.join("home/data"))
+        .env("LODI_HOME", mount.join("lodi-home"))
+        .env_remove("XDG_STATE_HOME")
+        .env_remove("LODI_REPO")
+        .env_remove("SUDO_UID")
+        .env_remove("SUDO_GID")
+        .env_remove("DOAS_USER")
         .env("LODI_HOST_REQUIRE_ROOT", "1")
         .stdin(Stdio::null())
         .output()
@@ -383,16 +408,14 @@ fn fedora_settings_are_never_declared_or_captured() {
     let import = case.import();
     assert!(import.status.success(), "{}", story(&import));
     assert!(
-        !case
-            .manifest()
-            .contains("[files.\"/etc/yum.repos.d/fedora.repo\"]"),
+        !case.manifest().contains("yum.repos.d/fedora.repo\"]"),
         "{}",
         case.manifest()
     );
     assert!(
         !case
-            .root
-            .exists("etc/lodi/files/etc/yum.repos.d/fedora.repo")
+            .beside("files/host/etc/yum.repos.d/fedora.repo")
+            .exists()
     );
     assert!(
         err(&import).contains("/etc/yum.repos.d/fedora.repo"),

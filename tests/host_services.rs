@@ -17,7 +17,7 @@ mod wait;
 
 mod support;
 
-use fakehost::{Case, Machine, Pkg, err, out, story};
+use fakehost::{Case, Machine, Pkg, err, nothing, story};
 
 /// A machine of each family the host scope runs on, with two units a manifest declares and two
 /// it never names.
@@ -92,22 +92,13 @@ fn service_enable_and_disable_declared() {
             "enabled",
             "{distro}"
         );
-        assert_eq!(case.lock()["format"], "lodi-host-lock/4", "{distro}");
+        assert_eq!(case.lock()["format"], "lodi-host-lock/6", "{distro}");
 
         let again = case.apply(&[]);
         assert!(again.status.success(), "{distro}: {}", story(&again));
         assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
         let plan = case.plan();
-        assert!(
-            out(&plan).ends_with("nothing to do\n"),
-            "{distro}: {}",
-            story(&plan)
-        );
-        assert!(
-            out(&plan).contains("= service web.service (enabled)\n"),
-            "{distro}: {}",
-            story(&plan)
-        );
+        assert!(nothing(&plan), "{distro}: {}", story(&plan));
     }
 }
 
@@ -127,7 +118,7 @@ fn plan_lists_service_changes_and_changes_nothing() {
     let lock = case.root.read("etc/lodi/host.lock");
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan);
+    let text = err(&plan);
     for line in [
         format!(
             "~ service mine.service ({})\n",
@@ -141,7 +132,7 @@ fn plan_lists_service_changes_and_changes_nothing() {
             "+ service web.service ({})\n",
             systemctl(&case, "enable --now -- web.service")
         ),
-        "3 action(s)\n".to_string(),
+        "host: 3 services\n".to_string(),
     ] {
         assert!(text.contains(&line), "missing {line:?}\n{}", story(&plan));
     }
@@ -276,7 +267,7 @@ fn a_unit_arrives_with_its_package_in_the_same_apply() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains(&format!(
+        err(&plan).contains(&format!(
             "+ service webd.service ({}; after the package transaction)\n",
             systemctl(&case, "enable --now -- webd.service")
         )),

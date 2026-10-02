@@ -22,14 +22,9 @@ pub fn reuse_completed(
     if pins.is_empty() || machine.source.as_deref()? != source {
         return None;
     }
-    let observed = crate::hostscope::pm::backend_for(
-        gate.distro,
-        &gate.root,
-        gate.partial_upgrade,
-        gate.operation,
-    )
-    .observe()
-    .ok()?;
+    let observed = crate::hostscope::pm::backend_for(gate.distro, &gate.root, gate.operation)
+        .observe()
+        .ok()?;
     if machine
         .packages
         .iter()

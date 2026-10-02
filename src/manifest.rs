@@ -142,7 +142,7 @@ pub struct Container {
     /// Normalized to the codename: `bookworm` or `noble` in this build.
     pub release: String,
     pub arch: Arch,
-    /// RFC 3339 UTC, `YYYY-MM-DDTHH:MM:SSZ`; `None` means `lodi lock` pins it (OD-17).
+    /// RFC 3339 UTC, `YYYY-MM-DDTHH:MM:SSZ`; `None` means locking pins it (OD-17).
     pub snapshot: Option<String>,
 }
 

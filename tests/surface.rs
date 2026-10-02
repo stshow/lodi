@@ -16,9 +16,10 @@
 //! 5. help at every level (LD-360): every command `docs/CLI.md` documents answers
 //!    `lodi COMMAND --help`, `-h` and `lodi help COMMAND` with its part of the help text, and every
 //!    part of the help text those forms can print is about a command `docs/CLI.md` documents;
-//! 6. the first run (LD-380): `lodi --help` opens with the three scopes, a bare `lodi` prints
-//!    them at exit 0 as `docs/CLI.md` says it does, and `README.md`'s quick start neither
-//!    upgrades nor arms a machine by copy.
+//! 6. the first run (LD-380): `lodi --help` opens with where to start (`import`, `switch`,
+//!    `init`), a bare `lodi` prints that opening at exit 0 as `docs/CLI.md` says it does, and
+//!    `README.md`'s quick start neither upgrades nor arms a machine by copy;
+//! 7. every option a command accepts is in its help and its `docs/CLI.md` flag table (#700).
 //!
 //! Everything here is **offline and deterministic**: `PATH` is emptied, the roots are scratch
 //! directories, and every invocation was chosen so that it fails — or succeeds — before any
@@ -333,11 +334,11 @@ const CASES: &[Case] = &[
     Case {
         command: "--help",
         well_formed: &["init", "-h"],
-        nonsense: &["home", "frobnicate", "-h"],
+        nonsense: &["frobnicate", "init", "-h"],
     },
     Case {
         command: "help",
-        well_formed: &["help", "home", "plan"],
+        well_formed: &["help", "switch"],
         nonsense: &["help", "frobnicate"],
     },
     Case {
@@ -351,12 +352,6 @@ const CASES: &[Case] = &[
             "--force",
         ],
         nonsense: &["init", "--frobnicate"],
-    },
-    // Never bare `lodi lock`: that resolves, and this file makes no network request.
-    Case {
-        command: "lock",
-        well_formed: &["lock", "--check"],
-        nonsense: &["lock", "--frobnicate"],
     },
     // A name the catalogue does not carry is `E_NO_RECIPE` before anything is fetched, and
     // `--base` with an empty `PATH` is `E_NO_RUNTIME` before anything is resolved.
@@ -381,9 +376,19 @@ const CASES: &[Case] = &[
         nonsense: &["develop", "--frobnicate", "--", "true"],
     },
     Case {
+        command: "develop",
+        well_formed: &["develop", "--trust", "--no-nest", "--", "true"],
+        nonsense: &["develop", "--trust", "--frobnicate", "--", "true"],
+    },
+    Case {
         command: "run",
         well_formed: &["run", "--no-nest", "build"],
         nonsense: &["run", "--frobnicate", "build"],
+    },
+    Case {
+        command: "run",
+        well_formed: &["run", "--trust", "build"],
+        nonsense: &["run", "--trust", "--frobnicate", "build"],
     },
     Case {
         command: "gc",
@@ -400,528 +405,124 @@ const CASES: &[Case] = &[
         well_formed: &["search", "--distro", "python"],
         nonsense: &["search", "--distro", "--frobnicate", "python"],
     },
-    Case {
-        command: "info",
-        well_formed: &["info", "python"],
-        nonsense: &["info", "--frobnicate"],
-    },
-    Case {
-        command: "home plan",
-        well_formed: &["home", "plan"],
-        nonsense: &["home", "plan", "--frobnicate"],
-    },
-    Case {
-        command: "home apply",
-        well_formed: &["home", "apply", "--overwrite-drift", "--locked"],
-        nonsense: &["home", "apply", "--frobnicate"],
-    },
-    // `--out` names a directory inside the scratch HOME, which is the only place the home
-    // scope writes; the manifest lands in the case directory's own home and nowhere else.
-    Case {
-        command: "home import",
-        well_formed: &["home", "import", "--out", "bundle", "--force"],
-        nonsense: &["home", "import", "--frobnicate"],
-    },
-    // `--stdout` prints the manifest and writes nothing at all (LD-325).
-    Case {
-        command: "home import",
-        well_formed: &["home", "import", "--stdout"],
-        nonsense: &["home", "import", "--stdout", "--frobnicate"],
-    },
-    // `home init` is `home import` under the name the home scope starts with (LD-382): the same
-    // flags, so the same two cases.
-    Case {
-        command: "home init",
-        well_formed: &["home", "init", "--out", "bundle", "--force"],
-        nonsense: &["home", "init", "--frobnicate"],
-    },
-    Case {
-        command: "home init",
-        well_formed: &["home", "init", "--stdout"],
-        nonsense: &["home", "init", "--stdout", "--frobnicate"],
-    },
-    Case {
-        command: "home status",
-        well_formed: &["home", "status"],
-        nonsense: &["home", "status", "--frobnicate"],
-    },
-    Case {
-        command: "trust",
-        well_formed: &["trust", "--revoke"],
-        nonsense: &["trust", "--frobnicate"],
-    },
 ];
 
-/// The host cases, which need a scratch `--root` and so cannot be a `const`.
-/// The root is a directory this test made inside `CARGO_TARGET_TMPDIR` and never armed, so both
-/// invocations stop at the arming gate with nothing below the root opened. `host arm` gets a
-/// scratch root of its own beside it, so that arming it cannot change what the others see.
+/// The config cases, which need a scratch `--root` and so cannot be a `const`.
+/// The root is a directory this test made inside `CARGO_TARGET_TMPDIR`, and each invocation
+/// stops before anything below it is opened.
 fn host_cases(root: &Path) -> Vec<(&'static str, Vec<String>, Vec<String>)> {
-    let arm_root = format!("{}-arm", root.to_string_lossy());
-    fs::create_dir_all(&arm_root).expect("the arm case's own scratch root");
     let root = root.to_string_lossy().into_owned();
     vec![
         (
-            "host arm",
-            // check-host-safety: refusal — the root is a scratch directory this test owns.
-            vec!["host".into(), "arm".into(), "--root".into(), arm_root],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "arm".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host plan",
-            // check-host-safety: refusal — the root is a scratch directory this test owns.
-            vec![
-                "host".into(),
-                "plan".into(),
-                "--root".into(),
-                root.clone(),
-                "--no-home".into(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "plan".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host plan",
-            vec![
-                // check-host-safety: refusal — the same scratch root, which is not armed.
-                "host".into(),
-                "plan".into(),
-                "github:owner/hosts".into(),
-                "--ref".into(),
-                "main".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "plan".into(),
-                "--ref".into(),
-                "main".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host apply",
-            vec![
-                // check-host-safety: refusal — the same scratch root, which is not armed.
-                "host".into(),
-                "apply".into(),
-                "github:owner/hosts".into(),
-                "--rev".into(),
-                "0".repeat(40),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "apply".into(),
-                "github:owner/hosts".into(),
-                "--rev".into(),
-                "0".repeat(40),
-                "--refresh".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host plan",
-            vec![
-                // check-host-safety: refusal — the same scratch root, which is not armed.
-                "host".into(),
-                "plan".into(),
-                "github:owner/hosts".into(),
-                "--refresh".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "plan".into(),
-                "--refresh".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host import",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--root".into(),
-                root.clone(),
-                "--out".into(),
-                format!("{root}-import-out"),
-                "--force".into(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host import",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--root".into(),
-                root.clone(),
-                "--stdout".into(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--stdout".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        // `--dry-run` shows what an import would change and writes nothing (LD-378); beside
-        // `--stdout`, which writes nothing either, it is the usage error.
-        (
-            "host import",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--root".into(),
-                root.clone(),
-                "--dry-run".into(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                "--dry-run".into(),
-                "--stdout".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        // A positional `SOURCE` and `--host` (LD-379): the root is unarmed, so each stops at
-        // the arming gate; a `--host` with no value is the usage error.
-        (
-            "host plan",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "plan".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "plan".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host import",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "import".into(),
-                format!("{root}-hosts"),
-                "--stdout".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host apply",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "apply".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "apply".into(),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        // M-Pin's verbs (LD-397): each stops at the arming gate; `--to` with no value, `--to`
-        // on `unpin`, `--all` on `versions` and a missing name are the usage errors.
-        (
-            "host versions",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "versions".into(),
-                "curl".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "versions".into(),
-                "curl".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host versions",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "versions".into(),
-                "curl".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "versions".into(),
-                "--all".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host pin",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "pin".into(),
-                "curl".into(),
-                "--to".into(),
-                "2026-09-01".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "pin".into(),
-                "--all".into(),
-                "--to".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host pin",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "pin".into(),
-                "--all".into(),
-                "--to".into(),
-                "2026-09-01".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "pin".into(),
-                "--to".into(),
-                "2026-09-01".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host unpin",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "unpin".into(),
-                "curl".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "unpin".into(),
-                "curl".into(),
-                "--to".into(),
-                "2026-09-01".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host unpin",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "unpin".into(),
-                "--all".into(),
-                format!("{root}-hosts"),
-                "--host".into(),
-                "box".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "unpin".into(),
-                "--all".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "host apply",
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "apply".into(),
-                "--root".into(),
-                root.clone(),
-                "--overwrite-drift".into(),
-                "--resolved".into(),
-                "surface-journal".into(),
-                "--no-update".into(),
-                "--no-home".into(),
-                "--unsupported-partial-upgrade".into(),
-            ],
-            vec![
-                // check-host-safety: refusal — the same scratch root.
-                "host".into(),
-                "apply".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        // The top-level verbs of a repository (LD-416): each names the unarmed scratch root, so a
-        // well-formed one stops at the repository or the gate, never at the parser.
-        (
-            "apply",
-            // check-host-safety: refusal — the same scratch root, which is not armed.
-            vec![
-                "apply".into(),
-                "github:owner/hosts".into(),
-                "--host".into(),
-                "box".into(),
-                "--ref".into(),
-                "main".into(),
-                "--yes".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            // check-host-safety: refusal — the same scratch root.
-            vec![
-                "apply".into(),
-                "--frobnicate".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "plan",
-            // check-host-safety: refusal — the same scratch root, which is not armed.
-            vec![
-                "plan".into(),
-                "github:owner/hosts".into(),
-                "--rev".into(),
-                "0".repeat(40),
-                "--root".into(),
-                root.clone(),
-            ],
-            // check-host-safety: refusal — the same scratch root.
-            vec![
-                "plan".into(),
-                "--refresh".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
-            "plan",
-            // check-host-safety: refusal — the same scratch root, which is not armed.
-            vec![
-                "plan".into(),
-                "github:owner/hosts".into(),
-                "--refresh".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-            // check-host-safety: refusal — the same scratch root.
-            vec![
-                "plan".into(),
-                "--no-home".into(),
-                "--root".into(),
-                root.clone(),
-            ],
-        ),
-        (
             "import",
             // check-host-safety: refusal — the same scratch root, which is not armed.
+            // A URL, refused before anything is read or written (#693).
             vec![
                 "import".into(),
+                "github:owner/hosts".into(),
+                "--home".into(),
                 "--yes".into(),
+                "--dry-run".into(),
+                "-v".into(),
                 "--root".into(),
                 root.clone(),
             ],
             // check-host-safety: refusal — the same scratch root.
             vec![
                 "import".into(),
+                "--refresh".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+        ),
+        (
+            "switch",
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
+            vec![
+                "switch".into(),
+                "missing-config".into(),
+                "--ask".into(),
+                "--home".into(),
+                "--update".into(),
+                "--overwrite-drift".into(),
+                "--resolved".into(),
+                "1".into(),
+                "-v".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "--no-update".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+        ),
+        (
+            "switch",
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
+            vec![
+                "switch".into(),
+                "missing-config".into(),
+                "--dry-run".into(),
+                "--host".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "--ask".into(),
+                "--dry-run".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+        ),
+        // A URL config's selectors (LD-401): the scratch root has no hostname, so each stops
+        // before anything is fetched; `--ref` with `--rev` and `--rev` with `--refresh` are
+        // the usage errors.
+        (
+            "switch",
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "github:owner/hosts".into(),
+                "--ref".into(),
+                "main".into(),
+                "--refresh".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "github:owner/hosts".into(),
+                "--ref".into(),
+                "main".into(),
+                "--rev".into(),
+                "0".repeat(40),
+                "--root".into(),
+                root.clone(),
+            ],
+        ),
+        (
+            "switch",
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "github:owner/hosts".into(),
+                "--rev".into(),
+                "0".repeat(40),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "switch".into(),
+                "github:owner/hosts".into(),
+                "--rev".into(),
+                "0".repeat(40),
                 "--refresh".into(),
                 "--root".into(),
                 root.clone(),
@@ -929,35 +530,78 @@ fn host_cases(root: &Path) -> Vec<(&'static str, Vec<String>, Vec<String>)> {
         ),
         (
             "update",
-            // check-host-safety: refusal — the same scratch root, which is not armed.
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
             vec![
                 "update".into(),
-                "--yes".into(),
+                "missing-config".into(),
+                "--host".into(),
+                "box".into(),
+                "-v".into(),
                 "--root".into(),
                 root.clone(),
             ],
             // check-host-safety: refusal — the same scratch root.
             vec![
                 "update".into(),
-                "a".into(),
-                "b".into(),
+                "--yes".into(),
                 "--root".into(),
                 root.clone(),
             ],
         ),
         (
-            "boot confirm",
-            // The same scratch root, which is not armed (bv-1).
+            "pin",
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
             vec![
-                "boot".into(),
-                "confirm".into(),
+                "pin".into(),
+                "bc".into(),
+                "--to".into(),
+                "2026-09-01".into(),
+                "missing-config".into(),
+                "--host".into(),
+                "box".into(),
                 "--root".into(),
                 root.clone(),
             ],
+            // check-host-safety: refusal — the same scratch root.
+            vec!["pin".into(), "--root".into(), root.clone()],
+        ),
+        (
+            "pin",
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
             vec![
-                "boot".into(),
-                "confirm".into(),
-                "now".into(),
+                "pin".into(),
+                "--all".into(),
+                "./missing-config".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "pin".into(),
+                "--all".into(),
+                "bc".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+        ),
+        (
+            "unpin",
+            // check-host-safety: refusal — the same scratch root; the typed config is missing.
+            vec![
+                "unpin".into(),
+                "--all".into(),
+                "./missing-config".into(),
+                "--host".into(),
+                "box".into(),
+                "--root".into(),
+                root.clone(),
+            ],
+            // check-host-safety: refusal — the same scratch root.
+            vec![
+                "unpin".into(),
+                "bc".into(),
+                "--to".into(),
+                "1".into(),
                 "--root".into(),
                 root.clone(),
             ],
@@ -1065,6 +709,84 @@ fn every_surface_the_parser_accepts_is_documented() {
     );
 }
 
+/// A flag as a help text or a table writes it: one or two dashes, then lowercase words.
+fn is_flag(word: &str) -> bool {
+    let body = word.trim_start_matches('-');
+    (1..=2).contains(&(word.len() - body.len()))
+        && body.starts_with(|c: char| c.is_ascii_lowercase())
+        && body.chars().all(|c| c.is_ascii_lowercase() || c == '-')
+}
+
+/// Whether `lodi COMMAND FLAG` gets past `FLAG`: with a value after it, then without, a
+/// nonsense flag ends the line, and the binary either refuses that nonsense flag (so it read
+/// `FLAG`) or ran without a usage error. Nothing here reaches a package manager: every probe
+/// is a usage error or a refusal in a scratch folder.
+fn accepts(dir: &Path, command: &str, flag: &str) -> bool {
+    let past = format!("'{command} --frobnicate'");
+    [
+        vec![command, flag, "7", "--frobnicate"],
+        vec![command, flag, "--frobnicate"],
+    ]
+    .iter()
+    .enumerate()
+    .any(|(n, words)| {
+        let here = dir.join(format!("{command}{flag}{n}"));
+        fs::create_dir_all(&here).unwrap();
+        let out = lodi(&here, &argv(words));
+        out.status.code() != Some(2) || String::from_utf8_lossy(&out.stderr).contains(&past)
+    })
+}
+
+/// Every option a command's parser accepts is in its help's Options block and in its
+/// `docs/CLI.md` flag table, and nothing else is (#700). What a command accepts is asked of the
+/// binary, flag by flag, from every flag any parser names. The negative control: `--to` is
+/// `pin`'s and not `unpin`'s.
+#[test]
+fn every_option_a_command_accepts_is_in_its_help_and_its_reference_entry() {
+    let dir = scratch("options");
+    let candidates: Vec<String> = parser_surface()
+        .into_iter()
+        .filter(|f| is_flag(f) && !["--help", "-h", "--version"].contains(&f.as_str()))
+        .collect();
+    let documented = documented_flags(&cli_md());
+    for command in help_commands()
+        .iter()
+        .filter(|c| c.as_str() != "help" && !c.starts_with('-'))
+    {
+        let accepted: BTreeSet<String> = candidates
+            .iter()
+            .filter(|flag| accepts(&dir, command, flag))
+            .cloned()
+            .collect();
+        let (status, part) = help_part(&["help", command]);
+        assert_eq!(status, Some(0), "{command}");
+        let options: BTreeSet<String> = help_block(&part, "Options:")
+            .iter()
+            .filter_map(|l| l.split_whitespace().next())
+            .flat_map(|w| w.split(','))
+            .filter(|w| is_flag(w))
+            .map(str::to_string)
+            .collect();
+        assert_eq!(
+            options, accepted,
+            "lodi help {command}'s options are not the flags it accepts:\n{part}"
+        );
+        let table: BTreeSet<String> = documented
+            .get(command.as_str())
+            .unwrap_or_else(|| panic!("docs/CLI.md has no entry for lodi {command}"))
+            .iter()
+            .filter(|f| *f != "--")
+            .cloned()
+            .collect();
+        assert_eq!(
+            table, accepted,
+            "docs/CLI.md's flag table for lodi {command} is not the flags it accepts"
+        );
+    }
+    assert!(accepts(&dir, "pin", "--to") && !accepts(&dir, "unpin", "--to"));
+    fs::remove_dir_all(&dir).unwrap();
+}
+
 // ------------------------------- 3. --help, docs/CLI.md and docs/ERRORS.md agree (b) ---
 
 /// The commands `lodi --help` names, read from its command groups: each line after the
@@ -1113,7 +835,7 @@ fn help_and_the_document_name_the_same_commands() {
     let help = help_commands();
     // Two empty sets are equal. Both scans must really have found the inventory.
     assert!(
-        documented.len() >= 15 && documented.contains("init") && documented.contains("home status"),
+        documented.len() >= 14 && documented.contains("init") && documented.contains("switch"),
         "docs/CLI.md's command sections did not parse: {documented:?}"
     );
     assert_eq!(
@@ -1176,8 +898,8 @@ fn part_subject(part: &str) -> String {
 }
 
 /// Everything `lodi help` answers about: each command `docs/CLI.md` documents, bar the two
-/// global flags, and each scope of two or more of those commands. A scope of one command, as
-/// `boot` of `boot confirm` (bv-1), prints that command's usage alone, so its part is about it.
+/// global flags, and each scope of two or more of those commands. A scope of one command prints
+/// that command's usage alone, so its part is about it.
 fn help_subjects(documented: &BTreeSet<String>) -> BTreeSet<String> {
     let mut subjects: BTreeSet<String> = documented
         .iter()
@@ -1192,7 +914,7 @@ fn help_subjects(documented: &BTreeSet<String>) -> BTreeSet<String> {
         }
     }
     assert!(
-        subjects.contains("help") && subjects.contains("home") && subjects.contains("host arm"),
+        subjects.contains("help") && subjects.contains("init") && subjects.contains("switch"),
         "{subjects:?}"
     );
     subjects
@@ -1208,8 +930,6 @@ fn help_subjects(documented: &BTreeSet<String>) -> BTreeSet<String> {
 #[test]
 fn help_at_every_level_and_the_document_name_the_same_commands() {
     let documented = documented_commands(&cli_md());
-    let scratch_root = scratch("help-root");
-    let root = scratch_root.to_string_lossy().into_owned();
     let (_, whole) = help_part(&["--help"]);
     let subjects = help_subjects(&documented);
     for subject in &subjects {
@@ -1221,11 +941,6 @@ fn help_at_every_level_and_the_document_name_the_same_commands() {
         ];
         if words == ["help"] {
             forms = vec![vec!["help", "help"], vec!["--help", "help"]];
-        }
-        if words[0] == "host" && words.len() > 1 {
-            for form in &mut forms {
-                form.extend(["--root", root.as_str()]);
-            }
         }
         let mut seen: Option<String> = None;
         for form in &forms {
@@ -1250,24 +965,12 @@ fn help_at_every_level_and_the_document_name_the_same_commands() {
             }
         }
     }
-    for bare in ["home", "host"] {
-        let (status, part) = help_part(&[bare]);
-        assert_eq!(status, Some(0), "bare `lodi {bare}`");
-        assert_eq!(part_subject(&part), bare);
-    }
-    // Negative controls: an undocumented command has no help, and a part about `home plan` is
-    // not mistaken for one about `home`.
+    // Negative controls: an undocumented command has no help, a 1.x name is refused (#699),
+    // and a part about `switch` is not mistaken for one about `init`.
     assert_eq!(help_part(&["help", "frobnicate"]).0, Some(2));
     assert_eq!(help_part(&["frobnicate", "--help"]).0, Some(2));
-    assert_eq!(
-        part_subject(&help_part(&["home", "plan", "-h"]).1),
-        "home plan"
-    );
-    assert!(
-        !scratch_root.join("etc").exists(),
-        "a help request read its --root"
-    );
-    fs::remove_dir_all(&scratch_root).unwrap();
+    assert_eq!(help_part(&["home", "--help"]).0, Some(2));
+    assert_eq!(part_subject(&help_part(&["switch", "-h"]).1), "switch");
 }
 
 /// The block of `part` under the header `name`: its lines up to the next blank line.
@@ -1310,14 +1013,10 @@ fn top_level_help_fits_one_screen_with_examples() {
     for line in &lines {
         assert!(line.chars().count() <= 80, "wider than 80 columns: {line}");
     }
-    let first: Vec<&str> = lines[3..7]
-        .iter()
-        .filter_map(|l| l.split("  ").map(str::trim).find(|c| c.contains("lodi ")))
-        .map(example_command)
-        .collect();
+    let first = first_commands(&whole);
     assert_eq!(
         first.len(),
-        4,
+        3,
         "the opening names no first commands:\n{whole}"
     );
     let examples = help_block(&whole, "Examples:");
@@ -1610,16 +1309,9 @@ fn the_deprecation_point_is_one_call_site_that_only_prints() {
     fs::remove_dir_all(&dir).unwrap();
 }
 
-/// The one line a `home.toml` using the 1.0 `[files]` table prints per run from 1.2 (decision
-/// D5, LD-324), exactly as `docs/CLI.md`'s Deprecations section quotes it.
-const FILES_WARNING: &str = "lodi: warning W_DEPRECATED: `[files]` in home.toml is deprecated \
-                             since 1.2 and may be removed in 2.0; use `[home.file]` (rename \
-                             `content` to `text`)";
-
 /// (d): the table has exactly two homes and they hold the same rows. Every row of
 /// `docs/CLI.md`'s Deprecations table is a row of `src/surface.rs`'s `DEPRECATIONS`, cell for
-/// field, and the other way round; from 1.2 that is the one row of `[files]` in `home.toml`
-/// (D5), whose line the section quotes in a `text` block, character for character.
+/// field, and the other way round; from 2.0 both are empty.
 #[test]
 fn the_document_s_deprecation_table_is_the_committed_one() {
     let text = cli_md();
@@ -1651,23 +1343,6 @@ fn the_document_s_deprecation_table_is_the_committed_one() {
         rows, committed,
         "docs/CLI.md's deprecation table and src/surface.rs's DEPRECATIONS differ"
     );
-    assert!(
-        DEPRECATIONS.contains(&Deprecation {
-            surface: "home.toml `[files]`",
-            announced_in: "1.2",
-            removable_in: "2.0",
-            replacement: "`[home.file]` (rename `content` to `text`)",
-        }),
-        "the committed table has no row for `[files]` in home.toml (D5): {DEPRECATIONS:?}"
-    );
-    // A quoted line longer than the page is wrapped onto an indented next line.
-    assert!(
-        fenced(body, "text")
-            .iter()
-            .any(|block| block.join(" ").contains(FILES_WARNING)),
-        "docs/CLI.md's Deprecations section does not quote the line `[files]` prints:\n\
-         {FILES_WARNING}"
-    );
 }
 
 /// `home.toml` in the scratch home [`lodi`] gives `dir`.
@@ -1686,57 +1361,51 @@ fn deprecation_lines(out: &Output) -> Vec<String> {
         .collect()
 }
 
-/// D5 (LD-324): a `home.toml` whose `[files]` table has three entries prints exactly one
-/// `W_DEPRECATED` line, the documented one, first on standard error, for every run of
-/// `lodi home plan`, `apply` and `status` — once per run, not once per entry, and never on
-/// standard output — and each run exits as it did before the warning existed: 0, and 8 for the
-/// apply a hand edit refuses (`E_DRIFT`).
+/// `lodi switch --home`, a preview with `--dry-run`, on a machine of its own at `dir` (#699).
+fn switch_home(dir: &Path, words: &[&str]) -> Output {
+    support::machine_at(dir);
+    let mut args = argv(words);
+    // check-host-safety: refusal — every run names its scratch machine as --root.
+    args.extend(["--root".to_string(), dir.display().to_string()]);
+    lodi_with(dir, &args, &[("LODI_HOST_REQUIRE_ROOT", "1")])
+}
+
+/// The home preview and the home switch (#699, LD-525).
+const PREVIEW: &[&str] = &["switch", "--home", "--dry-run"];
+const SWITCH: &[&str] = &["switch", "--home"];
+
+/// The 1.x `[files]` table of `home.toml` (deprecated since 1.2 for removal in 2.0) is refused
+/// as an unknown table: `lodi switch --home` and its `--dry-run` stop at 3 with
+/// `E_UNKNOWN_BLOCK`, naming the manifest file and the table, print no `W_DEPRECATED`, and write
+/// nothing into the home (#710).
 #[test]
-fn a_home_toml_using_files_warns_once_per_run() {
-    let dir = scratch("files-deprecated");
+fn a_home_toml_using_files_is_refused_naming_the_file_and_the_table() {
+    let dir = scratch("files-refused");
     home_manifest(
         &dir,
-        "[home]\nversion = \"1\"\n\n\
-         [files.\".a\"]\ncontent = \"a\\n\"\n\n\
-         [files.\".b\"]\ncontent = \"b\\n\"\n\n\
-         [files.\".config/c\"]\ncontent = \"c\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[files.\".a\"]\ncontent = \"a\\n\"\n",
     );
-    let check = |verb: &str, status: i32| {
-        let out = lodi(&dir, &argv(&["home", verb]));
+    let manifest = dir.join("home/.config/lodi/home.toml");
+    for words in [PREVIEW, SWITCH] {
+        let verb = words.join(" ");
+        let out = switch_home(&dir, words);
         let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
-        assert_eq!(
-            out.status.code(),
-            Some(status),
-            "lodi home {verb}: {stderr}"
-        );
-        assert!(
-            !String::from_utf8_lossy(&out.stdout).contains("W_DEPRECATED"),
-            "lodi home {verb} printed W_DEPRECATED on standard output"
-        );
-        assert_eq!(
-            deprecation_lines(&out),
-            vec![FILES_WARNING.to_string()],
-            "lodi home {verb} over a [files] manifest: {stderr}"
-        );
-        assert_eq!(
-            stderr.lines().next(),
-            Some(FILES_WARNING),
-            "lodi home {verb}: the warning is not the first line on standard error"
-        );
-    };
-    for verb in ["plan", "apply", "status", "plan"] {
-        check(verb, 0);
+        assert_eq!(out.status.code(), Some(3), "lodi {verb}: {stderr}");
+        let line = stderr
+            .lines()
+            .find(|line| line.contains("E_UNKNOWN_BLOCK"))
+            .unwrap_or_else(|| panic!("lodi {verb} did not refuse [files]: {stderr}"));
+        assert!(stderr.contains(manifest.to_str().unwrap()), "{stderr}");
+        assert!(line.contains("`files`"), "{line}");
+        assert!(deprecation_lines(&out).is_empty(), "lodi {verb}: {stderr}");
+        assert!(!dir.join("home/.a").exists(), "lodi {verb} wrote the file");
     }
-    // A hand edit: plan and status report it at 0, and the apply refuses at 8, as it always did.
-    fs::write(dir.join("home/.a"), "edited by hand\n").unwrap();
-    check("plan", 0);
-    check("apply", 8);
-    check("status", 0);
     fs::remove_dir_all(&dir).unwrap();
 }
 
 /// The negative control of D5: a `home.toml` that declares its files in `[home.file]` and
-/// `[home.xdg_config]` only prints no `W_DEPRECATED` on either stream, from any verb.
+/// `[home.xdg_config]` only prints no `W_DEPRECATED` on either stream, from the preview or the
+/// switch.
 #[test]
 fn a_home_toml_using_only_home_file_prints_no_deprecation() {
     let dir = scratch("home-file-only");
@@ -1747,17 +1416,15 @@ fn a_home_toml_using_only_home_file_prints_no_deprecation() {
          [home.file.\".b\"]\ntext = \"b\\n\"\n\n\
          [home.xdg_config.\"c\"]\ntext = \"c\\n\"\n",
     );
-    for verb in ["plan", "apply", "status", "plan"] {
-        let out = lodi(&dir, &argv(&["home", verb]));
+    for words in [PREVIEW, SWITCH, PREVIEW] {
+        let verb = words.join(" ");
+        let out = switch_home(&dir, words);
         let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
-        assert_eq!(out.status.code(), Some(0), "lodi home {verb}: {stderr}");
-        assert!(
-            deprecation_lines(&out).is_empty(),
-            "lodi home {verb}: {stderr}"
-        );
+        assert_eq!(out.status.code(), Some(0), "lodi {verb}: {stderr}");
+        assert!(deprecation_lines(&out).is_empty(), "lodi {verb}: {stderr}");
         assert!(
             !String::from_utf8_lossy(&out.stdout).contains("W_DEPRECATED"),
-            "lodi home {verb} printed W_DEPRECATED on standard output"
+            "lodi {verb} printed W_DEPRECATED on standard output"
         );
     }
     fs::remove_dir_all(&dir).unwrap();
@@ -1775,13 +1442,12 @@ fn help_and_usage_print_no_deprecation_over_a_files_manifest() {
     let cases: &[(&[&str], i32)] = &[
         (&["--help"], 0),
         (&["-h"], 0),
-        (&["home"], 0),
-        (&["home", "--help"], 0),
-        (&["home", "plan", "--help"], 0),
-        (&["home", "apply", "-h"], 0),
-        (&["help", "home", "status"], 0),
-        (&["home", "frobnicate"], 2),
-        (&["home", "plan", "--frobnicate"], 2),
+        (&["switch", "--help"], 0),
+        (&["switch", "--home", "-h"], 0),
+        (&["help", "switch"], 0),
+        (&["switch", "--frobnicate"], 2),
+        (&["home"], 2),
+        (&["home", "plan", "--help"], 2),
         (&["home", "status", "extra", "more"], 2),
     ];
     for (args, status) in cases {
@@ -1803,61 +1469,51 @@ fn help_and_usage_print_no_deprecation_over_a_files_manifest() {
     fs::remove_dir_all(&dir).unwrap();
 }
 
-// -------------------------------------------- 6. the first run says where to start (LD-380) ---
+// ------------------------------------ 6. the first run says where to start (LD-380, #700) ---
 
-/// The opening of `lodi --help`: the three scopes and the command each starts with, then where
-/// a command without a scope word acts. Lines 3 to 8 of it (1-based) are what a bare `lodi`
-/// prints.
-fn first_run_opening() -> String {
-    format!(
-        "lodi {} — environment and system manager for Ubuntu, Debian, Arch and Fedora
-
-Three independent scopes. Start with the one you want. None needs another:
-  this machine  sudo {lodi} host arm      once: allow lodi to manage this machine
-                sudo {lodi} host import   copy its packages and changed /etc files
-  your home     {lodi} home init          write a starting home.toml
-  a project     {lodi} init               write ./lodi.toml here; then {lodi} lock
-Commands without 'host' or 'home' act on the current directory.
-
-Examples:
-",
-        env!("CARGO_PKG_VERSION"),
-        lodi = "lodi"
-    )
+/// The opening of `lodi --help`: the lines after the banner and its blank line, up to the next
+/// blank line. A bare `lodi` prints them.
+fn opening(help: &str) -> Vec<&str> {
+    help.lines().skip(2).take_while(|l| !l.is_empty()).collect()
 }
 
-/// F1 of u-1: `lodi --help` opens with the three scopes, and its command inventory is unchanged
-/// below them. The negative control: the opening is recognised as missing from a text that
-/// lacks it.
+/// The commands the opening of `lodi --help` starts you with, as typed.
+fn first_commands(help: &str) -> Vec<String> {
+    opening(help)
+        .iter()
+        .filter_map(|l| {
+            l.split("  ")
+                .map(str::trim)
+                .find(|c| c.starts_with("lodi "))
+        })
+        .map(|c| example_command(c).to_string())
+        .collect()
+}
+
+/// `lodi --help` opens with where to start: `lodi import`, `lodi switch` and `lodi init`, each a
+/// command the inventory below lists. The negative control: another opening is not mistaken for it.
 #[test]
-fn the_help_opens_with_the_three_scopes() {
+fn the_help_opens_with_where_to_start() {
     let dir = scratch("first-run-help");
     let out = lodi(&dir, &argv(&["--help"]));
     assert_eq!(out.status.code(), Some(0));
     let text = String::from_utf8(out.stdout).expect("--help is UTF-8");
-    let opening = first_run_opening();
-    assert!(
-        text.starts_with(&opening),
-        "`lodi --help` does not open with the three scopes:\n{}",
-        text.lines().take(10).collect::<Vec<_>>().join("\n")
+    assert_eq!(
+        first_commands(&text),
+        ["lodi import", "lodi switch", "lodi init"],
+        "{text}"
     );
-    // Every scope line names a command the inventory below it lists.
     let inventory = help_commands();
-    for command in [
-        "host arm",
-        "host import",
-        "home init",
-        "home import",
-        "init",
-    ] {
+    for command in ["import", "switch", "init"] {
         assert!(inventory.contains(command), "{command}: {inventory:?}");
     }
-    assert!(!"lodi 1.0.0 — environment and system manager\n\nUsage:\n".starts_with(&opening));
+    let old = "lodi 1.0.0\n\nStart:\n  lodi frobnicate  a\n  lodi init  b\n";
+    assert_eq!(first_commands(old), ["lodi frobnicate", "lodi init"]);
     fs::remove_dir_all(&dir).unwrap();
 }
 
-/// F1 of u-1: a bare `lodi` prints the scope lines of that opening — lines 3 to 8 — on standard
-/// output and exits 0, as a bare `lodi home` or `lodi host` prints its part of the help (LD-360).
+/// A bare `lodi` prints the opening of `lodi --help` on standard output and exits 0 (LD-360),
+/// and writes nothing where it ran.
 #[test]
 fn a_bare_lodi_orients_at_exit_0() {
     let dir = scratch("first-run-bare");
@@ -1869,11 +1525,10 @@ fn a_bare_lodi_orients_at_exit_0() {
         Some(0),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let opening = first_run_opening();
-    let scopes: Vec<&str> = opening.lines().skip(2).take(6).collect();
-    assert_eq!(stdout, format!("{}\n", scopes.join("\n")));
+    let help = lodi(&dir, &argv(&["--help"]));
+    let help = String::from_utf8(help.stdout).expect("UTF-8");
+    assert_eq!(stdout, format!("{}\n", opening(&help).join("\n")));
     assert_eq!(stderr, "");
-    // Nothing was written where it ran.
     let entries: Vec<_> = fs::read_dir(&dir)
         .unwrap()
         .map(|e| e.unwrap().file_name())
@@ -1883,12 +1538,8 @@ fn a_bare_lodi_orients_at_exit_0() {
     fs::remove_dir_all(&dir).unwrap();
 }
 
-/// F3 of u-1 (validator-repair-1): `docs/CLI.md` records the bare `lodi` change as LD-360's was,
-/// and what it says is what the binary does. The compatibility promise carries the entry, and the
-/// sentence of the Exits preamble about `lodi` with no command states exit 0 and the six scope
-/// lines; a bare `lodi` then exits with the status that sentence states and prints lines 3 to 8
-/// of `lodi --help`. The pre-LD-380 document (exit 2, `no command given`) and the pre-LD-380
-/// binary each fail it.
+/// `docs/CLI.md` says what a bare `lodi` does, and the binary does it: its sentence about `lodi`
+/// with no command names the lines of `lodi --help` it prints and the exit status.
 #[test]
 fn the_cli_document_says_what_a_bare_lodi_does() {
     let text = cli_md();
@@ -1901,38 +1552,31 @@ fn the_cli_document_says_what_a_bare_lodi_does() {
         .rsplit_once("exits ")
         .and_then(|(_, n)| n.parse().ok())
         .unwrap_or_else(|| panic!("no exit status in: {sentence}"));
-    assert_eq!(
-        documented, 0,
-        "docs/CLI.md does not say a bare `lodi` exits 0: {sentence}"
-    );
-    assert!(
-        sentence.contains("lines 3 to 8") && !sentence.contains("no command given"),
-        "{sentence}"
-    );
-
-    // The promise names the change in plain words: a user page cites no decision id (LD-464).
-    assert!(
-        prose.contains(
-            "- **A bare `lodi` orients.** It prints the six scope lines of the help and exits 0"
-        ),
-        "docs/CLI.md's compatibility promise does not record the bare `lodi` change"
-    );
+    let numbers: Vec<usize> = sentence
+        .match_indices("lines ")
+        .map(|(at, _)| {
+            sentence[at + 6..]
+                .split_whitespace()
+                .take(3)
+                .filter_map(|w| w.parse().ok())
+                .collect::<Vec<usize>>()
+        })
+        .find(|numbers| numbers.len() == 2)
+        .unwrap_or_default();
+    assert_eq!(numbers.len(), 2, "no `lines A to B` in: {sentence}");
 
     let dir = scratch("first-run-document");
     let out = lodi(&dir, &[]);
-    assert_eq!(
-        out.status.code(),
-        Some(documented),
-        "a bare `lodi` does not exit as docs/CLI.md says: {}",
-        String::from_utf8_lossy(&out.stderr)
-    );
+    assert_eq!(out.status.code(), Some(documented), "{sentence}");
     let help = lodi(&dir, &argv(&["--help"]));
     let help = String::from_utf8(help.stdout).expect("UTF-8");
-    let scopes: Vec<&str> = help.lines().skip(2).take(6).collect();
+    let lines: Vec<&str> = help.lines().collect();
     assert_eq!(
         String::from_utf8(out.stdout).expect("UTF-8"),
-        format!("{}\n", scopes.join("\n"))
+        format!("{}\n", lines[numbers[0] - 1..numbers[1]].join("\n")),
+        "{sentence}"
     );
+    assert_eq!(numbers[1] - numbers[0] + 1, opening(&help).len());
     fs::remove_dir_all(&dir).unwrap();
 }
 
@@ -1976,131 +1620,63 @@ fn fenced(text: &str, info: &str) -> Vec<Vec<String>> {
     blocks
 }
 
-/// The directory of hosts the README's host commands use (W3, LD-379): the owner's request of
-/// 2026-09-25 puts the host in a directory the reader owns, `~/lodi/<hostname>/`, like a flake.
-const README_HOSTS: &str = "~/lodi";
-
-/// The README's repository command `verb` on [`README_HOSTS`], exactly as a reader types it:
-/// from 1.5.0 the README leads with `lodi import`, `plan` and `apply` (LD-416, LD-402).
-fn readme_repo(verb: &str) -> String {
-    // check-host-safety: refusal — README text compared, never run.
-    format!("sudo lodi {verb} {README_HOSTS}")
-}
-
-/// The one line that makes [`README_HOSTS`] before the import writes into it. An import's
-/// `SOURCE` must exist (`E_NO_MANIFEST` otherwise), and one that group or others can write is
-/// `E_PATH_ESCAPE`, which a plain `mkdir` under a umask of 002 would make.
-fn readme_hosts_mkdir() -> String {
-    format!("mkdir -pm 755 {README_HOSTS}")
-}
-
 /// The README with runs of whitespace joined, so a sentence reads the same across line breaks.
 fn prose(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-/// The numbered steps of a README section: each runs from a line that starts with its number to
-/// the next such line.
-fn numbered_steps(section: &str) -> Vec<String> {
-    let mut steps: Vec<String> = Vec::new();
-    for line in section.lines() {
-        let numbered = line
-            .split_once(". ")
-            .is_some_and(|(n, _)| !n.is_empty() && n.chars().all(|c| c.is_ascii_digit()));
-        match steps.last_mut() {
-            Some(step) if !numbered => {
-                step.push_str(line);
-                step.push('\n');
-            }
-            _ if numbered => steps.push(format!("{line}\n")),
-            _ => {}
-        }
-    }
-    steps
-}
-
-/// F2 of u-1 (LD-380): the README's snapshot step makes the directory of hosts, imports into it
-/// and stops at the plan; it never applies.
+/// #711: the README opens with its title, one short description and the command list, and its
+/// first section is the quick start.
 #[test]
-fn the_readme_snapshot_step_stops_at_the_plan() {
+fn the_readme_opens_with_a_description_then_the_quick_start() {
     let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let host = markdown_section(&readme, "### 2. Snapshot the machine you are on");
-    let blocks = fenced(host, "sh");
-    let snapshot: Vec<&Vec<String>> = blocks
-        .iter()
-        .filter(|b| b.iter().any(|l| *l == readme_repo("import")))
+    assert_eq!(
+        readme.lines().find(|l| l.starts_with("## ")),
+        Some("## Quick start"),
+        "the README's first section is not the quick start"
+    );
+    let before = &readme[..readme.find("\n## Quick start\n").unwrap()];
+    let paragraphs: Vec<&str> = before
+        .split("\n\n")
+        .map(str::trim)
+        .filter(|p| !p.is_empty())
         .collect();
-    assert_eq!(snapshot.len(), 1, "{blocks:?}");
-    let block = snapshot[0];
-    assert_eq!(block.last(), Some(&readme_repo("plan")), "{block:?}");
-    let made = block.iter().position(|l| *l == readme_hosts_mkdir());
-    let imported = block.iter().position(|l| *l == readme_repo("import"));
     assert!(
-        made.is_some() && made < imported,
-        "no mkdir first: {block:?}"
-    );
-    assert!(
-        !block.iter().any(|l| l.contains("lodi apply")),
-        "the snapshot step applies: {block:?}"
+        paragraphs.len() == 3
+            && paragraphs[0].starts_with("# ")
+            && paragraphs[1].lines().count() <= 2,
+        "more than a title, a short description and the command list: {paragraphs:?}"
     );
 }
 
-/// F2 of u-1: the apply is a numbered step of its own, with no import in it, and that step warns
-/// that on Arch it runs `pacman -Syu` (the behaviour `tests/host_pacman.rs` proves).
+/// #711: the import is a step of its own with `lodi import` alone, and the switch step previews
+/// before it switches, with the Arch full upgrade named before its commands.
 #[test]
-fn the_readme_apply_is_its_own_step_and_warns_of_the_arch_upgrade() {
+fn the_readme_imports_then_previews_then_switches() {
     let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let host = markdown_section(&readme, "### 2. Snapshot the machine you are on");
-    let steps = numbered_steps(host);
-    let apply: Vec<&String> = steps
-        .iter()
-        .filter(|step| {
-            fenced(step, "sh")
-                .iter()
-                .any(|b| *b == [readme_repo("apply")])
-        })
-        .collect();
-    assert_eq!(apply.len(), 1, "no numbered apply step: {steps:#?}");
-    let step = apply[0];
-    assert!(
-        !fenced(step, "sh")
-            .iter()
-            .flatten()
-            .any(|l| l.contains("lodi import")),
-        "{step}"
+    let import = markdown_section(&readme, "### 2. Import this machine");
+    assert_eq!(fenced(import, "sh"), [["lodi import"]], "{import}");
+    let switch = markdown_section(&readme, "### 3. Switch");
+    assert_eq!(
+        fenced(switch, "sh"),
+        [["lodi switch --dry-run", "lodi switch"]],
+        "{switch}"
     );
-    assert!(step.contains("pacman -Syu"), "no Arch warning:\n{step}");
-}
-
-/// F2 of u-1: a fresh machine is given the directory of hosts, never the root's own host and
-/// never the arming marker; `tests/host_directory.rs` proves a copied marker does not arm.
-#[test]
-fn the_readme_fresh_machine_gets_the_host_directory_not_the_marker() {
-    let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let host = prose(markdown_section(
-        &readme,
-        "### 2. Snapshot the machine you are on",
-    ));
-    // check-host-safety: refusal — README text compared, never run.
-    assert!(!host.contains("copy `/etc/lodi/` across"), "{host}");
+    let warned = switch
+        .find("pacman -Syu")
+        .expect("no Arch full-upgrade warning");
     assert!(
-        host.contains(&format!("copy `{README_HOSTS}/` across")),
-        "a fresh machine is not given the host directory:\n{host}"
-    );
-    // check-host-safety: refusal — README text compared, never run.
-    let marker = "never copy `/etc/lodi/host-allowed`";
-    assert!(
-        host.to_lowercase().contains(marker),
-        "a fresh machine is not told to leave host-allowed behind:\n{host}"
+        warned < switch.find("```sh").unwrap(),
+        "the warning follows the commands"
     );
 }
 
-/// F2 of u-1: the project walk-through uses no `--force`, and its home example declares a
-/// `[home.file]` entry, never the deprecated `[files]`.
+/// The project walk-through uses no `--force`, and its home example declares a `[home.file]`
+/// entry, never the `[files]` that 2.0 refuses.
 #[test]
 fn the_readme_walk_through_uses_home_file_and_no_force() {
     let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let walk = fenced(markdown_section(&readme, "### 3. A first project"), "sh");
+    let walk = fenced(markdown_section(&readme, "### 4. A first project"), "sh");
     assert!(!walk.is_empty());
     for line in walk.iter().flatten() {
         assert!(!line.contains("--force"), "uses --force: {line}");
@@ -2112,90 +1688,17 @@ fn the_readme_walk_through_uses_home_file_and_no_force() {
     );
 }
 
-/// F2 of u-1: the name paragraph runs nothing and names the files a machine is rebuilt from.
+/// The name's pun runs nothing and names the files a machine is rebuilt from.
 #[test]
 fn the_readme_name_paragraph_names_the_manifests_and_runs_nothing() {
     let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let name = markdown_section(&readme, "### About the name");
-    let pun = name.trim_start().split("\n\n").next().unwrap();
+    let about = prose(markdown_section(&readme, "## About Lodi"));
+    let pun = &about[about.find("pun").expect("no pun on the name")..];
     assert!(!pun.contains("stuck in a Lodi"), "{pun}");
-    // check-host-safety: refusal — README text compared, never run.
-    assert!(!pun.contains("lodi host apply"), "{pun}");
+    assert!(!pun.contains("lodi switch"), "{pun}");
     for manifest in ["host.toml", "home.toml", "lodi.lock"] {
         assert!(pun.contains(manifest), "no {manifest}:\n{pun}");
     }
-}
-
-/// The owner's request of 2026-09-25 (LD-440): the README opens, after its title and a one-line
-/// description, with `## Three commands to get up and running`.
-#[test]
-fn the_readme_opens_with_the_three_commands() {
-    let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let heading = "## Three commands to get up and running";
-    assert_eq!(
-        readme.lines().find(|l| l.starts_with("## ")),
-        Some(heading),
-        "the README's first section is not the three commands"
-    );
-    let before = &readme[..readme.find(&format!("\n{heading}\n")).expect("the heading")];
-    let paragraphs: Vec<&str> = before
-        .split("\n\n")
-        .map(str::trim)
-        .filter(|p| !p.is_empty())
-        .collect();
-    assert!(
-        paragraphs.len() == 2
-            && paragraphs[0].starts_with("# ")
-            && paragraphs[1].lines().count() == 1,
-        "more than a title and a one-line description: {paragraphs:?}"
-    );
-}
-
-/// LD-440: that section's one `sh` block is exactly arm, make-and-import, apply, each line with a
-/// short trailing comment.
-#[test]
-fn the_three_commands_are_arm_import_apply_with_short_comments() {
-    let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let section = markdown_section(&readme, "## Three commands to get up and running");
-    let blocks = fenced(section, "sh");
-    assert_eq!(blocks.len(), 1, "{blocks:?}");
-    let commands: Vec<&str> = blocks[0]
-        .iter()
-        .map(|line| {
-            let (command, comment) = line
-                .split_once(" # ")
-                .unwrap_or_else(|| panic!("no trailing comment: {line}"));
-            let comment = comment.trim();
-            assert!(
-                !comment.is_empty() && comment.len() <= 64,
-                "not a short comment: {line}"
-            );
-            command.trim()
-        })
-        .collect();
-    let import = format!("{} && {}", readme_hosts_mkdir(), readme_repo("import"));
-    let apply = readme_repo("apply");
-    // check-host-safety: refusal — README text compared, never run.
-    let expected = ["sudo lodi host arm", import.as_str(), apply.as_str()];
-    assert_eq!(commands, expected, "{section}");
-}
-
-/// LD-440: the three commands name the plan that writes nothing and the Arch full upgrade.
-#[test]
-fn the_three_commands_name_the_plan_and_the_arch_upgrade() {
-    let readme = fs::read_to_string(repo().join("README.md")).unwrap();
-    let section = prose(markdown_section(
-        &readme,
-        "## Three commands to get up and running",
-    ));
-    assert!(
-        section.contains(&format!("`{}`", readme_repo("plan"))),
-        "no plan:\n{section}"
-    );
-    assert!(
-        section.contains("pacman -Syu"),
-        "no Arch upgrade:\n{section}"
-    );
 }
 
 // ------------------------------------ 7. the init forms: the home scope starts at home init ---
@@ -2232,67 +1735,6 @@ fn observed(dir: &Path, out: &Output) -> (Option<i32>, String, String) {
     )
 }
 
-/// I1 of i-1 (LD-382): `lodi home init` is an exact alias of `lodi home import`. Each sequence of
-/// invocations runs once with `import` and once with `init`, each in a fresh scratch home, and
-/// every step must give the same status, the same standard output and the same standard error,
-/// and leave the same files with the same bytes. The sequences cover every flag, the default
-/// destination, `E_EXISTS` and its `--force`, `E_PATH_ESCAPE`, and each usage error; a usage
-/// error names the words that were typed, so there `init` stands where `import` stood and
-/// nothing else differs. The negative control: `home plan` is recognised as not the same.
-#[test]
-fn home_init_is_an_exact_alias_of_home_import() {
-    let sequences: &[&[&[&str]]] = &[
-        &[&[], &[], &["--force"]],
-        &[&["--stdout"]],
-        &[
-            &["--out", "bundle"],
-            &["--out", "bundle"],
-            &["--out", "bundle", "--force"],
-        ],
-        &[&["--force"]],
-        &[&["--out", "/"]],
-        &[&["--frobnicate"]],
-        &[&["--out"]],
-        &[&["--force", "--force"]],
-        &[&["--stdout", "--stdout"]],
-        &[&["--stdout", "--out", "bundle"]],
-        &[&["--stdout", "--force"]],
-        &[&["extra"]],
-    ];
-    let mut statuses = BTreeSet::new();
-    for (n, sequence) in sequences.iter().enumerate() {
-        let mut runs = Vec::new();
-        for verb in ["import", "init"] {
-            let dir = scratch(&format!("init-alias-{n}-{verb}"));
-            let mut steps = Vec::new();
-            for flags in *sequence {
-                let words = [&["home", verb][..], flags].concat();
-                let out = lodi(&dir, &argv(&words));
-                let (status, stdout, stderr) = observed(&dir, &out);
-                statuses.insert(status);
-                steps.push((status, stdout, stderr.replace("home init", "home import")));
-            }
-            runs.push((steps, tree(&dir)));
-            fs::remove_dir_all(&dir).unwrap();
-        }
-        assert_eq!(
-            runs[0], runs[1],
-            "`lodi home init` is not `lodi home import` for {sequence:?}"
-        );
-    }
-    // The sequences reached success, the usage error and the manifest's refusals.
-    assert_eq!(statuses, BTreeSet::from([Some(0), Some(2), Some(3)]));
-
-    // The negative control: the comparison sees a different command.
-    let a = scratch("init-alias-control-a");
-    let b = scratch("init-alias-control-b");
-    let import = observed(&a, &lodi(&a, &argv(&["home", "import", "--stdout"])));
-    let plan = observed(&b, &lodi(&b, &argv(&["home", "plan"])));
-    assert_ne!(import, plan);
-    fs::remove_dir_all(&a).unwrap();
-    fs::remove_dir_all(&b).unwrap();
-}
-
 /// I1 of i-1 (LD-382): the first guesses a newcomer types are still usage errors (exit 2, nothing
 /// written), and each says which command they meant. Each guess is its own test, so each pointer
 /// is red or green on its own (validator-repair-1); `refused_with_a_pointer` is the one check they
@@ -2324,24 +1766,13 @@ fn refused_with_a_pointer(words: &[&str], named: &[&str]) {
     fs::remove_dir_all(&dir).unwrap();
 }
 
-// check-host-safety: refusal — expected text of a refused guess, never run.
-const GUESS_ARM: &str = "sudo lodi host arm";
-// check-host-safety: refusal — expected text of a refused guess, never run.
-const GUESS_IMPORT: &str = "sudo lodi host import";
-
-/// `lodi import` is a command since LD-416 (DONE D1, D2), no longer a guess: with no repository
-/// it is the LD-447 refusal, whose hint names the import that starts one, and nothing is written.
+/// `lodi import` (#693) is held by the LD-376 guard before it reads anything.
 #[test]
-fn lodi_import_is_a_command_that_names_where_to_start() {
+fn lodi_import_is_a_command_the_guard_holds() {
     let dir = scratch("guess-import");
     // check-host-safety: refusal — the guard refuses it before anything is read.
     let out = lodi_with(&dir, &argv(&["import"]), &[("LODI_HOST_REQUIRE_ROOT", "1")]);
     assert_eq!(out.status.code(), Some(9), "{out:?}");
-    let out = lodi_with(&dir, &argv(&["import", "--root", "unarmed"]), &[]);
-    let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
-    assert_eq!(out.status.code(), Some(3), "{stderr}");
-    // check-host-safety: refusal — the hint's text, never run.
-    assert!(stderr.contains("lodi import ~/lodi"), "{stderr}");
     assert!(tree(&dir.join("home")).is_empty() && !dir.join("lodi.lock").exists());
     fs::remove_dir_all(&dir).unwrap();
 }
@@ -2350,19 +1781,19 @@ fn lodi_import_is_a_command_that_names_where_to_start() {
 fn lodi_setup_points_to_every_scope_s_first_command() {
     refused_with_a_pointer(
         &["setup"],
-        &[GUESS_ARM, GUESS_IMPORT, "lodi home init", "lodi init"],
+        &["lodi import", "lodi import --home", "lodi init"],
     );
 }
 
 #[test]
-fn lodi_init_host_points_to_host_arm_and_host_import() {
-    refused_with_a_pointer(&["init", "host"], &[GUESS_ARM, GUESS_IMPORT]);
+fn lodi_init_host_points_to_import() {
+    refused_with_a_pointer(&["init", "host"], &["lodi import"]);
 }
 
 #[test]
-fn lodi_init_home_points_to_home_init() {
-    refused_with_a_pointer(&["init", "home"], &["lodi home init"]);
-    refused_with_a_pointer(&["init", "--force", "home"], &["lodi home init"]);
+fn lodi_init_home_points_to_import_home() {
+    refused_with_a_pointer(&["init", "home"], &["lodi import --home"]);
+    refused_with_a_pointer(&["init", "--force", "home"], &["lodi import --home"]);
 }
 
 #[test]
@@ -2386,28 +1817,62 @@ fn uids() -> (u32, u32) {
 /// else is as it would have been: the same status, the same standard output, the same standard
 /// error after that line. The negative controls: no line without `SUDO_UID`, with the process's
 /// own uid in it, with a value that is no uid, and for a command outside the home scope.
+///
+/// The home verbs are 2.0's `lodi switch --home` and its `--dry-run`, each on a machine of its
+/// own (`--root`) whose config holds a home with one file (LD-524).
 #[test]
 fn a_home_verb_under_sudo_warns_and_changes_nothing_else() {
     let (euid, other) = uids();
     let other = other.to_string();
     let own = euid.to_string();
-    let verbs: &[&[&str]] = &[
-        &["home", "plan"],
-        &["home", "status"],
-        &["home", "apply", "--locked"],
-        &["home", "import", "--stdout"],
-        &["home", "init", "--stdout"],
-        &["home", "init"],
-    ];
+    let verbs: &[&[&str]] = &[&["switch", "--home", "--dry-run"], &["switch", "--home"]];
+    // `words` on the machine at `dir`, with `vars`, observed with every duration (`0.1s`) as `Ts`.
+    let switch = |dir: &Path, words: &[&str], vars: &[(&str, &str)]| {
+        support::machine_at(dir);
+        let config = dir.join("home/.config/lodi");
+        fs::create_dir_all(&config).unwrap();
+        fs::write(
+            config.join("home.toml"),
+            "[home]\nversion = \"1\"\n\n[home.file.\"note\"]\ntext = \"hi\"\n",
+        )
+        .unwrap();
+        let mut args = argv(words);
+        args.extend(["--root".to_string(), dir.display().to_string()]);
+        let mut vars = vars.to_vec();
+        vars.push(("LODI_HOST_REQUIRE_ROOT", "1"));
+        let (code, out, err) = observed(dir, &lodi_with(dir, &args, &vars));
+        let timeless = |text: String| {
+            let timed = |word: &str| {
+                let bare = word.trim_end_matches([':', ',']);
+                let seconds = bare.strip_suffix('s').filter(|n| n.contains('.'));
+                match seconds.is_some_and(|n| n.parse::<f64>().is_ok()) {
+                    true => format!("Ts{}", &word[bare.len()..]),
+                    false => word.to_string(),
+                }
+            };
+            let lines = text.split('\n').map(|line| {
+                let words = line.split(' ').map(timed);
+                words.collect::<Vec<_>>().join(" ")
+            });
+            lines.collect::<Vec<_>>().join("\n")
+        };
+        (code, timeless(out), timeless(err))
+    };
+    // The home's files, its scratch folder spelled `<dir>`, without the run's dated log.
+    let home = |dir: &Path| -> BTreeMap<PathBuf, String> {
+        let at = dir.to_string_lossy().into_owned();
+        tree(&dir.join("home"))
+            .into_iter()
+            .filter(|(path, _)| !path.starts_with(".local/state/lodi/logs"))
+            .map(|(path, text)| (path, text.replace(&at, "<dir>")))
+            .collect()
+    };
     for words in verbs {
         let plain_dir = scratch("sudo-plain");
-        let plain = observed(&plain_dir, &lodi(&plain_dir, &argv(words)));
-        let plain_tree = tree(&plain_dir.join("home"));
+        let plain = switch(&plain_dir, words, &[]);
+        let plain_tree = home(&plain_dir);
         let dir = scratch("sudo-warned");
-        let warned = observed(
-            &dir,
-            &lodi_with(&dir, &argv(words), &[("SUDO_UID", &other)]),
-        );
+        let warned = switch(&dir, words, &[("SUDO_UID", &other)]);
         let (first, rest) = warned.2.split_once('\n').expect("a line on standard error");
         assert!(
             first.starts_with("lodi: warning W_HOME_SUDO: ")
@@ -2423,19 +1888,19 @@ fn a_home_verb_under_sudo_warns_and_changes_nothing_else() {
             "`lodi {}`: the warning changed something else",
             words.join(" ")
         );
-        assert_eq!(tree(&dir.join("home")), plain_tree);
+        assert_eq!(home(&dir), plain_tree);
         fs::remove_dir_all(&dir).unwrap();
 
         for quiet in [own.as_str(), "", "root", "-1"] {
             let dir = scratch("sudo-quiet");
-            let out = observed(&dir, &lodi_with(&dir, &argv(words), &[("SUDO_UID", quiet)]));
+            let out = switch(&dir, words, &[("SUDO_UID", quiet)]);
             assert_eq!(out, plain, "SUDO_UID={quiet:?} `lodi {}`", words.join(" "));
             fs::remove_dir_all(&dir).unwrap();
         }
         fs::remove_dir_all(&plain_dir).unwrap();
     }
     for words in [
-        &["lock", "--check"][..],
+        &["search", "python"][..],
         &["init", "--force"],
         &["frobnicate"],
     ] {
@@ -2450,117 +1915,6 @@ fn a_home_verb_under_sudo_warns_and_changes_nothing_else() {
     }
 }
 
-/// I2 of i-1 (LD-382): the documents start the home scope at `lodi home init` and name
-/// `lodi home import` as its 1.0 name, with no deprecation. `docs/CLI.md` documents both, and the
-/// help's opening says `home init` (the tests above hold the binary to both).
-#[test]
-fn the_documents_start_the_home_scope_at_home_init() {
-    for file in [
-        "docs/CLI.md",
-        "docs/scopes/home.md",
-        "README.md",
-        "docs/GUIDE.md",
-    ] {
-        let text = fs::read_to_string(repo().join(file)).unwrap();
-        let prose = text.split_whitespace().collect::<Vec<_>>().join(" ");
-        assert!(
-            prose.contains("`lodi home init`"),
-            "{file} names no `lodi home init`"
-        );
-        assert!(
-            prose.contains("`lodi home import` is its 1.0 name"),
-            "{file} does not name `lodi home import` as the 1.0 name of `lodi home init`"
-        );
-    }
-    let cli = cli_md();
-    let commands = documented_commands(&cli);
-    assert!(commands.contains("home init") && commands.contains("home import"));
-    let flags = documented_flags(&cli);
-    assert_eq!(flags["home init"], flags["home import"]);
-    // No command is deprecated: `home import` stays for all of 1.x with no `W_DEPRECATED`.
-    assert_eq!(deprecation(DEPRECATIONS, "home import"), None);
-    assert!(DEPRECATIONS.iter().all(|d| d.manifest().is_some()));
-}
-
-/// validator-repair-1 of i-1: `docs/scopes/home.md` opens with the home scope's command
-/// inventory, and that inventory names every home verb `lodi --help` names — `init` and `import`, its 1.0
-/// name, included. A count it states is the count of those verbs.
-#[test]
-fn the_home_scope_s_verb_inventory_is_the_help_s() {
-    let verbs: Vec<String> = help_commands()
-        .iter()
-        .filter_map(|c| c.strip_prefix("home ").map(str::to_string))
-        .collect();
-    assert!(verbs.iter().any(|v| v == "init"), "--help names {verbs:?}");
-    let text = fs::read_to_string(repo().join("docs/scopes/home.md")).unwrap();
-    let intro = &text[..text
-        .find("\n## ")
-        .expect("docs/scopes/home.md has a section")];
-    let prose = intro.split_whitespace().collect::<Vec<_>>().join(" ");
-    let inventory = prose
-        .split(". ")
-        .find(|s| s.contains(" commands"))
-        .unwrap_or_else(|| panic!("docs/scopes/home.md's opening has no command inventory"));
-    let words: BTreeSet<&str> = inventory
-        .split(|c: char| !c.is_ascii_alphanumeric())
-        .collect();
-    for verb in &verbs {
-        assert!(
-            words.contains(verb.as_str()),
-            "docs/scopes/home.md's verb inventory names no `{verb}`: {inventory}"
-        );
-    }
-    let numbers = ["one", "two", "three", "four", "five", "six", "seven"];
-    for (n, word) in numbers.iter().enumerate() {
-        if inventory.contains(&format!(" {word} commands")) {
-            assert_eq!(
-                n + 1,
-                verbs.len(),
-                "docs/scopes/home.md counts {word} commands; --help names {verbs:?}"
-            );
-        }
-    }
-}
-
-/// The GUIDE's four starting home commands must include `init`, not count its 1.0 alias `import`
-/// in place of `init`. Check the inventory sentence itself, not a mention elsewhere in the GUIDE.
-#[test]
-fn the_guide_home_verb_inventory_starts_with_init() {
-    let text = fs::read_to_string(repo().join("docs/GUIDE.md")).unwrap();
-    let home = markdown_section(&text, "## The home scope");
-    let opening = home
-        .trim_start()
-        .split("\n\n")
-        .next()
-        .expect("home scope opening");
-    let prose = opening.split_whitespace().collect::<Vec<_>>().join(" ");
-    let inventory = prose
-        .split_once("four commands:")
-        .expect("GUIDE names four starting home commands")
-        .1
-        .split(". ")
-        .next()
-        .expect("inventory sentence");
-    let named: Vec<&str> = inventory
-        .split('`')
-        .filter(|span| span.starts_with("lodi home "))
-        .collect();
-    assert_eq!(
-        named,
-        [
-            "lodi home init",
-            "lodi home plan",
-            "lodi home apply",
-            "lodi home status",
-        ],
-        "GUIDE's four starting home verbs must name init rather than its import alias"
-    );
-    assert!(
-        prose.contains("`lodi home import` is its 1.0 name"),
-        "GUIDE must still name the import alias separately"
-    );
-}
-
 /// The commands on `main` that no release has yet, as `lodi …` (validator-repair-1 of i-1). The
 /// README's quick start is followed verbatim with the release it links to (`AGENTS.md` §9.4), so
 /// none of these may be in its shell blocks. Empty this list in the release that ships them:
@@ -2569,7 +1923,7 @@ const UNRELEASED: &[&str] = &[];
 
 /// validator-repair-1 of i-1: the README's quick start installs the release `Cargo.toml` names,
 /// so every shell line in it works with that release: no command in [`UNRELEASED`]. Its prose
-/// says that `lodi home init` and `lodi home import` are the same command.
+/// names no command that stopped in 2.0 (#699).
 #[test]
 fn the_readme_quick_start_runs_with_the_release_it_installs() {
     let text = fs::read_to_string(repo().join("README.md")).unwrap();
@@ -2606,12 +1960,144 @@ fn the_readme_quick_start_runs_with_the_release_it_installs() {
     }
     assert!(lines > 0, "the quick start has no shell block");
     let prose = quick.split_whitespace().collect::<Vec<_>>().join(" ");
-    assert!(
-        prose.contains("`lodi home import`") && prose.contains("`lodi home init`"),
-        "the quick start does not name both `lodi home import` and `lodi home init`"
+    // check-host-safety: refusal — README text compared, never run.
+    for gone in ["`lodi home import`", "`lodi home init`", "`lodi host arm`"] {
+        assert!(
+            !prose.contains(gone),
+            "the quick start names {gone}, which stopped in 2.0 (#699)"
+        );
+    }
+}
+
+/// The `lodi` commands of the quick start's unindented `sh` blocks, in order, each as its
+/// first word after `lodi`: what a reader pastes, comments left out.
+fn quick_start_commands(quick: &str) -> Vec<String> {
+    let mut in_shell = false;
+    let mut commands = Vec::new();
+    for line in quick.lines() {
+        if line.starts_with("```") {
+            in_shell = line == "```sh";
+            continue;
+        }
+        let command = line.split('#').next().unwrap();
+        let words: Vec<&str> = command.split_whitespace().collect();
+        if in_shell && words.first() == Some(&"lodi") && words.len() > 1 {
+            commands.push(words[1].to_string());
+        }
+    }
+    commands
+}
+
+/// #711: the README quick start is install, then `lodi import`, then `lodi switch`, and its
+/// first command is the first one `lodi --help` names under "Start here".
+#[test]
+fn the_quick_start_and_the_help_both_start_with_import_then_switch() {
+    let text = fs::read_to_string(repo().join("README.md")).unwrap();
+    let commands = quick_start_commands(section(&text, "## Quick start"));
+    assert_eq!(
+        commands.get(..2),
+        Some(&["import".to_string(), "switch".to_string()][..]),
+        "the quick start's first two lodi commands are {commands:?}"
     );
-    assert!(
-        prose.contains("`lodi home init` is the same command"),
-        "the quick start does not say that `lodi home init` is the same command"
-    );
+    let dir = scratch("help-opening");
+    let help = String::from_utf8(lodi(&dir, &argv(&["--help"])).stdout).unwrap();
+    let first = help
+        .split("Start here:")
+        .nth(1)
+        .and_then(|rest| rest.split_whitespace().nth(1))
+        .expect("`lodi --help` has a Start here list");
+    assert_eq!(first, commands[0], "the help starts with `lodi {first}`");
+    fs::remove_dir_all(&dir).unwrap();
+}
+
+/// The 1.x words a comment lodi writes may not use (#700): the verbs 2.0 renamed, and the
+/// scopes and commands it removed. `None` when `comment` has none of them.
+fn old_word(comment: &str) -> Option<String> {
+    let words: Vec<&str> = comment
+        .split(|c: char| c.is_whitespace() || "`'\"()".contains(c))
+        .map(|w| w.trim_end_matches(['.', ',', ':', ';']))
+        .filter(|w| !w.is_empty())
+        .collect();
+    for (at, word) in words.iter().enumerate() {
+        if ["apply", "plan"].contains(word) {
+            return Some((*word).to_string());
+        }
+        let next = words.get(at + 1).copied().unwrap_or_default();
+        if *word == "lodi" && ["host", "home", "lock", "trust", "info", "boot"].contains(&next) {
+            return Some(format!("lodi {next}"));
+        }
+    }
+    comment
+        .contains("repository's root")
+        .then(|| "repository".to_string())
+}
+
+/// The comments of one file lodi writes, each with the 1.x word it uses.
+fn old_words(text: &str) -> Vec<(String, String)> {
+    text.lines()
+        .filter_map(|line| Some(line.trim_start().strip_prefix('#')?.to_string()))
+        .filter_map(|comment| Some((old_word(&comment)?, comment)))
+        .collect()
+}
+
+/// The comments lodi writes into `host.toml`, `home.toml` and `lodi.toml` name only 2.0
+/// commands (#700). The import's host and home files are the fixtures their emitters are
+/// compared with byte for byte; `lodi.toml` is what `lodi init` writes, plain and on a base.
+#[test]
+fn the_comments_lodi_writes_name_only_2_0_commands() {
+    let mut files: Vec<(String, String)> = Vec::new();
+    let mut dirs = vec![repo().join("tests/fixtures/host/import")];
+    while let Some(dir) = dirs.pop() {
+        for entry in fs::read_dir(&dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                dirs.push(path);
+            } else if path.file_name().is_some_and(|n| n == "expected.toml") {
+                files.push((
+                    path.display().to_string(),
+                    fs::read_to_string(&path).unwrap(),
+                ));
+            }
+        }
+    }
+    assert!(files.len() > 10, "the host import fixtures were not found");
+    let home = repo()
+        .join("tests/fixtures")
+        .join("home")
+        .join("import/stubs/home.toml");
+    files.push((
+        home.display().to_string(),
+        fs::read_to_string(&home).unwrap(),
+    ));
+    for (tag, args) in [
+        ("plain", vec![]),
+        ("base", vec!["--base", "debian:bookworm"]),
+    ] {
+        let dir = scratch(&format!("comments-{tag}"));
+        let mut words = vec!["init"];
+        words.extend(args);
+        let out = lodi(&dir, &argv(&words));
+        assert_eq!(out.status.code(), Some(0), "{out:?}");
+        files.push((
+            format!("lodi init ({tag})"),
+            fs::read_to_string(dir.join("lodi.toml")).unwrap(),
+        ));
+    }
+    for (name, text) in &files {
+        assert_eq!(
+            old_words(text),
+            vec![],
+            "{name} has comments with 1.x words"
+        );
+    }
+    // The negative control: each kind of 1.x word is noticed in a comment, and not outside one.
+    for comment in [
+        "# an apply installs it",
+        "# then read the plan:",
+        &format!("# run lodi {} first", "home"),
+        "# recipes/NAME.toml at your repository's root.",
+    ] {
+        assert_eq!(old_words(comment).len(), 1, "{comment} went unnoticed");
+    }
+    assert!(old_words("apply = true\n# a switch installs it").is_empty());
 }

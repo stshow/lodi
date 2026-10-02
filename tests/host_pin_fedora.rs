@@ -1,4 +1,4 @@
-//! fk-1 (LD-434): exact Fedora builds pinned in the repository's one `lodi.lock`, and `git
+//! fk-1 (LD-434): exact Fedora builds pinned in the config's one `lodi.lock` (#696), and `git
 //! revert` puts the older build back — from a configured repository when it still serves those
 //! bytes, else from Fedora's signed Koji copy, else not at all.
 //!
@@ -19,7 +19,6 @@ mod wait;
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -76,7 +75,7 @@ fn koji_files() -> BTreeMap<String, Vec<u8>> {
 
 /// A Fedora 44 machine named `fk1-machine` with `htop` installed, `pv` at `pv` (or not
 /// installed), both builds of `pv` offered as the guest's repositories offered them, and a
-/// repository at `hosts/` whose host `box` declares both.
+/// config at the scratch `HOME`'s `~/.config/lodi` whose `host.toml` declares both.
 struct Fedora {
     case: Case,
     server: support::Server,
@@ -110,10 +109,6 @@ impl Fedora {
                 json!({"version": build(HTOP), "repo": "fedora", "depends": ["glibc"]});
             m["serves"] = json!(serves);
         });
-        for dir in ["hosts", "hosts/box"] {
-            fs::create_dir_all(case.root.path(dir)).unwrap();
-            fs::set_permissions(case.root.path(dir), fs::Permissions::from_mode(0o755)).unwrap();
-        }
         let fedora = Fedora {
             case,
             server: support::Server::start(koji_files()),
@@ -125,36 +120,38 @@ impl Fedora {
         fedora
     }
 
-    fn hosts(&self) -> PathBuf {
-        self.case.root.path("hosts")
+    /// The config folder.
+    fn config(&self) -> PathBuf {
+        self.case.config()
     }
 
     fn set_host(&self, text: &str) {
-        let path = self.hosts().join("box/host.toml");
-        fs::write(&path, text).unwrap();
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        self.case.set_manifest(text);
     }
 
     fn host_toml(&self) -> String {
-        fs::read_to_string(self.hosts().join("box/host.toml")).unwrap()
+        self.case.manifest()
     }
 
     fn lock_bytes(&self) -> Vec<u8> {
-        fs::read(self.hosts().join("lodi.lock")).unwrap_or_default()
+        fs::read(self.config().join("lodi.lock")).unwrap_or_default()
     }
 
     fn lock(&self) -> Value {
         serde_json::from_slice(&self.lock_bytes()).expect("lodi.lock is JSON")
     }
 
-    /// `lodi host VERB [ARGS] hosts --host box --root ROOT`, Koji on loopback.
+    /// The host's section of `lodi.lock`.
+    fn section(&self) -> Value {
+        self.lock()["hosts"]["host.toml"].clone()
+    }
+
+    /// A 1.x host verb's name as the 2.0 command that keeps it (`fakehost::command_line`), on
+    /// the config `~/.config/lodi`, Koji on loopback.
     fn run(&self, verb: &str, args: &[&str]) -> Output {
-        let hosts = self.hosts().display().to_string();
-        let mut extra: Vec<&str> = args.to_vec();
-        extra.extend([hosts.as_str(), "--host", "box"]);
         let rewrite = self.server.rewrite();
         self.case
-            .verb_env(verb, &extra, &[("LODI_FETCH_REWRITE", rewrite.as_str())])
+            .verb_env(verb, args, &[("LODI_FETCH_REWRITE", rewrite.as_str())])
     }
 
     fn pv(&self) -> String {
@@ -179,7 +176,7 @@ impl Fedora {
         let done = Command::new("git")
             .args(["-c", "user.name=fk1", "-c", "user.email=fk1"])
             .args(args)
-            .current_dir(self.hosts())
+            .current_dir(self.config())
             .env("GIT_CONFIG_NOSYSTEM", "1")
             .env("HOME", self.case.root.path("home"))
             .output()
@@ -193,10 +190,10 @@ impl Fedora {
     }
 
     /// Pin `pv` at the installed older build and commit, pin it to the newer build, commit and
-    /// apply: the update a `git revert` then takes back.
+    /// switch: the update a `git revert` then takes back.
     fn updated(&self) {
         self.git(&["init", "-q"]);
-        let pinned = self.run("pin", &["pv"]);
+        let pinned = self.run("pin", &["pv", "--to", OLDER]);
         assert_eq!(pinned.status.code(), Some(0), "{}", story(&pinned));
         self.commit("pin pv");
         let moved = self.run("pin", &["pv", "--to", NEWER]);
@@ -230,7 +227,7 @@ impl Fedora {
 #[test]
 fn pin_records_the_exact_build_in_the_root_lock() {
     let f = Fedora::new("fk1-pin", Some(OLDER));
-    let pinned = f.run("pin", &["htop"]);
+    let pinned = f.run("pin", &["htop", "--to", HTOP]);
     assert_eq!(pinned.status.code(), Some(0), "{}", story(&pinned));
     assert!(
         f.host_toml().contains(&format!("htop = \"{HTOP}\"")),
@@ -240,9 +237,9 @@ fn pin_records_the_exact_build_in_the_root_lock() {
     let lock = f.lock();
     assert_eq!(
         (lock["version"].clone(), lock["format"].clone()),
-        (json!(2), json!("lodi-repository-lock/2"))
+        (json!(1), json!("lodi-config-lock"))
     );
-    let section = &lock["hosts"]["box"];
+    let section = &lock["hosts"]["host.toml"];
     assert_eq!(
         (&section["distro"], &section["release"], &section["arch"]),
         (&json!("fedora"), &json!("44"), &json!("x86_64"))
@@ -275,31 +272,22 @@ fn pin_records_the_exact_build_in_the_root_lock() {
 
     // Pinning the same build again changes nothing and asks nothing.
     let log = f.case.log();
-    let again = f.run("pin", &["htop"]);
+    let again = f.run("pin", &["htop", "--to", HTOP]);
     assert_eq!(again.status.code(), Some(0), "{}", story(&again));
     assert!(out(&again).contains("nothing written"), "{}", story(&again));
     assert!(
         f.case.log().iter().all(|line| !line.contains("download")),
         "{log:?}"
     );
-    assert_eq!(
-        f.lock()["hosts"]["box"]["pins"]["htop"],
-        section["pins"]["htop"]
-    );
+    assert_eq!(f.section()["pins"]["htop"], section["pins"]["htop"]);
 }
 
 #[test]
 fn revert_reinstalls_the_locked_build_from_the_mirror() {
     let f = Fedora::new("fk1-revert-mirror", Some(OLDER));
     f.updated();
-    assert_eq!(
-        f.lock()["hosts"]["box"]["pins"]["pv"]["release"],
-        json!("1.fc44")
-    );
-    assert_eq!(
-        f.lock()["hosts"]["box"]["pins"]["pv"]["version"],
-        json!("1.10.4")
-    );
+    assert_eq!(f.section()["pins"]["pv"]["release"], json!("1.fc44"));
+    assert_eq!(f.section()["pins"]["pv"]["version"], json!("1.10.4"));
     let applied = f.run("apply", &[]);
     assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
     assert_eq!(f.pv(), OLDER, "{}", story(&applied));
@@ -322,11 +310,10 @@ fn revert_reinstalls_the_locked_build_from_the_mirror() {
         "the stage is removed"
     );
 
-    // A warm re-apply asks nothing of any archive and changes nothing.
+    // A warm re-switch asks nothing of any archive and changes nothing.
     let requests = f.server.requests().len();
     let again = f.run("apply", &[]);
-    assert_eq!(again.status.code(), Some(0), "{}", story(&again));
-    assert!(out(&again).contains("nothing to do"), "{}", story(&again));
+    assert!(fakehost::nothing(&again), "{}", story(&again));
     assert_eq!(f.server.requests().len(), requests);
     assert!(
         f.case.log().iter().all(|line| !line.contains("download")),
@@ -367,10 +354,10 @@ fn a_dropped_build_comes_from_the_signed_koji_copy_or_not_at_all() {
 
     // A lock whose digest is of a copy nobody signed: the digest matches, the key does not.
     let mut lock = f.lock();
-    lock["hosts"]["box"]["pins"]["pv"]["sha256"] =
+    lock["hosts"]["host.toml"]["pins"]["pv"]["sha256"] =
         json!(digest("unsigned-pv-1.10.4-1.fc44.x86_64.rpm"));
     fs::write(
-        f.hosts().join("lodi.lock"),
+        f.config().join("lodi.lock"),
         lodi::lock::canonical_json(&lock),
     )
     .unwrap();
@@ -388,6 +375,87 @@ fn a_dropped_build_comes_from_the_signed_koji_copy_or_not_at_all() {
     );
     assert_eq!(f.pv(), NEWER);
     assert!(f.mutated().is_empty(), "{:?}", f.mutated());
+}
+
+/// A `git revert` that takes a pin out releases the hold lodi's own transactions kept on it:
+/// the plan says so, the record no longer holds it, and the build stays (#712).
+#[test]
+fn a_revert_that_drops_a_pin_releases_its_hold_and_says_so() {
+    let f = Fedora::new("fk1-unhold", Some(OLDER));
+    f.git(&["init", "-q"]);
+    f.commit("host");
+    let pinned = f.run("pin", &["pv", "--to", OLDER]);
+    assert_eq!(pinned.status.code(), Some(0), "{}", story(&pinned));
+    f.commit("pin pv");
+    let applied = f.run("apply", &[]);
+    assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
+    assert_eq!(f.case.lock()["packages"]["pv"]["held"], true);
+    f.git(&["revert", "--no-edit", "HEAD"]);
+
+    let plan = f.run("plan", &[]);
+    assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
+    assert!(
+        err(&plan).contains("~ package pv (unhold"),
+        "{}",
+        story(&plan)
+    );
+    let applied = f.run("apply", &[]);
+    assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
+    assert_eq!(f.case.lock()["packages"]["pv"]["held"], false);
+    assert_eq!(f.pv(), OLDER, "the build stays: {}", story(&applied));
+    assert!(f.mutated().is_empty(), "{:?}", f.mutated());
+    let again = f.run("apply", &[]);
+    assert!(fakehost::nothing(&again), "{}", story(&again));
+}
+
+/// Koji's index of the signed copies of a build, as kojipkgs.fedoraproject.org serves it: one
+/// folder per signing key, each with the day it was signed.
+fn koji_index(source: &str, version: &str, release: &str) -> (String, Vec<u8>) {
+    (
+        format!("{KOJI}/{source}/{version}/{release}/data/signed/"),
+        "<pre><a href=\"?C=N;O=D\">Name</a>\n\
+         <a href=\"/packages/pv/1.10.4/1.fc44/data/\">Parent Directory</a>\n\
+         <a href=\"f577861e/\">f577861e/</a>   2026-01-31 01:04    -\n\
+         <a href=\"6d9f90a6/\">6d9f90a6/</a>   2026-01-27 18:10    -\n</pre>\n"
+            .as_bytes()
+            .to_vec(),
+    )
+}
+
+/// A build no configured repository offers any more, and Koji still keeps, is pinned from
+/// Koji's signed copy, as the pin page says, and a switch installs it from there (#712).
+#[test]
+fn a_build_only_koji_keeps_is_pinned_from_its_signed_copy() {
+    let f = Fedora::new("fk1-pin-koji", Some(NEWER));
+    f.case.edit(|m| {
+        m["also"].as_object_mut().unwrap().remove("pv");
+    });
+    f.evict_older();
+    let mut files = koji_files();
+    files.extend([koji_index("pv", "1.10.4", "1.fc44")]);
+    let f = Fedora {
+        server: support::Server::start(files),
+        ..f
+    };
+    let pinned = f.run("pin", &["pv", "--to", OLDER]);
+    assert_eq!(pinned.status.code(), Some(0), "{}", story(&pinned));
+    let pin = &f.section()["pins"]["pv"];
+    assert_eq!(pin["source"], json!(pv_koji("1.10.4")), "{pin}");
+    assert_eq!(pin["repository"], json!("koji"), "{pin}");
+    assert_eq!(
+        pin["sha256"],
+        json!(digest("pv-1.10.4-1.fc44.x86_64.rpm")),
+        "{pin}"
+    );
+    let applied = f.run("apply", &[]);
+    assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
+    assert_eq!(f.pv(), OLDER, "{}", story(&applied));
+
+    // A build Koji does not keep either is refused at pin time, naming both places.
+    let gone = f.run("pin", &["pv", "--to", "0:1.10.3-1.fc44.x86_64"]);
+    assert_eq!(gone.status.code(), Some(4), "{}", story(&gone));
+    assert!(err(&gone).contains("E_PIN_UNAVAILABLE"), "{}", story(&gone));
+    assert!(err(&gone).contains("signed Koji copy"), "{}", story(&gone));
 }
 
 #[test]
@@ -430,14 +498,14 @@ fn versions_and_unpin_work_on_fedora() {
         "{listed}"
     );
     assert!(
-        listed.contains(&format!("pin pv --to {NEWER} ")),
+        listed.contains(&format!("lodi pin pv --to {NEWER}\n")),
         "{listed}"
     );
 
     let plan = f.run("plan", &[]);
     assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
     assert!(
-        out(&plan).contains(&format!("+ package pv {OLDER}")),
+        err(&plan).contains(&format!("+ package pv {OLDER}")),
         "{}",
         story(&plan)
     );
@@ -445,10 +513,7 @@ fn versions_and_unpin_work_on_fedora() {
     let unpinned = f.run("unpin", &["pv"]);
     assert_eq!(unpinned.status.code(), Some(0), "{}", story(&unpinned));
     assert!(!f.host_toml().contains("pv = "), "{}", f.host_toml());
-    assert!(
-        f.lock_bytes().is_empty(),
-        "the only pin is gone, and the lock with it"
-    );
+    assert_eq!(f.section().get("pins"), None, "the only pin is gone");
     let applied = f.run("apply", &[]);
     assert_eq!(applied.status.code(), Some(0), "{}", story(&applied));
     assert_eq!(f.pv(), NEWER, "{}", story(&applied));

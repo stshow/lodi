@@ -1,6 +1,6 @@
-# Upstream Go for [tools] go. This recipe says where to look; it lists no
-# version. `lodi lock` discovers versions from go.dev's own release index, and the digest it
-# pins is the one that index publishes for the file it chose.
+# Upstream Go for [tools] go. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from go.dev's own release index, and the digest it pins is the one that index
+# publishes for the file it chose.
 [recipe]
 name        = "go"
 description = "The Go programming language toolchain, official linux builds"

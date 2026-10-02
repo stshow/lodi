@@ -165,7 +165,7 @@ fn fetch_keyring(
     if recorded.is_some_and(|want| *want != format!("sha256:{}", index.packages_sha256)) {
         return Err(Diagnostic::new(
             "E_HASH_MISMATCH",
-            format!("the dated core.db of {date} differs from pins.lock; no keyring was used"),
+            format!("the dated core.db of {date} differs from lodi.lock; no keyring was used"),
         ));
     }
     let keyring = packages

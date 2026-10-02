@@ -149,7 +149,7 @@ fn latest_is_e_unsupported_with_the_hint_that_floats_an_entry() {
     );
     let rendered = d.to_string();
     // check-host-safety: refusal — the hint's text, which nothing runs.
-    assert!(rendered.contains("lodi host unpin --all"), "{rendered}");
+    assert!(rendered.contains("lodi unpin --all"), "{rendered}");
 }
 
 #[test]
@@ -254,7 +254,7 @@ fn unused(_: BTreeMap<(), ()>) {}
 // -------------------------------------------------------------- the pin lock (§4, P13) ---
 
 use lodi::fetch::{HttpFetcher, parse_rewrites};
-use lodi::hostscope::pin::{self, Declared, PinRecord, PinsLock, SnapshotRecord};
+use lodi::hostscope::pin::{self, Declared, PinsLock};
 use lodi::hostscope::safety::Distro;
 use std::path::{Path, PathBuf};
 
@@ -355,149 +355,6 @@ fn resolved_debian_lock(server: &support::Server) -> PinsLock {
     )
     .expect("the dated Release files");
     lock
-}
-
-/// The child half of [`pins_lock_is_byte_identical_from_two_processes`]: resolve, render, print.
-#[test]
-fn child_renders_a_pins_lock() {
-    if !hostroot::is_child() {
-        return;
-    }
-    let server = archive();
-    let lock = resolved_debian_lock(&server);
-    print!("<<<PINS\n{}PINS>>>\n", pin::render_lock(&lock));
-}
-
-#[test]
-fn pins_lock_is_byte_identical_from_two_processes() {
-    let rendered: Vec<String> = (0..2)
-        .map(|_| hostroot::spawn("child_renders_a_pins_lock", &[]))
-        .collect::<Vec<_>>()
-        .into_iter()
-        .map(|child| {
-            let output = child.wait_with_output().expect("the child ends");
-            assert!(output.status.success(), "{}", fakehost::story(&output));
-            let text = String::from_utf8_lossy(&output.stdout).into_owned();
-            let start = text.find("<<<PINS\n").expect("the rendered lock") + 8;
-            let end = text.find("PINS>>>").expect("its end");
-            text[start..end].to_string()
-        })
-        .collect();
-    assert!(!rendered[0].is_empty(), "the child rendered nothing");
-    assert!(rendered[0].contains("\"tzdata\""), "{}", rendered[0]);
-    assert_eq!(rendered[0], rendered[1], "two processes, one byte sequence");
-}
-
-#[test]
-fn pins_lock_bytes_are_sorted_keys_two_space_lf_and_one_trailing_newline() {
-    let mut lock = PinsLock::new("debian", "bookworm", "x86_64");
-    for name in ["zsh", "bc"] {
-        lock.pins.insert(
-            name.to_string(),
-            PinRecord {
-                policy: "version".into(),
-                requested: "1.0".into(),
-                snapshot: Some(OLDER.into()),
-                version: "1.0".into(),
-                sha256: format!("sha256:{}", "a".repeat(64)),
-                filename: format!("pool/main/{name}.deb"),
-                repository: "debian".into(),
-                epoch: None,
-                release: None,
-                arch: None,
-                source: None,
-            },
-        );
-    }
-    lock.snapshot = Some(SnapshotRecord {
-        requested: RECENT.into(),
-        instant: RECENT.into(),
-        indexes: BTreeMap::from([(
-            "debian/dists/bookworm/Release".to_string(),
-            format!("sha256:{}", "b".repeat(64)),
-        )]),
-    });
-    let text = pin::render_lock(&lock);
-    let expected = format!(
-        "{{\n  \"arch\": \"x86_64\",\n  \"distro\": \"debian\",\n  \"format\": \"lodi-host-pins/1\",\n  \
-         \"pins\": {{\n    \"bc\": {{\n      \"filename\": \"pool/main/bc.deb\",\n      \"policy\": \
-         \"version\",\n      \"repository\": \"debian\",\n      \"requested\": \"1.0\",\n      \
-         \"sha256\": \"sha256:{a}\",\n      \"snapshot\": \"{OLDER}\",\n      \"version\": \"1.0\"\n    \
-         }},\n    \"zsh\": {{\n      \"filename\": \"pool/main/zsh.deb\",\n      \"policy\": \
-         \"version\",\n      \"repository\": \"debian\",\n      \"requested\": \"1.0\",\n      \
-         \"sha256\": \"sha256:{a}\",\n      \"snapshot\": \"{OLDER}\",\n      \"version\": \"1.0\"\n    \
-         }}\n  }},\n  \"release\": \"bookworm\",\n  \"snapshot\": {{\n    \"indexes\": {{\n      \
-         \"debian/dists/bookworm/Release\": \"sha256:{b}\"\n    }},\n    \"instant\": \"{RECENT}\",\n    \
-         \"requested\": \"{RECENT}\"\n  }},\n  \"version\": 1\n}}\n",
-        a = "a".repeat(64),
-        b = "b".repeat(64)
-    );
-    assert_eq!(text, expected);
-    assert_eq!(
-        pin::parse_lock(text.as_bytes(), "pins.lock").expect("it reads back"),
-        lock
-    );
-}
-
-#[test]
-fn a_pins_lock_holds_no_machine_name_user_path_binary_version_or_wall_clock_time() {
-    let server = archive();
-    let text = pin::render_lock(&resolved_debian_lock(&server));
-    assert!(!text.is_empty());
-    assert!(!text.contains(env!("CARGO_PKG_VERSION")), "{text}");
-    assert!(
-        !text.contains("generatedBy") && !text.contains("lodiVersion"),
-        "{text}"
-    );
-    for forbidden in [
-        std::env::var("HOME").unwrap_or_default(),
-        std::env::var("USER").unwrap_or_default(),
-        std::fs::read_to_string("/etc/hostname")
-            .unwrap_or_default()
-            .trim()
-            .to_string(),
-        repo().display().to_string(),
-    ] {
-        if forbidden.len() > 2 {
-            assert!(!text.contains(&forbidden), "{forbidden:?} in:\n{text}");
-        }
-    }
-    // The only instants are archive instants: the ones requested.
-    let mut instants: Vec<&str> = Vec::new();
-    let bytes = text.as_bytes();
-    for at in 0..bytes.len().saturating_sub(20) {
-        if bytes[at + 4] == b'-'
-            && bytes[at + 10] == b'T'
-            && bytes[at + 19] == b'Z'
-            && let Ok(found) = std::str::from_utf8(&bytes[at..at + 20])
-            && lodi::util::parse_utc(found).is_some()
-        {
-            instants.push(found);
-        }
-    }
-    assert!(!instants.is_empty());
-    for instant in instants {
-        assert!(
-            instant == OLDER || instant == RECENT,
-            "{instant} is not an archive instant it was asked for"
-        );
-    }
-    assert!(!text.contains(" /"), "an absolute path in:\n{text}");
-}
-
-#[test]
-fn a_later_pins_lock_format_is_e_lock_version_naming_the_file() {
-    let later = br#"{"format": "lodi-host-pins/2", "version": 2, "distro": "debian", "release": "bookworm", "arch": "x86_64", "pins": {}}"#;
-    let d = pin::parse_lock(later, "/hosts/box/pins.lock").unwrap_err();
-    assert_eq!(d.code, "E_LOCK_VERSION");
-    assert_eq!(exit_status(d.code), 4);
-    assert!(d.message.contains("/hosts/box/pins.lock"), "{d}");
-    let unknown = br#"{"format": "lodi-host-pins/1", "version": 1, "distro": "debian", "release": "bookworm", "arch": "x86_64", "pins": {}, "extra": 1}"#;
-    assert_eq!(
-        pin::parse_lock(unknown, "pins.lock").unwrap_err().code,
-        "E_LOCK_VERSION",
-        "deny_unknown_fields"
-    );
 }
 
 // ----------------------------------------------------------------- resolution (P2, P5) ---
@@ -947,8 +804,12 @@ const MACHINE_SOURCES: &str = "Types: deb\nURIs: http://deb.debian.org/debian\n\
     Types: deb\nURIs: http://deb.debian.org/debian-security\nSuites: bookworm-security\n\
     Components: main non-free-firmware\n\
     Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg\n";
-const VENDOR_SOURCES: &str = "Types: deb\nURIs: https://download.docker.com/linux/debian\n\
-    Suites: bookworm\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n";
+/// The vendor lists its source packages too: the private set carries only its `deb` type, since
+/// an apply installs binaries and never fetches a `Sources` index.
+const VENDOR_SOURCES: &str = "Types: deb deb-src\nURIs: https://download.docker.com/linux/debian\n\
+    Suites: bookworm\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n\n\
+    Types: deb-src\nURIs: https://download.docker.com/linux/debian\nSuites: bookworm-src\n\
+    Components: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n";
 
 fn pkg(name: &str, version: &str) -> Pkg {
     let mut pkg = Pkg::new(name);
@@ -1011,8 +872,8 @@ impl PinCase {
         self.case.set_manifest(text);
     }
 
-    /// `pins.lock` beside the in-place manifest, rendered by the pure renderer from what these
-    /// requests resolve to: what M-Pin's verbs write.
+    /// The pins these requests resolve to, recorded in the config's `lodi.lock` as `lodi pin`
+    /// writes them.
     fn record(&self, snapshot: Option<&str>, pins: &[(&str, &str)]) -> PinsLock {
         let sources = no_sources();
         let cx = pin::Context {
@@ -1042,10 +903,21 @@ impl PinCase {
         lock
     }
 
+    /// Record `lock` as `lodi pin` does: the host's section of the config's `lodi.lock`.
     fn write_lock(&self, lock: &PinsLock) {
-        self.case
-            .root
-            .write("etc/lodi/pins.lock", &pin::render_lock(lock));
+        self.case.set_pins(lock);
+    }
+
+    /// The host's recorded pins in the config's `lodi.lock`, by name.
+    fn recorded_pins(&self) -> Vec<String> {
+        let Ok(text) = std::fs::read_to_string(self.case.config().join("lodi.lock")) else {
+            return Vec::new();
+        };
+        let lock: serde_json::Value = serde_json::from_str(&text).expect("lodi.lock is JSON");
+        lock["hosts"]["host.toml"]["pins"]
+            .as_object()
+            .map(|pins| pins.keys().cloned().collect())
+            .unwrap_or_default()
     }
 
     fn installed(&self, name: &str) -> Option<String> {
@@ -1067,6 +939,7 @@ impl PinCase {
             .into_iter()
             .map(|line| line.replace(&rooted, ""))
             .filter(|line| line.starts_with(program_and_verb) && !line.contains(" -s "))
+            .filter(|line| !line.contains("--download-only"))
             .collect()
     }
 
@@ -1149,36 +1022,34 @@ fn plan_prints_each_pinned_names_resolved_version_and_origin_in_one_fixed_wordin
     pc.manifest(&host(None, &["bc", "tzdata"], &[("tzdata", "2025-03-01")]));
     let plan = pc.plan();
     assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
-    let root = pc.case.root.dir.display();
-    assert_eq!(
-        out(&plan),
-        format!(
+    assert!(
+        err(&plan).starts_with(&format!(
             "{PRIVATE_NOTE}\n\
              ~ package tzdata (pinned 2024b-0+deb12u1 from debian at 2025-03-01T00:00:00Z; \
-             downgrade from 2026b-0+deb12u1; not recorded in pins.lock, record it with: \
-             lodi host pin tzdata --to 2025-03-01 --root {root})\n\
+             downgrade from 2026b-0+deb12u1)\n\
              ~ package tzdata (hold)\n\
-             2 action(s)\n"
-        )
+             host: "
+        )),
+        "{}",
+        story(&plan)
     );
 }
 
+/// A dry run resolves a pin `lodi.lock` lacks in memory and writes nothing (LD-498); `lodi pin`
+/// records exactly that pin, and the next dry run finds it recorded.
 #[test]
-fn an_unrecorded_pin_is_resolved_in_memory_and_the_plan_names_the_command_that_records_it() {
+fn an_unrecorded_pin_is_resolved_in_memory_by_a_dry_run_and_recorded_by_pin() {
     let pc = PinCase::new(
         "pin-unrecorded",
         debian_with(&[("tzdata", "2024b-0+deb12u1")]),
     );
     pc.manifest(&host(None, &["tzdata"], &[("tzdata", "2025-03-01")]));
     let plan = pc.plan();
-    let text = out(&plan);
-    let root = pc.case.root.dir.display();
+    let text = err(&plan);
     assert!(
-        text.contains(&format!(
-            "= package tzdata (pinned 2024b-0+deb12u1 from debian at 2025-03-01T00:00:00Z; not \
-             recorded in pins.lock, record it with: \
-             lodi host pin tzdata --to 2025-03-01 --root {root})"
-        )),
+        text.contains(
+            "= package tzdata (pinned 2024b-0+deb12u1 from debian at 2025-03-01T00:00:00Z)\n"
+        ),
         "{}",
         story(&plan)
     );
@@ -1186,15 +1057,11 @@ fn an_unrecorded_pin_is_resolved_in_memory_and_the_plan_names_the_command_that_r
         !pc.server.requests().is_empty(),
         "resolved in memory, through the fetch"
     );
-    assert!(
-        !pc.case.root.exists("etc/lodi/pins.lock"),
-        "and never written"
-    );
-    // The command it names records exactly that pin, and the next plan finds it recorded.
+    assert!(pc.recorded_pins().is_empty(), "and never written");
     let recorded = pc.verb("pin", &["tzdata", "--to", "2025-03-01"]);
     assert_eq!(recorded.status.code(), Some(0), "{}", story(&recorded));
-    assert!(pc.case.root.exists("etc/lodi/pins.lock"));
-    let again = out(&pc.plan());
+    assert_eq!(pc.recorded_pins(), vec!["tzdata".to_string()]);
+    let again = err(&pc.plan());
     assert!(
         again.contains(
             "= package tzdata (pinned 2024b-0+deb12u1 from debian at 2025-03-01T00:00:00Z)"
@@ -1209,7 +1076,9 @@ fn a_file_level_snapshot_does_not_reach_a_declared_sources_package_and_the_plan_
     // The declared source is this machine's only stanza for that repository.
     std::fs::remove_file(pc.case.root.path("etc/apt/sources.list.d/vendor.sources")).unwrap();
     let key = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nbm90IGEga2V5\n=AAAA\n-----END PGP PUBLIC KEY BLOCK-----\n";
-    pc.case.root.write("etc/lodi/files/docker.asc", key);
+    let keyring = pc.case.config().join("files/docker.asc");
+    std::fs::create_dir_all(keyring.parent().unwrap()).unwrap();
+    std::fs::write(&keyring, key).unwrap();
     pc.manifest(&format!(
         "{}\n[sources.docker]\nuris = [\"https://download.docker.com/linux/debian\"]\n\
          suites = [\"bookworm\"]\ncomponents = [\"stable\"]\nsigned_by = \"files/docker.asc\"\n\
@@ -1219,7 +1088,7 @@ fn a_file_level_snapshot_does_not_reach_a_declared_sources_package_and_the_plan_
     ));
     let plan = pc.plan();
     assert!(
-        out(&plan).lines().any(|line| line == SOURCES_NOTE),
+        err(&plan).lines().any(|line| line == SOURCES_NOTE),
         "{}",
         story(&plan)
     );
@@ -1242,15 +1111,7 @@ fn a_settled_machine_and_a_recorded_pin_it_matches_make_zero_requests() {
     assert!(pc.held("tzdata"));
     pc.server.clear();
     let plan = pc.plan();
-    assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
-    assert!(out(&plan).ends_with("nothing to do\n"), "{}", story(&plan));
-    assert!(
-        out(&plan).contains(
-            "= package tzdata (pinned 2024b-0+deb12u1 from debian at 2025-03-01T00:00:00Z)\n"
-        ),
-        "{}",
-        story(&plan)
-    );
+    assert!(fakehost::nothing(&plan), "{}", story(&plan));
     assert!(
         pc.server.requests().is_empty(),
         "{:?}",
@@ -1267,6 +1128,11 @@ fn plan_writes_nothing() {
             "common = [\"bc\", \"tree\", \"tzdata\"]",
         ),
     );
+    // The "may manage" marker `lodi import` leaves, which the harness writes before a switch.
+    pc.case
+        .root
+        .write("etc/lodi/may-manage", "")
+        .chmod("etc/lodi/may-manage", 0o644);
     let before = census(&pc.case.root.dir);
     let plan = pc.plan();
     assert_eq!(plan.status.code(), Some(0), "{}", story(&plan));
@@ -1299,7 +1165,7 @@ fn the_snapshot_makes_one_transaction_read_a_private_dated_source_set() {
     let apply = pc.apply(&[]);
     assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
     assert!(
-        out(&apply).contains("+ package tree\n"),
+        err(&apply).contains("+ package tree\n"),
         "{}",
         story(&apply)
     );
@@ -1458,7 +1324,7 @@ fn an_exact_pin_installs_name_equals_version_holds_it_and_records_the_hold() {
     let lock = pc.case.lock();
     assert_eq!(lock["packages"]["tzdata"]["version"], "2024b-0+deb12u1");
     assert_eq!(lock["packages"]["tzdata"]["held"], true);
-    assert_eq!(lock["version"], 2, "the machine record stays schema 2");
+    assert_eq!(lock["version"], 6, "the machine record stays schema 6");
     assert!(
         !pc.case.root.read("etc/lodi/host.lock").contains("snapshot"),
         "the machine record is not the pin"
@@ -1471,7 +1337,7 @@ fn allow_downgrades_is_passed_only_when_the_plan_names_a_downgrade() {
     down.manifest(&host(None, &["tzdata"], &[("tzdata", "2025-03-01")]));
     let plan = down.plan();
     assert!(
-        out(&plan).contains("downgrade from 2026b-0+deb12u1"),
+        err(&plan).contains("downgrade from 2026b-0+deb12u1"),
         "{}",
         story(&plan)
     );
@@ -1484,7 +1350,7 @@ fn allow_downgrades_is_passed_only_when_the_plan_names_a_downgrade() {
     up.manifest(&host(None, &["tzdata"], &[("tzdata", "2026-09-01")]));
     let plan = up.plan();
     assert!(
-        out(&plan).contains("upgrade from 2024b-0+deb12u1"),
+        err(&plan).contains("upgrade from 2024b-0+deb12u1"),
         "{}",
         story(&plan)
     );
@@ -1496,6 +1362,23 @@ fn allow_downgrades_is_passed_only_when_the_plan_names_a_downgrade() {
         install[0].ends_with("-- tzdata=2026b-0+deb12u1"),
         "{install:?}"
     );
+}
+
+/// A switch that moves a pinned package to another version says it changed a package, under
+/// the install step, never "no changes" under "Remove packages".
+#[test]
+fn a_pin_move_is_counted_and_shown_as_an_install() {
+    let pc = PinCase::new(
+        "pin-move-said",
+        debian_with(&[("tzdata", "2026b-0+deb12u1")]),
+    );
+    pc.manifest(&host(None, &["tzdata"], &[("tzdata", "2025-03-01")]));
+    let apply = pc.apply(&[]);
+    assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
+    let said = err(&apply);
+    assert!(!said.contains("no changes"), "{}", story(&apply));
+    assert!(!said.contains("Remove packages"), "{}", story(&apply));
+    assert!(said.contains("~1 packages"), "{}", story(&apply));
 }
 
 #[test]
@@ -1562,8 +1445,9 @@ fn removing_a_pin_releases_its_hold_keeps_its_version_and_the_plan_says_so() {
     pc.manifest(&host(None, &["tzdata"], &[]));
     let plan = pc.plan();
     assert!(
-        out(&plan).contains(
-            "~ package tzdata (unhold: no longer pinned; 2024b-0+deb12u1 stays installed)\n"
+        err(&plan).contains(
+            "~ package tzdata (unhold: no longer pinned; 2024b-0+deb12u1 stays installed)\n\
+             host: 1 other change\n"
         ),
         "{}",
         story(&plan)
@@ -1573,6 +1457,27 @@ fn removing_a_pin_releases_its_hold_keeps_its_version_and_the_plan_says_so() {
     assert!(!pc.held("tzdata"));
     assert_eq!(pc.installed("tzdata").as_deref(), Some("2024b-0+deb12u1"));
     assert!(pc.argv("apt-get install").is_empty(), "no version moved");
+}
+
+/// `lodi unpin` takes the pin out of `lodi.lock` as well, so the switch after it no longer
+/// knows of a pin: its plan still says why the hold goes, and does not call the package pinned.
+#[test]
+fn the_switch_after_unpin_says_why_the_hold_goes() {
+    let pc = PinCase::new("pin-unpin-verb", debian_with(&[]));
+    pc.record(None, &[("tzdata", "2025-03-01")]);
+    pc.manifest(&host(None, &["tzdata"], &[("tzdata", "2025-03-01")]));
+    assert_eq!(pc.apply(&[]).status.code(), Some(0));
+    let unpin = pc.case.verb("unpin", &["tzdata"]);
+    assert_eq!(unpin.status.code(), Some(0), "{}", story(&unpin));
+    let plan = pc.plan();
+    assert!(
+        err(&plan).contains(
+            "~ package tzdata (unhold: no longer pinned or held; 2024b-0+deb12u1 stays \
+             installed)\n"
+        ),
+        "{}",
+        story(&plan)
+    );
 }
 
 #[test]
@@ -1590,12 +1495,7 @@ fn a_second_apply_of_an_unchanged_pinned_directory_writes_nothing_and_makes_zero
     let before = census(&pc.case.root.dir);
     pc.server.clear();
     let second = pc.apply(&[]);
-    assert_eq!(second.status.code(), Some(0), "{}", story(&second));
-    assert!(
-        out(&second).ends_with("nothing to do\n"),
-        "{}",
-        story(&second)
-    );
+    assert!(fakehost::nothing(&second), "{}", story(&second));
     assert_eq!(
         census(&pc.case.root.dir),
         before,
@@ -1609,35 +1509,26 @@ fn a_second_apply_of_an_unchanged_pinned_directory_writes_nothing_and_makes_zero
     );
 }
 
+/// A switch reads the config and never writes it: with every pin recorded in `lodi.lock`, it
+/// changes no byte or mtime there and makes zero requests to resolve.
 #[test]
 fn apply_never_writes_the_host_directory() {
     let pc = PinCase::new("pin-hostdir", debian_with(&[]));
-    pc.case.root.write("etc/hostname", "box\n");
-    let dir = pc.case.root.path("hosts/box");
-    pc.case.root.write(
-        "hosts/box/host.toml",
-        &host(
-            Some(RECENT),
-            &["tree", "tzdata"],
-            &[("tzdata", "2025-03-01")],
-        ),
-    );
+    pc.manifest(&host(
+        Some(RECENT),
+        &["tree", "tzdata"],
+        &[("tzdata", "2025-03-01")],
+    ));
     pc.record(Some(RECENT), &[("tzdata", "2025-03-01")]);
-    let lock = pc.case.root.read("etc/lodi/pins.lock");
-    pc.case.root.write("hosts/box/pins.lock", &lock);
+    let dir = pc.case.config();
     let before = census(&dir);
-    let hosts = pc.case.root.path("hosts").display().to_string();
-    let apply = pc.verb("apply", &[&hosts]);
+    let apply = pc.apply(&[]);
     assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
     assert_eq!(pc.installed("tzdata").as_deref(), Some("2024b-0+deb12u1"));
-    assert_eq!(
-        census(&dir),
-        before,
-        "the host directory is read, never written"
-    );
+    assert_eq!(census(&dir), before, "the config is read, never written");
     assert!(
         pc.server.requests().is_empty(),
-        "recorded in the host directory's pins.lock"
+        "recorded in the config's lodi.lock"
     );
 }
 
@@ -1701,11 +1592,14 @@ fn a_stage_left_by_an_interrupted_apply_is_removed_and_journalled_at_the_next_ap
     let hold = hostroot::Hold::at_open_of(&pc.case.root, "lodi-pin.sources");
     let rewrite = pc.server.rewrite();
     let path = pc.case.fake_path();
+    let config = pc.case.config().display().to_string();
     let mut child = hold.spawn_with(
         &pc.case.root,
         &[
             ("PATH", path.as_str()),
             ("LODI_FETCH_REWRITE", rewrite.as_str()),
+            // The engine's apply of the config's `host.toml`, as the switch runs it.
+            (hostroot::SOURCE_VAR, config.as_str()),
         ],
     );
     hold.wait_held();
@@ -1716,7 +1610,7 @@ fn a_stage_left_by_an_interrupted_apply_is_removed_and_journalled_at_the_next_ap
             .exists("var/lib/lodi/host/pin/stage/sources.list.d")
     );
     let plan = pc.plan();
-    let text = out(&plan);
+    let text = err(&plan);
     let sweep = text.find(SWEEP_LINE).expect("the sweep is planned");
     assert!(
         sweep < text.find("+ package tree").unwrap(),
@@ -1724,7 +1618,7 @@ fn a_stage_left_by_an_interrupted_apply_is_removed_and_journalled_at_the_next_ap
     );
     let apply = pc.apply(&[]);
     assert_eq!(apply.status.code(), Some(0), "{}", story(&apply));
-    assert!(out(&apply).contains(SWEEP_LINE), "{}", story(&apply));
+    assert!(err(&apply).contains(SWEEP_LINE), "{}", story(&apply));
     let journal = hostroot::journals(&pc.case.root)
         .into_iter()
         .map(|path| std::fs::read_to_string(path).unwrap())
@@ -1750,10 +1644,11 @@ fn the_import_says_in_two_lines_what_the_snapshot_now_does_and_writes_no_pin() {
     );
     assert!(SNAPSHOT_COMMENT.contains("installs a missing package from the dated archive"));
     assert!(SNAPSHOT_COMMENT.contains("live archive"));
-    assert_eq!(
-        IMPORT_MINIMUM, "1.4.0",
-        "the release that honours the snapshot (LD-398)"
-    );
+    let floor = match env!("CARGO_PKG_VERSION_MAJOR") {
+        "1" => "1.4.0",
+        _ => "2.0.0",
+    };
+    assert_eq!(IMPORT_MINIMUM, floor, "2.0's floor from 2.0 on (LD-528)");
     let fixtures = repo().join("tests/fixtures/host/import");
     let mut apt = 0;
     for distro in std::fs::read_dir(&fixtures).unwrap().flatten() {
@@ -1781,143 +1676,4 @@ fn the_import_says_in_two_lines_what_the_snapshot_now_does_and_writes_no_pin() {
         }
     }
     assert!(apt >= 10, "every apt import fixture was looked at");
-}
-
-// ----------------------------------------------------- P3: an unpinned file is unchanged ---
-
-#[path = "support/compat.rs"]
-mod compat;
-
-/// The release the goldens of `tests/fixtures/host/compat-1.3/` hold this build to, and the
-/// version the recording binary reports itself as (its README names the commit).
-const COMPAT_1_3: &str = "tests/fixtures/host/compat-1.3";
-const COMPAT_RECORDED: &str = "1.3.0";
-
-#[test]
-fn compat_1_3_every_committed_host_manifest_unpinned_plans_simulates_and_applies_as_1_3_did() {
-    let fixtures = repo().join("tests/fixtures/host/import");
-    let mut dirs: Vec<PathBuf> = Vec::new();
-    for distro in std::fs::read_dir(&fixtures).unwrap().flatten() {
-        if !distro.path().is_dir() {
-            continue;
-        }
-        for scenario in std::fs::read_dir(distro.path()).unwrap().flatten() {
-            if scenario.path().join("expected.toml").is_file() {
-                dirs.push(scenario.path());
-            }
-        }
-    }
-    dirs.sort();
-    let mut walked = 0;
-    for dir in dirs {
-        let distro = dir
-            .parent()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .into_owned();
-        let scenario = dir.file_name().unwrap().to_string_lossy().into_owned();
-        let label = format!("{distro}-{scenario}");
-        let arch = distro == "arch";
-        // 1.3's imported Arch bytes are frozen from the published tag: the current import's
-        // comment and day have deliberately changed, but the unpinned 1.3 input did not.
-        let text = std::fs::read_to_string(if arch {
-            repo().join(COMPAT_1_3).join(format!("{label}.toml"))
-        } else {
-            dir.join("expected.toml")
-        })
-        .unwrap();
-        let mut machine = if arch {
-            Machine::arch()
-        } else {
-            Machine::debian()
-        };
-        for name in compat::declared_names(&text) {
-            if !machine.installed.iter().any(|p| p.name == name) {
-                machine = machine.offering(Pkg::new(&name).repo(Some(if arch {
-                    "extra"
-                } else {
-                    "main"
-                })));
-            }
-        }
-        let case = Case::new(&format!("compat13-{label}"), machine);
-        if let Some(release) = distro.strip_prefix("ubuntu-") {
-            let codename = text
-                .lines()
-                .find_map(|line| line.strip_prefix("# distribution: ubuntu ("))
-                .and_then(|rest| rest.strip_suffix(')'))
-                .expect("an ubuntu codename");
-            case.root.write(
-                "etc/os-release",
-                &format!(
-                    "NAME=\"Ubuntu\"\nID=ubuntu\nID_LIKE=debian\nVERSION_ID=\"{release}\"\n\
-                     VERSION_CODENAME={codename}\n"
-                ),
-            );
-        }
-        // Neither a snapshot, a pin nor a pins.lock: the file 1.3 applies, with the minimum a 1.3
-        // import wrote (from 1.4.0 the import writes `>=1.4.0`, which 1.3 refuses, LD-398).
-        // Nor the [system] table the import writes since si-1, which 1.3 did not know.
-        let unpinned = compat::without_system(&fakehost::without_snapshot(&text)).replace(
-            "min_lodi_version = \">=1.4.0\"\n",
-            "min_lodi_version = \">=1.1.1\"\n",
-        );
-        assert!(!unpinned.contains("snapshot = ") && !unpinned.contains("[packages.pin]"));
-        case.set_manifest(&unpinned);
-        assert!(!case.root.exists("etc/lodi/pins.lock"));
-        compat::check_masked(
-            &repo().join(COMPAT_1_3),
-            &label,
-            &compat::walk(&case, COMPAT_RECORDED),
-            COMPAT_RECORDED,
-            compat::mask_manifest_digest,
-        );
-        walked += 1;
-    }
-    assert_eq!(walked, 23, "every committed host manifest is walked");
-}
-
-#[test]
-fn compat_1_3_a_files_manifest_plans_and_applies_as_1_3_did() {
-    let case = Case::new(
-        "compat13-files",
-        Machine::debian().offering(Pkg::new("tree").repo(Some("main"))),
-    );
-    let (uid, gid) = hostroot::ids(&case.root);
-    case.root.write("etc/app.conf", "the machine's own\n");
-    case.root.write("etc/lodi/files/app.conf", "declared\n");
-    case.set_manifest(&format!(
-        "[host]\nversion = \"1\"\ndistro = \"debian\"\npackages = \"managed\"\n\n\
-         [packages]\ncommon = [\"tree\"]\n\n\
-         [files.\"/etc/motd\"]\ncontent = \"hello\\n\"\nowner = \"{uid}\"\ngroup = \"{gid}\"\n\n\
-         [files.\"/etc/app.conf\"]\nsource = \"files/app.conf\"\nmode = \"0600\"\n\
-         owner = \"{uid}\"\ngroup = \"{gid}\"\n"
-    ));
-    compat::check(
-        &repo().join(COMPAT_1_3),
-        "files",
-        &compat::walk(&case, COMPAT_RECORDED),
-        COMPAT_RECORDED,
-    );
-}
-
-/// The recorded `pins.lock` of `tests/fixtures/host/pin/pins.lock` is what the pure renderer
-/// writes for these requests against the recorded archives: recorded only by
-/// `LODI_RECORD_EXPECTED=1 cargo test --locked --test host_pin pins_lock_golden`, never by hand.
-/// `tests/schema.rs` reads it back as the format's specimen.
-#[test]
-fn pins_lock_golden_is_what_the_renderer_writes() {
-    let server = archive();
-    let text = pin::render_lock(&resolved_debian_lock(&server));
-    let golden = repo().join("tests/fixtures/host/pin/pins.lock");
-    if std::env::var_os("LODI_RECORD_EXPECTED").is_some() {
-        std::fs::write(&golden, &text).unwrap();
-        return;
-    }
-    assert_eq!(
-        std::fs::read_to_string(&golden).expect("record it with LODI_RECORD_EXPECTED=1"),
-        text
-    );
 }

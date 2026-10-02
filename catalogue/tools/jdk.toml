@@ -1,7 +1,7 @@
-# The Eclipse Temurin JDK for [tools] jdk. This recipe says where to look; it
-# lists no version and it names no feature-release line. `lodi lock` asks the Adoptium API for
-# the line the constraint names -- `jdk = "21"` asks for 21 -- and `latest` is the newest
-# long-term-support line the API itself publishes.
+# The Eclipse Temurin JDK for [tools] jdk. This recipe says where to look; it lists no version and
+# it names no feature-release line. `lodi update` asks the Adoptium API for the line the constraint
+# names -- `jdk = "21"` asks for 21 -- and `latest` is the newest long-term-support line the API
+# itself publishes.
 #
 # Adoptium is the one upstream here that publishes the download URL and the artifact's SHA-256
 # together, so this recipe declares neither `url` nor `checksum_file`: both come from the API.

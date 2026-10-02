@@ -618,6 +618,51 @@ fn every_code_the_sources_emit_is_in_the_registry() {
     );
 }
 
+/// The `E_` codes `sources` can print: every literal outside a test module, less the registry's
+/// own table, which names a code without printing it. Pure in its arguments.
+fn codes_printed(sources: &[String]) -> BTreeSet<String> {
+    let mut printed = BTreeSet::new();
+    for source in sources {
+        let source = match source.find("pub const CODES: &[(&str, u8)] = &[") {
+            Some(at) => {
+                let end = at + source[at..].find("\n];").expect("the table ends");
+                format!("{}{}", &source[..at], &source[end..])
+            }
+            None => source.clone(),
+        };
+        printed.extend(codes_in(&source));
+    }
+    printed
+}
+
+/// The error reference both ways (#700): every `E_` code the sources can print has a row in
+/// `docs/ERRORS.md`, and every `E_` row is a code they can print. The negative controls: a code
+/// only the registry's table names is not printed, and a source's new code is.
+#[test]
+fn the_error_reference_is_the_codes_the_sources_print() {
+    prime();
+    let printed = codes_printed(&product_sources());
+    let rows: BTreeSet<String> = catalogue_rows(&repo().join("docs/ERRORS.md"))
+        .into_keys()
+        .filter(|code| code.starts_with("E_"))
+        .collect();
+    let gone: Vec<&String> = rows.difference(&printed).collect();
+    assert!(
+        gone.is_empty(),
+        "docs/ERRORS.md has rows for {gone:?}, which no source prints"
+    );
+    let missing: Vec<&String> = printed.difference(&rows).collect();
+    assert!(
+        missing.is_empty(),
+        "the sources print {missing:?}, which docs/ERRORS.md has no row for"
+    );
+    let table =
+        "pub const CODES: &[(&str, u8)] = &[\n    (\"E_ONLY_TABLED\", 3),\n];\n".to_string();
+    assert!(codes_printed(std::slice::from_ref(&table)).is_empty());
+    let new = format!("{table}fn f() {{ Diagnostic::new(\"E_NEW\", \"x\"); }}");
+    assert_eq!(codes_printed(&[new]), BTreeSet::from(["E_NEW".to_string()]));
+}
+
 /// Acceptance (c), the negative controls. Each check is a pure function of its arguments, so it
 /// can be shown to fire on input this repository does not contain.
 #[test]
@@ -1025,11 +1070,12 @@ const CASES: &[Case] = &[
     // ---------------------------------------------------------------- the manifest (exit 3) ---
     Case {
         code: "E_NO_MANIFEST",
-        // The built binary, in an empty directory: `lodi lock` refuses before it resolves,
+        // The built binary, in an empty directory: `lodi develop` refuses before it locks,
         // fetches or opens a store, so the observed exit status is recorded with the text.
         run: || {
-            let dir = scratch("no-manifest");
-            let produced = from_output(&lodi(&dir, &["lock"]));
+            // A short name keeps the recorded path within the line length.
+            let dir = scratch("nm");
+            let produced = from_output(&lodi(&dir, &["develop", "--", "true"]));
             fs::remove_dir_all(&dir).expect("the scratch directory is removed");
             produced
         },
@@ -1265,15 +1311,6 @@ const CASES: &[Case] = &[
         },
     },
     Case {
-        code: "E_BOOT_TRIAL",
-        // A real `lodi boot confirm` (bv-1): no trial boot waits for a confirmation.
-        run: || {
-            use fakehost::{Case, Machine};
-            let case = Case::new("errors-boot-trial", Machine::debian());
-            from_output(&case.boot_confirm())
-        },
-    },
-    Case {
         code: "E_NETWORK_STACK",
         // A real host plan (sd-1): `[network]` on a machine that runs none of the three stacks.
         run: || {
@@ -1386,7 +1423,7 @@ const CASES: &[Case] = &[
         // A scratch root marked as booted from an ostree deployment, as Silverblue is.
         run: || {
             let root = hostroot::Root::new("cat-ostree");
-            root.arm()
+            root.may_manage()
                 .write("etc/os-release", "ID=fedora\nVERSION_ID=44\n")
                 .write("etc/lodi/host.toml", "[host]\nversion = \"1\"\n")
                 .write("run/ostree-booted", "");
@@ -1450,12 +1487,12 @@ const CASES: &[Case] = &[
     },
     Case {
         code: "E_HOST_ROOT_REQUIRED",
-        // The exact function `main` calls before every host verb, with the setting a lane and
-        // the gate export and no `--root` (LD-376). It reads nothing, so no root is involved.
+        // The exact function `main` calls before every host command, with the setting a lane
+        // and the gate export and no `--root` (LD-376). It reads nothing, so no root is involved.
         run: || {
             let refused =
-                lodi::hostscope::require_root("plan", None, Some(std::ffi::OsStr::new("1")))
-                    .expect_err("a rootless verb under the guard is refused");
+                lodi::hostscope::require_root_for("switch", None, Some(std::ffi::OsStr::new("1")))
+                    .expect_err("a rootless command under the guard is refused");
             from_diagnostic(&refused)
         },
     },
@@ -1519,13 +1556,12 @@ const CASES: &[Case] = &[
             fs::create_dir_all(&dir).expect("the config directory");
             fs::write(
                 dir.join("home.toml"),
-                "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\n\
-                 content = \"set editing-mode vi\\n\"\n",
+                "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\n\
+                 text = \"set editing-mode vi\\n\"\n",
             )
             .expect("the home manifest");
             let first = env
-                .command()
-                .args(["home", "apply"])
+                .lodi(&["switch", "--home"])
                 .output()
                 .expect("the first apply runs");
             assert!(
@@ -1535,8 +1571,7 @@ const CASES: &[Case] = &[
             );
             fs::write(env.home().join(".inputrc"), "edited by hand\n").expect("the hand edit");
             let out = env
-                .command()
-                .args(["home", "apply"])
+                .lodi(&["switch", "--home"])
                 .output()
                 .expect("the second apply runs");
             from_output(&out)
@@ -1545,11 +1580,28 @@ const CASES: &[Case] = &[
     // ------------------------------------------------------------------ resolution (exit 4) ---
     Case {
         code: "E_NO_RECIPE",
-        // The built binary: `lodi info TOOL` consults the built-in catalogue and nothing else,
-        // so this is a whole command with its real exit status and no network.
+        // The built binary: `lodi develop` locks a project naming a tool the catalogue has no
+        // recipe for, and refuses before any request, so this is a whole command with its real
+        // exit status and no network.
         run: || {
             let dir = scratch("no-recipe");
-            let produced = from_output(&lodi(&dir, &["info", "pyton"]));
+            fs::write(
+                dir.join("lodi.toml"),
+                "[project]\nname = \"x\"\n\n[tools]\npyton = \"3\"\n",
+            )
+            .expect("the manifest");
+            let env = dir.join(".env");
+            let out = Command::new(env!("CARGO_BIN_EXE_lodi"))
+                .args(["develop", "--trust", "--", "/bin/sh", "-c", ":"])
+                .current_dir(&dir)
+                .env_clear()
+                .env("PATH", "/usr/bin:/bin")
+                .env("HOME", env.join("home"))
+                .env("XDG_CONFIG_HOME", env.join("config"))
+                .env("LODI_HOME", env.join("lodi-home"))
+                .output()
+                .expect("the lodi binary runs");
+            let produced = from_output(&out);
             fs::remove_dir_all(&dir).expect("the scratch directory is removed");
             produced
         },
@@ -1942,9 +1994,8 @@ const CASES: &[Case] = &[
         code: "E_PIN_UNSATISFIABLE",
         // A real host apply by the built binary, over a scratch root and the fake package
         // manager (M-Pin, P7):
-        // the host directory's `pins.lock` records tzdata at a version the recorded dated
-        // Debian archive does not serve, and the preflight's simulation refuses it before the
-        // journal exists. Nothing is fetched: the pin is recorded, and the archive is the
+        // the config's `lodi.lock` records tzdata at a version the recorded dated Debian archive
+        // does not serve, and the preflight's simulation refuses it before the journal exists. Nothing is fetched: the pin is recorded, and the archive is the
         // loopback fixture the fake's private update reads.
         run: || {
             use fakehost::{Case, Machine};
@@ -1961,8 +2012,8 @@ const CASES: &[Case] = &[
                 "[host]\nversion = \"1\"\ndistro = \"debian\"\npackages = \"managed\"\n\n\
                  [packages]\ncommon = [\"tzdata\"]\n\n[packages.pin]\ntzdata = \"2025-03-01\"\n",
             );
-            let mut lock = lodi::hostscope::pin::PinsLock::new("debian", "bookworm", "x86_64");
-            lock.pins.insert(
+            let mut pins = std::collections::BTreeMap::new();
+            pins.insert(
                 "tzdata".to_string(),
                 lodi::hostscope::pin::PinRecord {
                     policy: "date".into(),
@@ -1978,17 +2029,26 @@ const CASES: &[Case] = &[
                     source: None,
                 },
             );
-            case.root.write(
-                "etc/lodi/pins.lock",
-                &lodi::hostscope::pin::render_lock(&lock),
+            let mut lock = lodi::config::lock::Lock::default();
+            lock.hosts.insert(
+                "host.toml".to_string(),
+                lodi::config::lock::HostSection {
+                    distro: "debian".into(),
+                    release: "bookworm".into(),
+                    arch: "x86_64".into(),
+                    snapshot: None,
+                    pins,
+                    keys: std::collections::BTreeMap::new(),
+                },
             );
+            case.write_beside("lodi.lock", lock.render());
             from_output(&case.apply(&[]))
         },
     },
     Case {
         code: "E_PIN_UNAVAILABLE",
         // A real host apply by the built binary over a scratch root and the fake dnf5 (fk-1):
-        // the host's lock records pv's older Fedora 44 build, no configured repository serves
+        // the config's lock records pv's older Fedora 44 build, no configured repository serves
         // it, and Koji's copy is gone from the loopback archive. The preflight stops before any
         // change.
         run: || {
@@ -2004,8 +2064,8 @@ const CASES: &[Case] = &[
                 "[host]\nversion = \"1\"\ndistro = \"fedora\"\n\n[packages.fedora]\n\
                  add = [\"pv\"]\n\n[packages.fedora.pin]\npv = \"{build}\"\n"
             ));
-            let mut lock = lodi::hostscope::pin::PinsLock::new("fedora", "44", "x86_64");
-            lock.pins.insert(
+            let mut pins = std::collections::BTreeMap::new();
+            pins.insert(
                 "pv".to_string(),
                 lodi::hostscope::pin::PinRecord {
                     policy: "version".into(),
@@ -2025,10 +2085,19 @@ const CASES: &[Case] = &[
                     ),
                 },
             );
-            case.root.write(
-                "etc/lodi/pins.lock",
-                &lodi::hostscope::pin::render_lock(&lock),
+            let mut lock = lodi::config::lock::Lock::default();
+            lock.hosts.insert(
+                "host.toml".to_string(),
+                lodi::config::lock::HostSection {
+                    distro: "fedora".into(),
+                    release: "44".into(),
+                    arch: "x86_64".into(),
+                    snapshot: None,
+                    pins,
+                    keys: std::collections::BTreeMap::new(),
+                },
             );
+            case.write_beside("lodi.lock", lock.render());
             let server = support::Server::start(std::collections::BTreeMap::new());
             from_output(&case.verb_env("apply", &[], &[("LODI_FETCH_REWRITE", &server.rewrite())]))
         },
@@ -2223,8 +2292,9 @@ const CASES: &[Case] = &[
     },
     Case {
         code: "W_PROGRAM_NOT_FOUND",
-        // `lodi home plan` for a `[programs.git]` table, with a `PATH` that holds no `git`: the
-        // warning is printed and the plan exits 0 (LD-337).
+        // `lodi switch --home --dry-run` (1.x's `lodi home plan`, #699) for a `[programs.git]`
+        // table, with a `PATH` that holds no `git`: the warning is printed and the preview
+        // exits 0 (LD-337).
         run: || {
             let env = support::home_env("cat-program-not-found");
             let dir = env.config().join("lodi");
@@ -2237,9 +2307,8 @@ const CASES: &[Case] = &[
             let empty = env.root().join("empty-path");
             fs::create_dir_all(&empty).expect("an empty PATH directory");
             let out = env
-                .command()
+                .lodi(&["switch", "--home", "--dry-run"])
                 .env("PATH", &empty)
-                .args(["home", "plan"])
                 .output()
                 .expect("the lodi binary runs");
             from_output(&out)
@@ -2248,7 +2317,8 @@ const CASES: &[Case] = &[
 ];
 
 /// LD-401: the causes a host `SOURCE` URL adds to rows that already exist, each produced by the
-/// real binary before any request, with its row's exit status. No code is new.
+/// real binary (`lodi switch` and `lodi import`, LD-522) before any request, with its row's exit
+/// status. No code is new.
 #[test]
 fn a_url_source_adds_causes_to_existing_codes() {
     prime();
@@ -2256,26 +2326,48 @@ fn a_url_source_adds_causes_to_existing_codes() {
     let root = dir.join("root").display().to_string();
     let rows = catalogue_rows(&repo().join("docs/ERRORS.md"));
     let doc = fs::read_to_string(repo().join("docs/ERRORS.md")).expect("the catalogue");
+    // The machine is named, so the URL is what is refused (a nameless root stops earlier).
+    fs::create_dir_all(dir.join("root/etc")).expect("the scratch root");
+    fs::write(dir.join("root/etc/hostname"), "box\n").expect("its hostname");
+    let dry = ["switch", "--host", "--dry-run"];
     for (args, code) in [
         (
-            ["plan", "git+ssh://git.example.test/hosts.git"],
+            [&dry[..], &["git+ssh://git.example.test/hosts.git"]].concat(),
             "E_INSECURE_URL",
         ),
-        (["plan", "git@localhost:hosts.git"], "E_INSECURE_URL"),
         (
-            ["apply", "git+https://git.example.test/hosts.git?ref=main"],
+            [&dry[..], &["git@localhost:hosts.git"]].concat(),
+            "E_INSECURE_URL",
+        ),
+        (
+            vec![
+                "switch",
+                "--host",
+                "git+https://git.example.test/hosts.git?ref=main",
+            ],
             "E_UNSUPPORTED",
         ),
-        (["plan", "github:owner/hosts/box"], "E_UNSUPPORTED"),
-        (["import", "codeberg:owner/hosts"], "E_UNSUPPORTED"),
+        (
+            [&dry[..], &["github:owner/hosts/box"]].concat(),
+            "E_UNSUPPORTED",
+        ),
+        (
+            vec!["import", "--yes", "codeberg:owner/hosts"],
+            "E_UNSUPPORTED",
+        ),
     ] {
         // check-host-safety: refusal — the root is a scratch path below this test's directory.
         let out = Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .arg("host")
-            .args(args)
+            .args(&args)
             .args(["--root", &root])
             .env("LODI_HOST_REQUIRE_ROOT", "1")
             .env("LODI_FETCH_ATTEMPTS", "1")
+            // Refused before any request; were one made, it would find nothing on loopback.
+            .env("LODI_FETCH_REWRITE", "https://=http://127.0.0.1:9/")
+            .env("HOME", dir.join("home"))
+            .env("XDG_CONFIG_HOME", dir.join("home/.config"))
+            .env("XDG_STATE_HOME", dir.join("home/.local/state"))
+            .env_remove("LODI_REPO")
             .output()
             .expect("the lodi binary runs");
         let stderr = String::from_utf8_lossy(&out.stderr);

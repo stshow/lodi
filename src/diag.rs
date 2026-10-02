@@ -18,7 +18,7 @@ pub const EXIT_MANIFEST: u8 = 3;
 pub const EXIT_RESOLUTION: u8 = 4;
 /// Exit status for a fetch or integrity error: hash mismatch, HTTP failure (`spec/11` §2).
 pub const EXIT_FETCH: u8 = 5;
-/// Exit status for a build or store error; `lodi lock` uses it when the lock cannot be written.
+/// Exit status for a build or store error, also when a lock cannot be written.
 pub const EXIT_BUILD: u8 = 6;
 /// Exit status for a runtime error: cannot enter, nesting refused, no runtime (`spec/11` §2).
 pub const EXIT_RUNTIME: u8 = 7;
@@ -77,7 +77,6 @@ pub const CODES: &[(&str, u8)] = &[
     ("E_BLOCK_NOT_ALLOWED", EXIT_MANIFEST),
     ("E_BOOT_LOADER", EXIT_RUNTIME),
     ("E_BOOT_NOT_UEFI", EXIT_RUNTIME),
-    ("E_BOOT_TRIAL", EXIT_RUNTIME),
     ("E_BUILD_UNAVAILABLE", EXIT_FETCH),
     ("E_CLOSURE_DRIFT", EXIT_BUILD),
     ("E_CONFIG", EXIT_MANIFEST),

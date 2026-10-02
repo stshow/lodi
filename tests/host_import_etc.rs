@@ -118,8 +118,8 @@ fn import_never_copies_etc() {
     }
     // No file copied: no [files] table, nothing beside the manifest holds the owner's bytes.
     assert!(!text.contains("[files."), "{text}");
-    assert!(!case.root.exists("etc/lodi/files"), "a bundle was written");
-    for (path, bytes) in files(&case.root.path("etc/lodi")) {
+    assert!(!case.beside("files").exists(), "a bundle was written");
+    for (path, bytes) in files(&case.config()) {
         assert!(
             !contains(&bytes, EDITED),
             "{} carries /etc bytes",
@@ -163,11 +163,7 @@ fn etc_path_opt_in() {
     ));
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    assert!(
-        fakehost::out(&plan).contains("/etc/motd"),
-        "{}",
-        story(&plan)
-    );
+    assert!(err(&plan).contains("/etc/motd"), "{}", story(&plan));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
     assert_eq!(case.root.read("etc/motd"), text);
@@ -276,7 +272,7 @@ fn import_extra_suite_uses_own_archive() {
         "# uris = [\"https://archive.ubuntu.com/ubuntu/\"]\n".to_string(),
         "# suites = [\"${host.codename}-backports\"]\n".to_string(),
         "# components = [\"main\", \"universe\"]\n".to_string(),
-        "# signed_by = \"files/etc/apt/keyrings/lodi-backports.asc\"\n".to_string(),
+        "# signed_by = \"files/host/etc/apt/keyrings/lodi-backports.asc\"\n".to_string(),
         format!("# signed_by_sha256 = \"{digest}\"\n"),
         // #228: a range a later lodi satisfies, never a bare version.
         "#   min_lodi_version = \">=1.3.0\"\n".to_string(),
@@ -286,11 +282,8 @@ fn import_extra_suite_uses_own_archive() {
     let tail = &text[text.find("# NOT CAPTURED").expect("the block")..];
     assert!(!tail.contains("noble-backports"), "{tail}");
     // The key travels beside the file, verified by that digest.
-    let key = fs::read(
-        case.root
-            .path("etc/lodi/files/etc/apt/keyrings/lodi-backports.asc"),
-    )
-    .expect("the keyring travels");
+    let key = fs::read(case.beside("files/host/etc/apt/keyrings/lodi-backports.asc"))
+        .expect("the keyring travels");
     assert_eq!(lodi::util::sha256_hex(&key), digest);
     // Uncommented, the block is a [sources] entry the manifest reads.
     let taken: String = text
@@ -390,7 +383,7 @@ fn import_never_reads_secrets() {
     let import = case.import();
     assert!(import.status.success(), "{}", story(&import));
     assert_eq!(watch.seen(), Vec::<String>::new(), "{}", story(&import));
-    for (path, bytes) in files(&case.root.path("etc/lodi")) {
+    for (path, bytes) in files(&case.config()) {
         assert!(
             !contains(&bytes, secret),
             "{} carries a secret",

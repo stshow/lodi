@@ -1,7 +1,7 @@
-# shfmt for [tools] shfmt. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# Named after the command, not the repository. Upstream publishes a bare executable whose
-# name carries the tag; it is installed as `bin/shfmt`.
+# shfmt for [tools] shfmt. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. Named after the command, not the
+# repository. Upstream publishes a bare executable whose name carries the tag; it is installed as
+# `bin/shfmt`.
 [recipe]
 name        = "shfmt"
 description = "A shell parser, formatter and interpreter"

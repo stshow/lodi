@@ -1,4 +1,5 @@
-//! `lodi home plan` (M-0.5 T-2, acceptance rows (a) and (f), design calls D12 and D13).
+//! The home part's preview, `lodi switch --home --dry-run` (1.x's `lodi home plan`; M-0.5 T-2,
+//! acceptance row (a), design calls D12 and D13; LD-518).
 //!
 //! Two things are proved here, both against the **built binary** in a throwaway set of roots:
 //!
@@ -18,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
-use support::{HomeEnv, files_warning, home_env, home_gate};
+use support::{HomeEnv, home_env, home_gate, home_part, nothing};
 
 fn repo() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -55,8 +56,7 @@ fn install_fixture(env: &HomeEnv, name: &str) {
 }
 
 fn plan(env: &HomeEnv) -> Output {
-    env.command()
-        .args(["home", "plan"])
+    env.lodi(&["home", "plan"])
         .output()
         .expect("the lodi binary runs")
 }
@@ -117,15 +117,14 @@ fn tree(root: &Path) -> BTreeMap<String, String> {
 
 // ------------------------------------------------------------------------- (a) the plan ---
 
-/// (a) A manifest with several `[files]` entries plans in lexicographic order with the mode
-/// column, and the ledger is **empty**. Its one line on standard error is the `W_DEPRECATED` of
-/// `[files]` (decision D5, from 1.2).
+/// (a) A manifest with several `[home.file]` entries plans in lexicographic order with the mode
+/// column, and the ledger is **empty**.
 #[test]
 fn several_files_plan_in_order_with_their_modes_and_nothing_is_written() {
     let env = home_env("plan-several");
     install_fixture(&env, "several");
-    // Two of the four paths already exist: one with exactly the declared bytes and mode, one
-    // that has to go. The other two do not, so all four verbs of this build appear at once.
+    // Two of the four paths already exist: one with exactly the declared bytes and mode, which
+    // is adopted, and one that has to go. The other two do not.
     fs::write(
         env.home().join(".gitconfig"),
         "[core]\n\tautocrlf = input\n",
@@ -138,16 +137,21 @@ fn several_files_plan_in_order_with_their_modes_and_nothing_is_written() {
 
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stderr(&out), files_warning());
+    assert!(out.stdout.is_empty(), "{}", stdout(&out));
     assert_eq!(
-        stdout(&out),
+        home_part(&out),
         "\
 create    .config/git/ignore        0644
-unchanged .gitconfig                0644
+adopt     .gitconfig                0644    (backup: first unmanaged copy kept)
 create    .inputrc                  0600
 remove    .netrc-that-must-go       0644    (backup: first unmanaged copy kept)
-4 files: 2 create, 1 remove, 1 unchanged
+4 files: 2 create, 1 adopt, 1 remove
 "
+    );
+    assert!(
+        stderr(&out).contains("\nhome: 4 files\n"),
+        "{}",
+        stderr(&out)
     );
 
     // The one property `plan` must have.
@@ -159,8 +163,8 @@ remove    .netrc-that-must-go       0644    (backup: first unmanaged copy kept)
     assert_eq!(tree(env.root()), before, "the scratch root changed");
     assert_eq!(env.decoy_listing(), decoy_before, "the decoy tree changed");
     // Nothing of the machine-side footprint was made either (design calls D2 and D12).
-    assert!(!env.data().join("lodi/home-scope").exists());
-    assert!(!config_root(&env).join("home.lock").exists());
+    assert!(!env.share().join("lodi/home-scope").exists());
+    assert!(!config_root(&env).join("lodi.lock").exists());
 }
 
 /// The same plan twice prints the same bytes: the order is the path's, not the document's, and
@@ -171,13 +175,16 @@ fn the_same_manifest_plans_the_same_way_twice() {
     // Declared in an order that is not the lexicographic one, to prove the renderer sorts.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\"z\"]\ncontent = \"z\"\n\n[files.\"a\"]\ncontent = \"a\"\n\n[files.\"m/n\"]\ncontent = \"n\"\n",
+        "[home]\nversion = \"1\"\n\n\
+         [home.file.\"z\"]\ntext = \"z\"\n\n\
+         [home.file.\"a\"]\ntext = \"a\"\n\n\
+         [home.file.\"m/n\"]\ntext = \"n\"\n",
     );
     let first = plan(&env);
     let second = plan(&env);
     assert_eq!(first.status.code(), Some(0), "{}", stderr(&first));
-    assert_eq!(stdout(&first), stdout(&second));
-    let printed = stdout(&first);
+    assert_eq!(stderr(&first), stderr(&second));
+    let printed = home_part(&first);
     let paths: Vec<&str> = printed
         .lines()
         .filter(|l| l.starts_with("create"))
@@ -187,58 +194,51 @@ fn the_same_manifest_plans_the_same_way_twice() {
     assert!(ledger_under(&env).is_empty(), "the plan wrote something");
 }
 
-/// A `replace` names the backup that an apply would keep, and a file that already holds the
-/// declared bytes at the declared mode is `unchanged`. Exit 0 either way.
+/// A `create` over a file Lodi did not write names the backup that an apply would keep, and a
+/// file that already holds the declared bytes at the declared mode is `adopt`. Exit 0 either way.
 #[test]
-fn a_file_that_differs_is_replaced_and_one_that_matches_is_unchanged() {
+fn a_file_that_differs_is_created_over_and_one_that_matches_is_adopted() {
     let env = home_env("plan-replace");
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"new\"\nmode = \"0600\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"new\"\nmode = \"0600\"\n",
     );
     let path = env.home().join(".inputrc");
     fs::write(&path, "old").unwrap();
-    let text = stdout(&plan(&env));
-    assert!(text.starts_with("replace   .inputrc"), "{text}");
+    let text = home_part(&plan(&env));
+    assert!(text.starts_with("create    .inputrc"), "{text}");
     assert!(
         text.contains("(backup: first unmanaged copy kept)"),
         "{text}"
     );
-    assert!(text.contains("1 file: 1 replace"), "{text}");
+    assert!(text.contains("1 file: 1 create"), "{text}");
 
-    // The same bytes at the wrong mode is still a replace: the mode is part of the declaration.
+    // The same bytes at the wrong mode is still a write: the mode is part of the declaration.
     fs::write(&path, "new").unwrap();
-    let text = stdout(&plan(&env));
-    assert!(text.starts_with("replace   .inputrc"), "{text}");
+    let text = home_part(&plan(&env));
+    assert!(text.starts_with("create    .inputrc"), "{text}");
 
     use std::os::unix::fs::PermissionsExt;
     fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert!(
-        stdout(&out).starts_with("unchanged .inputrc"),
-        "{}",
-        stdout(&out)
-    );
-    assert!(
-        stdout(&out).contains("1 file: 1 unchanged"),
-        "{}",
-        stdout(&out)
-    );
+    let text = home_part(&out);
+    assert!(text.starts_with("adopt     .inputrc"), "{text}");
+    assert!(text.contains("1 file: 1 adopt"), "{text}");
 
     // `backup = false` drops the note, and says so by saying nothing.
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"other\"\nbackup = false\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".inputrc\"]\ntext = \"other\"\nbackup = false\n",
     );
-    let text = stdout(&plan(&env));
-    assert!(text.starts_with("replace   .inputrc"), "{text}");
+    let text = home_part(&plan(&env));
+    assert!(text.starts_with("create    .inputrc"), "{text}");
     assert!(!text.contains("backup"), "{text}");
     assert!(ledger_under(&env).is_empty(), "the plan wrote something");
 }
 
-/// A manifest with no `[files]` at all plans nothing and exits 0: `plan` succeeds whether or not
-/// there is anything to do.
+/// A manifest with no `[home.file]` at all plans nothing and exits 0: `plan` succeeds whether or
+/// not there is anything to do.
 #[test]
 fn an_empty_manifest_plans_nothing_and_succeeds() {
     let env = home_env("plan-empty");
@@ -246,7 +246,7 @@ fn an_empty_manifest_plans_nothing_and_succeeds() {
     let before = tree(env.root());
     let out = plan(&env);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stdout(&out), "0 files: nothing to do\n");
+    assert!(nothing(&out), "{}", stderr(&out));
     assert_eq!(tree(env.root()), before, "the scratch root changed");
     assert!(ledger_under(&env).is_empty(), "the plan wrote something");
 }
@@ -258,7 +258,7 @@ fn a_symlinked_component_is_refused_by_the_plan_too() {
     let env = home_env("plan-link");
     write_manifest(
         &env,
-        "[home]\nversion = \"1\"\n\n[files.\".config/git/ignore\"]\ncontent = \".lodi/\\n\"\n",
+        "[home]\nversion = \"1\"\n\n[home.file.\".config/git/ignore\"]\ntext = \".lodi/\\n\"\n",
     );
     let elsewhere = env.root().join("elsewhere");
     fs::create_dir_all(&elsewhere).unwrap();
@@ -276,78 +276,4 @@ fn a_symlinked_component_is_refused_by_the_plan_too() {
         "the refused plan changed the tree"
     );
     assert!(ledger_under(&env).is_empty(), "the plan wrote something");
-}
-
-// ------------------------------------------------------------------------ (f) the verbs ---
-
-/// (f) `lodi home frobnicate` and `lodi home plan extra` are usage errors: exit 2, no `E_` code,
-/// nothing written. `apply` and `status` are T-3's and are usage errors until then, which is why
-/// `lodi --help` does not name them (design call D3). A bare `lodi home` and `lodi home --help`
-/// are the scope's help since LD-360: exit 0, and nothing written either.
-#[test]
-fn the_home_verbs_that_do_not_exist_are_usage_errors() {
-    let env = home_env("plan-usage");
-    install_fixture(&env, "several");
-    let before = tree(env.root());
-    for args in [&["home"][..], &["home", "--help"]] {
-        let out = env.command().args(args).output().unwrap();
-        assert_eq!(out.status.code(), Some(0), "{args:?}: {}", stderr(&out));
-        assert!(stdout(&out).contains("lodi home plan"), "{args:?}");
-    }
-    for args in [
-        &["home", "frobnicate"][..],
-        &["home", "plan", "extra", "more"],
-        &["home", "plan", "--json"],
-        // `apply` and `status` work since T-3; what is still a usage error is a bad argument
-        // to one of them, and a verb that does not exist.
-        &["home", "apply", "extra", "more"],
-        &["home", "apply", "--json"],
-        &["home", "status", "extra", "more"],
-        // `init` is `import` since LD-382, so a bad argument to it is the usage error, and
-        // `restore` is still no verb.
-        &["home", "init", "extra", "more"],
-        &["home", "restore"],
-    ] {
-        let out = env.command().args(args).output().unwrap();
-        let text = stderr(&out);
-        assert_eq!(out.status.code(), Some(2), "{args:?}: {text}");
-        assert!(out.stdout.is_empty(), "{args:?}: {}", stdout(&out));
-        assert!(text.contains("unsupported"), "{args:?}: {text}");
-        assert!(
-            !text.contains("E_"),
-            "{args:?}: a usage error carries no code: {text}"
-        );
-    }
-    assert_eq!(tree(env.root()), before, "a usage error changed the tree");
-    assert!(
-        ledger_under(&env).is_empty(),
-        "a usage error wrote something"
-    );
-}
-
-/// `lodi help home` names the home verbs that work — `plan`, `apply`, `status`, and `init` with its
-/// 1.0 name `import` (LD-382) — and no verb that does not: nothing half-built is reachable from
-/// the command line.
-#[test]
-fn help_names_the_home_verbs_that_work_and_no_others() {
-    let out = env_help();
-    let text = String::from_utf8(out.stdout).unwrap();
-    assert!(text.contains("lodi home plan"), "{text}");
-    assert!(
-        text.contains("lodi home apply [--overwrite-drift]"),
-        "{text}"
-    );
-    assert!(text.contains("lodi home status"), "{text}");
-    assert!(
-        text.contains("lodi home init [--out DIR | --stdout] [--force]"),
-        "{text}"
-    );
-    assert!(!text.contains("home restore"), "{text}");
-}
-
-fn env_help() -> Output {
-    std::process::Command::new(env!("CARGO_BIN_EXE_lodi"))
-        .args(["help", "home"])
-        .output()
-        .expect("the lodi binary runs")
 }

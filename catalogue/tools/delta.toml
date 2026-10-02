@@ -1,6 +1,6 @@
-# delta for [tools] delta. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# Named after the command, `delta`; upstream tags carry no `v` prefix.
+# delta for [tools] delta. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. Named after the command, `delta`;
+# upstream tags carry no `v` prefix.
 [recipe]
 name        = "delta"
 description = "A syntax-highlighting pager for git, diff and grep output"

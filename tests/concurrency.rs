@@ -20,7 +20,6 @@
 mod support;
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::ffi::OsString;
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::os::unix::fs::PermissionsExt;
@@ -184,18 +183,18 @@ impl Lane {
     /// Bring the scratch store to the current layout **before** any child starts, through the
     /// product's own writing entry point.
     ///
-    /// A store with no `.layout.json` marker is layout 0 (M-1.0 T-2), so the first writing
-    /// command in it takes the **exclusive** `store/.lock` for the once-only migration. A case
+    /// A store with no `.layout.json` marker is no 2.0 store, so the first writing command in it
+    /// takes the **exclusive** `store/.lock` to write the marker once. A case
     /// whose barrier is a *per-entry* lock must not leave that pending: realization holds the
     /// shared `store/.lock` across the per-entry acquisition (`src/host.rs`), so one process
     /// blocked on the barrier while holding the store lock shared will block the other out of
-    /// its own migration, and a rendezvous that waits for the second process deadlocks — which
+    /// its own marking, and a rendezvous that waits for the second process deadlocks — which
     /// one does, depending on which process wins the start, so the case would also depend on
-    /// scheduling order (design call D10 forbids both). Migrating first removes the question.
-    /// The two-shells case deliberately does **not** call this: there the migration's use of the
+    /// scheduling order (design call D10 forbids both). Marking first removes the question.
+    /// The two-shells case deliberately does **not** call this: there the marking's use of the
     /// store lock is the barrier (LD-250).
     fn at_current_layout(&self) -> Store {
-        Store::open_for_write(&self.lodi_home()).expect("the scratch store migrates")
+        Store::open_for_write(&self.lodi_home()).expect("the scratch store is marked")
     }
 
     fn command(&self, dir: &Path, args: &[&str]) -> Command {
@@ -510,8 +509,8 @@ const RELEASES: &str =
 /// says both have reached it is the **contention line the product itself prints** — each shell
 /// reports `lodi: waiting for the store lock` on its standard error and then blocks, so the test
 /// knows both are at the barrier without waiting on a clock. (A `lodi shell` against a store with
-/// no layout marker takes that lock on the way in, for the once-only 0 → 1 migration of M-1.0
-/// T-2; the release page is fetched only afterwards, which is why the rendezvous is the line and
+/// no layout marker takes that lock on the way in, to write the 2.0 marker once; the release
+/// page is fetched only afterwards, which is why the rendezvous is the line and
 /// not the request.) Once both shells are at their prompts the test takes that same lock
 /// exclusively and **succeeds**: neither shell holds it for the life of the shell (M-0.3 T-2), so
 /// neither blocks the other. Each has its tool on `PATH`, and when both exit their roots are gone.
@@ -601,12 +600,11 @@ fn two_shells_at_once_never_block_each_other_on_the_store_lock() {
 
 // ------------------------------------------------ (c) a collection during an apply, and back ---
 
-/// The data root of a scratch home environment, as the binary computes it.
+/// The data root of a scratch home environment, as `lodi switch` computes it: the `LODI_HOME`
+/// the environment names (#700 story 19).
 fn data_root(env: &HomeEnv) -> lodi::home::fsops::Root {
-    let home = OsString::from(env.home());
-    let store = OsString::from(env.data().join("lodi"));
-    Roots::from_vars(Some(home.as_os_str()), None, None, Some(store.as_os_str()))
-        .expect("the scratch roots")
+    Roots::for_host(env.home().to_path_buf(), env.config().join("lodi"))
+        .moved(None, Some(&env.share().join("lodi")))
         .data_root()
 }
 
@@ -623,8 +621,8 @@ fn hold_home_lock(env: &HomeEnv) -> fsops::Lock {
 const FILES_ONLY: &str = r#"[home]
 version = "1"
 
-[files.".inputrc"]
-content = "set editing-mode vi\n"
+[home.file.".inputrc"]
+text = "set editing-mode vi\n"
 "#;
 
 fn write_home_manifest(env: &HomeEnv, text: &str) {
@@ -633,7 +631,7 @@ fn write_home_manifest(env: &HomeEnv, text: &str) {
     fs::write(dir.join("home.toml"), text).unwrap();
 }
 
-/// **Case 3.** A `lodi gc` started while a `lodi home apply` holds `<data>/home-scope/.lock` and
+/// **Case 3.** A `lodi gc` started while a `lodi switch --home` holds `<data>/home-scope/.lock` and
 /// while a `lodi develop` holds a live session root. The collection reports the contention on the
 /// exclusive `store/.lock` with the one line it already prints — that line is this case's
 /// negative control, because it is printed only when the lock really is held — removes nothing
@@ -647,7 +645,7 @@ fn a_collection_waits_for_the_store_while_an_apply_and_a_session_hold_theirs() {
     // The store this case shares is the home environment's own `LODI_HOME`.
     let tools = vec![Tool::python("3.12.14")];
     let server = Server::for_tools(&tools);
-    let lodi_home = env.data().join("lodi");
+    let lodi_home = env.share().join("lodi");
     let project = env.root().join("project");
     write_project(&project, &manifest(&tools, ""), &tools);
     let store = Store::open(&lodi_home).expect("the scratch store opens");
@@ -656,12 +654,12 @@ fn a_collection_waits_for_the_store_while_an_apply_and_a_session_hold_theirs() {
     let home_lock = hold_home_lock(&env);
     let mut apply = Proc::start("the apply", {
         let mut c = env.command();
-        c.args(["home", "apply"]);
+        env.on_gate(&mut c, &["home", "apply"]);
         c
     });
     apply.err_until(HOME_WAIT);
     assert!(
-        !env.data().join("lodi/home-scope/state.json").exists(),
+        !env.share().join("lodi/home-scope/state.json").exists(),
         "a blocked apply wrote the state file"
     );
 
@@ -730,7 +728,7 @@ fn a_collection_waits_for_the_store_while_an_apply_and_a_session_hold_theirs() {
     drop(home_lock);
     let (code, out, err) = apply.finish();
     assert_eq!(code, 0, "{err}");
-    assert!(out.contains(".inputrc"), "{out}");
+    assert!(out.is_empty() && err.contains("switched"), "{out}{err}");
     assert_eq!(
         fs::read_to_string(env.home().join(".inputrc")).unwrap(),
         "set editing-mode vi\n"
@@ -758,13 +756,14 @@ fn an_apply_waits_for_the_store_while_a_collection_holds_it() {
     write_home_manifest(
         &env,
         &format!(
-            "[home]\nversion = \"1\"\n\n[files.\".inputrc\"]\ncontent = \"set editing-mode vi\\n\"\n\n\
+            "[home]\nversion = \"1\"\n\n\
+             [home.file.\".inputrc\"]\ntext = \"set editing-mode vi\\n\"\n\n\
              [tools.demo]\nversion = \"1.0.0\"\nurl = \"{url}\"\nsha256 = \"{}\"\n\
              format = \"binary\"\n",
             lodi::util::sha256_hex(body)
         ),
     );
-    let lodi_home = env.data().join("lodi");
+    let lodi_home = env.share().join("lodi");
     let store = Store::open(&lodi_home).expect("the scratch store opens");
 
     // The collection's lock, and the home lock, both held before the apply starts.
@@ -772,7 +771,7 @@ fn an_apply_waits_for_the_store_while_a_collection_holds_it() {
     let home_lock = hold_home_lock(&env);
     let mut apply = Proc::start("the apply", {
         let mut c = env.command();
-        c.args(["home", "apply"])
+        env.on_gate(&mut c, &["home", "apply"])
             .env("LODI_FETCH_REWRITE", server.rewrite());
         c
     });
@@ -785,7 +784,7 @@ fn an_apply_waits_for_the_store_while_a_collection_holds_it() {
     apply.assert_running();
     assert_eq!(server.count(url), 0, "{:?}", server.requests());
     assert!(
-        !env.data().join("lodi/home-scope/state.json").exists(),
+        !env.share().join("lodi/home-scope/state.json").exists(),
         "the apply wrote its state while the store lock was held"
     );
 
@@ -794,9 +793,9 @@ fn an_apply_waits_for_the_store_while_a_collection_holds_it() {
     let (code, out, err) = apply.finish();
     assert_eq!(code, 0, "{name}: {err}");
     assert_eq!(server.count(url), 1, "{:?}", server.requests());
-    assert!(out.contains(".inputrc"), "{out}");
+    assert!(out.is_empty() && err.contains("switched"), "{out}{err}");
     assert!(
-        env.data().join("lodi/home-scope/state.json").is_file(),
+        env.share().join("lodi/home-scope/state.json").is_file(),
         "the apply did not write its state"
     );
     assert!(

@@ -1,7 +1,7 @@
-# zoxide for [tools] zoxide. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# The shell's init line stays the user's own. Older releases publish no API digest, so a
-# constraint that selects one is refused rather than downloaded.
+# zoxide for [tools] zoxide. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. The shell's init line stays the
+# user's own. Older releases publish no API digest, so a constraint that selects one is refused
+# rather than downloaded.
 [recipe]
 name        = "zoxide"
 description = "A smarter cd command"

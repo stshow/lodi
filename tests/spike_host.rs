@@ -1,5 +1,5 @@
-//! M-Spike S-3: host-tool `lodi develop -- <command>`, `lodi run <task>` and `lodi trust`, run
-//! as the real binary.
+//! M-Spike S-3: host-tool `lodi develop -- <command>` and `lodi run <task>`, with their trust
+//! prompt and `--trust` (LD-496), run as the real binary.
 //!
 //! Offline: the tools are synthetic archives (`tests/support`) served by a loopback server
 //! that the binary reaches through `LODI_FETCH_REWRITE`, with its own `LODI_HOME`,
@@ -10,6 +10,8 @@
 #[path = "support/fixture.rs"]
 mod fixture;
 mod support;
+#[path = "support/terminal.rs"]
+mod terminal;
 /// The suite's one wait ceiling, declared once at this binary's root (`tests/support/wait.rs`).
 #[path = "support/wait.rs"]
 mod wait;
@@ -48,8 +50,9 @@ impl User {
         self.base.join("lodi-home")
     }
 
+    /// In lodi's data folder, never in the config folder `lodi import` writes (#702 story 33).
     fn trust_file(&self) -> PathBuf {
-        self.base.join("config/lodi/trust.json")
+        self.lodi_home().join("trust.json")
     }
 
     fn command(&self, dir: &Path, args: &[&str]) -> Command {
@@ -143,8 +146,7 @@ fn develop_preserves_argv_status_cwd_and_environment() {
         &tools,
     );
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    let o = user.run(&project, &["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    record_trust(&user.trust_file(), &project);
 
     // Arguments arrive unchanged: spaces, empty strings, quotes, $, a leading --, newlines.
     let args = ["a b", "", "$HOME", "it's", "--", "x\ny", "*"];
@@ -246,8 +248,7 @@ fn run_executes_trusted_tasks_with_arguments_and_status() {
         ),
         &tools,
     );
-    let o = user.run(&project, &["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    record_trust(&user.trust_file(), &project);
     let o = user.run(&project, &["run", "echo", "a", "b c", "", "--flag"]);
     assert_eq!(out(&o), "[a][b c][][--flag]\n", "{}", err(&o));
     assert_eq!(user.run(&project, &["run", "fail"]).status.code(), Some(3));
@@ -264,103 +265,184 @@ fn run_executes_trusted_tasks_with_arguments_and_status() {
     assert!(err(&o).contains("no task `nope`") && err(&o).contains("echo, fail, where"));
 }
 
-#[test]
-fn trust_is_required_before_realization_and_changed_text_invalidates_it() {
-    let tools = tools();
-    let user = User::new("host-trust", &tools);
-    let project = user.base.join("project");
-    let text = |run: &str| manifest(&tools, &format!("[tasks.mark]\nrun = \"{run}\"\n"));
-    write_project(&project, &text("touch marker"), &tools);
+/// `lodi ARGS` in `dir` on a pseudo-terminal that already holds `answer`: the output, and what
+/// the terminal was shown.
+fn on_terminal(user: &User, dir: &Path, args: &[&str], answer: &str) -> (Output, String) {
+    let (o, shown) = terminal::on_terminal(answer, |input, error| {
+        user.command(dir, args)
+            .stdin(input)
+            .stderr(error)
+            .output()
+            .unwrap()
+    });
+    (o, String::from_utf8_lossy(&shown).into_owned())
+}
 
-    // Untrusted: nothing is fetched, realized or run, for run and for develop alike.
+/// Without a terminal an untrusted project stops before anything is locked, fetched, realized
+/// or run, for run and for develop alike, and the hint names `--trust` and `LODI_TRUST=1`.
+#[test]
+fn untrusted_without_a_terminal_stops_before_any_lock_or_request() {
+    let tools = tools();
+    let user = User::new("host-trust-required", &tools);
+    let project = user.base.join("project");
+    write_project(
+        &project,
+        &manifest(&tools, "[tasks.mark]\nrun = \"touch marker\"\n"),
+        &tools,
+    );
+    fs::remove_file(project.join("lodi.lock")).unwrap();
     for args in [&["run", "mark"][..], &["develop", "--", "touch", "marker"]] {
         let o = user.run(&project, args);
         assert_eq!(o.status.code(), Some(11), "{args:?}: {}", err(&o));
         assert!(err(&o).contains("E_TRUST_REQUIRED"), "{}", err(&o));
-        assert!(err(&o).contains("lodi trust"));
+        assert!(err(&o).contains("--trust"), "{}", err(&o));
+        assert!(!err(&o).contains("lodi trust"), "{}", err(&o));
     }
-    assert!(
-        user.server.requests().is_empty(),
-        "no download before trust"
-    );
-    assert!(
-        user.store_entries().is_empty(),
-        "no realization before trust"
-    );
+    assert!(!project.join("lodi.lock").exists(), "a lock before trust");
+    assert!(user.server.requests().is_empty(), "a request before trust");
+    assert!(user.store_entries().is_empty());
     assert!(!project.join("marker").exists());
+}
 
-    // LODI_TRUST=1 authorizes one invocation and records nothing.
-    let o = user.run_with(&project, &["run", "mark"], &[("LODI_TRUST", "1")]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+/// `--trust` and `LODI_TRUST=1` each authorize one run, say so with the hash and the boundary,
+/// and record nothing: the next run without either is refused again.
+#[test]
+fn trust_for_one_run_records_nothing() {
+    let tools = tools();
+    let user = User::new("host-trust-once", &tools);
+    let project = user.base.join("project");
+    write_project(
+        &project,
+        &manifest(&tools, "[tasks.mark]\nrun = \"touch marker\"\n"),
+        &tools,
+    );
+    let flag = user.run(&project, &["run", "--trust", "mark"]);
+    let variable = user.run_with(&project, &["run", "mark"], &[("LODI_TRUST", "1")]);
+    let develop = user.run(&project, &["develop", "--trust", "--", "true"]);
+    for o in [&flag, &variable, &develop] {
+        assert_eq!(o.status.code(), Some(0), "{}", err(o));
+        let notice = err(o);
+        assert!(
+            notice.contains("this run only (script text sha256:")
+                && notice.contains("outside this authorization"),
+            "{notice}"
+        );
+    }
     assert!(project.join("marker").exists());
-    assert!(!user.trust_file().exists());
-    fs::remove_file(project.join("marker")).unwrap();
-    assert_eq!(user.run(&project, &["run", "mark"]).status.code(), Some(11));
+    assert!(!user.trust_file().exists(), "a one-run trust was recorded");
+    let refused = user.run(&project, &["run", "mark"]);
+    assert_eq!(refused.status.code(), Some(11), "{}", err(&refused));
+}
 
-    // `lodi trust` shows the text, its hash and the boundary, and records it.
-    let o = user.run(&project, &["trust"]);
-    let shown = out(&o);
+/// On a terminal the first run shows the task text, its hash and the boundary and asks; a yes
+/// records trust, and the next run asks nothing. A change to the task text warns and asks again;
+/// a change outside it (a tool dropped) does not.
+#[test]
+fn the_prompt_on_a_terminal_records_a_yes_and_asks_again_after_a_change() {
+    let tools = tools();
+    let user = User::new("host-trust-prompt", &tools);
+    let project = user.base.join("project");
+    let text =
+        |tools: &[Tool], run: &str| manifest(tools, &format!("[tasks.mark]\nrun = \"{run}\"\n"));
+    write_project(&project, &text(&tools, "touch marker"), &tools);
+
+    let (o, shown) = on_terminal(&user, &project, &["run", "mark"], "y\n");
+    assert_eq!(o.status.code(), Some(0), "{shown}");
     assert!(
         shown.contains("task mark:") && shown.contains("| touch marker"),
         "{shown}"
     );
-    assert!(shown.contains("script text hash: sha256:"));
+    assert!(shown.contains("script text hash: sha256:"), "{shown}");
     assert!(shown.contains("outside this authorization"), "{shown}");
+    assert!(shown.contains("[y/N]"), "{shown}");
+    assert!(project.join("marker").exists());
     let recorded = fs::read_to_string(user.trust_file()).unwrap();
     assert!(recorded.contains(&canonical(&project.join("lodi.toml"))));
-    let o = user.run(&project, &["run", "mark"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
-    assert!(project.join("marker").exists());
+    assert!(
+        !user.base.join("config/lodi").exists(),
+        "trust left a file in the config folder"
+    );
 
-    // Changing the task text invalidates the trust: nothing runs.
-    fs::write(project.join("lodi.toml"), text("touch changed")).unwrap();
-    let o = user.run(&project, &["run", "mark"]);
-    assert_eq!(o.status.code(), Some(11));
-    assert!(err(&o).contains("W_TRUST_CHANGED"), "{}", err(&o));
-    assert!(!project.join("changed").exists());
+    // Trusted and unchanged: no prompt, nothing shown about trust.
+    let again = user.run(&project, &["run", "mark"]);
+    assert_eq!(again.status.code(), Some(0), "{}", err(&again));
+    assert!(!err(&again).contains("trust"), "{}", err(&again));
 
-    // Revocation.
-    fs::write(project.join("lodi.toml"), text("touch marker")).unwrap();
-    assert_eq!(user.run(&project, &["run", "mark"]).status.code(), Some(0));
-    let o = user.run(&project, &["trust", "--revoke"]);
-    assert!(out(&o).contains("revoked"));
-    assert_eq!(user.run(&project, &["run", "mark"]).status.code(), Some(11));
+    // A tool dropped from the manifest is outside the task text: still trusted.
+    let python = [Tool::python("3.12.14")];
+    fs::write(project.join("lodi.toml"), text(&python, "touch marker")).unwrap();
+    let dropped = user.run(&project, &["run", "mark"]);
+    assert_eq!(dropped.status.code(), Some(0), "{}", err(&dropped));
 
-    // A manifest with tools and no task text needs trust like task text (LD-359): nothing runs
-    // until `lodi trust` has shown the whole manifest and recorded it.
+    // A changed task text warns and asks again; a yes records the new text.
+    fs::write(project.join("lodi.toml"), text(&python, "touch changed")).unwrap();
+    let (o, shown) = on_terminal(&user, &project, &["run", "mark"], "y\n");
+    assert_eq!(o.status.code(), Some(0), "{shown}");
+    assert!(shown.contains("W_TRUST_CHANGED"), "{shown}");
+    assert!(shown.contains("| touch changed"), "{shown}");
+    assert!(project.join("changed").exists());
+    let again = user.run(&project, &["run", "mark"]);
+    assert_eq!(again.status.code(), Some(0), "{}", err(&again));
+}
+
+/// A no, and an empty answer, decline: `E_DECLINED`, and nothing locked, fetched, realized or
+/// run, and nothing recorded.
+#[test]
+fn a_no_or_an_empty_answer_declines_with_nothing_locked_or_run() {
+    let tools = tools();
+    let user = User::new("host-trust-declined", &tools);
+    let project = user.base.join("project");
+    write_project(
+        &project,
+        &manifest(&tools, "[tasks.mark]\nrun = \"touch marker\"\n"),
+        &tools,
+    );
+    fs::remove_file(project.join("lodi.lock")).unwrap();
+    for answer in ["n\n", "\n"] {
+        let (o, shown) = on_terminal(&user, &project, &["run", "mark"], answer);
+        assert_eq!(o.status.code(), Some(11), "{answer:?}: {shown}");
+        assert!(shown.contains("E_DECLINED"), "{shown}");
+    }
+    assert!(!project.join("lodi.lock").exists());
+    assert!(user.server.requests().is_empty());
+    assert!(user.store_entries().is_empty());
+    assert!(!project.join("marker").exists());
+    assert!(!user.trust_file().exists());
+}
+
+/// A manifest with tools and no tasks is trusted whole (LD-359): the prompt shows every line of
+/// it. One with no tasks, tools or base is never asked about.
+#[test]
+fn a_manifest_without_tasks_is_trusted_whole_and_an_empty_one_is_not_asked_about() {
+    let tools = tools();
+    let user = User::new("host-trust-whole", &tools);
     let plain = user.base.join("plain");
     write_project(&plain, &manifest(&tools, ""), &tools);
     let o = user.run(&plain, &["develop", "--", "touch", "marker"]);
     assert_eq!(o.status.code(), Some(11), "{}", err(&o));
-    assert!(
-        err(&o).contains("E_TRUST_REQUIRED") && err(&o).contains("lodi trust"),
-        "{}",
-        err(&o)
+    assert!(err(&o).contains("E_TRUST_REQUIRED"), "{}", err(&o));
+    let (o, shown) = on_terminal(
+        &user,
+        &plain,
+        &["develop", "--", "touch", "marker"],
+        "yes\n",
     );
-    assert!(!plain.join("marker").exists());
-    let o = user.run(&plain, &["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(o.status.code(), Some(0), "{shown}");
     assert!(
-        out(&o).contains("| [tools]") && out(&o).contains("manifest hash: sha256:"),
-        "{}",
-        out(&o)
+        shown.contains("| [tools]") && shown.contains("manifest hash: sha256:"),
+        "{shown}"
     );
-    let o = user.run(&plain, &["develop", "--", "touch", "marker"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert!(plain.join("marker").exists());
 
-    // A manifest that declares no tasks, no tools and no base has nothing to trust.
     let empty = user.base.join("empty");
     write_project(&empty, &manifest(&[], ""), &[]);
-    assert_eq!(
-        user.run(&empty, &["develop", "--", "true"]).status.code(),
-        Some(0)
-    );
-    assert!(out(&user.run(&empty, &["trust"])).contains("nothing to trust"));
+    let o = user.run(&empty, &["develop", "--", "true"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert!(!err(&o).contains("trust"), "{}", err(&o));
 }
 
 #[test]
-fn unsupported_script_features_container_mode_and_bad_locks_are_refused_first() {
+fn unsupported_script_features_are_refused_first() {
     let tools = tools();
     let user = User::new("host-refusals", &tools);
     for (what, extra) in [
@@ -370,7 +452,7 @@ fn unsupported_script_features_container_mode_and_bad_locks_are_refused_first() 
     ] {
         let project = user.base.join(what);
         write_project(&project, &manifest(&tools, extra), &tools);
-        for args in [&["develop", "--", "true"][..], &["run", "x"], &["trust"]] {
+        for args in [&["develop", "--", "true"][..], &["run", "x"]] {
             let o = user.run(&project, args);
             assert_eq!(o.status.code(), Some(3), "{what} {args:?}: {}", err(&o));
             assert!(err(&o).contains("E_UNSUPPORTED"), "{what}: {}", err(&o));
@@ -378,32 +460,6 @@ fn unsupported_script_features_container_mode_and_bad_locks_are_refused_first() 
         assert!(!project.join("hooked").exists() && !project.join("served").exists());
     }
 
-    let container = user.base.join("container");
-    fs::create_dir_all(&container).unwrap();
-    fs::write(
-        container.join("lodi.toml"),
-        "[container]\ndistro = \"debian\"\nrelease = \"bookworm\"\n",
-    )
-    .unwrap();
-    // Container environments exist since S-4 (tests/spike_container.rs); like host ones they
-    // are entered only from a fresh lock, refused here before anything is realized.
-    let o = user.run(&container, &["develop", "--", "true"]);
-    assert_eq!(o.status.code(), Some(10), "{}", err(&o));
-    assert!(err(&o).contains("E_LOCK_STALE"));
-
-    let project = user.base.join("locks");
-    write_project(&project, &manifest(&tools, ""), &tools);
-    fs::remove_file(project.join("lodi.lock")).unwrap();
-    let o = user.run(&project, &["develop", "--", "true"]);
-    assert_eq!(o.status.code(), Some(10));
-    assert!(err(&o).contains("E_LOCK_STALE") && err(&o).contains("lodi lock"));
-    write_project(&project, &manifest(&tools, ""), &tools);
-    let stale = manifest(&[Tool::python("3.12.14"), Tool::node("24", "24.21.0")], "");
-    fs::write(project.join("lodi.toml"), stale).unwrap();
-    assert_eq!(
-        user.run(&project, &["develop", "--", "true"]).status.code(),
-        Some(10)
-    );
     assert!(user.server.requests().is_empty());
     assert!(user.store_entries().is_empty());
 }
@@ -424,8 +480,7 @@ fn live_roots_name_the_entries_while_a_child_runs_and_are_removed_on_exit() {
     let project = user.base.join("project");
     write_project(&project, &manifest(&tools, ""), &tools);
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    let o = user.run(&project, &["trust"]);
-    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    record_trust(&user.trust_file(), &project);
 
     // A root of a process that no longer exists is pruned on the next entry.
     let mut dead = Command::new("true").spawn().unwrap();
@@ -526,15 +581,15 @@ fn two_project_roots_share_entries_but_have_distinct_activations_and_trust() {
     let c_tools = [Tool::python("3.12.14"), node24.clone()];
     write_project(&c, &manifest(&c_tools, ""), &c_tools);
 
-    assert_eq!(user.run(&a, &["trust"]).status.code(), Some(0));
+    record_trust(&user.trust_file(), &a);
     assert_eq!(
         user.run(&b, &["run", "t"]).status.code(),
         Some(11),
         "trust is per root"
     );
-    assert_eq!(user.run(&b, &["trust"]).status.code(), Some(0));
+    record_trust(&user.trust_file(), &b);
     // `c` has tools and no tasks, and is trusted before it is entered like the others (LD-359).
-    assert_eq!(user.run(&c, &["trust"]).status.code(), Some(0));
+    record_trust(&user.trust_file(), &c);
 
     // All three live at once; each child reports its identity and its node.
     let script = format!(
@@ -595,7 +650,7 @@ fn nesting_is_idempotent_for_one_activation_and_stacks_another() {
     write_project(&b, &manifest(&tools, ""), &tools);
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
     for dir in [&a, &b] {
-        assert_eq!(user.run(dir, &["trust"]).status.code(), Some(0));
+        record_trust(&user.trust_file(), dir);
     }
     let strip = |text: String| -> BTreeMap<String, String> {
         let mut m = env_map(&text);
@@ -670,7 +725,7 @@ fn concurrent_entries_realize_once_and_a_warm_entry_downloads_nothing() {
     for d in &dirs {
         write_project(d, &manifest(&tools, ""), &tools);
         // A manifest with tools and no tasks is trusted before it is entered (LD-359).
-        assert_eq!(user.run(d, &["trust"]).status.code(), Some(0));
+        record_trust(&user.trust_file(), d);
     }
     let children: Vec<Fixture> = dirs
         .iter()
@@ -707,7 +762,7 @@ fn an_interrupted_or_tampered_download_publishes_nothing_and_recovery_works() {
     let project = user.base.join("project");
     write_project(&project, &manifest(&tools, ""), &tools);
     // A manifest with tools and no tasks is trusted before its environment is entered (LD-359).
-    assert_eq!(user.run(&project, &["trust"]).status.code(), Some(0));
+    record_trust(&user.trust_file(), &project);
     let python = &tools[0];
 
     user.server.stall.lock().unwrap().push(python.url.clone());
@@ -745,7 +800,7 @@ fn an_interrupted_or_tampered_download_publishes_nothing_and_recovery_works() {
     let other = User::new("host-tamper", &tools);
     let project = other.base.join("project");
     write_project(&project, &manifest(&tools, ""), &tools);
-    assert_eq!(other.run(&project, &["trust"]).status.code(), Some(0));
+    record_trust(&other.trust_file(), &project);
     let mut bytes = python.bytes.clone();
     bytes[20] ^= 1;
     other
@@ -770,7 +825,7 @@ fn a_test_that_panics_between_spawn_and_stop_leaves_no_process() {
     let user = User::new("host-fixture-panic", &tools);
     let project = user.base.join("project");
     write_project(&project, &manifest(&tools, ""), &tools);
-    assert_eq!(user.run(&project, &["trust"]).status.code(), Some(0));
+    record_trust(&user.trust_file(), &project);
 
     let stop = user.base.join("stop-never-written");
     let script = format!("echo $$ > shell.pid; {}", hold("[ ! -f \"$STOP\" ]"));

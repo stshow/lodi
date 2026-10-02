@@ -5,16 +5,16 @@
 //!   `tests/home_containment.rs` is the gate that proves it (M-0.5 T-1, design call D4).
 //! - [`manifest`] is the loader of `<config>/home.toml`, a sibling of [`crate::manifest`]'s
 //!   project schema rather than an extension of it (M-0.5 T-2).
-//! - [`plan`] is `lodi home plan`, which shows what an apply would do and **writes nothing**
+//! - [`plan`] is the home plan, which shows what an apply would do and **writes nothing**
 //!   (M-0.5 T-2, design call D12). Since T-3 it computes against the state record too, so it is
 //!   the same computation [`apply`] performs.
 //! - [`state`] is `<data>/home-scope/state.json`, the record of what Lodi wrote and what it
 //!   promised to do when an entry disappears (design call D5).
 //! - [`backup`] is `<data>/home-scope/backups/`, the one copy Lodi keeps of what was at a path
 //!   before it took it over — taken once, never overwritten (design call D5).
-//! - [`apply`] is `lodi home apply` and `lodi home status` (M-0.5 T-3): the apply refuses to
+//! - [`apply`] is the home apply and its status report (M-0.5 T-3): the apply refuses to
 //!   touch anything when a managed file has been edited by hand, and the status only reports.
-//! - [`import`] is `lodi home init` and its 1.0 name `lodi home import` (M-Import T-4,
+//! - [`import`] writes the starting `home.toml` for `lodi import --home` (#699; M-Import T-4,
 //!   rewritten by M-Home im-1, LD-341; `init` since LD-382): it writes a commented starting
 //!   `home.toml` — a stub per program on `PATH`, `[tools]`, a `[home.file]` example — and reads
 //!   no file in the home directory.
@@ -37,7 +37,6 @@ pub mod profile;
 pub mod programs;
 pub mod render;
 pub mod services;
-pub mod source;
 pub mod state;
 pub mod toml;
 pub mod tools;
@@ -61,7 +60,7 @@ pub fn sudo_warning(euid: u32, sudo_uid: Option<&std::ffi::OsStr>) -> Option<Str
     Some(format!(
         "lodi: warning W_HOME_SUDO: this runs under sudo as uid {euid}, so it acts on the home \
          HOME names for uid {euid}, not on the home of uid {invoker} who ran sudo; the home scope \
-         needs no root: run lodi home without sudo"
+         needs no root: run lodi without sudo"
     ))
 }
 

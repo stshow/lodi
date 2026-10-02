@@ -61,6 +61,75 @@ pub fn shims() -> PathBuf {
     dir
 }
 
+thread_local! {
+    /// Where [`Root::new`] puts the roots of this thread while a [`Traversable`] lives.
+    static BASE: std::cell::RefCell<Option<PathBuf>> = const { std::cell::RefCell::new(None) };
+}
+
+/// A `lodi-tmp.*` directory of mode 0755 in a temporary directory every uid can reach, under which every
+/// [`Root`] this test's thread makes goes while it lives. Another uid than the invoking user's,
+/// such as the person a switch under sudo drops to in a user namespace, cannot reach the target
+/// directory of a checkout below a home of mode 0700 (LD-541); it can reach this. It carries the
+/// owner mark of `scripts/reap-lodi.py --mark` (`AGENTS.md` §6.1) and is removed when dropped.
+pub struct Traversable {
+    pub dir: PathBuf,
+}
+
+impl Traversable {
+    pub fn new() -> Traversable {
+        static N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let pid = std::process::id();
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        // A development shell's `TMPDIR` is often a folder of mode 0700 too.
+        let base = [
+            std::env::temp_dir(),
+            PathBuf::from("/var/tmp"),
+            PathBuf::from("/tmp"),
+        ]
+        .into_iter()
+        .find(|dir| reachable_by_anyone(dir))
+        .expect("a temporary directory every uid can reach");
+        let dir = base.join(format!("lodi-tmp.{pid}-{n}"));
+        remove(&dir);
+        fs::create_dir(&dir).expect("a directory in the temporary directory");
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).expect("its mode");
+        let stat = fs::read_to_string("/proc/self/stat").expect("this process's stat");
+        let start = stat[stat.rfind(')').expect("a stat line") + 2..]
+            .split_whitespace()
+            .nth(19)
+            .expect("its start time")
+            .to_string();
+        let boot = fs::read_to_string("/proc/sys/kernel/random/boot_id").expect("the boot id");
+        fs::write(
+            dir.join(".lodi-owner"),
+            format!(
+                "{{\"boot_id\": \"{}\", \"pid\": {pid}, \"schema\": 1, \"start\": {start}}}\n",
+                boot.trim()
+            ),
+        )
+        .expect("the owner mark");
+        let dir = fs::canonicalize(&dir).expect("the directory resolves");
+        BASE.with_borrow_mut(|base| *base = Some(dir.clone()));
+        Traversable { dir }
+    }
+}
+
+/// Whether `dir` and every folder above it may be searched by any uid.
+fn reachable_by_anyone(dir: &Path) -> bool {
+    fs::canonicalize(dir).is_ok_and(|dir| {
+        dir.ancestors().all(|d| {
+            fs::metadata(d).is_ok_and(|m| m.is_dir() && m.permissions().mode() & 0o001 != 0)
+        })
+    })
+}
+
+impl Drop for Traversable {
+    fn drop(&mut self) {
+        BASE.with_borrow_mut(|base| *base = None);
+        remove(&self.dir);
+    }
+}
+
 /// A scratch root, created empty and removed when the test drops it.
 pub struct Root {
     pub dir: PathBuf,
@@ -92,7 +161,11 @@ impl Root {
     /// target directory, never in a home path and never in `/tmp`.
     pub fn new(name: &str) -> Root {
         shims();
-        let dir = crate::support::scratch(&format!("host-{name}"));
+        let name = format!("host-{name}");
+        let dir = match BASE.with_borrow(Clone::clone) {
+            Some(base) => crate::support::scratch_in(&base, &name),
+            None => crate::support::scratch(&name),
+        };
         Root { dir }
     }
 
@@ -120,11 +193,11 @@ impl Root {
         self
     }
 
-    /// Write the marker the product refuses without. On a real machine an administrator writes
-    /// it once with the `host arm` command (LD-320); here a test writes it for a root it owns,
-    /// so that every other host test does not depend on that command.
-    pub fn arm(&self) -> &Root {
-        self.write("etc/lodi/host-allowed", "")
+    /// Write the "may manage" marker the product refuses without (#705). On a real machine
+    /// `lodi import` writes it when the person says yes; here a test writes it for a root it
+    /// owns, so that every other host test does not depend on that command.
+    pub fn may_manage(&self) -> &Root {
+        self.write(lodi::marker::MARKER, "")
     }
 
     /// Give the root the identity of a Debian 12 machine.
@@ -146,16 +219,17 @@ impl Root {
         )
     }
 
-    /// An armed Debian root with a manifest. This is what almost every test wants.
+    /// An armed Debian root with a host file in its config folder, [`CONFIG`]. This is what
+    /// almost every test wants.
     pub fn debian_with(&self, manifest: &str) -> &Root {
-        self.arm().debian().write("etc/lodi/host.toml", manifest)
+        self.may_manage()
+            .debian()
+            .write(&format!("{CONFIG}/host.toml"), manifest)
     }
 
+    /// The 2.0 form of a host part: the root, its config folder named, and the config's pins.
     pub fn options(&self) -> Options {
-        Options {
-            root: Some(self.dir.clone()),
-            ..Options::default()
-        }
+        options_for(&self.dir)
     }
 
     /// A named pipe inside the root's own scratch area, used as a `[files]` `source` so that a
@@ -302,6 +376,20 @@ pub fn kill(child: &mut Child) {
 }
 
 /// Whether this process is the child half of [`spawn`].
+/// The scratch config folder of a root, relative to it: the folder `lodi switch` names as the
+/// host part's, which a host file's `source` paths are read below.
+pub const CONFIG: &str = "etc/lodi";
+
+/// [`Root::options`] for the root at `dir`.
+pub fn options_for(dir: &Path) -> Options {
+    Options {
+        root: Some(dir.to_path_buf()),
+        source: Some(dir.join(CONFIG)),
+        config: Some(lodi::hostscope::safety::ConfigPins::default()),
+        ..Options::default()
+    }
+}
+
 pub fn is_child() -> bool {
     std::env::var_os("LODI_TEST_CHILD").is_some()
 }
@@ -309,17 +397,15 @@ pub fn is_child() -> bool {
 /// The child half of every interruption test: run one real apply over the root the parent
 /// named, print what it said, and exit with the status a command would exit with.
 pub fn child_apply() {
-    let root = std::env::var("LODI_TEST_ROOT").expect("the parent names a root");
+    let root = PathBuf::from(std::env::var("LODI_TEST_ROOT").expect("the parent names a root"));
     let options = Options {
-        root: Some(PathBuf::from(root)),
         resolved: std::env::var("LODI_TEST_RESOLVED").ok(),
         overwrite_drift: std::env::var_os("LODI_TEST_OVERWRITE_DRIFT").is_some(),
-        no_update: false,
-        unsupported_partial_upgrade: std::env::var_os("LODI_TEST_PARTIAL").is_some(),
         // A positional `SOURCE`, when the parent names one (LD-379).
-        source: std::env::var_os(SOURCE_VAR).map(PathBuf::from),
-        // An apply has no `--out` and no `--force`: those two belong to the import verb.
-        ..Options::default()
+        source: std::env::var_os(SOURCE_VAR)
+            .map(PathBuf::from)
+            .or_else(|| Some(root.join(CONFIG))),
+        ..options_for(&root)
     };
     if let (Some(name), Some(dir)) = (
         std::env::var_os(HOLD_NAME_VAR),

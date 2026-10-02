@@ -20,7 +20,7 @@ mod support;
 
 use std::os::unix::fs::symlink;
 
-use fakehost::{Case, Machine, Pkg, err, out, story};
+use fakehost::{Case, Machine, Pkg, err, nothing, story};
 use serde_json::{Value, json};
 
 /// The three network stacks a guest runs, each on the distribution that runs it there.
@@ -149,7 +149,7 @@ fn basics_apply_and_revert() {
         let apply = case.apply(&[]);
         assert!(apply.status.success(), "{distro}: {}", story(&apply));
         assert_eq!(hostname(&case), "box", "{distro}");
-        assert_eq!(case.lock()["format"], "lodi-host-lock/5", "{distro}");
+        assert_eq!(case.lock()["format"], "lodi-host-lock/6", "{distro}");
         assert_eq!(
             case.lock()["basics"]["hostname"]["value"],
             "box",
@@ -166,14 +166,10 @@ fn basics_apply_and_revert() {
         assert!(again.status.success(), "{distro}: {}", story(&again));
         assert!(changes(&case).is_empty(), "{distro}: {}", story(&again));
         let plan = case.plan();
-        assert!(
-            out(&plan).ends_with("nothing to do\n"),
-            "{distro}: {}",
-            story(&plan)
-        );
+        assert!(nothing(&plan), "{distro}: {}", story(&plan));
         // An unchanged basic is not a plan line, as an unchanged package is not (#585).
         assert!(
-            !out(&plan).contains("= hostname"),
+            !err(&plan).contains("= hostname"),
             "{distro}: {}",
             story(&plan)
         );
@@ -191,7 +187,7 @@ fn basics_apply_and_revert() {
             "{distro}: {}",
             case.lock()
         );
-        assert_eq!(case.lock()["format"], "lodi-host-lock/2", "{distro}");
+        assert_eq!(case.lock()["format"], "lodi-host-lock/6", "{distro}");
     }
 }
 
@@ -357,6 +353,11 @@ fn network_timeout_restores_live_config() {
         case.set_manifest(&manifest(distro, FINE));
         let fine = case.apply(&[]);
         assert!(fine.status.success(), "{distro}: {}", story(&fine));
+        assert!(
+            !err(&fine).contains("is outstanding"),
+            "{distro}: the rollback closed its journal: {}",
+            story(&fine)
+        );
         let kept = case.root.read(file);
         assert!(kept.contains("10.0.2.50/24"), "{distro}: {kept}");
         assert_eq!(
@@ -396,7 +397,7 @@ fn plan_lists_basics_and_changes_nothing() {
         let before = case.machine();
         let plan = case.plan();
         assert!(plan.status.success(), "{distro}: {}", story(&plan));
-        let text = out(&plan);
+        let text = err(&plan);
         for line in [
             "~ hostname lodi-test -> box (hostnamectl --root=",
             "~ timezone UTC -> Europe/Berlin (timedatectl --root=",
@@ -407,7 +408,7 @@ fn plan_lists_basics_and_changes_nothing() {
         ] {
             assert!(text.contains(line), "{distro}: {line:?} in\n{text}");
         }
-        assert!(text.ends_with("6 action(s)\n"), "{distro}: {text}");
+        assert!(text.contains("host: 6 other changes\n"), "{distro}: {text}");
         assert!(changes(&case).is_empty(), "{distro}: {:?}", case.log());
         assert_eq!(case.machine(), before, "{distro}");
         assert_eq!(hostname(&case), "lodi-test", "{distro}");
@@ -456,7 +457,7 @@ fn a_locale_localed_does_not_report_is_read_from_the_file_the_import_reads() {
     case.set_manifest(&manifest(distro, "[system]\nlocale = \"C.UTF-8\"\n"));
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan);
+    let text = err(&plan);
     assert!(!text.contains("~ locale"), "{text}");
     assert!(
         !err(&plan).contains("E_UNKNOWN_SETTING"),
@@ -480,7 +481,7 @@ fn a_locale_listed_with_another_codeset_spelling_is_known() {
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
     assert!(
-        out(&plan).contains("~ locale LANG=en_GB.UTF-8 -> LANG=C.UTF-8 (localectl --root="),
+        err(&plan).contains("~ locale LANG=en_GB.UTF-8 -> LANG=C.UTF-8 (localectl --root="),
         "{}",
         story(&plan)
     );
@@ -500,7 +501,7 @@ fn package_exact_mode_keeps_the_network_stack_and_firewall_tools() {
     ));
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let text = out(&plan);
+    let text = err(&plan);
     assert!(
         text.contains("htop"),
         "exact mode still removes the rest: {text}"
@@ -550,7 +551,7 @@ fn a_keymap_kept_in_etc_default_keyboard_is_written_there() {
     case.set_manifest(&manifest(distro, "[system]\nkeymap = \"de\"\n"));
     let plan = case.plan();
     assert!(
-        out(&plan).contains("~ keymap us -> de (XKBLAYOUT in /etc/default/keyboard)"),
+        err(&plan).contains("~ keymap us -> de (XKBLAYOUT in /etc/default/keyboard)"),
         "{}",
         story(&plan)
     );
@@ -562,11 +563,7 @@ fn a_keymap_kept_in_etc_default_keyboard_is_written_there() {
     );
     assert!(changes(&case).is_empty(), "{:?}", case.log());
     let again = case.plan();
-    assert!(
-        out(&again).ends_with("nothing to do\n"),
-        "{}",
-        story(&again)
-    );
+    assert!(nothing(&again), "{}", story(&again));
 
     case.set_manifest(&manifest(distro, ""));
     let revert = case.apply(&[]);
@@ -587,11 +584,11 @@ fn a_keymap_the_keyboard_file_holds_is_read_from_it_when_localed_reports_none() 
     case.set_manifest(&manifest(distro, "[system]\nkeymap = \"us\"\n"));
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    assert!(!out(&plan).contains("keymap"), "{}", story(&plan));
+    assert!(!err(&plan).contains("keymap"), "{}", story(&plan));
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
-    assert!(!out(&apply).contains("keymap"), "{}", story(&apply));
+    assert!(!err(&apply).contains("keymap"), "{}", story(&apply));
     assert_eq!(case.root.read("etc/default/keyboard"), keyboard);
     let again = case.plan();
-    assert_eq!(out(&again), "nothing to do\n", "{}", story(&again));
+    assert!(nothing(&again), "{}", story(&again));
 }

@@ -37,7 +37,7 @@ impl HostDirLock {
                 return Err(Diagnostic::new(
                     "E_SYSTEM_BUSY",
                     format!(
-                        "another `lodi host pin` or `lodi host unpin` is changing {}",
+                        "another `lodi pin` or `lodi unpin` is changing {}",
                         dir.display()
                     ),
                 )

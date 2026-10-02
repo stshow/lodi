@@ -387,15 +387,7 @@ fn jdk_21_realizes_and_java_runs_from_the_store_with_java_home_set() {
     )
     .unwrap();
 
-    // `lodi develop` never resolves: the lock comes first, from metadata alone.
-    let locking = user.run(&["lock"], "");
-    assert!(locking.status.success(), "lodi lock: {}", err(&locking));
-    assert_eq!(
-        user.server.requests(),
-        vec![line_url(21)],
-        "locking asks for the line's metadata and downloads nothing"
-    );
-
+    // `lodi develop` locks first, from metadata alone, then realizes what the lock pins.
     // `${self.path}` is the artifact's own store entry, so `$JAVA_HOME/bin/java` is the very
     // executable `PATH` exposes. The child runs both, and prints the path it was given.
     let o = user.run(
@@ -409,6 +401,14 @@ fn jdk_21_realizes_and_java_runs_from_the_store_with_java_home_set() {
         "",
     );
     assert!(o.status.success(), "lodi develop: {}", err(&o));
+    assert!(
+        err(&o).contains(&format!(
+            "lodi: wrote lodi.lock (resolved {}): ",
+            recipe.name
+        )),
+        "{}",
+        err(&o)
+    );
     let stdout = out(&o);
 
     let java_home = stdout
@@ -447,7 +447,7 @@ fn jdk_21_realizes_and_java_runs_from_the_store_with_java_home_set() {
     assert_eq!(
         user.server.requests(),
         vec![line_url(21), link],
-        "one metadata request and one download, and nothing else"
+        "one metadata request to lock, then one download, and nothing else"
     );
 }
 

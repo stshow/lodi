@@ -18,56 +18,56 @@ a = "b"
 [tools]
 python = "3.12"
 
-[files."/etc/passwd"]
-content = "absolute"
+[home.file."/etc/passwd"]
+text = "absolute"
 
-[files."../escape"]
-content = "outside the home"
+[home.file."../escape"]
+text = "outside the home"
 
-[files."~/tilde"]
-content = "a tilde component"
+[home.file."~/tilde"]
+text = "a tilde component"
 
-[files.".both"]
-content = "one"
+[home.file.".both"]
+text = "one"
 source = "./dotfiles/inputrc"
 
-[files.".neither"]
+[home.file.".neither"]
 mode = "0644"
 
-[files.".setuid"]
-content = "x"
+[home.file.".setuid"]
+text = "x"
 mode = "4755"
 
-[files.".notoctal"]
-content = "x"
+[home.file.".notoctal"]
+text = "x"
 mode = "rw-"
 
-[files.".absent-with-content"]
+[home.file.".absent-with-content"]
 state = "absent"
-content = "x"
+text = "x"
 
-[files.".badstate"]
-content = "x"
+[home.file.".badstate"]
+text = "x"
 state = "perhaps"
 
-[files.".missing-source"]
+[home.file.".missing-source"]
 source = "./nope"
 
-[files.".substitution"]
-content = "${host.arch}"
+[home.file.".substitution"]
+text = "${host.arch}"
 
-[files.".malformed"]
-content = "${not a name}"
+[home.file.".malformed"]
+text = "${not a name}"
 
-[files.".unknown-key"]
-content = "x"
+[home.file.".unknown-key"]
+text = "x"
 onremove = "keep"
 
-[files.".dup"]
-content = "x"
+[home.file.".dup"]
+text = "x"
 
-[files.".dup/"]
-content = "y"
+[home.file.".dup/"]
+text = "y"
 
 [frobnicate]
 a = "b"

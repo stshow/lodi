@@ -1,8 +1,8 @@
-# neovim for [tools] neovim. This recipe says where to look; it lists no version. `lodi lock`
-# discovers versions from the tags of the newest GitHub releases.
-# The newest releases include a moving `stable` release and a `nightly` pre-release; neither
-# tag matches the template, so five releases are read to leave three real ones. The program
-# runs from its tree, with `lib/` and `share/` beside `bin/`.
+# neovim for [tools] neovim. This recipe says where to look; it lists no version. `lodi update`
+# discovers versions from the tags of the newest GitHub releases. The newest releases include a
+# moving `stable` release and a `nightly` pre-release; neither tag matches the template, so five
+# releases are read to leave three real ones. The program runs from its tree, with `lib/` and
+# `share/` beside `bin/`.
 [recipe]
 name        = "neovim"
 description = "Vim-fork focused on extensibility and usability"

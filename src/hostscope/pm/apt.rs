@@ -851,6 +851,14 @@ impl Backend for Apt {
 
     /// `dpkg --audit`: every package dpkg considers half-installed, half-configured or in any
     /// other state that is not finished. It prints nothing at all when the database is clean.
+    fn item(&self, line: &str) -> Option<String> {
+        item(line)
+    }
+
+    fn download(&self, transaction: &Invocation) -> Option<Invocation> {
+        download(transaction)
+    }
+
     fn unclean(&self) -> Result<Vec<String>, Diagnostic> {
         let text = self.read("dpkg", &["--audit"])?;
         Ok(text
@@ -1285,6 +1293,33 @@ fn label(release: &Release) -> String {
     }
 }
 
+/// The package a line of `apt-get` names, for the step list's count (#694): a download
+/// (`Get:2 URI SUITE/COMPONENT ARCH NAME ARCH VERSION [SIZE UNIT]`, where an index file's line is
+/// shorter), and dpkg's `Unpacking`, `Setting up` and `Removing` lines.
+pub fn item(line: &str) -> Option<String> {
+    let words: Vec<&str> = line.split_whitespace().collect();
+    let name = match words.as_slice() {
+        [get, _, _, _, name, _, _, size, _] if get.starts_with("Get:") && size.starts_with('[') => {
+            name
+        }
+        ["Unpacking" | "Removing" | "Purging", name, version, ..] if version.starts_with('(') => {
+            name
+        }
+        ["Setting", "up", name, version, ..] if version.starts_with('(') => name,
+        _ => return None,
+    };
+    Some(name.split(':').next().unwrap_or(name).to_string())
+}
+
+/// The download of a transaction (#694): the same `apt-get install` with `--download-only`, so
+/// it reads the same sources (a pinned one's private set included) and installs nothing.
+pub fn download(transaction: &Invocation) -> Option<Invocation> {
+    let at = transaction.args.iter().position(|arg| arg == "install")?;
+    let mut download = transaction.clone();
+    download.args.insert(at + 1, "--download-only".to_string());
+    Some(download)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1529,8 +1564,9 @@ mod tests {
                 "{text}"
             );
             for other in [Operation::Plan, Operation::Apply, Operation::Import] {
-                if other != operation {
-                    assert!(!text.contains(other.command()), "{text}");
+                if other.command() != operation.command() {
+                    let named = format!("run `{}`", other.command());
+                    assert!(!text.contains(&named), "{text}");
                 }
             }
         }

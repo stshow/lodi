@@ -1,7 +1,7 @@
 //! The home scope's state record: what Lodi wrote, and what it promised to do when the entry
 //! that declared it disappears (M-0.5 T-3, design calls D5, D13 — `LD-101`, `LD-109`).
 //!
-//! `<data>/home-scope/state.json` is canonical JSON, schema version 3 (below), written atomically
+//! `<data>/home-scope/state.json` is canonical JSON, schema version 5 (below), written atomically
 //! through [`crate::home::fsops`] and **last** in an apply, so a state file that exists always
 //! describes work that finished. One object per managed path:
 //!
@@ -17,7 +17,7 @@
 //!       "sha256": "…"
 //!     }
 //!   },
-//!   "version": 1
+//!   "version": 5
 //! }
 //! ```
 //!
@@ -28,18 +28,13 @@
 //! `on_remove = "restore"` puts back. `directories` are the parents an apply created; they are
 //! recorded so `status` can name them and are **never removed again** (design call D7).
 //!
-//! **Schema version 2** (M-Home, `docs/design/HOME_PROGRAMS.md` §4.5): a record may also carry
-//! `state = "seed"` (a seeded file, never compared again) and an origin of `kind = "program"`
-//! with its `module`. Version 1's reader accepts any `kind` string but denies unknown fields, so
-//! a 1.0 build would refuse such a record as JSON it did not write; carrying version 2 makes that
-//! refusal the one that says so, by the version (`tests/home_file.rs` holds both halves). This
-//! builds before 1.5 read 1 and 2 and wrote 2. Builds before 1.12 read 1, 2 and 3 and write 3
-//! only after an apply changes something; an empty plan does not rewrite legacy state.
-//!
-//! **Schema version 4** (hc-1, LD-427) adds `services`, each user unit `[services]` manages with
-//! the state it had before Lodi first managed it, and `linger`, true while the lingering Lodi
-//! turned on is Lodi's to turn off. A record carries version 4 when it names either, and 3
-//! otherwise, so a home without `[services]` writes the bytes it always did.
+//! **Schema version 5** is the one 2.0 writes and reads (#688, #710), whatever the record holds:
+//! a file may carry `state = "seed"` (written once, never compared again) and an origin of
+//! `kind = "program"` with its `module`; `source` names the config the home was switched from;
+//! `services` holds each user unit `[services]` manages with the state it had before lodi first
+//! managed it, and `linger` is true while the lingering lodi turned on is lodi's to turn off
+//! (hc-1, LD-427). 5 is above every version 1.x wrote, so a 1.x record at this path is refused
+//! by its version and named, never read by luck.
 //!
 //! Nothing here is derived from a clock, a pid or a counter (design call D13), so two machines
 //! applying the same manifest write the same bytes.
@@ -55,12 +50,8 @@ use crate::home::manifest::{FileEntry, FileState, Origin};
 use crate::lock::canonical_json;
 use crate::util::sha256_hex;
 
-/// The schema version this build writes for a home without services; it reads 1 to 4
-/// (`src/schema.rs`).
-pub const STATE_VERSION: u32 = 3;
-
-/// The schema version of a record that names a service or managed lingering.
-pub const SERVICES_VERSION: u32 = 4;
+/// The schema version this build writes and reads (`src/schema.rs`).
+pub const STATE_VERSION: u32 = 5;
 
 /// One user unit `[services]` manages (schema 4).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -117,8 +108,7 @@ pub struct ManagedFile {
     /// The backup store's file name for this path, when one was kept.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub backup: Option<String>,
-    /// `seed` for a file written once and never managed again (schema version 2); absent for a
-    /// managed file.
+    /// `seed` for a file written once and never managed again; absent for a managed file.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub state: Option<String>,
 }
@@ -233,14 +223,17 @@ pub fn read(data: &Root) -> Result<HomeState, Diagnostic> {
             let mut d = Diagnostic::new(
                 "E_STORE_IO",
                 format!(
-                    "the home scope's state file {STATE_FILE} {carries}, and this build reads \
-                     version {}",
+                    "the home scope's state file {} {carries}, and this build reads version {}",
+                    data.path().join(STATE_FILE).display(),
                     artifact.read_set()
                 ),
             );
             d.notes
                 .push(crate::schema::writer_note(STATE_ARTIFACT, &raw));
-            return Err(d.hint("use the lodi that wrote it"));
+            return Err(d.hint(
+                "lodi never changes a record it did not write: remove it to start from an \
+                 unmanaged home, or use the lodi that wrote it",
+            ));
         }
     }
     let state: HomeState = serde_json::from_value(raw).map_err(|e| unreadable(e.to_string()))?;
@@ -252,9 +245,6 @@ pub fn read(data: &Root) -> Result<HomeState, Diagnostic> {
 /// is not one Lodi wrote (LD-361): the values are shortened for a warning and joined to a path
 /// later, and nothing downstream has to cope with one that is not lowercase hex.
 fn check(state: &HomeState) -> Result<(), String> {
-    if (state.version == SERVICES_VERSION) == (state.services.is_empty() && !state.linger) {
-        return Err("services, lingering and schema version 4 come together".into());
-    }
     for (unit, record) in &state.services {
         if !crate::hostscope::manifest::is_unit_name(unit)
             || !["enabled", "disabled", "absent"].contains(&record.before.as_str())
@@ -287,11 +277,7 @@ pub fn write(data: &Root, state: &HomeState) -> Result<(), Diagnostic> {
     let rel = RelPath::new(STATE_FILE).expect("the state file's path is a relative path");
     // Whatever version was read, what is written is the version this build writes.
     let mut state = state.clone();
-    state.version = if state.services.is_empty() && !state.linger {
-        STATE_VERSION
-    } else {
-        SERVICES_VERSION
-    };
+    state.version = STATE_VERSION;
     if state.source.is_none() {
         state.source = Some(DEFAULT_SOURCE.to_string());
     }

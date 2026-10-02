@@ -1,4 +1,4 @@
-//! fd-1 (LD-435): `lodi lock` and `lodi develop` on the Fedora 44 base, offline.
+//! fd-1 (LD-435): locking and `lodi develop` on the Fedora 44 base, offline.
 //!
 //! The Fedora world is `tests/fixtures/fedora/` (see its `PROVENANCE`): the release's real
 //! container `CHECKSUM` file, and the release's real `Everything` metadata trimmed to the builds
@@ -193,10 +193,14 @@ impl Project {
         Project { dir, home }
     }
 
-    fn run(&self, args: &[&str], server: &Server) -> Output {
+    /// `lodi develop` with no Podman on `PATH`: it locks by itself (LD-496) and then stops with
+    /// `E_NO_RUNTIME`, so only the lock is observed.
+    fn lock(&self, server: &Server) -> Output {
         Command::new(env!("CARGO_BIN_EXE_lodi"))
-            .args(args)
+            .args(["develop", "--", "true"])
             .current_dir(&self.dir)
+            .env_clear()
+            .env("PATH", "")
             .env("HOME", &self.home)
             .env("LODI_HOME", self.home.join("lodi"))
             .env("XDG_CONFIG_HOME", self.home.join(".config"))
@@ -209,6 +213,12 @@ impl Project {
     fn lock_bytes(&self) -> Option<Vec<u8>> {
         fs::read(self.dir.join("lodi.lock")).ok()
     }
+}
+
+/// A locking run that got past the lock to the missing Podman.
+fn locked(o: &Output) {
+    assert_eq!(o.status.code(), Some(7), "{}", both(o));
+    assert!(both(o).contains("E_NO_RUNTIME"), "{}", both(o));
 }
 
 fn both(o: &Output) -> String {
@@ -225,9 +235,14 @@ fn both(o: &Output) -> String {
 fn lock_records_the_exact_rpm_closure() {
     let project = Project::new("closure", &["jq", "zip"]);
     let server = Server::start(world());
-    let first = project.run(&["lock"], &server);
-    assert_eq!(first.status.code(), Some(0), "{}", both(&first));
-    let bytes = project.lock_bytes().expect("lodi lock wrote lodi.lock");
+    let first = project.lock(&server);
+    locked(&first);
+    assert!(
+        both(&first).contains("lodi: wrote lodi.lock (resolved base)"),
+        "{}",
+        both(&first)
+    );
+    let bytes = project.lock_bytes().expect("develop wrote lodi.lock");
     let lock = lodi::lock::parse_lock(&bytes).unwrap();
     lodi::lock::validate(&lock).unwrap();
     let base = lock.base.as_ref().unwrap();
@@ -306,12 +321,17 @@ fn lock_records_the_exact_rpm_closure() {
     );
 
     // A second run changes nothing, and a lock written again from nothing is the same bytes.
-    let second = project.run(&["lock"], &server);
-    assert_eq!(second.status.code(), Some(0), "{}", both(&second));
+    let second = project.lock(&server);
+    locked(&second);
+    assert!(
+        !both(&second).contains("wrote lodi.lock"),
+        "{}",
+        both(&second)
+    );
     assert_eq!(project.lock_bytes().unwrap(), bytes);
     fs::remove_file(project.dir.join("lodi.lock")).unwrap();
-    let again = project.run(&["lock"], &server);
-    assert_eq!(again.status.code(), Some(0), "{}", both(&again));
+    let again = project.lock(&server);
+    locked(&again);
     assert_eq!(project.lock_bytes().unwrap(), bytes);
 }
 
@@ -328,7 +348,7 @@ fn zstd_bomb(blocks: usize) -> Vec<u8> {
 }
 
 /// Criterion 2: primary metadata whose digest is not repomd's, or that decompresses past the
-/// cap, stops `lodi lock` with a named error and no lock.
+/// cap, stops locking with a named error and no lock.
 #[test]
 fn tampered_or_oversized_metadata_fails_closed() {
     let repomd_url = format!("{REPO}repodata/repomd.xml");
@@ -338,7 +358,7 @@ fn tampered_or_oversized_metadata_fails_closed() {
     let mut tampered = world();
     tampered.get_mut(&primary_url).unwrap()[100] ^= 1;
     let project = Project::new("tampered", &["jq"]);
-    let out = project.run(&["lock"], &Server::start(tampered));
+    let out = project.lock(&Server::start(tampered));
     assert_eq!(out.status.code(), Some(5), "{}", both(&out));
     assert!(both(&out).contains("E_HASH_MISMATCH"), "{}", both(&out));
     assert!(both(&out).contains("repomd.xml states"), "{}", both(&out));
@@ -362,7 +382,7 @@ fn tampered_or_oversized_metadata_fails_closed() {
     oversized.insert(repomd_url.clone(), lying.clone().into_bytes());
     oversized.insert(format!("{REPO}repodata/{bomb_sha}-primary.xml.zst"), bomb);
     let project = Project::new("oversized", &["jq"]);
-    let out = project.run(&["lock"], &Server::start(oversized));
+    let out = project.lock(&Server::start(oversized));
     assert_eq!(out.status.code(), Some(4), "{}", both(&out));
     assert!(both(&out).contains("E_REPO_UNREACHABLE"), "{}", both(&out));
     assert!(both(&out).contains("byte limit"), "{}", both(&out));
@@ -380,7 +400,7 @@ fn tampered_or_oversized_metadata_fails_closed() {
             .into_bytes(),
     );
     let project = Project::new("stated", &["jq"]);
-    let out = project.run(&["lock"], &Server::start(stated));
+    let out = project.lock(&Server::start(stated));
     assert_eq!(out.status.code(), Some(4), "{}", both(&out));
     assert!(both(&out).contains("past the"), "{}", both(&out));
     assert!(project.lock_bytes().is_none());

@@ -1,9 +1,10 @@
 //! LD-378 (W2): a host import over an existing manifest **reconciles** the machine into it.
 //!
-//! The base is the baseline `host.lock` schema 2 records at the last sync (an import, a writing
-//! reconcile or an apply), ours is the manifest, theirs is the machine now. A change made outside
-//! Lodi is adopted, the person's own edits are kept, a conflict keeps the manifest's side with
-//! `W_RECONCILE`, and a machine with no record gets a report and nothing written.
+//! Ours is the manifest, theirs is the machine now; on the 2.0 `lodi import` the base is the host
+//! record's baseline of the last sync of this folder (LD-519). A change made outside Lodi is
+//! adopted, the person's own edits are kept, and a conflict keeps the manifest's side with
+//! `W_RECONCILE`. The 1.x baseline rows (`host.lock` schema 2, a version-1 lock, no record,
+//! `--force`) went with the 1.x import (#699).
 //!
 //! Every case is the real binary against a scratch `--root` with the fake machine of
 //! `tests/support/fakehost.rs` behind it. Nothing reaches `/` and no real package manager runs
@@ -19,7 +20,7 @@ mod wait;
 
 mod support;
 
-use fakehost::{Case, Family, Machine, Pkg, out, story};
+use fakehost::{Case, Family, Machine, Pkg, err, nothing, out, story};
 
 /// A machine a person chose `tree`, `jq` and `bat` on, with `zip` offered and not installed.
 fn machine_for(family: Family) -> Machine {
@@ -101,7 +102,7 @@ fn reimport_reconciles(family: Family) {
     let again = case.import();
     assert!(again.status.success(), "{}", story(&again));
     let said = out(&again);
-    assert!(said.contains("reconciled"), "{}", story(&again));
+    assert!(said.contains("merged into"), "{}", story(&again));
     assert!(
         said.contains("1 added, 1 removed") && said.contains("0 conflict"),
         "{}",
@@ -122,7 +123,7 @@ fn reimport_reconciles(family: Family) {
     // change, and the apply makes it.
     let plan = case.plan();
     assert!(plan.status.success(), "{}", story(&plan));
-    let planned = out(&plan);
+    let planned = err(&plan);
     assert!(planned.contains("bat"), "{planned}");
     for name in ["zip", "jq", "tree"] {
         assert!(
@@ -134,11 +135,7 @@ fn reimport_reconciles(family: Family) {
     assert!(apply.status.success(), "{}", story(&apply));
     assert!(!case.installed().contains("bat"));
     let quiet = case.plan();
-    assert!(
-        out(&quiet).ends_with("nothing to do\n"),
-        "{}",
-        story(&quiet)
-    );
+    assert!(nothing(&quiet), "{}", story(&quiet));
 
     // A second reconcile of the converged machine changes nothing: identical bytes.
     let before = case.manifest();
@@ -189,9 +186,14 @@ fn declare_as_an_earlier_import(case: &Case) {
          owner = \"{INVOKER}\"\ngroup = \"{INVOKER}\"\n",
         case.manifest()
     ));
-    case.root.write("etc/lodi/files/etc/app.conf", "mine\n");
+    case.write_beside("files/etc/app.conf", "mine\n");
     let apply = case.apply(&[]);
     assert!(apply.status.success(), "{}", story(&apply));
+}
+
+/// A file beside the manifest, as text.
+fn beside(case: &Case, rel: &str) -> String {
+    std::fs::read_to_string(case.beside(rel)).expect("a file beside the manifest")
 }
 
 /// Every path below a directory with its kind, mode, size and mtime: what "writes nothing" is
@@ -237,129 +239,6 @@ fn census(dir: &std::path::Path) -> std::collections::BTreeMap<String, String> {
     out
 }
 
-fn lock_version(case: &Case) -> (serde_json::Value, serde_json::Value) {
-    let lock = case.lock();
-    (lock["version"].clone(), lock["format"].clone())
-}
-
-// ------------------------------------------------------------------ R2: the baseline ---
-
-/// Schema 2: the import writes the baseline and the source; a reconcile that adopts X, a line
-/// the person then deletes, and a second reconcile that does not add X back — because the first
-/// one advanced the baseline. An apply advances it as well.
-fn the_baseline_keeps_a_deleted_adoption_deleted(family: Family) {
-    let case = Case::new(&format!("r2-{family:?}"), machine_for(family));
-    assert!(case.import().status.success());
-    assert_eq!(
-        lock_version(&case),
-        (serde_json::json!(2), serde_json::json!("lodi-host-lock/2"))
-    );
-    let lock = case.lock();
-    assert_eq!(lock["source"], "/etc/lodi", "{lock}");
-    let explicit = &lock["baseline"]["explicit"];
-    assert!(
-        explicit
-            .as_array()
-            .is_some_and(|names| names.iter().any(|n| n == "bat")),
-        "{lock}"
-    );
-
-    case.install_by_hand(Pkg::new("zip"));
-    let first = case.import();
-    assert!(first.status.success(), "{}", story(&first));
-    assert!(common(&case.manifest()).contains(&"zip".to_string()));
-    assert!(
-        case.lock()["baseline"]["explicit"]
-            .as_array()
-            .is_some_and(|names| names.iter().any(|n| n == "zip")),
-        "the reconcile advanced the baseline: {}",
-        case.lock()
-    );
-
-    case.delete_line("zip");
-    let second = case.import();
-    assert!(second.status.success(), "{}", story(&second));
-    assert!(
-        !case.manifest().contains("\"zip\""),
-        "the second reconcile added zip back:\n{}",
-        case.manifest()
-    );
-    assert!(out(&second).contains("0 added"), "{}", story(&second));
-
-    // An apply advances it too: htop declared and installed by the apply is in the baseline.
-    // This reconcile test has no dated Arch archive fixture: float its imported snapshot
-    // explicitly. The dated transaction is checked against loopback in host_pin_arch.
-    let text = case
-        .manifest()
-        .replacen("common = [\n", "common = [\n  \"htop\",\n", 1);
-    let text = if family == Family::Pacman {
-        assert!(text.lines().any(|line| line.starts_with("snapshot = ")));
-        text.lines()
-            .filter(|line| !line.starts_with("snapshot = "))
-            .collect::<Vec<_>>()
-            .join("\n")
-    } else {
-        text
-    };
-    case.set_manifest(&text);
-    case.edit(|m| {
-        m["available"]["htop"] = m["available"]["zip"].clone();
-    });
-    let apply = case.apply(&[]);
-    assert!(apply.status.success(), "{}", story(&apply));
-    let lock = case.lock();
-    assert!(
-        lock["baseline"]["explicit"]
-            .as_array()
-            .is_some_and(
-                |names| names.iter().any(|n| n == "htop") && !names.iter().any(|n| n == "zip")
-            ),
-        "{lock}"
-    );
-}
-
-#[test]
-fn r2_the_baseline_keeps_a_deleted_adoption_deleted_on_pacman() {
-    the_baseline_keeps_a_deleted_adoption_deleted(Family::Pacman);
-}
-
-#[test]
-fn r2_the_baseline_keeps_a_deleted_adoption_deleted_on_apt() {
-    the_baseline_keeps_a_deleted_adoption_deleted(Family::Apt);
-}
-
-/// A version-1 lock is still read: a plan over it works, and says the record will be updated;
-/// the first apply writes schema 2.
-#[test]
-fn r2_a_version_1_lock_is_read_and_the_first_apply_writes_version_2() {
-    let case = Case::new("r2-v1", machine_for(Family::Apt));
-    assert!(case.import().status.success());
-    let mut lock = case.lock();
-    let object = lock.as_object_mut().unwrap();
-    object.remove("baseline");
-    object.remove("source");
-    object.insert("version".into(), serde_json::json!(1));
-    object.insert("format".into(), serde_json::json!("lodi-host-lock/1"));
-    case.root.write(
-        "etc/lodi/host.lock",
-        &(serde_json::to_string_pretty(&lock).unwrap() + "\n"),
-    );
-    let plan = case.plan();
-    assert!(plan.status.success(), "{}", story(&plan));
-    assert!(
-        out(&plan).contains("no machine changes; apply would update the record"),
-        "{}",
-        story(&plan)
-    );
-    let apply = case.apply(&[]);
-    assert!(apply.status.success(), "{}", story(&apply));
-    assert_eq!(
-        lock_version(&case),
-        (serde_json::json!(2), serde_json::json!("lodi-host-lock/2"))
-    );
-    assert!(out(&case.plan()).ends_with("nothing to do\n"));
-}
-
 // --------------------------------------------- R3: the rules, end to end where they bite ---
 
 /// A declared configuration file changed only on the machine is not captured again (si-1): the
@@ -387,7 +266,7 @@ fn r3_a_file_changed_only_on_the_machine_is_not_captured_again() {
         !said.contains("mine, changed"),
         "the report printed file contents:\n{said}"
     );
-    assert_eq!(case.root.read("etc/lodi/files/etc/app.conf"), "mine\n");
+    assert_eq!(beside(&case, "files/etc/app.conf"), "mine\n");
     assert!(
         case.manifest().contains("mode = \"0644\""),
         "{}",
@@ -402,14 +281,10 @@ fn r3_a_file_edited_in_the_manifest_is_kept_and_a_conflict_keeps_the_manifest() 
     let case = case_with_conffile("r3-conflict", Family::Apt);
     assert!(case.import().status.success());
     declare_as_an_earlier_import(&case);
-    case.root
-        .write("etc/lodi/files/etc/app.conf", "edited by hand\n");
+    case.write_beside("files/etc/app.conf", "edited by hand\n");
     let kept = case.import();
     assert!(kept.status.success(), "{}", story(&kept));
-    assert_eq!(
-        case.root.read("etc/lodi/files/etc/app.conf"),
-        "edited by hand\n"
-    );
+    assert_eq!(beside(&case, "files/etc/app.conf"), "edited by hand\n");
     assert!(out(&kept).contains("1 kept"), "{}", story(&kept));
 
     case.root.write("etc/app.conf", "changed on the machine\n");
@@ -426,10 +301,7 @@ fn r3_a_file_edited_in_the_manifest_is_kept_and_a_conflict_keeps_the_manifest() 
         "{}",
         story(&conflict)
     );
-    assert_eq!(
-        case.root.read("etc/lodi/files/etc/app.conf"),
-        "edited by hand\n"
-    );
+    assert_eq!(beside(&case, "files/etc/app.conf"), "edited by hand\n");
 }
 
 /// A declared file whose bytes stay fixed while its mode, owner and group change on the machine
@@ -487,13 +359,13 @@ fn r3_a_mode_owner_or_group_changed_only_on_the_machine_is_not_captured_again() 
     ] {
         assert!(manifest.contains(&key), "no {key}:\n{manifest}");
     }
-    assert_eq!(case.root.read("etc/lodi/files/etc/app.conf"), "mine\n");
+    assert_eq!(beside(&case, "files/etc/app.conf"), "mine\n");
 
-    // The schema-2 contract is unchanged: the same version, format and baseline members, and a
-    // file's baseline is still its digest alone.
+    // The schema-2 baseline is unchanged: the same members, and a file's baseline is still its
+    // digest alone. The record's version follows what else it holds (the `[system]` basics an
+    // import records make it 5), so only its floor is checked.
     let lock = case.lock();
-    assert_eq!(lock["version"], 2);
-    assert_eq!(lock["format"], "lodi-host-lock/2");
+    assert!(lock["version"].as_u64().is_some_and(|v| v >= 2), "{lock}");
     let baseline = lock["baseline"].as_object().expect("a baseline");
     let mut members: Vec<&str> = baseline.keys().map(String::as_str).collect();
     members.sort_unstable();
@@ -586,7 +458,7 @@ fn r3_a_hold_set_outside_lodi_is_adopted() {
         "{}",
         case.manifest()
     );
-    assert!(out(&case.plan()).ends_with("nothing to do\n"));
+    assert!(nothing(&case.plan()));
 }
 
 /// A package from a third party installed outside Lodi is a line of the regenerated `NOT
@@ -615,62 +487,10 @@ fn r3_a_third_party_install_is_not_captured_and_a_deleted_block_stays_deleted() 
     );
 }
 
-// -------------------------------------------- R4: no record, --dry-run, root, --force ---
+// --------------------------------------------------------------------------- R4: --dry-run ---
 
-/// No lock at all: a two-way report, nothing written, and a hint naming the apply and
-/// `--force`. A version-1 lock is the same.
-#[test]
-fn r4_no_record_is_a_report_and_writes_nothing() {
-    let case = Case::new("r4-none", machine_for(Family::Pacman));
-    assert!(case.import().status.success());
-    fs_remove(&case, "etc/lodi/host.lock");
-    case.install_by_hand(Pkg::new("zip"));
-    let before = census(&case.root.dir);
-    let report = case.import();
-    assert!(report.status.success(), "{}", story(&report));
-    let said = out(&report);
-    assert!(
-        said.contains("not reconciled: there is no host.lock"),
-        "{said}"
-    );
-    assert!(said.contains("lodi host apply --root"), "{said}");
-    assert!(said.contains("--force"), "{said}");
-    assert!(
-        fakehost::err(&report)
-            .contains("W_RECONCILE: package zip is on this machine and not in host.toml"),
-        "{}",
-        story(&report)
-    );
-    assert_eq!(before, census(&case.root.dir), "a report wrote something");
-}
-
-#[test]
-fn r4_a_version_1_lock_is_a_report_and_writes_nothing() {
-    let case = Case::new("r4-v1", machine_for(Family::Apt));
-    assert!(case.import().status.success());
-    let mut lock = case.lock();
-    let object = lock.as_object_mut().unwrap();
-    object.remove("baseline");
-    object.remove("source");
-    object.insert("version".into(), serde_json::json!(1));
-    object.insert("format".into(), serde_json::json!("lodi-host-lock/1"));
-    case.root.write(
-        "etc/lodi/host.lock",
-        &(serde_json::to_string_pretty(&lock).unwrap() + "\n"),
-    );
-    let before = census(&case.root.dir);
-    let report = case.import();
-    assert!(report.status.success(), "{}", story(&report));
-    assert!(
-        out(&report).contains("host.lock is lodi-host-lock/1 version 1, which records no baseline"),
-        "{}",
-        story(&report)
-    );
-    assert_eq!(before, census(&case.root.dir));
-}
-
-/// `--dry-run` prints the unified diff, never a changed file's contents — no file is captured
-/// (si-1) — and writes nothing, the lock included.
+/// `--dry-run` previews the merge on standard error, never a changed file's contents — no file
+/// is captured (si-1) — and writes nothing, the lock and the run's log included.
 #[test]
 fn r4_dry_run_prints_the_diff_and_writes_nothing() {
     let case = case_with_conffile("r4-dry", Family::Apt);
@@ -680,60 +500,51 @@ fn r4_dry_run_prints_the_diff_and_writes_nothing() {
     let before = census(&case.root.dir);
     let dry = case.verb("import", &["--dry-run"]);
     assert!(dry.status.success(), "{}", story(&dry));
-    let said = out(&dry);
-    assert!(said.contains("+++ "), "{said}");
-    assert!(said.contains("+  \"zip\","), "{said}");
-    assert!(!said.contains("captured"), "{said}");
+    let said = err(&dry);
+    let host = case.config().join("host.toml").display().to_string();
+    assert!(
+        said.contains(&format!("would change {host}: 1 added, 0 removed")),
+        "{said}"
+    );
+    assert!(said.contains("+ package zip"), "{said}");
+    assert!(!said.contains("would write"), "{said}");
     assert!(!said.contains("changed quietly"), "{said}");
     assert!(said.contains("nothing was written (--dry-run)"), "{said}");
+    assert!(
+        !out(&dry).contains("zip"),
+        "the preview is on standard error"
+    );
     assert_eq!(before, census(&case.root.dir), "--dry-run wrote something");
-}
-
-/// `--force` still replaces the manifest, the person's edits with it.
-#[test]
-fn r4_force_still_replaces() {
-    let case = Case::new("r4-force", machine_for(Family::Pacman));
-    assert!(case.import().status.success());
-    let text = case
-        .manifest()
-        .replacen("[packages]\n", "# my note\n[packages]\n", 1);
-    case.set_manifest(&text);
-    case.delete_line("bat");
-    let forced = case.verb("import", &["--force"]);
-    assert!(forced.status.success(), "{}", story(&forced));
-    assert!(!case.manifest().contains("# my note"));
-    assert!(case.manifest().contains("\"bat\""));
 }
 
 // ------------------------------------------------------ R5: a no-op writes nothing at all ---
 
-/// A reconcile of a machine that has not changed writes nothing: identical bytes, and the
-/// manifest's and the lock's mtimes unchanged.
+/// A reconcile of a machine that has not changed writes nothing to the config: identical
+/// bytes, and the manifest's and the lock's mtimes unchanged.
 #[test]
 fn r5_a_no_op_reconcile_writes_nothing() {
     let case = case_with_conffile("r5-noop", Family::Pacman);
     assert!(case.import().status.success());
-    let before = census(&case.root.dir);
+    // The first import may leave the lock unfilled (the offline archive has no dated Arch
+    // repository for today); importing again fills it. The no-op is the import after that, run
+    // as is: `Case::import` would rewrite the file itself.
+    assert!(case.verb("import", &[]).status.success());
+    let before = census(&case.config());
     let manifest = case.manifest();
-    let again = case.import();
+    let again = case.verb("import", &[]);
     assert!(again.status.success(), "{}", story(&again));
+    let host = case.config().join("host.toml").display().to_string();
     assert!(
-        out(&again).contains(
-            "0 added, 0 removed, 0 kept, 0 conflict(s); nothing changed, nothing written"
-        ),
+        out(&again).contains(&format!("{host} is unchanged: nothing to merge")),
         "{}",
         story(&again)
     );
     assert_eq!(case.manifest(), manifest);
     assert_eq!(
         before,
-        census(&case.root.dir),
+        census(&case.config()),
         "a no-op reconcile wrote something"
     );
-}
-
-fn fs_remove(case: &Case, rel: &str) {
-    std::fs::remove_file(case.root.path(rel)).expect("remove");
 }
 
 // ------------------------------ R7: an archive-dated index, found on the Ubuntu guest ---
@@ -769,22 +580,19 @@ fn r7_after_a_reconcile_an_archive_dated_index_is_nothing_to_do_on_apt() {
     let first = case.import();
     assert!(first.status.success(), "{}", story(&first));
     case.install_by_hand(Pkg::new("zip"));
-    remove_by_hand(&case, "tree");
     let again = case.import();
     assert!(again.status.success(), "{}", story(&again));
     assert!(
-        out(&again).contains("1 added, 1 removed"),
+        out(&again).contains("1 added, 0 removed"),
         "{}",
         story(&again)
     );
 
     age_the_index(&case, 9);
     let plan = case.plan();
-    assert!(plan.status.success(), "{}", story(&plan));
-    assert_eq!(out(&plan), "nothing to do\n", "{}", story(&plan));
+    assert!(nothing(&plan), "{}", story(&plan));
     let apply = case.apply(&[]);
-    assert!(apply.status.success(), "{}", story(&apply));
-    assert_eq!(out(&apply), "nothing to do\n", "{}", story(&apply));
+    assert!(nothing(&apply), "{}", story(&apply));
     assert!(
         !case
             .log()

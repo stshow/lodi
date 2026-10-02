@@ -10,49 +10,15 @@
 //! that an unchanged apply writes unchanged bytes. It is written atomically at the end of a
 //! successful apply; a failure leaves the previous record in place.
 //!
-//! # Schema 2: the baseline a reconcile merges from (LD-378)
+//! # Schema 6: the one version 2.0 writes and reads (#688, #710)
 //!
-//! `lodi-host-lock/2` adds two fields to version 1 and changes none. [`Baseline`] is Lodi's record
-//! of the machine at the last sync — an import, a writing reconcile or an apply: the explicitly
-//! installed names from the distribution, the apt holds, and the digest of each captured or
-//! managed file. It is the **base** of the three-way merge `lodi host import` makes over an
-//! existing manifest ([`super::reconcile`]); without it a name the person deleted would come back
-//! at the next reconcile. `source` is the directory, inside the root, the manifest of that sync
-//! was read from. A version-1 record has neither field, and a reconcile over it reports and writes
-//! nothing.
-//!
-//! # Schema 3: the git revision a URL apply read (LD-401)
-//!
-//! `lodi-host-lock/3` adds [`GitRecord`] and nothing else, and only a record of a host read from a
-//! git URL is written as version 3: a directory's record stays version 2, byte for byte. `source`
-//! is then the canonical URL. This build reads versions 1 to 3; a 1.4 build refuses a version-3
-//! record as a version it does not read.
-//!
-//! # Schema 4: the declared services and the managed accounts and groups (sc-1, LD-418; su-1,
-//! LD-419)
-//!
-//! `lodi-host-lock/4` adds `services`, each unit `[services]` declared at the last apply and its
-//! state, and `users` and `groups`, the names a `host.toml` declared at the last apply, and
-//! nothing else; a git record may come with it. Only a record that names a service, an account
-//! or a group is written as version 4, so any other record stays version 2 or 3, byte for byte.
-//! A unit the record names and the manifest no longer declares goes back to its preset. An
-//! account or group name that leaves the manifest is said to be no longer managed and leaves
-//! the record, and the account or group itself is never touched.
-//!
-//! # Schema 5: the OS basics (sd-1, LD-420)
-//!
-//! `lodi-host-lock/5` adds `basics`: for each of `hostname`, `timezone`, `locale` and `keymap`
-//! the host declared at the last apply, its `value` and what it `was` before lodi first set it,
-//! which an apply puts back once the declaration is gone; `firewall`, the digest of lodi's table;
-//! and `network`, the interfaces lodi's own network files configure. Only a record that holds a
-//! basic is written as version 5, so every other record keeps its version byte for byte. This
-//! build reads versions 1 to 5.
-//!
-//! bc-1 (LD-423) adds two kinds of basic to version 5: `kernel.parameters`, the parameters the
-//! loader was last written with, and `sysctl.NAME`, each sysctl value with what it `was`.
-//!
-//! bl-1 (LD-424) adds `boot.loader`, the declared loader with the one it replaced as its `was`,
-//! and `boot.timeout` and `boot.default`, each as lodi last wrote it.
+//! Every record is `lodi-host-lock/6`, whatever it holds: [`Baseline`], lodi's record of the
+//! machine at the last sync and the base of the three-way merge an import makes over an existing
+//! manifest ([`super::reconcile`]); `source`, the config folder that sync read; `git`, the commit
+//! of a config read from a git URL (LD-401); `services`, `users` and `groups` as the last switch
+//! declared them; and `basics`, each OS basic with what it `was` before lodi first set it
+//! (LD-420, LD-423, LD-424). 6 is above every version 1.x wrote, so a 1.x record at this path is
+//! refused by its version and named, never read by luck.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -63,24 +29,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::diag::Diagnostic;
 
-/// The lock schema this build writes for a host directory. It reads versions 1 to 3
-/// (`src/schema.rs`).
-pub const VERSION: u64 = 2;
+/// The lock schema this build writes and reads (`src/schema.rs`).
+pub const VERSION: u64 = 6;
 /// The explicitly versioned schema name this build writes; no compatibility beyond the read-set
 /// is promised.
-pub const FORMAT: &str = "lodi-host-lock/2";
-/// The schema of a record that carries a [`GitRecord`] (LD-401).
-pub const GIT_VERSION: u64 = 3;
-/// The schema of a record that names a declared service (sc-1, LD-418) or managed accounts or
-/// groups (su-1, LD-419).
-pub const SERVICES_VERSION: u64 = 4;
-/// The schema of a record that holds an OS basic (sd-1, LD-420).
-pub const BASICS_VERSION: u64 = 5;
-/// The directory, inside the root, the in-place manifest is read from: the `source` a sync of
-/// `/etc/lodi/host.toml` records.
-pub const IN_PLACE_SOURCE: &str = "/etc/lodi";
+pub const FORMAT: &str = "lodi-host-lock/6";
 
-/// The format name each version this build reads carries.
+/// What a record this build does not read asks of the person: lodi never changes it.
+const HINT: &str = "lodi never changes a record it did not write: move it aside, then import \
+                    or switch again";
+
+/// The format name a schema version carries.
 fn format_of(version: u64) -> String {
     format!("lodi-host-lock/{version}")
 }
@@ -220,52 +179,30 @@ impl HostLock {
         }
     }
 
-    /// Record the OS basics, and the schema that carries them: version 5 when there is one.
+    /// Record the OS basics.
     pub fn set_basics(&mut self, basics: BTreeMap<String, BasicRecord>) {
         self.basics = basics;
-        self.settle();
     }
 
-    /// Record `git`, and the schema that carries it: version 3 with a git record, the directory
-    /// schema without one.
+    /// Record `git`: the commit of a config read from a git URL, else none.
     pub fn set_git(&mut self, git: Option<GitRecord>) {
         self.git = git;
-        self.settle();
     }
 
-    /// Record the declared services, and the schema that carries them: version 4 when there is
-    /// one, else as [`HostLock::set_git`] decides.
+    /// Record the declared services.
     pub fn set_services(&mut self, services: BTreeMap<String, String>) {
         self.services = services;
-        self.settle();
     }
 
-    /// Record the managed accounts and groups, and the schema that carries them.
+    /// Record the managed accounts and groups.
     pub fn set_identities(&mut self, users: BTreeSet<String>, groups: BTreeSet<String>) {
         (self.users, self.groups) = (users, groups);
-        self.settle();
-    }
-
-    /// Version 4 with declared services or managed accounts or groups, else 3 with a git
-    /// record, else the directory schema: a record carries the lowest version that holds what
-    /// it records.
-    fn settle(&mut self) {
-        self.version = if !self.basics.is_empty() {
-            BASICS_VERSION
-        } else if !self.services.is_empty() || !self.users.is_empty() || !self.groups.is_empty() {
-            SERVICES_VERSION
-        } else if self.git.is_some() {
-            GIT_VERSION
-        } else {
-            VERSION
-        };
-        self.format = format_of(self.version);
     }
 
     /// Whether this record carries a base a reconcile may merge from for the manifest read from
-    /// `source`: a schema-2 record whose last sync read that same directory.
+    /// `source`: a record whose last sync read that same directory.
     pub fn base_for(&self, source: &str) -> Option<&Baseline> {
-        if self.version < 2 || self.source.as_deref() != Some(source) {
+        if self.source.as_deref() != Some(source) {
             return None;
         }
         self.baseline.as_ref()
@@ -290,7 +227,7 @@ impl HostLock {
                     "E_STORE_IO",
                     format!("cannot read {}: {e}", path.display()),
                 )
-                .hint("the host lock records what the last apply did; fix its permissions"));
+                .hint("the host lock records what the last switch did; fix its permissions"));
             }
         };
         let unreadable = |why: String| {
@@ -301,7 +238,7 @@ impl HostLock {
                     path.display()
                 ),
             )
-            .hint("use the lodi that wrote it, or move it aside and apply again")
+            .hint(HINT)
         };
         // The schema version and the format name are decided from the raw JSON **before** the
         // record is deserialized, so a file from another release is refused as a version, never
@@ -328,39 +265,9 @@ impl HostLock {
                 ),
             );
             d.notes.push(crate::schema::writer_note(ARTIFACT, &raw));
-            return Err(d.hint("use the lodi that wrote it, or move it aside and apply again"));
+            return Err(d.hint(HINT));
         }
         let lock: HostLock = serde_json::from_value(raw).map_err(|e| unreadable(e.to_string()))?;
-        // Version 1 has no baseline and no source: a version-1 file that carries either is not a
-        // file any release wrote.
-        if lock.version < 2 && (lock.baseline.is_some() || lock.source.is_some()) {
-            return Err(unreadable(
-                "a version-1 record carries a field version 2 introduced".to_string(),
-            ));
-        }
-        if (lock.version < GIT_VERSION && lock.git.is_some())
-            || (lock.version == GIT_VERSION && lock.git.is_none())
-        {
-            return Err(unreadable(
-                "a git record and schema version 3 come together or not at all".to_string(),
-            ));
-        }
-        let identities =
-            !(lock.services.is_empty() && lock.users.is_empty() && lock.groups.is_empty());
-        if (lock.version < SERVICES_VERSION && identities)
-            || (lock.version == SERVICES_VERSION && !identities)
-        {
-            return Err(unreadable(
-                "declared services, managed accounts or groups and schema version 4 come together \
-                 or not at all"
-                    .to_string(),
-            ));
-        }
-        if (lock.version == BASICS_VERSION) == lock.basics.is_empty() {
-            return Err(unreadable(
-                "OS basics and schema version 5 come together or not at all".to_string(),
-            ));
-        }
         // What the record keeps of a basic reaches its tool's argv when the declaration goes,
         // so it is held to the grammar the manifest holds it to.
         if let Some((key, _)) = lock.basics.iter().find(|(key, record)| match key.as_str() {

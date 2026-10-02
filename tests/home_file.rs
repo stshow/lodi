@@ -20,7 +20,7 @@ use lodi::home::programs::{self, RenderEnv};
 use lodi::roots::Roots;
 use serde::Deserialize;
 
-use support::{HomeEnv, home_env, home_gate};
+use support::{HomeEnv, home_env, home_gate, home_part};
 
 fn write_manifest(env: &HomeEnv, text: &str) {
     let dir = env.config().join("lodi");
@@ -28,11 +28,9 @@ fn write_manifest(env: &HomeEnv, text: &str) {
     fs::write(dir.join("home.toml"), text).unwrap();
 }
 
+/// `lodi ARGS` with a 1.x home verb read as `lodi switch --home` (LD-518).
 fn run(env: &HomeEnv, args: &[&str]) -> Output {
-    env.command()
-        .args(args)
-        .output()
-        .expect("the lodi binary runs")
+    env.lodi(args).output().expect("the lodi binary runs")
 }
 
 fn text(bytes: &[u8]) -> String {
@@ -62,9 +60,9 @@ fn a_seed_is_written_once_and_never_compared_again() {
     let target = env.home().join(".config/demo/seed.conf");
     let plan = run(&env, &["home", "plan"]);
     assert!(
-        text(&plan.stdout).contains("seed      .config/demo/seed.conf"),
+        home_part(&plan).contains("seed      .config/demo/seed.conf"),
         "{}",
-        text(&plan.stdout)
+        text(&plan.stderr)
     );
     let out = run(&env, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
@@ -125,9 +123,9 @@ fn identical_bytes_are_adopted_without_a_write_and_then_managed() {
     );
     let plan = run(&env, &["home", "plan"]);
     assert!(
-        text(&plan.stdout).contains("adopt     .adoptrc"),
+        home_part(&plan).contains("adopt     .adoptrc"),
         "{}",
-        text(&plan.stdout)
+        text(&plan.stderr)
     );
     let out = run(&env, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
@@ -177,7 +175,7 @@ fn a_duplicate_target_is_refused_before_anything_is_planned() {
     let env = home_env("file-dup");
     write_manifest(
         &env,
-        &format!("{HEAD}[files.\".x\"]\ncontent = \"a\"\n[home.file.\".x\"]\ntext = \"b\"\n"),
+        &format!("{HEAD}[home.file.\".x\"]\ntext = \"a\"\n[home.file.\".x/\"]\ntext = \"b\"\n"),
     );
     let out = run(&env, &["home", "plan"]);
     assert_ne!(out.status.code(), Some(0));
@@ -187,40 +185,6 @@ fn a_duplicate_target_is_refused_before_anything_is_planned() {
         text(&out.stderr)
     );
     assert!(text(&out.stdout).is_empty());
-}
-
-#[test]
-fn a_state_record_written_by_lodi_1_0_still_reads_and_still_detects_drift() {
-    let env = home_env("file-state-v1");
-    let target = env.home().join(".v1rc");
-    write_manifest(
-        &env,
-        &format!("{HEAD}[files.\".v1rc\"]\ncontent = \"one\\n\"\n"),
-    );
-    let out = run(&env, &["home", "apply"]);
-    assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
-
-    // Rewrite the record as Lodi 1.0 writes it: version 1, and no per-file `state`.
-    let state_path = env.data().join("lodi/home-scope/state.json");
-    let mut state: serde_json::Value =
-        serde_json::from_slice(&fs::read(&state_path).unwrap()).unwrap();
-    assert_eq!(state["version"], 3);
-    state["version"] = 1.into();
-    state.as_object_mut().unwrap().remove("source");
-    for (_, file) in state["files"].as_object_mut().unwrap() {
-        let file = file.as_object_mut().unwrap();
-        file.remove("state");
-    }
-    fs::write(&state_path, serde_json::to_vec_pretty(&state).unwrap()).unwrap();
-
-    fs::write(&target, "edited\n").unwrap();
-    write_manifest(
-        &env,
-        &format!("{HEAD}[files.\".v1rc\"]\ncontent = \"two\\n\"\n"),
-    );
-    let out = run(&env, &["home", "apply"]);
-    assert_eq!(out.status.code(), Some(8), "{}", text(&out.stderr));
-    assert_eq!(fs::read_to_string(&target).unwrap(), "edited\n");
 }
 
 // ------------------------------------------------------------------------------ the loader ---
@@ -267,7 +231,6 @@ fn home_file_and_xdg_config_parse_into_the_one_entry_type() {
             "{HEAD}[home.file.\".local/bin/hello\"]\ntext = \"#!/bin/sh\\n\"\nexecutable = true\n\
              [home.xdg_config.\"demo/extra.conf\"]\ntext = \"a\\n\"\nmode = \"0600\"\n\
              [home.file.\".profile-seed\"]\ntext = \"s\\n\"\nstate = \"seed\"\n\
-             [files.\".plain\"]\ncontent = \"p\\n\"\n\
              [home.file.\".gone\"]\nstate = \"absent\"\n"
         ),
     )
@@ -280,7 +243,6 @@ fn home_file_and_xdg_config_parse_into_the_one_entry_type() {
     let seed = &m.files[".profile-seed"];
     assert_eq!(seed.state, FileState::Seed);
     assert_eq!(seed.on_remove, OnRemove::Keep, "a seed is kept by default");
-    assert_eq!(m.files[".plain"].table, "files");
     assert_eq!(m.files[".gone"].state, FileState::Absent);
 }
 
@@ -297,11 +259,6 @@ fn text_source_and_mode_conflicts_are_refused() {
             "{body}"
         );
     }
-    // `[files]` keeps its own spelling, `content`, and 1.0's code for neither.
-    assert_eq!(
-        codes(&format!("{HEAD}[files.\".a\"]\nmode = \"0644\"\n")),
-        ["E_TYPE"]
-    );
     assert_eq!(
         codes(&format!("{HEAD}[home.file.\".a\"]\ncontent = \"x\"\n")),
         ["E_ATTR_CONFLICT", "E_UNKNOWN_ATTR"],
@@ -330,12 +287,8 @@ fn keys_are_validated_as_files_keys_are() {
 fn a_path_declared_twice_in_any_combination_names_both() {
     let pairs = [
         (
-            "[files.\".config/x\"]\ncontent = \"a\"",
-            "[home.file.\".config/x\"]\ntext = \"b\"",
-        ),
-        (
-            "[files.\".config/x\"]\ncontent = \"a\"",
-            "[home.xdg_config.\"x\"]\ntext = \"b\"",
+            "[home.file.\".config/x\"]\ntext = \"a\"",
+            "[home.file.\".config/x/\"]\ntext = \"b\"",
         ),
         (
             "[home.file.\".config/x\"]\ntext = \"a\"",
@@ -361,7 +314,7 @@ fn a_directory_source_expands_to_sorted_files_and_refuses_what_is_not_a_file() {
     fs::create_dir_all(tree.join("sub")).unwrap();
     fs::write(tree.join("b"), "b\n").unwrap();
     fs::write(tree.join("sub/a"), "a\n").unwrap();
-    for table in ["home.xdg_config.\"demo\"", "files.\".config/demo\""] {
+    for table in ["home.xdg_config.\"demo\"", "home.file.\".config/demo\""] {
         let m = load(&env, &format!("{HEAD}[{table}]\nsource = \"./tree\"\n")).unwrap();
         let keys: Vec<&String> = m.files.keys().collect();
         assert_eq!(keys, [".config/demo/b", ".config/demo/sub/a"], "{table}");
@@ -421,7 +374,7 @@ fn the_plan_prints_seed_and_adopt_with_the_backup_note_and_absent_removes() {
              [home.file.\".gone\"]\nstate = \"absent\"\n"
         ),
     );
-    let plan = text(&run(&env, &["home", "plan"]).stdout);
+    let plan = home_part(&run(&env, &["home", "plan"]));
     let line = |verb: &str, path: &str| {
         plan.lines()
             .find(|l| l.starts_with(verb) && l.contains(path))
@@ -449,237 +402,77 @@ fn the_plan_prints_seed_and_adopt_with_the_backup_note_and_absent_removes() {
     assert!(after.is_empty(), "{after:?}");
 }
 
-/// The one planner, three tables side by side: over the same files, `[files]` prints 1.0's
-/// verbs (`replace`, and `unchanged` for bytes already there) and the 1.1 tables print theirs —
-/// `create` with the backup note over a file Lodi did not write, `adopt` for identical bytes and
-/// `update` for new bytes over Lodi's own file, in the plan, the apply and an apply over drift.
+/// The one planner, both tables side by side: `create` with the backup note over a file Lodi did
+/// not write, `adopt` for identical bytes and `update` for new bytes over Lodi's own file, in the
+/// plan, the apply and an apply over drift.
 #[test]
-fn each_table_plans_new_bytes_with_its_own_verbs() {
+fn each_table_plans_new_bytes_with_the_same_verbs() {
     let env = home_env("file-update");
     let manifest = |version: &str| {
         format!(
-            "{HEAD}[files.\".f-new\"]\ncontent = \"{version}\\n\"\n\
-             [files.\".f-same\"]\ncontent = \"same\\n\"\n\
-             [home.file.\".h-new\"]\ntext = \"{version}\\n\"\n\
+            "{HEAD}[home.file.\".h-new\"]\ntext = \"{version}\\n\"\n\
              [home.file.\".h-same\"]\ntext = \"same\\n\"\n\
              [home.xdg_config.\"demo/x-new\"]\ntext = \"{version}\\n\"\n"
         )
     };
     fs::create_dir_all(env.home().join(".config/demo")).unwrap();
-    for rel in [".f-new", ".h-new", ".config/demo/x-new"] {
+    for rel in [".h-new", ".config/demo/x-new"] {
         fs::write(env.home().join(rel), "mine\n").unwrap();
     }
-    for rel in [".f-same", ".h-same"] {
-        fs::write(env.home().join(rel), "same\n").unwrap();
-    }
+    fs::write(env.home().join(".h-same"), "same\n").unwrap();
     write_manifest(&env, &manifest("one"));
     let out = run(&env, &["home", "plan"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
     assert_eq!(
-        text(&out.stdout),
+        home_part(&out),
         "\
 create    .config/demo/x-new        0644    (backup: first unmanaged copy kept)
-replace   .f-new                    0644    (backup: first unmanaged copy kept)
-unchanged .f-same                   0644
 create    .h-new                    0644    (backup: first unmanaged copy kept)
 adopt     .h-same                   0644    (backup: first unmanaged copy kept)
-5 files: 2 create, 1 adopt, 1 replace, 1 unchanged
+3 files: 2 create, 1 adopt
 "
     );
     let out = run(&env, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
 
-    // New bytes over what Lodi wrote: `update` for the 1.1 tables, 1.0's `replace` for `[files]`.
+    // New bytes over what Lodi wrote: `update`.
     write_manifest(&env, &manifest("two"));
     let out = run(&env, &["home", "plan"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
     assert_eq!(
-        text(&out.stdout),
+        home_part(&out),
         "\
 update    .config/demo/x-new        0644
-replace   .f-new                    0644
-unchanged .f-same                   0644
 update    .h-new                    0644
 unchanged .h-same                   0644
-5 files: 2 update, 1 replace, 2 unchanged
+3 files: 2 update, 1 unchanged
 "
     );
     let out = run(&env, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
-    let applied = text(&out.stdout);
-    for line in [
-        "updated   .config/demo/x-new        0644",
-        "replaced  .f-new                    0644",
-        "updated   .h-new                    0644",
-    ] {
-        assert!(
-            applied.lines().any(|l| l == line),
-            "no `{line}`:\n{applied}"
-        );
+    for rel in [".config/demo/x-new", ".h-new"] {
+        assert_eq!(fs::read(env.home().join(rel)).unwrap(), b"two\n", "{rel}");
     }
-    assert_eq!(fs::read(env.home().join(".h-new")).unwrap(), b"two\n");
 
-    // Drift overwritten on request: the same split, with the drift note.
+    // Drift overwritten on request.
     write_manifest(&env, &manifest("three"));
-    for rel in [".f-new", ".h-new", ".config/demo/x-new"] {
+    for rel in [".h-new", ".config/demo/x-new"] {
         fs::write(env.home().join(rel), "hand\n").unwrap();
     }
     let out = run(&env, &["home", "apply", "--overwrite-drift"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
-    let applied = text(&out.stdout);
-    let note = "    (drift: the edited bytes are kept in the backup store)";
-    for line in [
-        format!("updated   .config/demo/x-new        0644{note}"),
-        format!("replaced  .f-new                    0644{note}"),
-        format!("updated   .h-new                    0644{note}"),
-    ] {
-        assert!(
-            applied.lines().any(|l| l == line),
-            "no `{line}`:\n{applied}"
-        );
+    for rel in [".config/demo/x-new", ".h-new"] {
+        assert_eq!(fs::read(env.home().join(rel)).unwrap(), b"three\n", "{rel}");
     }
-    assert_eq!(
-        fs::read(env.home().join(".config/demo/x-new")).unwrap(),
-        b"three\n"
-    );
-}
-
-/// `XDG_CONFIG_HOME` outside the home directory is refused by `plan`, `apply` and `status`
-/// before anything is planned, whatever the manifest declares: `[files]` alone and `[home.file]`
-/// alone as well as `[home.xdg_config]`. Nothing is written.
-#[test]
-fn an_xdg_config_home_outside_home_is_refused_for_every_manifest() {
-    for (tag, table) in [
-        ("files", "[files.\".a\"]\ncontent = \"x\"\n"),
-        ("home-file", "[home.file.\".a\"]\ntext = \"x\"\n"),
-        ("xdg", "[home.xdg_config.\"demo/a\"]\ntext = \"x\"\n"),
-    ] {
-        let env = home_env(&format!("file-xdg-every-{tag}"));
-        let outside = env.root().join("xdg-outside");
-        fs::create_dir_all(outside.join("lodi")).unwrap();
-        fs::write(outside.join("lodi/home.toml"), format!("{HEAD}{table}")).unwrap();
-        for verb in ["plan", "apply", "status"] {
-            let out = env
-                .command()
-                .env("XDG_CONFIG_HOME", &outside)
-                .args(["home", verb])
-                .output()
-                .unwrap();
-            let err = text(&out.stderr);
-            assert_eq!(out.status.code(), Some(3), "{tag} {verb}: {err}");
-            assert!(
-                err.starts_with("lodi: error E_CONFIG: XDG_CONFIG_HOME is outside the home"),
-                "{tag} {verb}: {err}"
-            );
-            assert!(text(&out.stdout).is_empty(), "{tag} {verb}");
-        }
-        assert!(!env.home().join(".a").exists(), "{tag}: a file was written");
-        assert!(
-            !env.data().join("lodi/home-scope").exists(),
-            "{tag}: the home scope's state was written"
-        );
-    }
-}
-
-#[test]
-fn xdg_parent_traversal_is_refused_before_reading_or_planning() {
-    use std::os::unix::fs::MetadataExt;
-    use std::time::SystemTime;
-
-    // Include directory entries, modes, mtimes and bytes: even an identical rewrite or a
-    // newly created empty directory must fail the no-mutation assertion.
-    fn snapshot(root: &Path) -> BTreeMap<PathBuf, (u32, SystemTime, Vec<u8>)> {
-        let mut entries = BTreeMap::new();
-        let mut pending = vec![root.to_path_buf()];
-        while let Some(path) = pending.pop() {
-            let meta = fs::symlink_metadata(&path).unwrap();
-            let bytes = if meta.is_dir() {
-                pending.extend(fs::read_dir(&path).unwrap().map(|e| e.unwrap().path()));
-                Vec::new()
-            } else {
-                assert!(meta.is_file());
-                fs::read(&path).unwrap()
-            };
-            entries.insert(path, (meta.mode(), meta.modified().unwrap(), bytes));
-        }
-        entries
-    }
-
-    for (tag, table) in [
-        ("files", "[files.\".a\"]\ncontent = \"x\"\n"),
-        ("home-file", "[home.file.\".a\"]\ntext = \"x\"\n"),
-        ("xdg", "[home.xdg_config.\"demo/a\"]\ntext = \"x\"\n"),
-    ] {
-        for manifest in ["valid", "missing", "malformed"] {
-            let env = home_env(&format!("file-xdg-parent-{tag}-{manifest}"));
-            let outside = env.root().join("xdg-outside");
-            fs::create_dir_all(outside.join("lodi")).unwrap();
-            match manifest {
-                "valid" => {
-                    fs::write(outside.join("lodi/home.toml"), format!("{HEAD}{table}")).unwrap();
-                }
-                "malformed" => fs::write(outside.join("lodi/home.toml"), "[broken").unwrap(),
-                _ => {}
-            }
-            let before = snapshot(env.root());
-            for verb in ["plan", "apply", "status"] {
-                let out = env
-                    .command()
-                    .env("XDG_CONFIG_HOME", env.home().join("../xdg-outside"))
-                    .args(["home", verb])
-                    .output()
-                    .unwrap();
-                let err = text(&out.stderr);
-                assert_eq!(out.status.code(), Some(3), "{tag} {manifest} {verb}: {err}");
-                assert!(
-                    err.starts_with("lodi: error E_CONFIG: XDG_CONFIG_HOME"),
-                    "{tag} {manifest} {verb}: {err}"
-                );
-                assert!(
-                    out.stdout.is_empty(),
-                    "{tag} {manifest} {verb}: a plan escaped"
-                );
-                assert_eq!(snapshot(env.root()), before, "{tag} {manifest} {verb}");
-                assert!(
-                    home_gate()
-                        .ledger_lines()
-                        .iter()
-                        .all(|(_, path)| !path.starts_with(env.root())),
-                    "{tag} {manifest} {verb}: a write was attempted"
-                );
-            }
-        }
-    }
-}
-
-#[test]
-fn an_xdg_config_home_outside_home_is_a_config_error_before_any_plan() {
-    let env = home_env("file-xdg-outside");
-    let outside = env.root().join("xdg-outside");
-    fs::create_dir_all(outside.join("lodi")).unwrap();
-    fs::write(
-        outside.join("lodi/home.toml"),
-        format!("{HEAD}[home.xdg_config.\"demo/a\"]\ntext = \"x\"\n"),
-    )
-    .unwrap();
-    let out = env
-        .command()
-        .env("XDG_CONFIG_HOME", &outside)
-        .args(["home", "plan"])
-        .output()
-        .unwrap();
-    assert_eq!(out.status.code(), Some(3), "{}", text(&out.stderr));
-    assert!(
-        text(&out.stderr).contains("E_CONFIG"),
-        "{}",
-        text(&out.stderr)
-    );
-    assert!(
-        text(&out.stderr).contains("XDG_CONFIG_HOME"),
-        "{}",
-        text(&out.stderr)
-    );
-    assert!(text(&out.stdout).is_empty());
+    // The edited bytes are kept in the backup store, one copy per drifted file.
+    let backups = fs::read_dir(env.share().join("lodi/home-scope/backups"))
+        .unwrap()
+        .filter(|e| {
+            let name = e.as_ref().unwrap().file_name();
+            name.to_string_lossy().contains(".drift-")
+        })
+        .count();
+    assert_eq!(backups, 2);
 }
 
 // ------------------------------------------------------------------------ the state record ---
@@ -767,9 +560,9 @@ fn the_state_record_carries_the_origin_kind_at_current_version() {
     let out = run(&env, &["home", "apply"]);
     assert_eq!(out.status.code(), Some(0), "{}", text(&out.stderr));
     let state: serde_json::Value =
-        serde_json::from_slice(&fs::read(env.data().join("lodi/home-scope/state.json")).unwrap())
+        serde_json::from_slice(&fs::read(env.share().join("lodi/home-scope/state.json")).unwrap())
             .unwrap();
-    assert_eq!(state["version"], 3);
+    assert_eq!(state["version"], 5);
     assert_eq!(state["files"][".t"]["origin"]["kind"], "content");
     assert!(state["files"][".t"].get("state").is_none());
     assert_eq!(state["files"][".s"]["state"], "seed");

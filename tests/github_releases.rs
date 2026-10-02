@@ -174,8 +174,14 @@ impl Api {
         format!("https://=http://127.0.0.1:{}/", self.port)
     }
 
+    /// The API requests, in order. An artifact download `lodi develop` attempts after it has
+    /// locked is not one of them.
     fn seen(&self) -> Vec<Seen> {
-        self.log.lock().unwrap().clone()
+        let log = self.log.lock().unwrap();
+        log.iter()
+            .filter(|s| s.url.starts_with("https://api.github.com/"))
+            .cloned()
+            .collect()
     }
 
     fn requests(&self) -> Vec<String> {
@@ -829,8 +835,8 @@ fn a_release_with_no_build_for_this_architecture_is_unsupported_arch_not_silence
 // LD-404: conditional requests. Every GitHub API response that carried an `ETag` is kept, body
 // and tag, in `$LODI_HOME/cache/api/`; the next request for the same URL sends `If-None-Match`,
 // and a `304 Not Modified` is answered from that entry. These drive the real binary through
-// `lodi lock`, one fresh project per lock and one store for all of them, so a second lock is a
-// second resolution of the same release.
+// `lodi develop`, which locks a new project first (LD-496), one fresh project per lock and one
+// store for all of them, so a second lock is a second resolution of the same release.
 
 /// The recipe whose release list these tests serve: jq, the catalogue's binary-format recipe.
 fn jq() -> (String, Recipe, String) {
@@ -897,8 +903,9 @@ impl Locker {
         entries[0].clone()
     }
 
-    /// `lodi lock` of [`JQ_MANIFEST`] in a new project against `rewrite`: its output and the
-    /// lock it wrote, if it wrote one.
+    /// `lodi develop --trust` of [`JQ_MANIFEST`] in a new project against `rewrite`, which locks
+    /// it first: its output and the lock it wrote, if it wrote one. The artifact is not served,
+    /// so entering stops after the lock.
     fn lock(&self, rewrite: &str) -> (Output, Option<Vec<u8>>) {
         let n = self.locks.get() + 1;
         self.locks.set(n);
@@ -907,7 +914,7 @@ impl Locker {
         std::fs::write(project.join("lodi.toml"), JQ_MANIFEST).unwrap();
         let mut command = Command::new(LODI);
         command
-            .arg("lock")
+            .args(["develop", "--trust", "--", "/bin/sh", "-c", ":"])
             .current_dir(&project)
             .env_clear()
             .env("PATH", std::env::var_os("PATH").unwrap_or_default())
@@ -927,8 +934,8 @@ impl Locker {
     /// [`Locker::lock`], which must succeed: the lock's bytes.
     fn locked(&self, api: &Api) -> Vec<u8> {
         let (o, lock) = self.lock(&api.rewrite());
-        assert!(o.status.success(), "lodi lock: {}", err(&o));
-        lock.expect("lodi lock wrote lodi.lock")
+        assert!(err(&o).contains("lodi: wrote lodi.lock"), "{}", err(&o));
+        lock.expect("lodi develop wrote lodi.lock")
     }
 }
 

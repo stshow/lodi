@@ -5,13 +5,13 @@
 //! reaches through `LODI_FETCH_REWRITE`, so every request it makes is counted. The repository
 //! day and the bootstrap directory are registered for **yesterday** and not today, as the real
 //! Arch Linux Archive publishes a day only after that UTC day has ended; `lodi init --base arch`
-//! followed by `lodi lock`, with no edit to the snapshot, still pins — acceptance (a) of this
+//! followed by `lodi develop`, which locks first, with no edit to the snapshot, still pins — acceptance (a) of this
 //! task, minus the image build, and LD-381's rule that the Arch default is the previous UTC day.
 //!
 //! The image half needs a real Arch rootfs and real rootless Podman, and is
 //! `tests/spike_container.rs`; the live measurement against `archive.archlinux.org` is
 //! `sh scripts/march-local.sh --case arch`. What is here is everything in between: the manifest
-//! `lodi init` writes, the lock `lodi lock` writes from it, `lodi lock --check`, staleness, the
+//! `lodi init` writes, the lock `lodi develop` writes from it, a changed request, the
 //! documented refusals, and that a container request reaches image realization rather than
 //! anything else.
 
@@ -142,12 +142,16 @@ impl Project {
         command.output().expect("the lodi binary runs")
     }
 
-    fn run(&self, args: &[&str], server: &Server) -> Output {
-        self.run_with(args, &server.rewrite(), None)
-    }
-
     fn offline(&self, args: &[&str]) -> Output {
         self.run_with(args, "", None)
+    }
+
+    /// `lodi develop` with no `podman` on `PATH`: it locks by itself (LD-496), against
+    /// `server`, and then stops with `E_NO_RUNTIME`, so only the lock is observed.
+    fn develop(&self, server: &Server) -> Output {
+        let path = path_without_podman(self);
+        fs::create_dir_all(&path).unwrap();
+        self.run_with(&["develop", "--", "true"], &server.rewrite(), Some(&path))
     }
 
     fn manifest(&self) -> String {
@@ -167,6 +171,12 @@ impl Project {
         names.sort();
         names
     }
+}
+
+/// A `develop` that locked and then reached image realization, which has no runtime here.
+fn locked(o: &Output) {
+    assert_eq!(o.status.code(), Some(7), "{}", both(o));
+    assert!(both(o).contains("E_NO_RUNTIME"), "{}", both(o));
 }
 
 fn both(o: &Output) -> String {
@@ -218,8 +228,13 @@ fn init_then_lock_pins_arch_with_no_edit_to_the_manifest() {
     assert!(with_package.contains("[packages]"), "{with_package}");
     fs::write(project.dir.join("lodi.toml"), &with_package).unwrap();
 
-    let locked = project.run(&["lock"], &server);
-    assert_eq!(locked.status.code(), Some(0), "{}", both(&locked));
+    let first = project.develop(&server);
+    locked(&first);
+    assert!(
+        both(&first).contains("lodi: wrote lodi.lock (resolved base)"),
+        "{}",
+        both(&first)
+    );
     let lock = project.lock();
     lodi::lock::validate(&lock).expect("the lock this build wrote is valid");
     let base = lock.base.as_ref().unwrap();
@@ -262,45 +277,36 @@ fn init_then_lock_pins_arch_with_no_edit_to_the_manifest() {
     assert_eq!(base.rootfs.subdir.as_deref(), Some("root.x86_64"));
     assert!(base.rootfs.package_list.is_none());
 
-    // A second lock of the same manifest resolves nothing and asks for nothing.
+    // A second entry with the same manifest resolves nothing, writes nothing, asks for nothing.
     server.clear();
-    let again = project.run(&["lock"], &server);
-    assert_eq!(again.status.code(), Some(0), "{}", both(&again));
-    assert!(String::from_utf8_lossy(&again.stdout).contains("up to date"));
+    let again = project.develop(&server);
+    locked(&again);
+    assert!(
+        !both(&again).contains("wrote lodi.lock"),
+        "{}",
+        both(&again)
+    );
     assert!(server.requests().is_empty(), "{:?}", server.requests());
     assert_eq!(project.lock().to_canonical_json(), lock.to_canonical_json());
 
-    // `lock --check` behaves as it does for the other two bases, offline.
-    let check = project.offline(&["lock", "--check"]);
-    assert_eq!(check.status.code(), Some(0), "{}", both(&check));
-
-    // One more request and the lock is stale, not silently re-resolved.
+    // One more request is resolved again at the day the lock pins, never a newer one (LD-496);
+    // the archive has no `tree`, so it fails and the lock is left as it was.
     fs::write(
         project.dir.join("lodi.toml"),
         with_package.replace("common = [\"jq\"]", "common = [\"jq\", \"tree\"]"),
     )
     .unwrap();
-    let stale = project.offline(&["lock", "--check"]);
-    assert_eq!(stale.status.code(), Some(10), "{}", both(&stale));
-    assert!(both(&stale).contains("E_LOCK_STALE"), "{}", both(&stale));
-
-    // A lock that pins Arch under a manifest that asks for Debian is the same mismatch the
-    // other bases give, not a rebuild.
-    fs::write(
-        project.dir.join("lodi.toml"),
-        with_package
-            .replace("distro = \"arch\"", "distro = \"debian\"")
-            .replace("release = \"rolling\"", "release = \"bookworm\""),
-    )
-    .unwrap();
-    let mismatch = project.offline(&["lock", "--check"]);
-    assert_eq!(mismatch.status.code(), Some(10), "{}", both(&mismatch));
-    let shown = both(&mismatch);
-    assert!(shown.contains("E_LOCK_STALE"), "{shown}");
-    assert!(
-        shown.contains("debian") && shown.contains("arch"),
-        "{shown}"
-    );
+    let missing = project.develop(&server);
+    assert_eq!(missing.status.code(), Some(4), "{}", both(&missing));
+    assert!(both(&missing).contains("tree"), "{}", both(&missing));
+    let (_, pinned_day) = day(published(at));
+    for url in server.requests() {
+        assert!(
+            !url.starts_with(REPOS) || url.contains(&pinned_day),
+            "{url}"
+        );
+    }
+    assert_eq!(project.lock().to_canonical_json(), lock.to_canonical_json());
 }
 
 /// A container manifest reaches image realization: with no `podman` on `PATH` the three entry
@@ -318,11 +324,8 @@ fn every_entry_verb_reaches_image_realization() {
          [tasks.show]\nrun = \"jq --version\"\n",
     )
     .unwrap();
-    assert_eq!(
-        project.run(&["lock"], &server).status.code(),
-        Some(0),
-        "the lock is written first"
-    );
+    // The lock is written first, by the first entry.
+    locked(&project.develop(&server));
 
     let path = path_without_podman(&project);
     for args in [
@@ -403,7 +406,7 @@ fn an_unsupported_arch_release_is_refused_before_any_request() {
             ),
         )
         .unwrap();
-        let o = project.run(&["lock"], &server);
+        let o = project.develop(&server);
         let shown = both(&o);
         assert_eq!(o.status.code(), Some(3), "{release}: {shown}");
         assert!(shown.contains("E_UNSUPPORTED"), "{release}: {shown}");
@@ -432,7 +435,7 @@ fn a_snapshot_before_the_archive_and_one_in_the_future_are_each_refused() {
             ),
         )
         .unwrap();
-        let o = project.run(&["lock"], &server);
+        let o = project.develop(&server);
         let shown = both(&o);
         assert_eq!(o.status.code(), Some(4), "{snapshot}: {shown}");
         assert!(shown.contains(code), "{snapshot}: {shown}");
@@ -454,7 +457,7 @@ fn an_unknown_package_is_refused_and_no_lock_is_written() {
          release = \"rolling\"\n\n[packages]\ncommon = [\"not-a-package\"]\n",
     )
     .unwrap();
-    let o = project.run(&["lock"], &server);
+    let o = project.develop(&server);
     let shown = both(&o);
     assert_eq!(o.status.code(), Some(4), "{shown}");
     assert!(shown.contains("E_NO_MATCH"), "{shown}");
@@ -479,7 +482,7 @@ fn a_snapshot_inside_today_is_refused_naming_the_latest_published_day() {
         ),
     )
     .unwrap();
-    let o = project.run(&["lock"], &server);
+    let o = project.develop(&server);
     let shown = both(&o);
     assert_eq!(o.status.code(), Some(4), "{shown}");
     assert!(shown.contains("E_SNAPSHOT_FUTURE"), "{shown}");
@@ -497,14 +500,14 @@ fn the_recorded_digest_is_the_digest_of_the_bytes_that_were_read() {
     let project = Project::new("digest");
     // One reading of the clock for both ends. `upstream` publishes the archive day of the
     // instant it is given, and the snapshot below names a day; reading `now_utc()` twice let a
-    // UTC midnight crossed during the first `lodi lock` put them on different days, and so ask
+    // UTC midnight crossed during the first lock put them on different days, and so ask
     // for URLs this server never published (M-Arch-Base R-3, reviewing LD-266).
     let at = now_utc();
     let server = upstream(at);
     let manifest = "[project]\nname = \"x\"\n\n[container]\ndistro = \"arch\"\n\
          release = \"rolling\"\n\n[packages]\ncommon = [\"jq\"]\n";
     fs::write(project.dir.join("lodi.toml"), manifest).unwrap();
-    assert_eq!(project.run(&["lock"], &server).status.code(), Some(0));
+    locked(&project.develop(&server));
     let pinned = project.lock();
     let base = pinned.base.as_ref().unwrap();
     let extra = base
@@ -540,8 +543,8 @@ fn the_recorded_digest_is_the_digest_of_the_bytes_that_were_read() {
         ),
     )
     .unwrap();
-    let o = project.run(&["lock"], &server);
-    assert_eq!(o.status.code(), Some(0), "{}", both(&o));
+    let o = project.develop(&server);
+    locked(&o);
     let second = project.lock();
     let second_base = second.base.as_ref().unwrap();
     let second_extra = second_base
